@@ -1,9 +1,0 @@
-Merge branch 'main' into release-2.0.1
-
-# Conflicts:
-#	.gitignore
-#	app/src/main/AndroidManifest.xml
-#	app/src/main/java/com/teamz/lab/debugger/ui/expandable_info_list.kt
-#	app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt
-#	app/src/main/java/com/teamz/lab/debugger/utils/interstitial_ad_manager.kt
-#	app/src/main/java/com/teamz/lab/debugger/utils/rewarded_ad_manager.kt

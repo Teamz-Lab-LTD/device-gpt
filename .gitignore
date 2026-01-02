@@ -14,6 +14,10 @@ local.properties
 app/build/
 build/
 
+# Git backups (contain old history with secrets!)
+.git.backup.*
+.git.backup/
+
 # Sensitive files - DO NOT COMMIT
 key.properties
 app/google-services.json

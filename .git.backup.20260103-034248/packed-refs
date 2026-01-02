@@ -1,9 +1,0 @@
-# pack-refs with: peeled fully-peeled sorted 
-316bf2ad978766b7e1c6bcee00fea361b181a2b8 refs/heads/backup-before-history-cleanup-20260103-031725
-316bf2ad978766b7e1c6bcee00fea361b181a2b8 refs/heads/main
-91f0fda971050b8fa72d1f476a4ea47255cff092 refs/heads/release-2.0.1
-b83a841114f035337789c29cbc29caa5f05c3feb refs/heads/release-3.0.1
-0746305cb01d556e98ccbc41da5fcfb3aeb2d0d3 refs/remotes/origin/main
-f17b7d078d1415baf4ae5147ada6db6f0f2f8094 refs/remotes/origin/release-2.0.1
-a61c96de83a0acf78135a72596664c64e3ca0649 refs/remotes/origin/release-3.0.1
-71ca27e2b0ba3459449f3616780ff750ffd11a48 refs/stash
