@@ -778,7 +778,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **App Support:**
 - 📱 [Google Play Store](https://play.google.com/store/apps/details?id=com.teamz.lab.debugger) - Rate, review, and get app updates
 - 📧 **Email**: hello@teamzlab.com
-- 📞 **Phone**: +44 7365 602184
+- 📞 **WhatsApp**: [+44 7490 356046](https://wa.me/447490356046)
 
 **Development Support:**
 - **Issues**: [GitHub Issues](https://github.com/Teamz-Lab-LTD/device-gpt/issues)
@@ -1014,6 +1014,7 @@ Your support helps us continue building great open-source tools!
 > ### 📱 **Social Media & Community**
 > 
 > - **💼 [LinkedIn](https://www.linkedin.com/company/teamzlab/posts/?feedView=all)** — Team updates, industry insights
+> - **📘 [Facebook](https://www.facebook.com/profile.php?id=61570370970205)** — Company updates, community engagement
 > - **🐦 [Twitter/X @teamzlabapp](https://x.com/teamzlabapp)** — Latest updates, tech insights
 > - **📸 [Instagram @teamzlab](https://www.instagram.com/teamzlab/)** — Behind-the-scenes, team culture
 > - **📺 [YouTube Channel](https://www.youtube.com/@teamzlab)** — Tutorials, demos, case studies
@@ -1056,7 +1057,7 @@ Your support helps us continue building great open-source tools!
 > 
 > **We respond within 24 hours** (usually same day)
 
-**[📧 Book Free Consultation →](mailto:hello@teamzlab.com?subject=Free%20Consultation%20-%20Saw%20DeviceGPT&body=Hi%20Teamz%20Lab%2C%0A%0AI%20saw%20DeviceGPT%20on%20GitHub%20and%20I%27d%20like%20a%20free%20consultation%20about%20my%20project.%0A%0AProject%20Type%3A%20%5BMobile%20App%20%2F%20Web%20App%20%2F%20AI%20Integration%20%2F%20UI%20UX%20Design%5D%0AProject%20Description%3A%0ATimeline%3A%0ABudget%20Range%3A%0A%0ALooking%20forward%20to%20hearing%20from%20you%21)** • [📞 **+44 7365 602184**](tel:+447365602184) • [💼 **Upwork**](https://www.upwork.com/agencies/1904602719490921565/)
+**[📧 Book Free Consultation →](mailto:hello@teamzlab.com?subject=Free%20Consultation%20-%20Saw%20DeviceGPT&body=Hi%20Teamz%20Lab%2C%0A%0AI%20saw%20DeviceGPT%20on%20GitHub%20and%20I%27d%20like%20a%20free%20consultation%20about%20my%20project.%0A%0AProject%20Type%3A%20%5BMobile%20App%20%2F%20Web%20App%20%2F%20AI%20Integration%20%2F%20UI%20UX%20Design%5D%0AProject%20Description%3A%0ATimeline%3A%0ABudget%20Range%3A%0A%0ALooking%20forward%20to%20hearing%20from%20you%21)** • [💬 **WhatsApp: +44 7490 356046**](https://wa.me/447490356046) • [💼 **Upwork**](https://www.upwork.com/agencies/1904602719490921565/)
 
 **📧 hello@teamzlab.com** • **🌐 [teamzlab.com](https://teamzlab.com/)**
 
@@ -1117,7 +1118,7 @@ Your support helps us continue building great open-source tools!
 
 **[📧 Get Free Consultation (No Commitment) →](mailto:hello@teamzlab.com?subject=Ready%20to%20Build%20-%20Saw%20DeviceGPT&body=Hi%20Teamz%20Lab%2C%0A%0AI%20saw%20DeviceGPT%20on%20GitHub%20and%20I%27m%20ready%20to%20build%20my%20product.%0A%0AProject%20Type%3A%20%5BMobile%20App%20%2F%20Web%20App%20%2F%20AI%20Integration%20%2F%20UI%20UX%20Design%5D%0AProject%20Description%3A%0ATimeline%3A%0ABudget%3A%0A%0ALet%27s%20talk%21)**
 
-**📧 hello@teamzlab.com** • **📞 +44 7365 602184** • **💼 [Upwork](https://www.upwork.com/agencies/1904602719490921565/)**
+**📧 hello@teamzlab.com** • **💬 [WhatsApp: +44 7490 356046](https://wa.me/447490356046)** • **💼 [Upwork](https://www.upwork.com/agencies/1904602719490921565/)**
 
 **⚡ Response within 24 hours • 🎁 Free consultation • 💯 No commitment**
 
