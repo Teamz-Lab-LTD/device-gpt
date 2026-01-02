@@ -10,6 +10,10 @@
 local.properties
 .kotlin/
 
+# Build artifacts (may contain generated IDs from local_config.properties)
+app/build/
+build/
+
 # Sensitive files - DO NOT COMMIT
 key.properties
 app/google-services.json
