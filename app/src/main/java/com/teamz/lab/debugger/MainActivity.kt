@@ -11,6 +11,7 @@ import android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
@@ -120,6 +121,10 @@ class MainActivity : ComponentActivity() {
         try {
             // Ensure locale is set
             LocaleManager.setLocale(this)
+            
+            // Enable edge-to-edge display (modern API)
+            // This must be called before setContent() for proper window insets handling
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             enableEdgeToEdge()
             
             // Analytics initialization - critical for business decisions
@@ -596,8 +601,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
             key(refreshTrigger) {
                 Column(
                     modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .padding(paddingValues),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
