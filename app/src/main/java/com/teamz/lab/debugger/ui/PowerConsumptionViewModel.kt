@@ -320,13 +320,22 @@ class PowerConsumptionViewModel(application: Application) : AndroidViewModel(app
                                     .sortedByDescending { it.powerConsumption }
                                     .take(10)
                                 
+                                var uploadedCount = 0
                                 topApps.forEach { appData ->
                                     if (appData.powerConsumption > 0.0) {
-                                        LeaderboardManager.uploadAppPowerEntry(context, appData)
+                                        val success = LeaderboardManager.uploadAppPowerEntry(context, appData)
+                                        if (success) uploadedCount++
                                     }
                                 }
                                 lastUploadTime = currentTime
                                 android.util.Log.d(TAG, "Uploaded ${topApps.size} app power entries to leaderboard (excluding own app)")
+                                // Log analytics
+                                if (uploadedCount > 0) {
+                                    com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                        com.teamz.lab.debugger.utils.AnalyticsEvent.AppPowerDataUploaded,
+                                        mapOf("uploaded_count" to uploadedCount, "source" to "auto_upload")
+                                    )
+                                }
                             } catch (e: Exception) {
                                 android.util.Log.e(TAG, "Failed to upload app power data", e)
                             }
@@ -358,12 +367,21 @@ class PowerConsumptionViewModel(application: Application) : AndroidViewModel(app
                         .sortedByDescending { it.powerConsumption }
                         .take(10)
                     
+                    var uploadedCount = 0
                     topApps.forEach { appData ->
                         if (appData.powerConsumption > 0.0) {
-                            LeaderboardManager.uploadAppPowerEntry(context, appData)
+                            val success = LeaderboardManager.uploadAppPowerEntry(context, appData)
+                            if (success) uploadedCount++
                         }
                     }
                     android.util.Log.d(TAG, "Uploaded final batch: ${topApps.size} app power entries (excluding own app)")
+                    // Log analytics
+                    if (uploadedCount > 0) {
+                        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                            com.teamz.lab.debugger.utils.AnalyticsEvent.AppPowerDataUploaded,
+                            mapOf("uploaded_count" to uploadedCount, "source" to "stop_monitoring")
+                        )
+                    }
                 } catch (e: Exception) {
                     android.util.Log.e(TAG, "Failed to upload final batch", e)
                 }
@@ -403,6 +421,13 @@ class PowerConsumptionViewModel(application: Application) : AndroidViewModel(app
                     }
                 }
                 android.util.Log.d(TAG, "Manually uploaded $uploadedCount app power entries to leaderboard (excluding own app)")
+                // Log analytics
+                if (uploadedCount > 0) {
+                    com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                        com.teamz.lab.debugger.utils.AnalyticsEvent.AppPowerDataUploaded,
+                        mapOf("uploaded_count" to uploadedCount, "source" to "manual_upload")
+                    )
+                }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Failed to manually upload app power data", e)
             }

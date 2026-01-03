@@ -114,6 +114,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.tasks.await
+import com.teamz.lab.debugger.utils.InterstitialAdManager
 
 @Composable
 fun DrawerContent(
@@ -569,6 +570,49 @@ fun DrawerContent(
                 drawerState.close()
             }
             onShareClick?.invoke()
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 6.dp),
+            color = MaterialTheme.colorScheme.outline
+        )
+
+        // Open Source / GitHub Link - Show ad before visiting
+        Column {
+            // Small "Open Source" label
+            Text(
+                text = "Open Source",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                fontSize = 10.sp
+            )
+            IconTextButton(
+                icon = Icons.Default.Info,
+                label = "View Source Code on GitHub"
+            ) {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.DrawerItemClicked, mapOf(
+                        "item" to "view_source_code"
+                    )
+                )
+                coroutineScope.launch {
+                    drawerState.close()
+                }
+                // Show interstitial ad before opening GitHub
+                InterstitialAdManager.showAdBeforeAction(
+                    activity = activity,
+                    actionName = "view_github_source"
+                ) {
+                    // Open GitHub repository after ad is dismissed
+                    val urlIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        "https://github.com/Teamz-Lab-LTD/device-gpt".toUri()
+                    )
+                    context.startActivity(urlIntent)
+                }
+            }
         }
     }
 

@@ -224,6 +224,10 @@ fun HealthSection(
                 currentScore = currentHealthScore,
                 onAIClick = onItemAIClick?.let { handler ->
                     {
+                        AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                            "source" to "health_recommendations",
+                            "item_title" to "Smart Recommendations"
+                        ))
                         val suggestionsText = suggestions.joinToString("\n") { "• $it" }
                         val content = """
 Health Score: $currentHealthScore/10
@@ -248,6 +252,10 @@ $suggestionsText
                 context = context,
                 onAIClick = onItemAIClick?.let { handler ->
                     {
+                        AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                            "source" to "health_history",
+                            "item_title" to "7-Day Health History"
+                        ))
                         val history = HealthScoreUtils.getHealthScoreHistory(context, 7)
                         val historyText = if (history.isNotEmpty()) {
                             history.joinToString("\n") { (date, score) -> "$date: $score/10" }

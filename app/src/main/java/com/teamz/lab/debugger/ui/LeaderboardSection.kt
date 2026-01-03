@@ -52,8 +52,8 @@ fun LeaderboardSection(activity: Activity) {
     val adFrequency = remember { RemoteConfigUtils.getLeaderboardAdFrequency() }
     val shouldShowInterstitial = remember { RemoteConfigUtils.shouldShowLeaderboardInterstitialAds() }
     
-    // State
-    var selectedCategory by remember { mutableStateOf(LeaderboardCategory.POWER_EFFICIENCY) }
+    // State - Default to most desired category (Cool Phone)
+    var selectedCategory by remember { mutableStateOf(LeaderboardCategory.THERMAL_EFFICIENCY) }
     var leaderboardEntries by remember { mutableStateOf<List<CategoryLeaderboardEntry>>(emptyList()) }
     var appPowerEntries by remember { mutableStateOf<List<AppPowerLeaderboardEntry>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) } // Start with loading state
@@ -101,6 +101,11 @@ fun LeaderboardSection(activity: Activity) {
             showFullScreenAdAfterAction()
         }
         viewCount++
+        // Log analytics for leaderboard tab view
+        AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed, mapOf(
+            "view_count" to viewCount,
+            "category" to selectedCategory.id
+        ))
     }
     
     // Watch for trigger flags and update dialog state
@@ -220,7 +225,13 @@ fun LeaderboardSection(activity: Activity) {
             // Collapsible trust explanation header
             TrustExplanationHeader(
                 isExpanded = isTrustExpanded,
-                onToggle = { isTrustExpanded = !isTrustExpanded }
+                onToggle = { 
+                    isTrustExpanded = !isTrustExpanded
+                    AnalyticsUtils.logEvent(AnalyticsEvent.InfoExpanded, mapOf(
+                        "item" to "trust_explanation",
+                        "expanded" to isTrustExpanded
+                    ))
+                }
             )
             
             // Animated expandable trust card with swipe to close
@@ -258,6 +269,10 @@ fun LeaderboardSection(activity: Activity) {
             CategorySelector(
                 selectedCategory = selectedCategory,
                 onCategorySelected = { newCategory ->
+                    AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed, mapOf(
+                        "category" to newCategory.id,
+                        "category_name" to newCategory.displayName
+                    ))
                     // Set loading state and clear entries immediately to prevent empty view flash
                     isLoading = true
                     hasError = false
@@ -268,6 +283,10 @@ fun LeaderboardSection(activity: Activity) {
                     selectedCategory = newCategory
                 },
                 onCategoryInfoClick = { category ->
+                    AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                        "source" to "leaderboard_category_info",
+                        "category" to category.id
+                    ))
                     selectedCategoryForInfo = category
                     showCategoryInfoDialog = true
                 }
@@ -334,10 +353,20 @@ fun LeaderboardSection(activity: Activity) {
                         category = selectedCategory,
                         totalEntries = leaderboardEntries.size,
                         onViewInsights = { 
+                            AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                                "source" to "leaderboard_view_insights",
+                                "category" to selectedCategory.id,
+                                "user_rank" to userRank
+                            ))
                             // Open dialog immediately - no ad before opening
                             triggerDeviceInsights++
                         },
                         onViewBestDevices = { 
+                            AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                                "source" to "leaderboard_view_best_devices",
+                                "category" to selectedCategory.id,
+                                "user_rank" to userRank
+                            ))
                             // Open dialog immediately - no ad before opening
                             triggerBestDevices++
                         }
@@ -420,6 +449,12 @@ fun LeaderboardSection(activity: Activity) {
                             entry = entry,
                             category = selectedCategory,
                             onClick = {
+                                AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                                    "source" to "leaderboard_entry",
+                                    "category" to selectedCategory.id,
+                                    "rank" to (index + 1),
+                                    "device_id" to entry.normalizedDeviceId
+                                ))
                                 // Set selected device and show insights
                                 selectedDeviceId = entry.normalizedDeviceId
                                 showDeviceInsights = true
@@ -663,11 +698,29 @@ fun CategorySelector(
     onCategorySelected: (LeaderboardCategory) -> Unit,
     onCategoryInfoClick: ((LeaderboardCategory) -> Unit)? = null
 ) {
+    // Custom ordered list: Most desired categories first, then others
+    val orderedCategories = remember {
+        listOf(
+            // Top 4 most desired categories (in order of preference)
+            LeaderboardCategory.THERMAL_EFFICIENCY,      // 1. Cool Phone
+            LeaderboardCategory.PERFORMANCE_CONSISTENCY, // 2. Smooth Runner
+            LeaderboardCategory.APP_POWER_MONITORING,    // 3. App Power Ranking
+            LeaderboardCategory.HEALTH_SCORE,            // 4. Healthy Phone
+            // All other categories after the top 4
+            LeaderboardCategory.POWER_EFFICIENCY,
+            LeaderboardCategory.CPU_PERFORMANCE,
+            LeaderboardCategory.CAMERA_EFFICIENCY,
+            LeaderboardCategory.DISPLAY_EFFICIENCY,
+            LeaderboardCategory.POWER_TREND,
+            LeaderboardCategory.COMPONENT_OPTIMIZATION
+        )
+    }
+    
     ScrollableTabRow(
-        selectedTabIndex = LeaderboardCategory.entries.indexOf(selectedCategory),
+        selectedTabIndex = orderedCategories.indexOf(selectedCategory),
         modifier = Modifier.fillMaxWidth()
     ) {
-        LeaderboardCategory.entries.forEach { category ->
+        orderedCategories.forEach { category ->
             Tab(
                 selected = selectedCategory == category,
                 onClick = { onCategorySelected(category) },
