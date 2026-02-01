@@ -76,9 +76,7 @@ fun ExpandableInfoList(
     val adLoader = rememberAdLoader(activity)
     var searchQuery by remember { mutableStateOf("") }
     val shownAdHashes = remember {
-        mutableStateMapOf(
-            "list" to mutableSetOf(), "expand" to mutableSetOf<Int>()
-        )
+        mutableStateMapOf<String, Int>()
     }
     val interactionSource = remember { MutableInteractionSource() }
     
@@ -172,7 +170,13 @@ fun ExpandableInfoList(
         ) { _, item ->
             when (item) {
                 is ListItem.AdItem -> {
-                    // Render ad
+                    // Render ad (logging reduced - only log once per position)
+                    val logKey = "display_${item.index}"
+                    if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != item.ad.hashCode()) {
+                        android.util.Log.d("AdDisplay", "📺 Displaying ad at position ${item.index}, " +
+                                "Ad hash: ${item.ad.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
+                        shownAdHashes[logKey] = item.ad.hashCode()
+                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     AdMobNativeAdCard(nativeAd = item.ad)
                     Spacer(modifier = Modifier.height(12.dp))
@@ -195,6 +199,12 @@ fun ExpandableInfoList(
                                 val positionId = "device_info_expanded_$actualIndex"
                                 val newAd = NativeAdManager.getAdForPosition(positionId)
                                 newAd?.let {
+                                    val logKey = "expanded_$actualIndex"
+                                    if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != it.hashCode()) {
+                                        android.util.Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
+                                                "Ad hash: ${it.hashCode()}, Position: $positionId")
+                                        shownAdHashes[logKey] = it.hashCode()
+                                    }
                                     inlineAds[actualIndex] = it
                                 }
                             }
@@ -337,6 +347,8 @@ fun AppCard(
 fun rememberAdLoader(activity: Activity): AdLoader {
     val coroutineScope = rememberCoroutineScope()
     var adLoaderRef: AdLoader? by remember { mutableStateOf(null) }
+    var retryCount by remember { mutableStateOf(0) }
+    val TAG = "AdLoader"
     
     val adLoader = remember {
         val adUnitId = AdConfig.getNativeAdUnitId()
@@ -344,7 +356,53 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             .forNativeAd { nativeAd ->
                 if (!activity.isDestroyed) {
                     NativeAdManager.nativeAds.add(nativeAd)
-                    AnalyticsUtils.logEvent(AnalyticsEvent.AdLoaded)
+                    NativeAdManager.recordSuccessfulLoad()
+                    
+                    // Invalidate cache when new ad is added so positions can get different ads
+                    NativeAdManager.invalidateCache()
+                    
+                    val currentCount = NativeAdManager.nativeAds.filterNotNull().size
+                    val targetCount = NativeAdManager.getTargetAdCount()
+                    android.util.Log.i(TAG, "✅ Native ad loaded! Total ads in cache: $currentCount/$targetCount")
+                    
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AdLoaded, mapOf(
+                        "ad_type" to "native",
+                        "total_ads_loaded" to currentCount,
+                        "target_count" to targetCount
+                    ))
+                    
+                    // Reset retry count on successful load
+                    retryCount = 0
+                    NativeAdManager.resetRetryCount()
+                    
+                    // If we still need more ads, trigger another load attempt
+                    // Note: Removed isCurrentlyLoading() check to allow continuation
+                    if (currentCount < targetCount) {
+                        android.util.Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
+                        coroutineScope.launch {
+                            // Wait for throttle period before next request
+                            delay(11000) // 10s throttle + 1s buffer
+                            if (!activity.isDestroyed && 
+                                NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
+                                NativeAdManager.canMakeRequest()) {
+                                android.util.Log.d(TAG, "📤 Loading additional ad...")
+                                NativeAdManager.setLoading(true) // Set loading before request
+                                NativeAdManager.recordRequest()
+                                adLoaderRef?.loadAd(AdRequest.Builder().build())
+                                
+                                // Reset loading flag after delay to allow next request
+                                launch {
+                                    delay(12000) // Wait for response (10s request + 2s buffer)
+                                    NativeAdManager.setLoading(false)
+                                }
+                            } else if (!NativeAdManager.canMakeRequest()) {
+                                android.util.Log.d(TAG, "⏸️ Cannot make request yet (throttled), will retry later")
+                                // Reset loading flag so continuation can retry
+                                NativeAdManager.setLoading(false)
+                            }
+                        }
+                    }
+                    
                     // Track revenue for native ads
                     nativeAd.setOnPaidEventListener { adValue ->
                         AdRevenueOptimizer.trackAdRevenue(
@@ -361,14 +419,23 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     val errorCode = adError.code
                     val errorMessage = adError.message ?: "unknown"
-                    println("❌ Failed to load ad: $errorMessage")
+                    val currentCount = NativeAdManager.nativeAds.filterNotNull().size
+                    val targetCount = NativeAdManager.getTargetAdCount()
+                    
+                    NativeAdManager.recordFailedLoad(errorCode, errorMessage)
+                    
+                    android.util.Log.w(TAG, "❌ Ad load failed - Code: $errorCode, " +
+                            "Message: $errorMessage, Current ads: $currentCount/$targetCount, " +
+                            "Retry count: $retryCount")
                     
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.AdFailed,
                         mapOf(
                             "error_code" to errorCode,
                             "error_message" to errorMessage,
-                            "ad_type" to "native"
+                            "ad_type" to "native",
+                            "current_ads_loaded" to currentCount,
+                            "retry_count" to retryCount
                         )
                     )
                     
@@ -376,30 +443,50 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     // Error codes: 0=INVALID_REQUEST, 2=INVALID_AD_SIZE, 8=INVALID_APP_ID
                     val nonRetryableErrors = listOf(0, 2, 8)
                     
-                    // Only retry if we don't have enough ads AND can make request
-                    val targetCount = NativeAdManager.getTargetAdCount()
-                    val currentCount = NativeAdManager.nativeAds.filterNotNull().size
-                    
+                    // Only retry if:
+                    // 1. Error is retryable
+                    // 2. We don't have enough ads
+                    // 3. We haven't exceeded max retries
+                    // 4. We can make a request (throttled)
                     if (errorCode !in nonRetryableErrors && 
                         currentCount < targetCount &&
-                        NativeAdManager.canMakeRequest()) {
-                        // Retry after delay with throttling
-                        adLoaderRef?.let { loader ->
-                            coroutineScope.launch {
-                                delay(5000) // 5 second delay (increased from 3s)
-                                if (!activity.isDestroyed && 
-                                    NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
-                                    NativeAdManager.canMakeRequest()) {
-                                    NativeAdManager.recordRequest()
-                                    loader.loadAd(AdRequest.Builder().build())
+                        NativeAdManager.canMakeRequest() &&
+                        NativeAdManager.canRetry()) {
+                        
+                        val canRetry = NativeAdManager.recordRetryAttempt()
+                        if (canRetry) {
+                            retryCount++
+                            val retryDelay = 10000L // 10 seconds (increased from 5s)
+                            
+                            android.util.Log.d(TAG, "🔄 Scheduling retry #$retryCount in ${retryDelay/1000} seconds...")
+                            
+                            adLoaderRef?.let { loader ->
+                                coroutineScope.launch {
+                                    delay(retryDelay)
+                                    if (!activity.isDestroyed && 
+                                        NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
+                                        NativeAdManager.canMakeRequest()) {
+                                        android.util.Log.d(TAG, "🔄 Executing retry #$retryCount...")
+                                        NativeAdManager.recordRequest()
+                                        loader.loadAd(AdRequest.Builder().build())
+                                    }
                                 }
                             }
+                        } else {
+                            android.util.Log.w(TAG, "⚠️ Max retries reached. Stopping retry attempts.")
+                        }
+                    } else {
+                        if (!NativeAdManager.canRetry()) {
+                            android.util.Log.w(TAG, "⚠️ Max retries reached ($retryCount). Stopping retry attempts.")
+                        } else if (errorCode in nonRetryableErrors) {
+                            android.util.Log.w(TAG, "⚠️ Non-retryable error ($errorCode). Not retrying.")
                         }
                     }
                 }
 
                 override fun onAdClicked() {
-                    AnalyticsUtils.logEvent(AnalyticsEvent.AdClicked)
+                    android.util.Log.d(TAG, "👆 Ad clicked")
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AdClicked, mapOf("ad_type" to "native"))
                     AdRevenueOptimizer.trackAdClick(activity, "native")
                 }
             }).withNativeAdOptions(NativeAdOptions.Builder().build()).build()
@@ -407,35 +494,111 @@ fun rememberAdLoader(activity: Activity): AdLoader {
     }
 
     LaunchedEffect(Unit) {
-        // CRITICAL: Use atomic initialization to prevent race condition
-        // Only ONE composable should initialize ads, even if multiple call rememberAdLoader()
         val targetAdCount = NativeAdManager.getTargetAdCount()
         val currentCount = NativeAdManager.nativeAds.filterNotNull().size
         
-        // Atomic check-and-set: only first caller gets true
-        if (NativeAdManager.tryMarkInitialized() && 
-            currentCount < targetAdCount && 
-            !NativeAdManager.isCurrentlyLoading() &&
-            NativeAdManager.canMakeRequest()) {
+        android.util.Log.d(TAG, "🚀 Checking ad loader - Current: $currentCount, Target: $targetAdCount")
+        
+        // Mark as initialized (only first time), but continue loading if we don't have enough ads
+        val isFirstInit = NativeAdManager.tryMarkInitialized()
+        
+        // Continue loading if we don't have enough ads, even if already initialized
+        // Note: Allow continuation even if loading flag is set (it will be reset by individual requests)
+        // Only check loading flag for first initialization to prevent duplicate initial loads
+        if (currentCount < targetAdCount && NativeAdManager.canMakeRequest()) {
+            if (isFirstInit && NativeAdManager.isCurrentlyLoading()) {
+                android.util.Log.d(TAG, "⏳ Already loading ads (first init), skipping duplicate...")
+                return@LaunchedEffect
+            }
+            
+            if (isFirstInit) {
+                android.util.Log.d(TAG, "🆕 First initialization")
+            } else {
+                android.util.Log.d(TAG, "🔄 Continuing to load more ads (need ${targetAdCount - currentCount} more)")
+            }
             
             NativeAdManager.setLoading(true)
-            
-            // Load only 3 ads (enough for rotation in "every 5 items" display)
             val adsToLoad = targetAdCount - currentCount
+            
+            android.util.Log.i(TAG, "📥 Loading $adsToLoad more ads (staggered by 10+ seconds each to respect throttling)...")
+            
             repeat(adsToLoad) { index ->
-                kotlinx.coroutines.delay(index * 2000L) // Stagger by 2 seconds (was 500ms)
+                // Stagger by 10+ seconds to respect throttling (MIN_REQUEST_INTERVAL_MS = 10000)
+                kotlinx.coroutines.delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
                 if (!activity.isDestroyed && 
-                    NativeAdManager.nativeAds.filterNotNull().size < targetAdCount &&
-                    NativeAdManager.canMakeRequest()) {
-                    NativeAdManager.recordRequest()
-                    adLoader.loadAd(AdRequest.Builder().build())
+                    NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
+                    
+                    // Check if we can make request, if not, wait and retry
+                    if (NativeAdManager.canMakeRequest()) {
+                        android.util.Log.d(TAG, "📤 Requesting ad ${index + 1}/$adsToLoad...")
+                        NativeAdManager.recordRequest()
+                        adLoader.loadAd(AdRequest.Builder().build())
+                    } else {
+                        android.util.Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
+                        // Wait for throttle period and retry
+                        kotlinx.coroutines.delay(10000L) // Wait for throttle period
+                        if (NativeAdManager.canMakeRequest() && 
+                            !activity.isDestroyed &&
+                            NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
+                            android.util.Log.d(TAG, "📤 Retrying ad ${index + 1}/$adsToLoad...")
+                            NativeAdManager.recordRequest()
+                            adLoader.loadAd(AdRequest.Builder().build())
+                        }
+                    }
                 }
             }
             
             // Reset loading flag after a delay to allow for async loading
+            // Note: Individual ad loads will also reset loading flag, but this is a safety net
+            // Reduced timeout to allow faster continuation
             coroutineScope.launch {
-                delay(adsToLoad * 2000L + 1000L)
+                // Calculate timeout: (adsToLoad * 11s stagger) + 12s for last response
+                val timeout = if (adsToLoad > 0) {
+                    (adsToLoad - 1) * 11000L + 12000L
+                } else {
+                    12000L
+                }
+                delay(timeout)
                 NativeAdManager.setLoading(false)
+                val finalCount = NativeAdManager.nativeAds.filterNotNull().size
+                android.util.Log.i(TAG, "📊 Load attempt completed - Current ads: $finalCount/$targetAdCount")
+                if (finalCount < targetAdCount) {
+                    NativeAdManager.logStats()
+                    // If still need more ads and can make request, continue loading
+                    if (NativeAdManager.canMakeRequest() && !activity.isDestroyed) {
+                        android.util.Log.d(TAG, "🔄 Continuing to load remaining ads...")
+                        val remainingAds = targetAdCount - finalCount
+                        repeat(remainingAds) { index ->
+                            delay(index * 11000L + 1000L) // Stagger by 11s to respect throttling
+                            if (!activity.isDestroyed && 
+                                NativeAdManager.nativeAds.filterNotNull().size < targetAdCount &&
+                                NativeAdManager.canMakeRequest()) {
+                                android.util.Log.d(TAG, "📤 Requesting additional ad ${index + 1}/$remainingAds...")
+                                NativeAdManager.setLoading(true)
+                                NativeAdManager.recordRequest()
+                                adLoader.loadAd(AdRequest.Builder().build())
+                                
+                                // Reset loading after delay
+                                launch {
+                                    delay(12000) // Wait for response
+                                    NativeAdManager.setLoading(false)
+                                }
+                            }
+                        }
+                    } else {
+                        android.util.Log.d(TAG, "⏸️ Cannot continue loading - throttled or activity destroyed")
+                    }
+                } else {
+                    android.util.Log.i(TAG, "✅ Successfully loaded all $finalCount ads!")
+                }
+            }
+        } else {
+            if (currentCount >= targetAdCount) {
+                android.util.Log.d(TAG, "✅ Already have enough ads ($currentCount >= $targetAdCount)")
+            } else if (NativeAdManager.isCurrentlyLoading()) {
+                android.util.Log.d(TAG, "⏳ Already loading ads...")
+            } else {
+                android.util.Log.d(TAG, "⏸️ Cannot make request (throttled)")
             }
         }
     }

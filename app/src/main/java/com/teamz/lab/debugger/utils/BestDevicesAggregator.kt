@@ -62,5 +62,61 @@ object BestDevicesAggregator {
         
         return result
     }
+    
+    /**
+     * Get best devices overall (composite score across all categories)
+     * Uses market-research-based weights to calculate composite scores
+     */
+    suspend fun getBestDevicesOverall(limit: Int = 100): List<BestDeviceScore> {
+        return try {
+            // Get device insights from Firestore
+            val deviceInsights = LeaderboardManager.getAllDeviceInsights()
+            
+            // Calculate composite scores for each device
+            val bestDeviceScores = deviceInsights
+                .mapNotNull { insight ->
+                    BestDeviceCalculator.calculateCompositeScore(insight)
+                }
+                .sortedByDescending { it.compositeScore }
+                .take(limit)
+            
+            Log.d(TAG, "Calculated ${bestDeviceScores.size} best devices overall")
+            bestDeviceScores
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get best devices overall", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get best devices overall as CategoryLeaderboardEntry format (for UI compatibility)
+     */
+    suspend fun getBestDevicesOverallAsEntries(limit: Int = 100): List<CategoryLeaderboardEntry> {
+        return try {
+            val bestDeviceScores = getBestDevicesOverall(limit)
+            
+            bestDeviceScores.map { score ->
+                CategoryLeaderboardEntry(
+                    normalizedDeviceId = score.normalizedDeviceId,
+                    normalizedBrand = score.normalizedBrand,
+                    normalizedModel = "", // Not available in BestDeviceScore
+                    displayName = score.displayName,
+                    score = score.compositeScore,
+                    userCount = score.userCount,
+                    avgScore = score.compositeScore,
+                    topScore = score.rawCompositeScore, // Use raw score as top score
+                    dataQuality = score.dataQuality,
+                    lastUpdated = System.currentTimeMillis(),
+                    userId = "",
+                    userIds = emptyList(),
+                    measurementCount = 0,
+                    dataFreshness = System.currentTimeMillis()
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get best devices overall as entries", e)
+            emptyList()
+        }
+    }
 }
 

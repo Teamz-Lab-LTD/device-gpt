@@ -52,8 +52,8 @@ fun LeaderboardSection(activity: Activity) {
     val adFrequency = remember { RemoteConfigUtils.getLeaderboardAdFrequency() }
     val shouldShowInterstitial = remember { RemoteConfigUtils.shouldShowLeaderboardInterstitialAds() }
     
-    // State - Default to most desired category (Cool Phone)
-    var selectedCategory by remember { mutableStateOf(LeaderboardCategory.THERMAL_EFFICIENCY) }
+    // State - Default to Best Device category
+    var selectedCategory by remember { mutableStateOf(LeaderboardCategory.BEST_DEVICE) }
     var leaderboardEntries by remember { mutableStateOf<List<CategoryLeaderboardEntry>>(emptyList()) }
     var appPowerEntries by remember { mutableStateOf<List<AppPowerLeaderboardEntry>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) } // Start with loading state
@@ -139,6 +139,12 @@ fun LeaderboardSection(activity: Activity) {
                     appPowerEntries = entries
                     leaderboardEntries = emptyList() // Clear device entries
                     userRank = -1 // No user rank for app power
+                } else if (selectedCategory == LeaderboardCategory.BEST_DEVICE) {
+                    // Load best device overall (composite score)
+                    val entries = BestDevicesAggregator.getBestDevicesOverallAsEntries(100)
+                    leaderboardEntries = entries
+                    appPowerEntries = emptyList() // Clear app power entries
+                    userRank = -1 // No user rank for best device overall
                 } else {
                     // Load device leaderboard
                     val entries = LeaderboardManager.getLeaderboardEntries(selectedCategory.id, 100)
@@ -303,7 +309,9 @@ fun LeaderboardSection(activity: Activity) {
         // This ensures each ad position gets a stable, unique ad that doesn't change on recomposition
         // Only recalculate when entries, category, or ad pool size actually change
         val adAssignments = remember(
-            if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size else leaderboardEntries.size,
+            if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size 
+            else if (selectedCategory == LeaderboardCategory.BEST_DEVICE) leaderboardEntries.size
+            else leaderboardEntries.size,
             selectedCategory.id,
             validAdsSize
         ) {
@@ -346,7 +354,7 @@ fun LeaderboardSection(activity: Activity) {
             }
             
             // User rank display with navigation to insights (only for device categories)
-            if (userRank > 0 && selectedCategory != LeaderboardCategory.APP_POWER_MONITORING) {
+            if (userRank > 0 && selectedCategory != LeaderboardCategory.APP_POWER_MONITORING && selectedCategory != LeaderboardCategory.BEST_DEVICE) {
                 item {
                         UserRankCard(
                         rank = userRank, 
@@ -676,6 +684,7 @@ fun CategoryInfoDialog(
                                 LeaderboardCategory.THERMAL_EFFICIENCY -> "Based on device temperature during heavy usage. Cooler devices = better rank."
                                 LeaderboardCategory.PERFORMANCE_CONSISTENCY -> "Based on frame rate stability and absence of lag. Smoother performance = better rank."
                                 LeaderboardCategory.APP_POWER_MONITORING -> "Based on per-app battery impact (%/hour). Shows which apps consume the most power."
+                                LeaderboardCategory.BEST_DEVICE -> "Based on composite score across all categories using market-research-based weights. Power Efficiency (22%), CPU Performance (18%), Thermal Efficiency (15%), Performance Consistency (14%), Health Score (12%), Component Optimization (8%), Power Trend (5%), Display Efficiency (4%), Camera Efficiency (2%)."
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -701,6 +710,8 @@ fun CategorySelector(
     // Custom ordered list: Most desired categories first, then others
     val orderedCategories = remember {
         listOf(
+            // Top category: Best Device Overall
+            LeaderboardCategory.BEST_DEVICE,            // 0. Best Device (composite score)
             // Top 4 most desired categories (in order of preference)
             LeaderboardCategory.THERMAL_EFFICIENCY,      // 1. Cool Phone
             LeaderboardCategory.PERFORMANCE_CONSISTENCY, // 2. Smooth Runner

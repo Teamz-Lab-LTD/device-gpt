@@ -263,6 +263,13 @@ enum class LeaderboardCategory(
         "📱",
         "Which apps consume the most power?",
         "See which apps drain your battery the most!"
+    ),
+    BEST_DEVICE(
+        "best_device",
+        "Best Device",
+        "🏆",
+        "Which phones are the best overall?",
+        "These phones are the best across all categories!"
     )
 }
 

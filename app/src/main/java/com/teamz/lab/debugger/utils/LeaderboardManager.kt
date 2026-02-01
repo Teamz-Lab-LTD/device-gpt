@@ -1055,6 +1055,24 @@ object LeaderboardManager {
     }
     
     /**
+     * Get all device insights (for best device overall calculation)
+     * Fetches all available device insights (up to limit) for comprehensive best device calculation
+     */
+    suspend fun getAllDeviceInsights(limit: Int = 1000): List<DeviceInsight> {
+        return try {
+            // Get all device insights to ensure we have enough data for filtering
+            db.collection("device_insights")
+                .limit(limit.toLong())
+                .get()
+                .await()
+                .toObjects(DeviceInsight::class.java)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get all device insights", e)
+            emptyList()
+        }
+    }
+    
+    /**
      * Get best devices for a category (top devices by score)
      * Uses category leaderboard entries for better data availability
      */

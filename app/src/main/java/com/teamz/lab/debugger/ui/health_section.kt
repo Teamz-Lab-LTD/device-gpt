@@ -185,9 +185,14 @@ fun HealthSection(
         // Policy: Single native ad per screen, adequate spacing, clearly labeled
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item {
-                // Get a native ad from the rotation
-                val nativeAd = nativeAds.firstOrNull { it != null }
+                // Use position-specific ad to ensure proper rotation
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_top")
                 if (nativeAd != null) {
+                    // Logging reduced - only log once
+                    LaunchedEffect(nativeAd.hashCode()) {
+                        android.util.Log.d("AdDisplay", "📺 Health section ad - " +
+                                "Ad hash: ${nativeAd.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
+                    }
                     Spacer(modifier = Modifier.height(8.dp)) // Spacing before ad
                     AdMobNativeAdCard(nativeAd = nativeAd)
                     Spacer(modifier = Modifier.height(8.dp)) // Spacing after ad

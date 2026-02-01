@@ -165,7 +165,19 @@ fun DeviceInsightsScreen(
                     
                     items(LeaderboardCategory.entries.size) { index ->
                         val category = LeaderboardCategory.entries[index]
-                        val score = insight.scores[category.id] ?: 0.0
+                        val score = if (category == LeaderboardCategory.BEST_DEVICE) {
+                            // Calculate composite score for BEST_DEVICE category
+                            BestDeviceCalculator.calculateCompositeScoreFromScores(
+                                scores = insight.scores,
+                                userCount = insight.userCount,
+                                dataQuality = insight.dataQuality,
+                                normalizedDeviceId = insight.normalizedDeviceId,
+                                displayName = insight.displayName,
+                                normalizedBrand = insight.normalizedBrand
+                            )?.compositeScore ?: 0.0
+                        } else {
+                            insight.scores[category.id] ?: 0.0
+                        }
                         CategoryScoreCard(
                             category = category,
                             score = score

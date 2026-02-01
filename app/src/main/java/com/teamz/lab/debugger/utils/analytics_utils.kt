@@ -7,6 +7,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.teamz.lab.debugger.BuildConfig
 
 object AnalyticsUtils {
 
@@ -64,9 +65,12 @@ object AnalyticsUtils {
     }
 
     /**
-     * Log analytics event - Always logs locally, but only sends to Firebase when device is NOT in restricted mode
+     * Log analytics event - Always logs locally, but only sends to Firebase when:
+     * - NOT in debug mode (BuildConfig.DEBUG = false)
+     * - Device is NOT in restricted mode
      * 
      * Restricted modes (analytics NOT sent):
+     * - Debug builds (BuildConfig.DEBUG = true)
      * - Battery Saver Mode
      * - Do Not Disturb Mode
      * - Airplane Mode
@@ -87,6 +91,12 @@ object AnalyticsUtils {
         // Always log locally for debugging
         Log.d("AnalyticsUtils", "Event logged: ${event.eventName} with params: $params")
         
+        // Never send to Firebase in debug mode
+        if (BuildConfig.DEBUG) {
+            Log.d("AnalyticsUtils", "Event NOT sent to Firebase (DEBUG mode): ${event.eventName}")
+            return
+        }
+        
         // Only send to Firebase if device is NOT in restricted mode
         val context = appContext
         if (context != null && !isDeviceInRestrictedMode(context)) {
@@ -98,9 +108,17 @@ object AnalyticsUtils {
     }
 
     /**
-     * Set user ID - Only sets if device is NOT in restricted mode
+     * Set user ID - Only sets if:
+     * - NOT in debug mode (BuildConfig.DEBUG = false)
+     * - Device is NOT in restricted mode
      */
     fun setUserId(userId: String?) {
+        // Never set user ID in debug mode
+        if (BuildConfig.DEBUG) {
+            Log.d("AnalyticsUtils", "User ID NOT set (DEBUG mode): $userId")
+            return
+        }
+        
         val context = appContext
         if (context != null && !isDeviceInRestrictedMode(context)) {
             firebaseAnalytics?.setUserId(userId)
@@ -111,9 +129,17 @@ object AnalyticsUtils {
     }
 
     /**
-     * Set user property - Only sets if device is NOT in restricted mode
+     * Set user property - Only sets if:
+     * - NOT in debug mode (BuildConfig.DEBUG = false)
+     * - Device is NOT in restricted mode
      */
     fun setUserProperty(name: String, value: String) {
+        // Never set user property in debug mode
+        if (BuildConfig.DEBUG) {
+            Log.d("AnalyticsUtils", "User property NOT set (DEBUG mode): $name = $value")
+            return
+        }
+        
         val context = appContext
         if (context != null && !isDeviceInRestrictedMode(context)) {
             firebaseAnalytics?.setUserProperty(name, value)

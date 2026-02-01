@@ -327,17 +327,9 @@ object ReviewPromptManager {
                 } else {
                     // Review flow not available
                     val error = task.exception
-                    val errorCode = task.exception?.let { 
-                        (it as? com.google.android.play.core.tasks.RuntimeExecutionException)?.cause?.let { cause ->
-                            (cause as? com.google.android.gms.common.api.ApiException)?.statusCode
-                        }
-                    }
                     val errorMessage = error?.message ?: "Unknown error"
                     
                     Log.w(TAG, "showReviewPrompt() - ⚠️ Review flow not available: $errorMessage")
-                    if (errorCode != null) {
-                        Log.w(TAG, "showReviewPrompt() - Error code: $errorCode")
-                    }
                     
                     if (BuildConfig.DEBUG) {
                         Log.w(TAG, "showReviewPrompt() - ⚠️ DEBUG BUILD: This is expected!")

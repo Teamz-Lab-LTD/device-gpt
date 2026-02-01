@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import kotlinx.coroutines.launch
@@ -54,16 +55,16 @@ fun PremiumPurchaseDialog(
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(0.9f) // 90% of screen width for better visibility
+                .padding(8.dp),
             shape = MaterialTheme.shapes.large
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(32.dp), // Increased from 24dp to 32dp
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp) // Increased from 16dp to 20dp
             ) {
                 // Success state
                 if (purchaseSuccess || premiumStatus is RevenueCatManager.PremiumStatus.Premium) {
@@ -74,18 +75,18 @@ fun PremiumPurchaseDialog(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
-                            modifier = Modifier.size(64.dp),
+                            modifier = Modifier.size(80.dp), // Increased from 64dp to 80dp
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Welcome to Premium!",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.headlineMedium, // Changed from headlineSmall to headlineMedium
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Text(
                             text = "All ads have been removed. Enjoy your ad-free experience!",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -101,20 +102,20 @@ fun PremiumPurchaseDialog(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(72.dp), // Increased from 48dp to 72dp
                         tint = MaterialTheme.colorScheme.primary
                     )
                     
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineMedium, // Changed from headlineSmall to headlineMedium
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     
                     Text(
                         text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -122,13 +123,14 @@ fun PremiumPurchaseDialog(
                     // Benefits list
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp) // Increased from 8dp to 12dp
                     ) {
                         benefits.forEach { benefit ->
                             Text(
                                 text = benefit,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.fillMaxWidth()
+                                style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
+                                modifier = Modifier.fillMaxWidth(),
+                                fontSize = 16.sp // Explicit font size
                             )
                         }
                     }
@@ -147,14 +149,19 @@ fun PremiumPurchaseDialog(
                     // Action buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp) // Increased from 12dp to 16dp
                     ) {
                         OutlinedButton(
                             onClick = onDismiss,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp), // Increased button height
                             enabled = !isPurchasing
                         ) {
-                            Text("Maybe Later")
+                            Text(
+                                "Maybe Later",
+                                style = MaterialTheme.typography.bodyLarge // Larger text
+                            )
                         }
                         
                         Button(
@@ -175,16 +182,21 @@ fun PremiumPurchaseDialog(
                                     )
                                 }
                             },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp), // Increased button height
                             enabled = !isPurchasing
                         ) {
                             if (isPurchasing) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp
+                                    modifier = Modifier.size(24.dp), // Increased from 16dp to 24dp
+                                    strokeWidth = 3.dp // Increased from 2dp to 3dp
                                 )
                             } else {
-                                Text("Remove Ads")
+                                Text(
+                                    "Remove Ads",
+                                    style = MaterialTheme.typography.bodyLarge // Larger text
+                                )
                             }
                         }
                     }
@@ -252,6 +264,43 @@ fun PremiumStatusBadge() {
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
+        }
+    }
+}
+
+/**
+ * Small "Remove Ads" button to show after native ads
+ * Compact, unobtrusive button that opens premium purchase dialog
+ */
+@Composable
+fun RemoveAdsButton(
+    activity: android.app.Activity,
+    onShowDialog: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isPremium = RevenueCatManager.isPremium()
+    
+    if (!isPremium) {
+        TextButton(
+            onClick = {
+                com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                    com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
+                    mapOf("item" to "remove_ads_button")
+                )
+                onShowDialog()
+            },
+            modifier = modifier
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Remove Ads",
+                style = MaterialTheme.typography.labelSmall
+            )
         }
     }
 }

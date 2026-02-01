@@ -266,8 +266,9 @@ Power Level: ${when {
                 
                 // Native Ad 1 - After App Power Monitor (Policy: Adequate spacing from content)
                 if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                    val nativeAd1 = nativeAds.firstOrNull { it != null }
+                    val nativeAd1 = NativeAdManager.getAdForPosition("power_consumption_ad1")
                     if (nativeAd1 != null) {
+                        // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd1)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -381,9 +382,10 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Native Ad 2 - After Component Breakdown (Policy: Adequate spacing between ads)
-                if (shouldShowNativeAds && nativeAds.size > 1) {
-                    val nativeAd2 = nativeAds.getOrNull(1)
+                if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+                    val nativeAd2 = NativeAdManager.getAdForPosition("power_consumption_ad2")
                     if (nativeAd2 != null) {
+                        // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd2)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -411,9 +413,10 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                 
                 // Native Ad 3 - Between Test Sections (Policy: Reduced ad density - only show if no rewarded ad shown)
                 // Only show this ad if rewarded ad was not shown to avoid too many ads
-                if (shouldShowNativeAds && nativeAds.size > 2 && !RemoteConfigUtils.shouldShowRewardedAds()) {
-                    val nativeAd3 = nativeAds.getOrNull(2)
+                if (shouldShowNativeAds && nativeAds.isNotEmpty() && !RemoteConfigUtils.shouldShowRewardedAds()) {
+                    val nativeAd3 = NativeAdManager.getAdForPosition("power_consumption_ad3")
                     if (nativeAd3 != null) {
+                        // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd3)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -6314,8 +6317,9 @@ Total Apps Monitored: ${apps.size}
                 
                 // Native Ad 1 - After monitoring button (Policy: Adequate spacing from content)
                 if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                    val nativeAd1 = nativeAds.firstOrNull { it != null }
+                    val nativeAd1 = NativeAdManager.getAdForPosition("power_monitoring_ad1")
                     if (nativeAd1 != null) {
+                        // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd1)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -6368,9 +6372,10 @@ Total Apps Monitored: ${apps.size}
                                 val app = apps[index]
                                 
                                 // Native Ad - Show after 5 apps (Policy: Adequate spacing between ads)
-                                if (index == 5 && shouldShowNativeAds && nativeAds.size > 1) {
-                                    val nativeAd2 = nativeAds.getOrNull(1)
+                                if (index == 5 && shouldShowNativeAds && nativeAds.isNotEmpty()) {
+                                    val nativeAd2 = NativeAdManager.getAdForPosition("power_app_list_ad")
                                     if (nativeAd2 != null) {
+                                        // Logging handled by getAdForPosition (reduced)
                                         Spacer(modifier = Modifier.height(8.dp))
                                         AdMobNativeAdCard(nativeAd = nativeAd2)
                                         Spacer(modifier = Modifier.height(8.dp))

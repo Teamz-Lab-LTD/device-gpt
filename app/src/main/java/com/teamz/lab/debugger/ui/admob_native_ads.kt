@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -111,6 +112,20 @@ fun NativeAdView(
 ) {
     val contentViewId by remember { mutableIntStateOf(View.generateViewId()) }
     val adViewId by remember { mutableIntStateOf(View.generateViewId()) }
+    
+    // Track impression when ad is displayed
+    LaunchedEffect(ad.hashCode()) {
+        android.util.Log.d("AdImpression", "📊 Ad impression recorded - Ad hash: ${ad.hashCode()}")
+        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+            com.teamz.lab.debugger.utils.AnalyticsEvent.AdShownInline,
+            mapOf(
+                "ad_type" to "native",
+                "ad_hash" to ad.hashCode(),
+                "total_ads_loaded" to NativeAdManager.nativeAds.filterNotNull().size
+            )
+        )
+    }
+    
     AndroidView(
         factory = { context ->
             val adView = NativeAdView(context).apply {
@@ -165,9 +180,21 @@ object NativeAdManager {
     @Volatile private var isLoading = false
     @Volatile private var hasInitialized = false
     private var lastRequestTime = 0L
-    private const val MIN_REQUEST_INTERVAL_MS = 5000L // 5 seconds between requests
+    private const val MIN_REQUEST_INTERVAL_MS = 10000L // 10 seconds between requests (increased from 5s)
     private var currentRotationIndex = 0 // For ad rotation
     private val initializationLock = Any() // Lock for thread-safe initialization
+    
+    // Tracking counters for monitoring
+    @Volatile private var totalRequests = 0
+    @Volatile private var successfulLoads = 0
+    @Volatile private var failedLoads = 0
+    @Volatile private var retryAttempts = 0
+    private const val MAX_RETRIES = 3 // Limit retries to prevent infinite loops
+    private val positionUsageMap = mutableMapOf<String, Int>() // Track which ad is used where
+    private val positionAdCache = mutableMapOf<String, NativeAd?>() // Cache ad assignments to reduce redundant calls
+    private val loggedPositions = mutableSetOf<String>() // Track which positions we've logged to reduce spam
+    
+    private const val TAG = "NativeAdManager"
 
     fun clear() {
         nativeAds.forEach { it?.destroy() }
@@ -177,6 +204,18 @@ object NativeAdManager {
             hasInitialized = false
             currentRotationIndex = 0
         }
+        positionAdCache.clear()
+        loggedPositions.clear()
+        resetStats()
+    }
+    
+    /**
+     * Clear cache when ads are added/removed to ensure fresh assignments
+     */
+    fun invalidateCache() {
+        positionAdCache.clear()
+        loggedPositions.clear()
+        android.util.Log.d(TAG, "🔄 Ad cache invalidated")
     }
     
     fun setLoading(loading: Boolean) {
@@ -241,15 +280,59 @@ object NativeAdManager {
      * @return Different ad for each position, or fallback to same ad if not enough ads available
      */
     fun getAdForPosition(positionId: String): NativeAd? {
+        // Check cache first to avoid redundant calculations
+        val cachedAd = positionAdCache[positionId]
         val validAds = nativeAds.filterNotNull()
-        if (validAds.isEmpty()) return null
+        
+        // If cached ad is still valid, return it
+        if (cachedAd != null && validAds.contains(cachedAd)) {
+            return cachedAd
+        }
+        
+        // Cache is invalid or doesn't exist, calculate new assignment
+        if (validAds.isEmpty()) {
+            if (!loggedPositions.contains("${positionId}_empty")) {
+                android.util.Log.w(TAG, "⚠️ getAdForPosition($positionId): No ads available")
+                loggedPositions.add("${positionId}_empty")
+            }
+            positionAdCache[positionId] = null
+            return null
+        }
         
         // Use position ID hash to assign different ads to different positions
         // This ensures same position always gets same ad (stable), but different positions get different ads
         val positionHash = positionId.hashCode()
         val adIndex = kotlin.math.abs(positionHash) % validAds.size
+        val selectedAd = validAds[adIndex]
         
-        return validAds[adIndex]
+        // Cache the assignment
+        positionAdCache[positionId] = selectedAd
+        
+        // Track which ad is being used for which position
+        positionUsageMap[positionId] = adIndex
+        val usageCount = positionUsageMap.values.count { it == adIndex }
+        
+        // Only log once per position to reduce spam (unless ad count changes)
+        val logKey = "${positionId}_${validAds.size}_${adIndex}"
+        if (!loggedPositions.contains(logKey)) {
+            android.util.Log.d(TAG, "📍 Ad assigned - Position: $positionId, AdIndex: $adIndex/${validAds.size}, " +
+                    "TotalAds: ${validAds.size}, SameAdUsedIn: $usageCount positions, " +
+                    "AdHash: ${selectedAd.hashCode()}")
+            loggedPositions.add(logKey)
+            
+            // Log analytics for ad rotation tracking (only once per position)
+            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                com.teamz.lab.debugger.utils.AnalyticsEvent.AdShownInList,
+                mapOf(
+                    "position_id" to positionId,
+                    "ad_index" to adIndex,
+                    "total_ads_loaded" to validAds.size,
+                    "ad_rotation_working" to (validAds.size > 1)
+                )
+            )
+        }
+        
+        return selectedAd
     }
     
     /**
@@ -262,6 +345,80 @@ object NativeAdManager {
     
     fun recordRequest() {
         lastRequestTime = System.currentTimeMillis()
+        totalRequests++
+        android.util.Log.d(TAG, "📤 Ad request #$totalRequests recorded at ${System.currentTimeMillis()}")
+    }
+    
+    fun recordSuccessfulLoad() {
+        successfulLoads++
+        val validAds = nativeAds.filterNotNull().size
+        val successRate = if (totalRequests > 0) {
+            (successfulLoads * 100.0 / totalRequests)
+        } else {
+            0.0
+        }
+        android.util.Log.i(TAG, "✅ Ad loaded successfully! Total loaded: $validAds, " +
+                "Success rate: ${String.format("%.2f", successRate)}% " +
+                "($successfulLoads/$totalRequests)")
+    }
+    
+    fun recordFailedLoad(errorCode: Int, errorMessage: String) {
+        failedLoads++
+        val failureRate = if (totalRequests > 0) {
+            (failedLoads * 100.0 / totalRequests)
+        } else {
+            0.0
+        }
+        android.util.Log.w(TAG, "❌ Ad load failed #$failedLoads - Code: $errorCode, " +
+                "Message: $errorMessage, Failure rate: ${String.format("%.2f", failureRate)}%")
+    }
+    
+    fun recordRetryAttempt(): Boolean {
+        retryAttempts++
+        val canRetry = retryAttempts < MAX_RETRIES
+        android.util.Log.d(TAG, "🔄 Retry attempt #$retryAttempts (max: $MAX_RETRIES, canRetry: $canRetry)")
+        return canRetry
+    }
+    
+    fun canRetry(): Boolean {
+        return retryAttempts < MAX_RETRIES
+    }
+    
+    fun resetRetryCount() {
+        retryAttempts = 0
+    }
+    
+    fun getStats(): String {
+        val validAds = nativeAds.filterNotNull().size
+        val successRate = if (totalRequests > 0) {
+            (successfulLoads * 100.0 / totalRequests)
+        } else {
+            0.0
+        }
+        return """
+            📊 Native Ad Stats:
+            - Total Requests: $totalRequests
+            - Successful Loads: $successfulLoads
+            - Failed Loads: $failedLoads
+            - Retry Attempts: $retryAttempts
+            - Currently Loaded Ads: $validAds
+            - Target Ad Count: ${getTargetAdCount()}
+            - Success Rate: ${String.format("%.2f", successRate)}%
+            - Position Usage: ${positionUsageMap.size} unique positions
+        """.trimIndent()
+    }
+    
+    fun logStats() {
+        android.util.Log.i(TAG, getStats())
+    }
+    
+    fun resetStats() {
+        totalRequests = 0
+        successfulLoads = 0
+        failedLoads = 0
+        retryAttempts = 0
+        positionUsageMap.clear()
+        android.util.Log.d(TAG, "🔄 Stats reset")
     }
     
     /**

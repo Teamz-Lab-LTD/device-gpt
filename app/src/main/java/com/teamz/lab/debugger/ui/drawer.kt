@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TipsAndUpdates
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
@@ -115,6 +116,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.tasks.await
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.RevenueCatManager
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun DrawerContent(
@@ -134,6 +137,7 @@ fun DrawerContent(
     var showNotificationDialog by remember { mutableStateOf(false) }
     var redirectToSettings by remember { mutableStateOf(false) }
     var showUsageStatsDialog by remember { mutableStateOf(false) }
+    var showPremiumDialog by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val isMonitoringRunning = remember {
         mutableStateOf(context.isUserEnableMonitoringService())
@@ -301,6 +305,106 @@ fun DrawerContent(
             .verticalScroll(rememberScrollState())
             .padding(top = 8.dp, bottom = 80.dp) // Extra bottom padding for system nav
     ) {
+        // Premium / Remove Ads - Prominent placement at top
+        val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
+        val isPremium = RevenueCatManager.isPremium()
+        
+        if (!isPremium) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "Remove Ads Forever",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Text(
+                        text = "Enjoy an ad-free experience and support development",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Button(
+                        onClick = {
+                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads"))
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                            showPremiumDialog = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Remove Ads Now", fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        } else {
+            // Show premium status badge if user has premium
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Premium Active - No Ads",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+        
         // Third-party service promotion - clearly labeled (compact, no border)
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
@@ -504,6 +608,78 @@ fun DrawerContent(
         )
         */
 
+        // Premium Section - Dedicated section for subscription management
+        if (!isPremium) {
+            Column(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "Premium",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp
+                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Remove Ads",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Text(
+                            text = "• No ads - ever\n• Faster app experience\n• Support development\n• Cancel anytime",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Button(
+                            onClick = {
+                                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "premium_section"))
+                                coroutineScope.launch {
+                                    drawerState.close()
+                                }
+                                showPremiumDialog = true
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            Text("Upgrade to Premium")
+                        }
+                    }
+                }
+            }
+            
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 6.dp),
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
+        
         // Leaderboard Account Status - Better organized
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
@@ -622,6 +798,14 @@ fun DrawerContent(
         }
     }
 
+    // Premium Purchase Dialog
+    if (showPremiumDialog) {
+        PremiumPurchaseDialog(
+            onDismiss = { showPremiumDialog = false },
+            activity = activity
+        )
+    }
+    
     NotificationPermissionDialog(
         showDialog = showNotificationDialog && !context.isDoNotAskMeAgain(),
         onDismiss = { showNotificationDialog = false },
