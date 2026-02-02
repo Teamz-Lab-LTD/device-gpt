@@ -72,7 +72,7 @@ enum class AppTheme {
 
 @Composable
 fun DebuggerTheme(
-    theme: AppTheme = AppTheme.DESIGN_SYSTEM_LIGHT, // Default to new light theme
+    theme: AppTheme = AppTheme.DESIGN_SYSTEM_DARK, // Default to dark theme
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (theme) {

@@ -238,6 +238,7 @@ object LeaderboardManager {
     
     /**
      * Link Gmail account to anonymous user
+     * Also links RevenueCat to Firebase UID for cross-device purchase restoration
      */
     suspend fun linkGmailAccount(context: Context, idToken: String): Boolean {
         return try {
@@ -246,6 +247,19 @@ object LeaderboardManager {
             if (result != null) {
                 saveEmailLinked(context, true)
                 Log.d(TAG, "Gmail account linked successfully")
+                
+                // Link RevenueCat to Firebase UID for cross-device purchase restoration
+                val firebaseUserId = result.user?.uid
+                if (firebaseUserId != null) {
+                    try {
+                        com.teamz.lab.debugger.utils.RevenueCatManager.setUserId(firebaseUserId)
+                        Log.d(TAG, "RevenueCat linked to Firebase UID: $firebaseUserId")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to link RevenueCat after Gmail login", e)
+                        // Don't fail the Gmail linking if RevenueCat fails
+                    }
+                }
+                
                 true
             } else {
                 false

@@ -1,45 +1,51 @@
 package com.teamz.lab.debugger.ui
-
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TipsAndUpdates
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.RadioButton
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +58,7 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -60,6 +67,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -77,9 +85,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.services.isDoNotAskMeAgain
 import com.teamz.lab.debugger.services.isSystemMonitorRunning
 import com.teamz.lab.debugger.services.isUserEnableMonitoringService
@@ -88,36 +101,19 @@ import com.teamz.lab.debugger.services.setUserEnableMonitoringService
 import com.teamz.lab.debugger.services.startSystemMonitorService
 import com.teamz.lab.debugger.services.stopSystemMonitorService
 import com.teamz.lab.debugger.showInAppReview
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AdConfig
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
-import com.teamz.lab.debugger.utils.hasUsageStatsPermission
-import com.teamz.lab.debugger.utils.PermissionManager
-import com.teamz.lab.debugger.ui.theme.DesignSystemColors
-import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import com.teamz.lab.debugger.utils.LocaleManager
-import com.teamz.lab.debugger.utils.string
-import com.teamz.lab.debugger.R
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.NotificationsOff
-import com.teamz.lab.debugger.utils.RetentionNotificationManager
-import com.teamz.lab.debugger.utils.LeaderboardManager
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import android.content.Context
-import android.util.Log
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import kotlinx.coroutines.tasks.await
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.LeaderboardManager
+import com.teamz.lab.debugger.utils.LocaleManager
+import com.teamz.lab.debugger.utils.PermissionManager
+import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
-import androidx.compose.runtime.collectAsState
+import com.teamz.lab.debugger.utils.string
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun DrawerContent(
@@ -305,67 +301,139 @@ fun DrawerContent(
             .verticalScroll(rememberScrollState())
             .padding(top = 8.dp, bottom = 80.dp) // Extra bottom padding for system nav
     ) {
-        // Premium / Remove Ads - Prominent placement at top
+        // Premium / Remove Ads - Prominent placement at top with attractive design
         val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
         val isPremium = RevenueCatManager.isPremium()
         
         if (!isPremium) {
+            // Attractive gradient card with prominent pricing
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                shape = RoundedCornerShape(12.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                                )
+                            )
+                        )
+                        .padding(20.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        // Star icon with animation hint
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(32.dp)
                         )
+                        
+                        // Title
                         Text(
                             text = "Remove Ads Forever",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
-                    }
-                    Text(
-                        text = "Enjoy an ad-free experience and support development",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                    Button(
-                        onClick = {
-                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads"))
-                            coroutineScope.launch {
-                                drawerState.close()
-                            }
-                            showPremiumDialog = true
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Remove Ads Now", fontWeight = FontWeight.SemiBold)
+                        
+                        // Price badge
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "$2.99 Lifetime",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                        }
+                        
+                        // Benefits list
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                "✅ No ads - ever",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                "✅ Faster app experience",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                "✅ Support development",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                "✅ One-time payment",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // CTA Button
+                        Button(
+                            onClick = {
+                                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads_widget"))
+                                coroutineScope.launch {
+                                    drawerState.close()
+                                }
+                                // Directly show RevenueCat paywall - no intermediate dialog
+                                RevenueCatManager.showPaywall(
+                                    activity = activity,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { error ->
+                                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                    },
+                                    onDismiss = {
+                                        // User cancelled - no action needed
+                                    }
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                "Remove Ads Now",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -798,13 +866,8 @@ fun DrawerContent(
         }
     }
 
-    // Premium Purchase Dialog
-    if (showPremiumDialog) {
-        PremiumPurchaseDialog(
-            onDismiss = { showPremiumDialog = false },
-            activity = activity
-        )
-    }
+    // Premium Purchase Dialog - Removed, using direct RevenueCat paywall instead
+    // showPremiumDialog is kept for backward compatibility but not used
     
     NotificationPermissionDialog(
         showDialog = showNotificationDialog && !context.isDoNotAskMeAgain(),

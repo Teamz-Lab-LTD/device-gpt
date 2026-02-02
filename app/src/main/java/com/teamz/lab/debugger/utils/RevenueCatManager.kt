@@ -15,6 +15,8 @@ import com.revenuecat.purchases.interfaces.LogInCallback
 import com.revenuecat.purchases.models.StoreProduct
 import com.revenuecat.purchases.models.StoreTransaction
 import com.teamz.lab.debugger.BuildConfig
+import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.AnalyticsEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,8 +44,8 @@ object RevenueCatManager {
     private const val PREMIUM_ENTITLEMENT_ID = "premium"
     
     // Product IDs - these should match your RevenueCat products
-    // For free ad removal, you can create a "free" subscription or one-time purchase
-    private const val PREMIUM_PRODUCT_ID = "premium_monthly" // Change to your product ID
+    // Lifetime premium product ID for $2.99 one-time purchase
+    private const val LIFETIME_PRODUCT_ID = "lifetime_premium"
     
     // State flow for reactive premium status updates
     private val _premiumStatusFlow = MutableStateFlow<PremiumStatus>(PremiumStatus.Unknown)
@@ -211,9 +213,13 @@ object RevenueCatManager {
                     return
                 }
                 
-                // Get the premium product (you can customize this logic)
+                // Get the lifetime premium product (prioritize lifetime over subscriptions)
                 val product = currentOffering.availablePackages.firstOrNull { 
-                    it.identifier.contains("premium", ignoreCase = true) 
+                    it.identifier.contains("lifetime", ignoreCase = true) || 
+                    it.product.identifier.contains("lifetime", ignoreCase = true)
+                } ?: currentOffering.availablePackages.firstOrNull { 
+                    it.identifier.contains("premium", ignoreCase = true) ||
+                    it.product.identifier.contains("premium", ignoreCase = true)
                 } ?: currentOffering.availablePackages.firstOrNull()
                 
                 if (product == null) {
@@ -372,6 +378,125 @@ object RevenueCatManager {
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to log out: ${error.message}")
+            }
+        })
+    }
+    
+    /**
+     * Show RevenueCat paywall directly - fetches offerings and triggers purchase flow
+     * This method directly presents the purchase flow without intermediate dialogs
+     * 
+     * @param activity Activity to show purchase flow
+     * @param onSuccess Callback when purchase succeeds
+     * @param onError Callback when purchase fails or is cancelled
+     * @param onDismiss Callback when user dismisses without purchasing
+     */
+    fun showPaywall(
+        activity: Activity,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {},
+        onDismiss: () -> Unit = {}
+    ) {
+        if (!isInitialized) {
+            Log.w(TAG, "Not initialized - cannot show paywall")
+            onError("RevenueCat not initialized")
+            return
+        }
+        
+        // Track analytics
+        AnalyticsUtils.logEvent(
+            AnalyticsEvent.DrawerItemClicked,
+            mapOf("item" to "show_paywall", "source" to "direct_paywall")
+        )
+        
+        Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
+            override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
+                val currentOffering = offerings.current
+                if (currentOffering == null) {
+                    Log.e(TAG, "No current offering available")
+                    onError("No subscription available. Please try again later.")
+                    return
+                }
+                
+                // Prioritize lifetime product, fallback to any premium product
+                val lifetimeProduct = currentOffering.availablePackages.firstOrNull { 
+                    it.identifier.contains("lifetime", ignoreCase = true) || 
+                    it.product.identifier.contains("lifetime", ignoreCase = true)
+                }
+                
+                val product = lifetimeProduct ?: currentOffering.availablePackages.firstOrNull { 
+                    it.identifier.contains("premium", ignoreCase = true) ||
+                    it.product.identifier.contains("premium", ignoreCase = true)
+                } ?: currentOffering.availablePackages.firstOrNull()
+                
+                if (product == null) {
+                    Log.e(TAG, "No premium product found in offering")
+                    onError("No premium product available. Please try again later.")
+                    return
+                }
+                
+                Log.d(TAG, "Showing paywall for product: ${product.identifier}, price: ${product.product.price}")
+                
+                // Track purchase attempt
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.DrawerItemClicked,
+                    mapOf("item" to "purchase_attempt", "product_id" to product.product.identifier)
+                )
+                
+                // Purchase the product directly
+                Purchases.sharedInstance.purchase(
+                    com.revenuecat.purchases.PurchaseParams.Builder(activity, product).build(),
+                    object : PurchaseCallback {
+                        override fun onCompleted(
+                            transaction: StoreTransaction,
+                            customerInfo: CustomerInfo
+                        ) {
+                            Log.d(TAG, "Purchase successful: ${transaction.productIds}")
+                            updatePremiumStatus(customerInfo)
+                            
+                            // Track purchase success
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "purchase_success", "product_id" to product.product.identifier)
+                            )
+                            
+                            onSuccess()
+                        }
+                        
+                        override fun onError(
+                            error: com.revenuecat.purchases.PurchasesError,
+                            userCancelled: Boolean
+                        ) {
+                            if (userCancelled) {
+                                Log.d(TAG, "User cancelled purchase")
+                                // Track cancellation
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.DrawerItemClicked,
+                                    mapOf("item" to "purchase_cancelled")
+                                )
+                                onDismiss()
+                            } else {
+                                Log.e(TAG, "Purchase failed: ${error.message}")
+                                // Track purchase failure
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.DrawerItemClicked,
+                                    mapOf("item" to "purchase_failed", "error" to (error.message ?: "unknown"))
+                                )
+                                onError(error.message ?: "Purchase failed. Please try again.")
+                            }
+                        }
+                    }
+                )
+            }
+            
+            override fun onError(error: com.revenuecat.purchases.PurchasesError) {
+                Log.e(TAG, "Failed to get offerings: ${error.message}")
+                // Track error
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.DrawerItemClicked,
+                    mapOf("item" to "paywall_load_failed", "error" to (error.message ?: "unknown"))
+                )
+                onError(error.message ?: "Failed to load subscription options. Please check your internet connection.")
             }
         })
     }

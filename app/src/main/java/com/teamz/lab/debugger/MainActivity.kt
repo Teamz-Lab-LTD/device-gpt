@@ -41,8 +41,12 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.*
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
@@ -102,6 +106,7 @@ import com.teamz.lab.debugger.utils.string
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
+import com.teamz.lab.debugger.utils.RevenueCatManager
 
 class MainActivity : ComponentActivity() {
     
@@ -424,8 +429,103 @@ fun DebuggerApp(activity: ComponentActivity) {
             if (!isLeaderboardTabSelected) {
                 val certTooltipState = rememberTooltipState()
                 val aiTooltipState = rememberTooltipState()
+                val premiumTooltipState = rememberTooltipState()
+                
+                // Check premium status
+                val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
+                val isPremium = RevenueCatManager.isPremium()
+                
+                // Premium FAB animation - pulse effect for first 10 seconds
+                var showAnimation by remember { mutableStateOf(true) }
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(10000) // Stop animation after 10 seconds
+                    showAnimation = false
+                }
+                
+                val infiniteTransition = rememberInfiniteTransition(label = "premium_fab_animation")
+                val pulseScale by infiniteTransition.animateFloat(
+                    initialValue = 1f,
+                    targetValue = if (showAnimation) 1.15f else 1f,
+                    animationSpec = if (showAnimation) {
+                        infiniteRepeatable(
+                            animation = tween(1000, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        )
+                    } else {
+                        tween(0)
+                    },
+                    label = "pulse_scale"
+                )
+                val pulseAlpha by infiniteTransition.animateFloat(
+                    initialValue = 1f,
+                    targetValue = if (showAnimation) 0.8f else 1f,
+                    animationSpec = if (showAnimation) {
+                        infiniteRepeatable(
+                            animation = tween(1000, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        )
+                    } else {
+                        tween(0)
+                    },
+                    label = "pulse_alpha"
+                )
                 
                 Row(modifier = Modifier.padding(16.dp)) {
+                // Premium FAB - Only show if user is not premium
+                if (!isPremium) {
+                    TooltipBox(
+                        state = premiumTooltipState,
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = { PlainTooltip { Text("Remove Ads Forever - $2.99 Lifetime") } }
+                    ) {
+                        FloatingActionButton(
+                            onClick = {
+                                AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf("source" to "premium_fab"))
+                                // Directly show RevenueCat paywall
+                                RevenueCatManager.showPaywall(
+                                    activity = activity,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { error ->
+                                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                    },
+                                    onDismiss = {
+                                        // User cancelled - no action needed
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .then(
+                                    if (showAnimation) {
+                                        Modifier
+                                            .scale(pulseScale)
+                                            .alpha(pulseAlpha)
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Remove Ads",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Text(
+                                    text = "⭐",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 2.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                        }
+                    }
+                }
                 // Certificate FAB
                 TooltipBox(
                     state = certTooltipState,

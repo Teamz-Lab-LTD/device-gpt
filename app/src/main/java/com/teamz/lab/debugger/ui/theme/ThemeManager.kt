@@ -15,18 +15,18 @@ object ThemeManager {
     private const val KEY_SELECTED_THEME = "selected_theme"
     private const val KEY_IS_DARK_MODE = "is_dark_mode"
     
-    private var _currentTheme by mutableStateOf(AppTheme.DESIGN_SYSTEM_LIGHT)
-    private var _isDarkMode by mutableStateOf(false)
+    private var _currentTheme by mutableStateOf(AppTheme.DESIGN_SYSTEM_DARK)
+    private var _isDarkMode by mutableStateOf(true)
     
     val currentTheme: AppTheme get() = _currentTheme
     val isDarkMode: Boolean get() = _isDarkMode
     
     fun initialize(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedTheme = prefs.getString(KEY_SELECTED_THEME, AppTheme.DESIGN_SYSTEM_LIGHT.name)
-        val savedDarkMode = prefs.getBoolean(KEY_IS_DARK_MODE, false)
+        val savedTheme = prefs.getString(KEY_SELECTED_THEME, AppTheme.DESIGN_SYSTEM_DARK.name)
+        val savedDarkMode = prefs.getBoolean(KEY_IS_DARK_MODE, true)
         
-        _currentTheme = AppTheme.valueOf(savedTheme ?: AppTheme.DESIGN_SYSTEM_LIGHT.name)
+        _currentTheme = AppTheme.valueOf(savedTheme ?: AppTheme.DESIGN_SYSTEM_DARK.name)
         _isDarkMode = savedDarkMode
     }
     

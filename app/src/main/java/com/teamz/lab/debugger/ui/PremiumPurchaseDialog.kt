@@ -168,19 +168,22 @@ fun PremiumPurchaseDialog(
                             onClick = {
                                 isPurchasing = true
                                 purchaseError = null
-                                scope.launch {
-                                    RevenueCatManager.purchasePremium(
-                                        activity = activity,
-                                        onSuccess = {
-                                            isPurchasing = false
-                                            purchaseSuccess = true
-                                        },
-                                        onError = { error ->
-                                            isPurchasing = false
-                                            purchaseError = error
-                                        }
-                                    )
-                                }
+                                // Use new showPaywall method which includes analytics
+                                RevenueCatManager.showPaywall(
+                                    activity = activity,
+                                    onSuccess = {
+                                        isPurchasing = false
+                                        purchaseSuccess = true
+                                    },
+                                    onError = { error ->
+                                        isPurchasing = false
+                                        purchaseError = error
+                                    },
+                                    onDismiss = {
+                                        isPurchasing = false
+                                        // User cancelled - no error needed
+                                    }
+                                )
                             },
                             modifier = Modifier
                                 .weight(1f)
@@ -204,6 +207,11 @@ fun PremiumPurchaseDialog(
                     // Restore purchases link
                     TextButton(
                         onClick = {
+                            // Track restore attempt
+                            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "restore_purchases")
+                            )
                             scope.launch {
                                 RevenueCatManager.restorePurchases(
                                     onSuccess = {
@@ -211,12 +219,27 @@ fun PremiumPurchaseDialog(
                                         // Check if restore was successful
                                         if (RevenueCatManager.isPremium()) {
                                             purchaseSuccess = true
+                                            // Track successful restore
+                                            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                                com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
+                                                mapOf("item" to "restore_purchases_success")
+                                            )
                                         } else {
                                             purchaseError = "No previous purchases found"
+                                            // Track failed restore
+                                            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                                com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
+                                                mapOf("item" to "restore_purchases_no_purchases")
+                                            )
                                         }
                                     },
                                     onError = { error ->
                                         purchaseError = error
+                                        // Track restore error
+                                        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                            com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
+                                            mapOf("item" to "restore_purchases_error", "error" to error)
+                                        )
                                     }
                                 )
                             }

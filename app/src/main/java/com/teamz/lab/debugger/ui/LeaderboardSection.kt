@@ -1036,8 +1036,8 @@ fun TrustPoint(
 fun TrustBadgeIcon(badge: TrustBadge) {
     val (icon, color, text) = when(badge) {
         TrustBadge.VERIFIED -> Triple("✅", DesignSystemColors.NeonGreen, "Verified")
-        TrustBadge.HIGH -> Triple("⭐", MaterialTheme.colorScheme.primary, "High Trust")
-        TrustBadge.MEDIUM -> Triple("📊", MaterialTheme.colorScheme.secondary, "Medium Trust")
+        TrustBadge.HIGH -> Triple("⭐", MaterialTheme.colorScheme.onSurfaceVariant, "High Trust")
+        TrustBadge.MEDIUM -> Triple("📊", MaterialTheme.colorScheme.onSurfaceVariant, "Medium Trust")
         TrustBadge.LOW -> Triple("📝", MaterialTheme.colorScheme.onSurfaceVariant, "Low Trust")
     }
     

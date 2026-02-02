@@ -15,6 +15,7 @@ import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.ErrorHandler
 import com.teamz.lab.debugger.utils.RevenueCatManager
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +74,19 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             android.util.Log.d("MyApplication", "onCreate() - Initializing LeaderboardManager...")
             com.teamz.lab.debugger.utils.LeaderboardManager.initialize(this)
             android.util.Log.d("MyApplication", "onCreate() - LeaderboardManager initialized")
+            
+            // Link RevenueCat to Firebase Auth for cross-device purchase restoration
+            android.util.Log.d("MyApplication", "onCreate() - Setting up Firebase Auth listener for RevenueCat...")
+            FirebaseAuth.getInstance().addAuthStateListener { auth ->
+                val user = auth.currentUser
+                if (user != null) {
+                    // User is authenticated (anonymous or Gmail) - link RevenueCat to Firebase UID
+                    android.util.Log.d("MyApplication", "Firebase Auth user detected: ${user.uid}, linking RevenueCat...")
+                    RevenueCatManager.setUserId(user.uid)
+                } else {
+                    android.util.Log.d("MyApplication", "No Firebase Auth user - RevenueCat will use anonymous ID")
+                }
+            }
             
             // Schedule automatic leaderboard data upload on app start
             // This ensures data is uploaded even if user doesn't interact with the app
