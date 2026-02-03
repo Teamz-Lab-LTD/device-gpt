@@ -1067,13 +1067,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 }
             },
             onShareWithApp = { app, promptMode ->
-                val fileName = when (selectedTab) {
-                    0 -> "my_device_info.txt"
-                    1 -> "my_network_info.txt"
-                    2 -> "my_health_report.txt"
-                    3 -> "my_power_report.txt"
-                    else -> "my_device_info.txt"
-                }
+                val fileName = TabOrderManager.getShareFileName(selectedTab)
                 try {
                     // Generate AI prompt using centralized prompt generator
                     val prompt = com.teamz.lab.debugger.utils.AIPromptGenerator.generateMainPrompt(
@@ -1301,13 +1295,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                     scanDate = now
                 )
 
-                val fileName = when (selectedTab) {
-                    0 -> "my_device_info.txt"
-                    1 -> "my_network_info.txt"
-                    2 -> "my_health_report.txt"
-                    3 -> "my_power_report.txt"
-                    else -> "my_device_info.txt"
-                }
+                val fileName = TabOrderManager.getShareFileName(selectedTab)
                 try {
                     // Use robust sharing function (sends text directly + optional file)
                     val fileContent = aiPrompt + "\n\n" + shareText

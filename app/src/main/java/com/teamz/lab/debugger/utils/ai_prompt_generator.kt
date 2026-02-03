@@ -10,18 +10,21 @@ object AIPromptGenerator {
     
     /**
      * Generate prompt for main tabs (Device, Network, Health, Power)
+     * Uses TabOrderManager to determine tab type from index
      */
     fun generateMainPrompt(
         tabIndex: Int,
         promptMode: PromptMode,
         appName: String
     ): String {
-        return when (tabIndex) {
-            0 -> generateDevicePrompt(promptMode, appName)
-            1 -> generateNetworkPrompt(promptMode, appName)
-            2 -> generateHealthPrompt(promptMode, appName)
-            3 -> generatePowerPrompt(promptMode, appName)
-            else -> ""
+        val tabType = TabOrderManager.getTabTypeAt(tabIndex)
+        return when (tabType) {
+            TabType.DEVICE_INFO -> generateDevicePrompt(promptMode, appName)
+            TabType.NETWORK_INFO -> generateNetworkPrompt(promptMode, appName)
+            TabType.HEALTH -> generateHealthPrompt(promptMode, appName)
+            TabType.POWER -> generatePowerPrompt(promptMode, appName)
+            TabType.LEADERBOARD -> "" // Leaderboard doesn't have AI prompts
+            null -> ""
         }
     }
     

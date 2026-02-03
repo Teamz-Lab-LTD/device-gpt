@@ -424,12 +424,15 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     
                     // If we still need more ads, trigger another load attempt
                     // Note: Removed isCurrentlyLoading() check to allow continuation
-                    if (currentCount < targetCount) {
+                    // Also check premium status - don't load more ads if user has premium
+                    if (currentCount < targetCount && RemoteConfigUtils.shouldShowNativeAds()) {
                         Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
                         coroutineScope.launch {
                             // Wait for throttle period before next request
                             delay(11000) // 10s throttle + 1s buffer
+                            // Re-check premium status before loading (user might have purchased premium)
                             if (!activity.isDestroyed && 
+                                RemoteConfigUtils.shouldShowNativeAds() &&
                                 NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
                                 NativeAdManager.canMakeRequest()) {
                                 Log.d(TAG, "📤 Loading additional ad...")
@@ -495,7 +498,9 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     // 2. We don't have enough ads
                     // 3. We haven't exceeded max retries
                     // 4. We can make a request (throttled)
+                    // 5. User doesn't have premium (premium users don't see ads)
                     if (errorCode !in nonRetryableErrors && 
+                        RemoteConfigUtils.shouldShowNativeAds() &&
                         currentCount < targetCount &&
                         NativeAdManager.canMakeRequest() &&
                         NativeAdManager.canRetry()) {
@@ -510,12 +515,16 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                             adLoaderRef?.let { loader ->
                                 coroutineScope.launch {
                                     delay(retryDelay)
+                                    // Re-check premium status before retry (user might have purchased premium)
                                     if (!activity.isDestroyed && 
+                                        RemoteConfigUtils.shouldShowNativeAds() &&
                                         NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
                                         NativeAdManager.canMakeRequest()) {
                                         Log.d(TAG, "🔄 Executing retry #$retryCount...")
                                         NativeAdManager.recordRequest()
                                         loader.loadAd(AdRequest.Builder().build())
+                                    } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
+                                        Log.d(TAG, "🚫 Premium user detected - cancelling retry")
                                     }
                                 }
                             }
@@ -540,7 +549,16 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             .also { adLoaderRef = it }
     }
 
-    LaunchedEffect(Unit) {
+    // Check premium status reactively - don't load ads if user has premium
+    val shouldShowAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+    
+    LaunchedEffect(Unit, shouldShowAds) {
+        // Premium users never see ads - skip loading entirely
+        if (!shouldShowAds) {
+            Log.d(TAG, "🚫 Premium user detected - skipping native ad loading")
+            return@LaunchedEffect
+        }
+        
         val targetAdCount = NativeAdManager.getTargetAdCount()
         val currentCount = NativeAdManager.nativeAds.filterNotNull().size
         
@@ -572,7 +590,9 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             repeat(adsToLoad) { index ->
                 // Stagger by 10+ seconds to respect throttling (MIN_REQUEST_INTERVAL_MS = 10000)
                 delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
+                // Re-check premium status before each ad load (user might have purchased premium)
                 if (!activity.isDestroyed && 
+                    RemoteConfigUtils.shouldShowNativeAds() &&
                     NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
                     
                     // Check if we can make request, if not, wait and retry
@@ -584,14 +604,20 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
                         // Wait for throttle period and retry
                         delay(10000L) // Wait for throttle period
+                        // Re-check premium status before retry
                         if (NativeAdManager.canMakeRequest() && 
                             !activity.isDestroyed &&
+                            RemoteConfigUtils.shouldShowNativeAds() &&
                             NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
                             Log.d(TAG, "📤 Retrying ad ${index + 1}/$adsToLoad...")
                             NativeAdManager.recordRequest()
                             adLoader.loadAd(AdRequest.Builder().build())
+                        } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
+                            Log.d(TAG, "🚫 Premium user detected - cancelling ad load")
                         }
                     }
+                } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
+                    Log.d(TAG, "🚫 Premium user detected - skipping ad load ${index + 1}/$adsToLoad")
                 }
             }
             

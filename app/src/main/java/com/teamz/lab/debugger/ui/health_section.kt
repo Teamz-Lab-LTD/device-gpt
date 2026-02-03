@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,12 +39,15 @@ import com.teamz.lab.debugger.utils.calculatePrivacyScore
 import com.teamz.lab.debugger.utils.getPrivacyThreatsToday
 import com.teamz.lab.debugger.utils.getRecentCameraMicUsageLog
 import com.teamz.lab.debugger.utils.AIIcon
+import com.teamz.lab.debugger.utils.string
+import com.teamz.lab.debugger.R
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import android.os.Environment
 import kotlinx.coroutines.flow.distinctUntilChanged
+
 
 @Composable
 fun HealthSection(
@@ -257,6 +259,7 @@ fun HealthSection(
         materialTypography.bodySmall
     }
     
+    
     LazyColumn(
         state = listState,
         modifier = Modifier
@@ -272,13 +275,9 @@ fun HealthSection(
     ) {
         // Health Score Card
         item(key = "health_score") {
-            HealthScoreCard(
-                context = context,
-                onScanClick = handleScanClick,
-                isScanning = isScanning,
-                scanCompleted = scanCompleted,
-                rotation = rotation,
-                onScoreClick = {
+            // Memoize the onScoreClick callback to prevent unnecessary recomposition
+            val onScoreClickCallback = remember(coroutineScope, currentHealthScore, listState) {
+                {
                     AnalyticsUtils.logEvent(AnalyticsEvent.HealthScoreClicked, mapOf(
                         "current_score" to currentHealthScore
                     ))
@@ -327,7 +326,17 @@ fun HealthSection(
                             }
                         }
                     }
-                },
+                    Unit // Explicitly return Unit to match expected type
+                }
+            }
+            
+            HealthScoreCard(
+                context = context,
+                onScanClick = handleScanClick,
+                isScanning = isScanning,
+                scanCompleted = scanCompleted,
+                rotation = rotation,
+                onScoreClick = onScoreClickCallback,
                 onAIClick = onAIClick
             )
         }
@@ -908,15 +917,28 @@ Storage cleanup clears app caches and temporary files to free up space.
 
         // Battery Optimization Card (Quick Action)
         item(key = "battery_optimization") {
+            // Show loading state immediately (like Device Info tab) to prevent blocking during scroll
+            var isLoadingBattery by remember { mutableStateOf(true) }
             var batteryHealth by remember { mutableIntStateOf(70) }
-            var batteryInfo by remember { mutableStateOf("--") }
+            var batteryInfo by remember { mutableStateOf(context.string(R.string.loading)) }
             var isOptimizing by remember { mutableStateOf(false) }
             var lastOptimizeResult by remember { mutableStateOf<String?>(null) }
             var showBatteryGuideDialog by remember { mutableStateOf(false) }
             
+            // Load battery data on background thread to prevent scrolling lag
+            // Similar to Device Info tab's approach - show loading immediately, then update
             LaunchedEffect(Unit) {
-                batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
-                batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                // Run on background thread to prevent blocking main thread during scroll
+                val batteryHealthValue = withContext(Dispatchers.Default) {
+                    com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                }
+                val batteryInfoValue = withContext(Dispatchers.Default) {
+                    com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                }
+                // Update state after data is loaded (non-blocking)
+                batteryHealth = batteryHealthValue
+                batteryInfo = batteryInfoValue
+                isLoadingBattery = false
             }
             
             // Update battery info periodically - pause when scrolling for better performance
@@ -1044,6 +1066,7 @@ Storage cleanup clears app caches and temporary files to free up space.
             BatteryOptimizationCard(
                 batteryHealth = batteryHealth,
                 batteryInfo = batteryInfo,
+                isLoading = isLoadingBattery,
                 isOptimizing = isOptimizing,
                 lastOptimizeResult = lastOptimizeResult,
                 onOptimizeBattery = {
@@ -1217,16 +1240,30 @@ Battery optimization provides suggestions to improve battery life and health.
 
         // Privacy Dashboard Card
         item(key = "privacy_dashboard") {
+            // Show loading state immediately (like Device Info tab) to prevent blocking during scroll
+            var isLoadingPrivacy by remember { mutableStateOf(true) }
             var privacyScore by remember { mutableIntStateOf(0) }
             var threats by remember { mutableStateOf<List<String>>(emptyList()) }
             var recentUsage by remember { mutableStateOf("") }
             
+            // Load privacy data on background thread to prevent NetworkOnMainThreadException
+            // Similar to Device Info tab's approach - show loading immediately, then update
             LaunchedEffect(Unit) {
-                privacyScore = kotlinx.coroutines.runBlocking {
+                // Run all network operations on background thread
+                val privacyScoreValue = withContext(Dispatchers.IO) {
                     calculatePrivacyScore(context)
                 }
-                threats = getPrivacyThreatsToday(context)
-                recentUsage = getRecentCameraMicUsageLog()
+                val threatsValue = withContext(Dispatchers.IO) {
+                    getPrivacyThreatsToday(context)
+                }
+                val recentUsageValue = withContext(Dispatchers.Default) {
+                    getRecentCameraMicUsageLog()
+                }
+                // Update state after data is loaded (non-blocking)
+                privacyScore = privacyScoreValue
+                threats = threatsValue
+                recentUsage = recentUsageValue
+                isLoadingPrivacy = false
             }
             
             PrivacyDashboardCard(
@@ -1234,6 +1271,7 @@ Battery optimization provides suggestions to improve battery life and health.
                 privacyScore = privacyScore,
                 threats = threats,
                 recentUsage = recentUsage,
+                isLoading = isLoadingPrivacy,
                 onAIClick = onItemAIClick?.let { handler ->
                     {
                         val content = """
@@ -1264,44 +1302,60 @@ $recentUsage
         item(key = "daily_tasks") {
             var dailyTasks by remember { mutableStateOf<List<HealthScoreUtils.DailyTask>>(emptyList()) }
             var completedCount by remember { mutableIntStateOf(0) }
+            var taskCompletionMap by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
             
+            // Load tasks and completion status on background thread
             LaunchedEffect(currentHealthScore) {
-                dailyTasks = HealthScoreUtils.getDailyTasks(context, currentHealthScore)
-                completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+                withContext(Dispatchers.Default) {
+                    val tasks = HealthScoreUtils.getDailyTasks(context, currentHealthScore)
+                    val count = HealthScoreUtils.getCompletedTasksCount(context)
+                    val completionMap = tasks.associate { it.id to HealthScoreUtils.isTaskCompleted(context, it.id) }
+                    
+                    dailyTasks = tasks
+                    completedCount = count
+                    taskCompletionMap = completionMap
+                }
             }
             
-            // Also update when tasks are completed
-            LaunchedEffect(Unit) {
-                dailyTasks = HealthScoreUtils.getDailyTasks(context, currentHealthScore)
-                completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+            // Memoize the onTaskComplete callback
+            val onTaskCompleteCallback = remember {
+                { taskId: String ->
+                    HealthScoreUtils.completeTask(context, taskId)
+                    completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+                    // Update completion map
+                    taskCompletionMap = taskCompletionMap + (taskId to true)
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AchievementUnlocked, mapOf(
+                        "task_id" to taskId,
+                        "tasks_completed" to completedCount
+                    ))
+                }
+            }
+            
+            // Memoize the onAIClick callback
+            val onAIClickCallback = remember(dailyTasks, completedCount, currentHealthScore, taskCompletionMap, onItemAIClick) {
+                onItemAIClick?.let { handler ->
+                    {
+                        val tasksText = dailyTasks.joinToString("\n") { 
+                            "${if (taskCompletionMap[it.id] == true) "✅" else "⬜"} ${it.title}"
+                        }
+                        val content = """
+Today's Tasks (${completedCount}/${dailyTasks.size} completed):
+$tasksText
+
+Health Score: $currentHealthScore/10
+                        """.trimIndent()
+                        handler("Today's Tasks", content)
+                    }
+                }
             }
             
             if (dailyTasks.isNotEmpty()) {
                 DailyTasksCard(
                     tasks = dailyTasks,
                     completedCount = completedCount,
-                    onTaskComplete = { taskId ->
-                        HealthScoreUtils.completeTask(context, taskId)
-                        completedCount = HealthScoreUtils.getCompletedTasksCount(context)
-                        AnalyticsUtils.logEvent(AnalyticsEvent.AchievementUnlocked, mapOf(
-                            "task_id" to taskId,
-                            "tasks_completed" to completedCount
-                        ))
-                    },
-                    onAIClick = onItemAIClick?.let { handler ->
-                        {
-                            val tasksText = dailyTasks.joinToString("\n") { 
-                                "${if (HealthScoreUtils.isTaskCompleted(context, it.id)) "✅" else "⬜"} ${it.title}"
-                            }
-                            val content = """
-Today's Tasks (${completedCount}/${dailyTasks.size} completed):
-$tasksText
-
-Health Score: $currentHealthScore/10
-                            """.trimIndent()
-                            handler("Today's Tasks", content)
-                        }
-                    }
+                    taskCompletionMap = taskCompletionMap,
+                    onTaskComplete = onTaskCompleteCallback,
+                    onAIClick = onAIClickCallback
                 )
             }
         }
@@ -1322,30 +1376,41 @@ Health Score: $currentHealthScore/10
 
         // Temperature History Card
         item(key = "temperature_history") {
-            TemperatureHistoryCard(
-                context = context,
-                onAIClick = onItemAIClick?.let { handler ->
+            // Memoize the onAIClick callback to avoid expensive operations on every recomposition
+            val onAIClickCallback = remember(onItemAIClick, coroutineScope) {
+                onItemAIClick?.let { handler ->
                     {
-                        val history = HealthScoreUtils.getTemperatureHistory(context, 7)
-                        val peakTemp = HealthScoreUtils.getPeakTemperature(context)
-                        val trend = HealthScoreUtils.getTemperatureTrend(context)
-                        val historyText = if (history.isNotEmpty()) {
-                            history.joinToString("\n") { 
-                                "${it.date}: Max ${it.maxTemp.toInt()}°C, Avg ${it.avgTemp.toInt()}°C"
+                        // Load data on background thread when callback is invoked
+                        coroutineScope.launch(Dispatchers.Default) {
+                            val history = HealthScoreUtils.getTemperatureHistory(context, 7)
+                            val peakTemp = HealthScoreUtils.getPeakTemperature(context)
+                            val trend = HealthScoreUtils.getTemperatureTrend(context)
+                            val historyText = if (history.isNotEmpty()) {
+                                history.joinToString("\n") { 
+                                    "${it.date}: Max ${it.maxTemp.toInt()}°C, Avg ${it.avgTemp.toInt()}°C"
+                                }
+                            } else {
+                                "No temperature history yet."
                             }
-                        } else {
-                            "No temperature history yet."
-                        }
-                        val content = """
+                            val content = """
 7-Day Temperature History:
 $historyText
 
 Peak Temperature: ${peakTemp?.toInt() ?: "N/A"}°C
 Trend: $trend
-                        """.trimIndent()
-                        handler("Temperature History", content)
+                            """.trimIndent()
+                            withContext(Dispatchers.Main) {
+                                handler("Temperature History", content)
+                            }
+                        }
+                        Unit // Explicitly return Unit
                     }
                 }
+            }
+            
+            TemperatureHistoryCard(
+                context = context,
+                onAIClick = onAIClickCallback
             )
         }
 
@@ -1642,6 +1707,7 @@ private fun ImprovementSuggestionsCard(
 private fun DailyTasksCard(
     tasks: List<HealthScoreUtils.DailyTask>,
     completedCount: Int,
+    taskCompletionMap: Map<String, Boolean>,
     onTaskComplete: (String) -> Unit,
     onAIClick: (() -> Unit)? = null
 ) {
@@ -1716,7 +1782,7 @@ private fun DailyTasksCard(
             Spacer(modifier = Modifier.height(12.dp))
             
             tasks.forEach { task ->
-                val isCompleted = HealthScoreUtils.isTaskCompleted(context, task.id)
+                val isCompleted = taskCompletionMap[task.id] ?: false
                 
                 Row(
                     modifier = Modifier
@@ -1794,14 +1860,23 @@ private fun TemperatureHistoryCard(
     context: android.content.Context,
     onAIClick: (() -> Unit)? = null
 ) {
-    val history = remember {
-        HealthScoreUtils.getTemperatureHistory(context, 7)
-    }
-    val peakTemp = remember {
-        HealthScoreUtils.getPeakTemperature(context)
-    }
-    val trend = remember {
-        HealthScoreUtils.getTemperatureTrend(context)
+    // Load temperature data on background thread to avoid blocking UI
+    var history by remember { mutableStateOf<List<HealthScoreUtils.TemperatureDataPoint>>(emptyList()) }
+    var peakTemp by remember { mutableStateOf<Float?>(null) }
+    var trend by remember { mutableStateOf<String>("") }
+    var isLoading by remember { mutableStateOf(true) }
+    
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            val loadedHistory = HealthScoreUtils.getTemperatureHistory(context, 7)
+            val loadedPeakTemp = HealthScoreUtils.getPeakTemperature(context)
+            val loadedTrend = HealthScoreUtils.getTemperatureTrend(context)
+            
+            history = loadedHistory
+            peakTemp = loadedPeakTemp
+            trend = loadedTrend
+            isLoading = false
+        }
     }
     
     Surface(
@@ -1851,7 +1926,19 @@ private fun TemperatureHistoryCard(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            if (history.isNotEmpty()) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        strokeWidth = 3.dp
+                    )
+                }
+            } else if (history.isNotEmpty()) {
                 // Peak temperature alert
                 peakTemp?.let { peak ->
                     if (peak > 40f) {
@@ -2105,6 +2192,7 @@ private fun PrivacyDashboardCard(
     privacyScore: Int,
     threats: List<String>,
     recentUsage: String,
+    isLoading: Boolean = false,
     onAIClick: (() -> Unit)? = null
 ) {
     val hasRecentUsage = recentUsage.contains("Recent usage detected")
@@ -2179,6 +2267,23 @@ private fun PrivacyDashboardCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    if (isLoading) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = context.string(R.string.loading),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    } else {
                     Surface(
                         color = when {
                             privacyScore >= 80 -> DesignSystemColors.NeonGreen
@@ -2198,10 +2303,22 @@ private fun PrivacyDashboardCard(
                             },
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                         )
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                // Progress bar
+                // Progress bar - show loading state
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        progress = { 0f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    )
+                } else {
                 LinearProgressIndicator(
                     progress = { privacyScore / 100f },
                     modifier = Modifier
@@ -2215,12 +2332,29 @@ private fun PrivacyDashboardCard(
                     },
                     trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 )
+                }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
             // Threats Today
-            if (threats.isNotEmpty()) {
+            if (isLoading) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(12.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Loading threats...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            } else if (threats.isNotEmpty()) {
                 Text(
                     text = "Threats Today:",
                     style = MaterialTheme.typography.bodyMedium,
@@ -2681,6 +2815,7 @@ private fun StorageCleanupCard(
 private fun BatteryOptimizationCard(
     batteryHealth: Int,
     batteryInfo: String,
+    isLoading: Boolean = false,
     isOptimizing: Boolean,
     lastOptimizeResult: String?,
     onOptimizeBattery: () -> Unit,
@@ -2727,6 +2862,24 @@ private fun BatteryOptimizationCard(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    if (isLoading) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = batteryInfo,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                maxLines = 1
+                            )
+                        }
+                    } else {
                     Text(
                         text = batteryInfo,
                         style = MaterialTheme.typography.bodySmall,
@@ -2734,6 +2887,7 @@ private fun BatteryOptimizationCard(
                         maxLines = 3,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Visible
                     )
+                    }
                 }
                 if (onAIClick != null) {
                     IconButton(

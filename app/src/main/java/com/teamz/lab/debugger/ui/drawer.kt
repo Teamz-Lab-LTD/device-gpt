@@ -618,6 +618,9 @@ fun DrawerContent(
             }
         }
         
+        // Add space before promotional section
+        Spacer(modifier = Modifier.height(8.dp))
+        
         // Third-party service promotion - clearly labeled (compact, no border)
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
@@ -631,10 +634,12 @@ fun DrawerContent(
                 modifier = Modifier.padding(bottom = 1.dp),
                 fontSize = 10.sp
             )
-            IconTextButton(
+                    Spacer(modifier = Modifier.height(4.dp))
+
+            // Animated promotional button with pulsing bulb icon
+            AnimatedPromotionalButton(
                 containerColor = DesignSystemColors.NeonGreen,
                 contentColor = DesignSystemColors.Dark,
-                icon = Icons.Default.TipsAndUpdates,
                 colorText = DesignSystemColors.Dark,
                 label = "Want to launch your own app or web?"
             ) {
@@ -1429,6 +1434,76 @@ fun IconTextButton(
                 fontSize = 12.sp
             )
 
+        }
+    }
+}
+
+@Composable
+fun AnimatedPromotionalButton(
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    colorText: Color = MaterialTheme.colorScheme.onPrimary,
+    label: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    // Create pulsing animation for the bulb icon
+    val infiniteTransition = rememberInfiniteTransition(label = "promotional_bulb_animation")
+    
+    // Pulsing scale animation - makes the bulb "glow" and pulse
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 2.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "bulb_pulse"
+    )
+    
+    // Glow alpha animation - makes the bulb appear to glow
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "bulb_glow"
+    )
+    
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                imageVector = Icons.Default.TipsAndUpdates,
+                contentDescription = label,
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(16.dp)
+                    .scale(pulseScale)
+                    .alpha(glowAlpha),
+                tint = colorText
+            )
+            Text(
+                label,
+                color = colorText,
+                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.labelMedium,
+                fontSize = 12.sp
+            )
         }
     }
 }

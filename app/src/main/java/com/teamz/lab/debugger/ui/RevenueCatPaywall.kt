@@ -14,6 +14,7 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.AppOpenAdManager
+import com.teamz.lab.debugger.ui.NativeAdManager
 import androidx.compose.runtime.LaunchedEffect
 
 /**
@@ -43,6 +44,7 @@ fun RevenueCatPaywall(
             android.util.Log.d("RevenueCatPaywall", "Premium activated - clearing all ads")
             InterstitialAdManager.clearAd()
             AppOpenAdManager.clearAd()
+            NativeAdManager.clear() // Clear native ads as well
         }
     }
     
@@ -129,6 +131,7 @@ fun RevenueCatPaywall(
                             android.util.Log.d("RevenueCatPaywall", "Purchase completed - clearing all ads")
                             InterstitialAdManager.clearAd()
                             AppOpenAdManager.clearAd()
+                            NativeAdManager.clear() // Clear native ads as well
                             
                             // Track purchase completed with detailed info
                             val productId = storeTransaction.productIds.firstOrNull() ?: "unknown"
@@ -173,6 +176,7 @@ fun RevenueCatPaywall(
                                 android.util.Log.d("RevenueCatPaywall", "Restore completed - clearing all ads")
                                 InterstitialAdManager.clearAd()
                                 AppOpenAdManager.clearAd()
+                                NativeAdManager.clear() // Clear native ads as well
                                 
                                 // Track restore completed
                                 AnalyticsUtils.logEvent(

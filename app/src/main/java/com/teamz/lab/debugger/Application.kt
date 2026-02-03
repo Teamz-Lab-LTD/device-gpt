@@ -77,7 +77,20 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             
             // Link RevenueCat to Firebase Auth for cross-device purchase restoration
             android.util.Log.d("MyApplication", "onCreate() - Setting up Firebase Auth listener for RevenueCat...")
-            FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            val firebaseAuth = FirebaseAuth.getInstance()
+            
+            // Check immediately if user already exists (for faster linking on app start)
+            val currentUser = firebaseAuth.currentUser
+            if (currentUser != null) {
+                android.util.Log.d("MyApplication", "Firebase Auth user already exists: ${currentUser.uid}, linking RevenueCat immediately...")
+                // Small delay to ensure RevenueCat is fully initialized
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    RevenueCatManager.setUserId(currentUser.uid)
+                }, 500)
+            }
+            
+            // Set up listener for future auth state changes
+            firebaseAuth.addAuthStateListener { auth ->
                 val user = auth.currentUser
                 if (user != null) {
                     // User is authenticated (anonymous or Gmail) - link RevenueCat to Firebase UID

@@ -15,6 +15,7 @@ import com.revenuecat.purchases.interfaces.LogInCallback
 import com.revenuecat.purchases.models.StoreProduct
 import com.revenuecat.purchases.models.StoreTransaction
 import com.teamz.lab.debugger.BuildConfig
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -90,8 +91,19 @@ object RevenueCatManager {
                 return
             }
             
+            // Check if Firebase Auth user already exists - use their UID for cross-device sync
+            // This ensures purchases are linked immediately if user is already authenticated
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+            val initialUserId = firebaseUser?.uid
+            
+            if (initialUserId != null) {
+                Log.d(TAG, "Firebase user detected at initialization: $initialUserId - using as RevenueCat user ID")
+            } else {
+                Log.d(TAG, "No Firebase user at initialization - RevenueCat will use anonymous ID (will link when user authenticates)")
+            }
+            
             val configuration = PurchasesConfiguration.Builder(context, revenueCatApiKey)
-                .appUserID(null) // Let RevenueCat generate anonymous ID
+                .appUserID(initialUserId) // Use Firebase UID if available, otherwise anonymous
                 .store(Store.PLAY_STORE)
                 .build()
             
@@ -105,11 +117,14 @@ object RevenueCatManager {
                 }
             }
             
-            // Fetch initial customer info
-            fetchCustomerInfo()
-            
             isInitialized = true
-            Log.d(TAG, "✅ RevenueCat initialized successfully")
+            Log.d(TAG, "✅ RevenueCat initialized successfully${if (initialUserId != null) " with user ID: $initialUserId" else " (anonymous)"}")
+            
+            // Fetch initial customer info after a short delay to ensure Google Play is ready
+            // This is especially important for anonymous users on new devices
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                fetchCustomerInfo()
+            }, 500) // Small delay to ensure Google Play services are ready
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize RevenueCat", e)
             ErrorHandler.handleError(e, context = "RevenueCatManager.initialize")
@@ -131,6 +146,9 @@ object RevenueCatManager {
      * Fetch current customer info and update premium status
      * For anonymous users, this will automatically sync with Google Play purchases
      * and restore any purchases tied to the current Google account
+     * 
+     * IMPORTANT: Google Play purchases are tied to the Google account, not RevenueCat user ID.
+     * So even if user is anonymous on a new device, purchases can be restored from Google Play.
      */
     private fun fetchCustomerInfo() {
         if (!isInitialized) {
@@ -140,35 +158,49 @@ object RevenueCatManager {
         
         _premiumStatusFlow.value = PremiumStatus.Loading
         
+        // Check if user is anonymous - this helps us understand the context
+        val isAnonymous = FirebaseAuth.getInstance().currentUser?.isAnonymous ?: true
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
+        Log.d(TAG, "Fetching customer info (user: $currentUserId, anonymous: $isAnonymous)")
+        
         Purchases.sharedInstance.getCustomerInfo(object : ReceiveCustomerInfoCallback {
             override fun onReceived(customerInfo: CustomerInfo) {
                 this@RevenueCatManager.customerInfo = customerInfo
                 updatePremiumStatus(customerInfo)
                 
-                // For anonymous users: If no premium found, try to restore purchases from Google Play
-                // This handles the case where user purchased as anonymous, uninstalled, and reinstalled
-                // Google Play purchases are tied to Google account, so they can be restored
+                // Check if premium exists
                 val hasPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID] != null
-                if (!hasPremium) {
+                
+                if (hasPremium) {
+                    Log.d(TAG, "✅ Premium found in customer info")
+                } else {
                     Log.d(TAG, "No premium found in customer info, attempting automatic restore from Google Play...")
-                    // Silently attempt to restore purchases from Google Play
-                    // This is safe because restorePurchases() queries Google Play for purchases
-                    // tied to the current Google account, regardless of RevenueCat user ID
+                    Log.d(TAG, "Note: Google Play purchases are tied to Google account, so restore should work even for anonymous users")
+                    
+                    // CRITICAL: Always attempt to restore purchases from Google Play if no premium found
+                    // This works for both anonymous and authenticated users because:
+                    // 1. Google Play purchases are tied to the Google account signed into the device
+                    // 2. RevenueCat's restorePurchases() queries Google Play directly
+                    // 3. This handles cross-device scenarios where user is anonymous on new device
                     Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
                         override fun onReceived(restoredCustomerInfo: CustomerInfo) {
                             val restoredPremium = restoredCustomerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
                             if (restoredPremium != null) {
-                                Log.d(TAG, "✅ Premium automatically restored from Google Play after reinstall!")
+                                Log.d(TAG, "✅ Premium automatically restored from Google Play!")
+                                Log.d(TAG, "This purchase was restored even though user is ${if (isAnonymous) "anonymous" else "authenticated"}")
                                 this@RevenueCatManager.customerInfo = restoredCustomerInfo
                                 updatePremiumStatus(restoredCustomerInfo)
                             } else {
-                                Log.d(TAG, "No purchases found in Google Play for this account")
+                                Log.d(TAG, "No purchases found in Google Play for this Google account")
+                                Log.d(TAG, "This could mean: 1) User never purchased, 2) Different Google account, or 3) Purchase not yet synced")
                             }
                         }
                         
                         override fun onError(error: com.revenuecat.purchases.PurchasesError) {
-                            // Silent fail - this is expected if user never purchased
-                            Log.d(TAG, "No purchases to restore (this is normal for new users): ${error.message}")
+                            // Log the error but don't fail - this is expected if user never purchased
+                            Log.d(TAG, "Restore attempt completed: ${error.message}")
+                            Log.d(TAG, "Error code: ${error.code.name}")
+                            // Don't set premium status here - keep it as NotPremium
                         }
                     })
                 }
@@ -176,8 +208,29 @@ object RevenueCatManager {
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to fetch customer info: ${error.message}")
-                // On error, assume not premium (fail-safe)
-                _premiumStatusFlow.value = PremiumStatus.NotPremium
+                Log.e(TAG, "Error code: ${error.code.name}")
+                
+                // Even if fetch fails, try to restore purchases directly from Google Play
+                // This is a fallback for cases where RevenueCat customer info fetch fails
+                Log.d(TAG, "Attempting direct restore from Google Play as fallback...")
+                Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
+                    override fun onReceived(restoredCustomerInfo: CustomerInfo) {
+                        val restoredPremium = restoredCustomerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
+                        if (restoredPremium != null) {
+                            Log.d(TAG, "✅ Premium restored from Google Play (fallback restore)!")
+                            this@RevenueCatManager.customerInfo = restoredCustomerInfo
+                            updatePremiumStatus(restoredCustomerInfo)
+                        } else {
+                            Log.d(TAG, "No purchases found in fallback restore")
+                            _premiumStatusFlow.value = PremiumStatus.NotPremium
+                        }
+                    }
+                    
+                    override fun onError(restoreError: com.revenuecat.purchases.PurchasesError) {
+                        Log.e(TAG, "Fallback restore also failed: ${restoreError.message}")
+                        _premiumStatusFlow.value = PremiumStatus.NotPremium
+                    }
+                })
             }
         })
     }
@@ -214,6 +267,10 @@ object RevenueCatManager {
     /**
      * Restore purchases (for users who already purchased on another device)
      * 
+     * This method queries Google Play directly for purchases tied to the current Google account.
+     * It works even for anonymous users because Google Play purchases are tied to the Google account,
+     * not the RevenueCat user ID.
+     * 
      * @param onSuccess Callback when restore succeeds
      * @param onError Callback when restore fails
      */
@@ -227,24 +284,43 @@ object RevenueCatManager {
             return
         }
         
+        // Check if user is anonymous - this helps with debugging
+        val isAnonymous = FirebaseAuth.getInstance().currentUser?.isAnonymous ?: true
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
+        Log.d(TAG, "Manual restore initiated (user: $currentUserId, anonymous: $isAnonymous)")
+        Log.d(TAG, "Note: Restore works for anonymous users because Google Play purchases are tied to Google account")
+        
         // Track restore initiated
         AnalyticsUtils.logEvent(
             AnalyticsEvent.PremiumRestoreInitiated,
-            mapOf("source" to "manual_restore")
+            mapOf(
+                "source" to "manual_restore",
+                "is_anonymous" to isAnonymous.toString()
+            )
         )
         
         Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
             override fun onReceived(customerInfo: CustomerInfo) {
-                Log.d(TAG, "Purchases restored successfully")
+                Log.d(TAG, "Restore completed - checking for premium...")
+                this@RevenueCatManager.customerInfo = customerInfo
                 updatePremiumStatus(customerInfo)
                 
-                // Track restore completed
+                // Check if premium was actually restored
                 val hasPremium = RevenueCatManager.isPremium()
+                if (hasPremium) {
+                    Log.d(TAG, "✅ Premium successfully restored!")
+                } else {
+                    Log.d(TAG, "⚠️ Restore completed but no premium found")
+                    Log.d(TAG, "This could mean: 1) User never purchased, 2) Different Google account, or 3) Purchase not yet synced")
+                }
+                
+                // Track restore completed
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.PremiumRestoreCompleted,
                     mapOf(
                         "has_premium" to hasPremium,
-                        "source" to "manual_restore"
+                        "source" to "manual_restore",
+                        "is_anonymous" to isAnonymous.toString()
                     )
                 )
                 
@@ -253,6 +329,7 @@ object RevenueCatManager {
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to restore purchases: ${error.message}")
+                Log.e(TAG, "Error code: ${error.code.name}")
                 
                 // Track restore failed
                 AnalyticsUtils.logEvent(
@@ -260,11 +337,24 @@ object RevenueCatManager {
                     mapOf(
                         "error_code" to error.code.name,
                         "error_message" to (error.message ?: "unknown"),
-                        "source" to "manual_restore"
+                        "source" to "manual_restore",
+                        "is_anonymous" to isAnonymous.toString()
                     )
                 )
                 
-                onError(error.message)
+                // Provide more helpful error message based on error code name
+                val errorMessage = when (error.code.name) {
+                    "PURCHASE_NOT_ALLOWED", "PURCHASE_INVALID" -> 
+                        "Purchase restore not allowed. Please check your Google Play account."
+                    "NETWORK_ERROR", "NETWORK_ERROR_CODE" -> 
+                        "Network error. Please check your internet connection and try again."
+                    "STORE_PROBLEM" -> 
+                        "Google Play Store issue. Please try again later."
+                    else -> 
+                        error.message ?: "Failed to restore purchases. Please ensure you're signed in with the same Google account used for purchase."
+                }
+                
+                onError(errorMessage)
             }
         })
     }
@@ -355,7 +445,36 @@ object RevenueCatManager {
             Purchases.sharedInstance.logIn(userId, object : LogInCallback {
                 override fun onReceived(customerInfo: CustomerInfo, created: Boolean) {
                     Log.d(TAG, "User ID set: $userId (created: $created)")
+                    this@RevenueCatManager.customerInfo = customerInfo
                     updatePremiumStatus(customerInfo)
+                    
+                    // After linking user ID, check if premium exists
+                    // If not, restore purchases from Google Play (for cross-device purchases)
+                    val hasPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID] != null
+                    if (!hasPremium) {
+                        Log.d(TAG, "No premium found after user ID link, attempting to restore purchases from Google Play...")
+                        // Restore purchases to sync with Google Play account
+                        // This is critical for cross-device purchase restoration
+                        Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
+                            override fun onReceived(restoredCustomerInfo: CustomerInfo) {
+                                val restoredPremium = restoredCustomerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
+                                if (restoredPremium != null) {
+                                    Log.d(TAG, "✅ Premium restored from Google Play after user ID link!")
+                                    this@RevenueCatManager.customerInfo = restoredCustomerInfo
+                                    updatePremiumStatus(restoredCustomerInfo)
+                                } else {
+                                    Log.d(TAG, "No purchases found in Google Play for this account after user ID link")
+                                }
+                            }
+                            
+                            override fun onError(error: com.revenuecat.purchases.PurchasesError) {
+                                // Silent fail - this is expected if user never purchased
+                                Log.d(TAG, "No purchases to restore after user ID link (this is normal for new users): ${error.message}")
+                            }
+                        })
+                    } else {
+                        Log.d(TAG, "✅ Premium already active after user ID link")
+                    }
                 }
                 
                 override fun onError(error: com.revenuecat.purchases.PurchasesError) {
