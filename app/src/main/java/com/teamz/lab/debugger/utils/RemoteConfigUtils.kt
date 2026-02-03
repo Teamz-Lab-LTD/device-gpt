@@ -7,6 +7,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.firebase.ktx.Firebase
 import com.teamz.lab.debugger.BuildConfig
+import com.teamz.lab.debugger.utils.AppLog
 
 object RemoteConfigUtils {
     private val remoteConfig: FirebaseRemoteConfig
@@ -23,7 +24,7 @@ object RemoteConfigUtils {
     private val FORCE_SHOW_ADS_IN_DEBUG = BuildConfig.DEBUG
 
     fun init() {
-        android.util.Log.d("RemoteConfigUtils", "init() - Initializing RemoteConfig...")
+        AppLog.d("RemoteConfigUtils", "init() - Initializing RemoteConfig...")
         
         val configSettings = remoteConfigSettings {
             minimumFetchIntervalInSeconds = 3600 // 1 hour
@@ -51,13 +52,13 @@ object RemoteConfigUtils {
             )
         )
         
-        android.util.Log.d("RemoteConfigUtils", "init() - Defaults set, fetching and activating...")
+        AppLog.d("RemoteConfigUtils", "init() - Defaults set, fetching and activating...")
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                android.util.Log.d("RemoteConfigUtils", "init() - ✅ RemoteConfig activated successfully")
-                android.util.Log.d("RemoteConfigUtils", "init() - show_app_open_ads: ${remoteConfig.getBoolean("show_app_open_ads")}")
+                AppLog.d("RemoteConfigUtils", "init() - ✅ RemoteConfig activated successfully")
+                AppLog.d("RemoteConfigUtils", "init() - show_app_open_ads: ${remoteConfig.getBoolean("show_app_open_ads")}")
             } else {
-                android.util.Log.e("RemoteConfigUtils", "init() - ❌ RemoteConfig activation failed: ${task.exception?.message}")
+                AppLog.e("RemoteConfigUtils", "init() - ❌ RemoteConfig activation failed: ${task.exception?.message}")
             }
         }
     }
@@ -65,7 +66,7 @@ object RemoteConfigUtils {
     fun shouldShowInterstitialAds(): Boolean {
         // Premium users never see ads
         if (RevenueCatManager.isPremium()) {
-            android.util.Log.d("RemoteConfigUtils", "shouldShowInterstitialAds() - User has premium, skipping ads")
+            AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - User has premium, skipping ads")
             return false
         }
         
@@ -73,7 +74,7 @@ object RemoteConfigUtils {
         // In release mode: FORCE_SHOW_ADS_IN_DEBUG is false, so this check is skipped (safe for production)
         // Production safety: In release builds, BuildConfig.DEBUG is false, so this condition never blocks ads
         if (BuildConfig.DEBUG && !FORCE_SHOW_ADS_IN_DEBUG) {
-            android.util.Log.d("RemoteConfigUtils", "shouldShowInterstitialAds() - Debug mode, ads disabled (FORCE_SHOW_ADS_IN_DEBUG=$FORCE_SHOW_ADS_IN_DEBUG)")
+            AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - Debug mode, ads disabled (FORCE_SHOW_ADS_IN_DEBUG=$FORCE_SHOW_ADS_IN_DEBUG)")
             return false
         }
         
@@ -93,12 +94,12 @@ object RemoteConfigUtils {
     fun shouldShowAppOpenAds(): Boolean {
         // Premium users never see ads
         if (RevenueCatManager.isPremium()) {
-            android.util.Log.d("RemoteConfigUtils", "shouldShowAppOpenAds() - User has premium, skipping ads")
+            AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - User has premium, skipping ads")
             return false
         }
         
         val shouldShow = remoteConfig.getBoolean("show_app_open_ads")
-        android.util.Log.d("RemoteConfigUtils", "shouldShowAppOpenAds() - Returning: $shouldShow")
+        AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - Returning: $shouldShow")
         return shouldShow
     }
     

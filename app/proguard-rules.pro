@@ -69,8 +69,16 @@
 -dontwarn com.teamz.lab.debugger.**
 
 # Remove logging in release (optional but recommended for performance)
+# Note: AppLog.d() and AppLog.v() are already gated by BuildConfig.DEBUG,
+# but this ensures any remaining Log calls are removed in release builds
 -assumenosideeffects class android.util.Log {
     public static *** d(...);
     public static *** v(...);
     public static *** i(...);
+}
+
+# Remove AppLog debug/verbose calls in release (already gated by BuildConfig.DEBUG, but extra safety)
+-assumenosideeffects class com.teamz.lab.debugger.utils.AppLog {
+    public static *** d(...);
+    public static *** v(...);
 }

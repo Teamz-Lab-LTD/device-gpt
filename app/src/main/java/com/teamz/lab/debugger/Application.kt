@@ -21,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.core.content.edit
 import com.teamz.lab.debugger.BuildConfig
-import android.util.Log
+import com.teamz.lab.debugger.utils.AppLog
 
 class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
     DefaultLifecycleObserver {
@@ -33,7 +33,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
 
     override fun onCreate() {
         super<Application>.onCreate()
-        android.util.Log.d("MyApplication", "onCreate() - Initializing app...")
+        AppLog.d("MyApplication", "onCreate() - Initializing app...")
         
         try {
             // Set up global uncaught exception handler - CRITICAL: Must be first
@@ -42,47 +42,47 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             registerActivityLifecycleCallbacks(this)
             
             // Initialize Mobile Ads SDK
-            android.util.Log.d("MyApplication", "onCreate() - Initializing MobileAds SDK...")
+            AppLog.d("MyApplication", "onCreate() - Initializing MobileAds SDK...")
             MobileAds.initialize(this) {
-                android.util.Log.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
+                AppLog.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
                 // Preload ad after SDK is initialized (no activity yet, just preload)
-                android.util.Log.d("MyApplication", "onCreate() - Preloading app open ad...")
+                AppLog.d("MyApplication", "onCreate() - Preloading app open ad...")
                 AppOpenAdManager.loadAd(applicationContext) // Just preload, no activity yet
             }
             
             ProcessLifecycleOwner.get().lifecycle.addObserver(this)
             
             // Initialize RevenueCat for subscription management (ad removal)
-            android.util.Log.d("MyApplication", "onCreate() - Initializing RevenueCat...")
+                AppLog.d("MyApplication", "onCreate() - Initializing RevenueCat...")
             try {
                 // RevenueCat API key should be in local_config.properties as REVENUECAT_API_KEY
                 // If not found, RevenueCatManager will handle gracefully
                 RevenueCatManager.initialize(this)
-                android.util.Log.d("MyApplication", "onCreate() - RevenueCat initialized")
+                AppLog.d("MyApplication", "onCreate() - RevenueCat initialized")
             } catch (e: Exception) {
                 // RevenueCat initialization failure is not fatal - app can continue with ads
-                android.util.Log.w("MyApplication", "RevenueCat initialization failed - ads will be shown", e)
+                AppLog.w("MyApplication", "RevenueCat initialization failed - ads will be shown", e)
                 ErrorHandler.handleError(e, context = "MyApplication.onCreate-RevenueCat")
             }
             
             // Initialize Remote Config
-            android.util.Log.d("MyApplication", "onCreate() - Initializing RemoteConfig...")
+            AppLog.d("MyApplication", "onCreate() - Initializing RemoteConfig...")
             RemoteConfigUtils.init()
-            android.util.Log.d("MyApplication", "onCreate() - RemoteConfig initialized")
+            AppLog.d("MyApplication", "onCreate() - RemoteConfig initialized")
             
             // Initialize Leaderboard Manager (Firebase Auth)
-            android.util.Log.d("MyApplication", "onCreate() - Initializing LeaderboardManager...")
+            AppLog.d("MyApplication", "onCreate() - Initializing LeaderboardManager...")
             com.teamz.lab.debugger.utils.LeaderboardManager.initialize(this)
-            android.util.Log.d("MyApplication", "onCreate() - LeaderboardManager initialized")
+            AppLog.d("MyApplication", "onCreate() - LeaderboardManager initialized")
             
             // Link RevenueCat to Firebase Auth for cross-device purchase restoration
-            android.util.Log.d("MyApplication", "onCreate() - Setting up Firebase Auth listener for RevenueCat...")
+            AppLog.d("MyApplication", "onCreate() - Setting up Firebase Auth listener for RevenueCat...")
             val firebaseAuth = FirebaseAuth.getInstance()
             
             // Check immediately if user already exists (for faster linking on app start)
             val currentUser = firebaseAuth.currentUser
             if (currentUser != null) {
-                android.util.Log.d("MyApplication", "Firebase Auth user already exists: ${currentUser.uid}, linking RevenueCat immediately...")
+                AppLog.d("MyApplication", "Firebase Auth user already exists: ${currentUser.uid}, linking RevenueCat immediately...")
                 // Small delay to ensure RevenueCat is fully initialized
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     RevenueCatManager.setUserId(currentUser.uid)
@@ -94,10 +94,10 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 val user = auth.currentUser
                 if (user != null) {
                     // User is authenticated (anonymous or Gmail) - link RevenueCat to Firebase UID
-                    android.util.Log.d("MyApplication", "Firebase Auth user detected: ${user.uid}, linking RevenueCat...")
+                    AppLog.d("MyApplication", "Firebase Auth user detected: ${user.uid}, linking RevenueCat...")
                     RevenueCatManager.setUserId(user.uid)
                 } else {
-                    android.util.Log.d("MyApplication", "No Firebase Auth user - RevenueCat will use anonymous ID")
+                    AppLog.d("MyApplication", "No Firebase Auth user - RevenueCat will use anonymous ID")
                 }
             }
             
@@ -124,7 +124,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 if (oneSignalAppId.isNotEmpty()) {
                     OneSignal.initWithContext(this, oneSignalAppId)
                 } else {
-                    android.util.Log.w("MyApplication", "OneSignal App ID not configured - skipping initialization")
+                    AppLog.w("MyApplication", "OneSignal App ID not configured - skipping initialization")
                 }
             } catch (e: Exception) {
                 // OneSignal initialization failure is critical - app should crash
@@ -153,7 +153,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
     }
 
     override fun onStart(owner: LifecycleOwner) {
-        android.util.Log.d("MyApplication", "onStart() - App lifecycle onStart called, currentActivity: ${currentActivity?.javaClass?.simpleName ?: "null"}")
+        AppLog.d("MyApplication", "onStart() - App lifecycle onStart called, currentActivity: ${currentActivity?.javaClass?.simpleName ?: "null"}")
         isAppInBackground = false
         
         // REMOVED: Don't show app open ad here - let MainActivity handle it with proper lifecycle awareness
@@ -174,13 +174,13 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
     }
     
     override fun onStop(owner: LifecycleOwner) {
-        android.util.Log.d("MyApplication", "onStop() - App lifecycle onStop called")
+        AppLog.d("MyApplication", "onStop() - App lifecycle onStop called")
         isAppInBackground = true
         AppOpenAdManager.onAppWentToBackground() // Track background time for smart ad timing
     }
 
     override fun onActivityStarted(activity: Activity) {
-        android.util.Log.d("MyApplication", "onActivityStarted() - Activity started: ${activity.javaClass.simpleName}")
+        AppLog.d("MyApplication", "onActivityStarted() - Activity started: ${activity.javaClass.simpleName}")
         currentActivity = activity
         
         // REMOVED: Don't show app open ad here - let MainActivity handle it with proper lifecycle awareness
@@ -231,11 +231,11 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                     ErrorHandler.setCustomKey("thread_id", thread.id.toString())
                     
                     // Log to console
-                    Log.e("MyApplication", "Uncaught exception in thread: ${thread.name}", throwable)
+                    AppLog.e("MyApplication", "Uncaught exception in thread: ${thread.name}", throwable)
                     
                 } catch (e: Exception) {
                     // If error handling itself fails, use default handler
-                    Log.e("MyApplication", "Error in exception handler: ${e.message}", e)
+                    AppLog.e("MyApplication", "Error in exception handler: ${e.message}", e)
                 } finally {
                     // Call the default handler to ensure app crashes properly
                     // This is important for Android to show crash dialog
@@ -243,11 +243,11 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 }
             }
             
-            Log.d("MyApplication", "Global exception handler set up")
+            AppLog.d("MyApplication", "Global exception handler set up")
         } catch (e: Exception) {
             // If we can't set up exception handler, app is in critical state
             // Log to system log and rethrow - app must crash
-            Log.e("MyApplication", "CRITICAL: Failed to set up exception handler", e)
+            AppLog.e("MyApplication", "CRITICAL: Failed to set up exception handler", e)
             ErrorHandler.handleFatalError(
                 Exception("Failed to set up global exception handler: ${e.message}", e),
                 context = "MyApplication.setupGlobalExceptionHandler"

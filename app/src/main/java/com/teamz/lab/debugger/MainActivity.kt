@@ -121,7 +121,7 @@ import com.teamz.lab.debugger.utils.TabType
 import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
 import com.teamz.lab.debugger.ui.RevenueCatPaywall
 import androidx.compose.ui.window.DialogProperties
-import android.util.Log
+import com.teamz.lab.debugger.utils.AppLog
 
 class MainActivity : ComponentActivity() {
     
@@ -132,11 +132,11 @@ class MainActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.d("PowerStateDebug", "MainActivity onCreate - savedInstanceState: ${if (savedInstanceState != null) "EXISTS" else "null"} (hashCode: ${hashCode()})")
+        AppLog.d("PowerStateDebug", "MainActivity onCreate - savedInstanceState: ${if (savedInstanceState != null) "EXISTS" else "null"} (hashCode: ${hashCode()})")
         
         // Check if this is a cold start (no saved state) or recreation
         isFirstLaunch = savedInstanceState == null
-        android.util.Log.d("MainActivity", "onCreate() - isFirstLaunch: $isFirstLaunch")
+        AppLog.d("MainActivity", "onCreate() - isFirstLaunch: $isFirstLaunch")
         
         try {
             // Ensure locale is set
@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 // Window operation failure is not fatal - app can continue
                 // Log but don't crash - window will use default configuration
-                android.util.Log.w("MainActivity", "Window operation failed (non-fatal): ${e.message}", e)
+                AppLog.w("MainActivity", "Window operation failed (non-fatal): ${e.message}", e)
             }
             
             // Prevent automatic Input Method Manager initialization to avoid ANR
@@ -162,7 +162,7 @@ class MainActivity : ComponentActivity() {
                 window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             } catch (e: Exception) {
                 // Soft input mode setting failure is not fatal - app can continue
-                android.util.Log.w("MainActivity", "Failed to set soft input mode (non-fatal): ${e.message}", e)
+                AppLog.w("MainActivity", "Failed to set soft input mode (non-fatal): ${e.message}", e)
             }
             
             // Initialize theme manager before setContent (required for proper display)

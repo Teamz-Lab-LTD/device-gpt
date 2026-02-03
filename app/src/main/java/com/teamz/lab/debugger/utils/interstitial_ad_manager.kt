@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import com.teamz.lab.debugger.utils.AppLog
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
@@ -161,8 +162,8 @@ object InterstitialAdManager {
         actionName: String = "unknown",
         action: () -> Unit
     ) {
-        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - actionName: $actionName, adLoaded: ${interstitialAd != null}, isLoading: $isLoading")
-        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
+        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - actionName: $actionName, adLoaded: ${interstitialAd != null}, isLoading: $isLoading")
+        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
         
         // REVENUE OPTIMIZATION: Always try to load ad if not loaded (even if throttled)
         // This ensures ads are ready when throttling expires
@@ -175,25 +176,25 @@ object InterstitialAdManager {
             val timeSinceLastAd = System.currentTimeMillis() - lastAdShownTime
             val minInterval = getMinAdIntervalMs()
             val remainingSeconds = ((minInterval - timeSinceLastAd) / 1000).toInt()
-            android.util.Log.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown for action: $actionName")
+            AppLog.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown for action: $actionName")
             // Silently skip ad (better UX than showing too frequently)
             // But ad is loading in background for next opportunity
             // Policy: Always proceed with action, ad is optional
             Handler(Looper.getMainLooper()).post {
                 if (!activity.isFinishing && !activity.isDestroyed) {
                     try {
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (throttled): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (throttled): $actionName")
                         action()
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (throttled): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (throttled): $actionName")
                     } catch (e: Exception) {
-                        android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (throttled): ${e.message}", e)
+                        AppLog.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (throttled): ${e.message}", e)
                         ErrorHandler.handleError(
                             e,
                             context = "InterstitialAdManager.showAdBeforeAction-$actionName"
                         )
                     }
                 } else {
-                    android.util.Log.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (throttled): $actionName")
+                    AppLog.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (throttled): $actionName")
                 }
             }
             return
@@ -201,23 +202,23 @@ object InterstitialAdManager {
 
         // Check if ads are enabled (RemoteConfig kill switch)
         if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
-            android.util.Log.d(TAG, "Ads disabled via RemoteConfig")
+            AppLog.d(TAG, "Ads disabled via RemoteConfig")
             // Policy: Always proceed with action, ad is optional
             Handler(Looper.getMainLooper()).post {
                 if (!activity.isFinishing && !activity.isDestroyed) {
                     try {
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (ads disabled): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (ads disabled): $actionName")
                         action()
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (ads disabled): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (ads disabled): $actionName")
                     } catch (e: Exception) {
-                        android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (ads disabled): ${e.message}", e)
+                        AppLog.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (ads disabled): ${e.message}", e)
                         ErrorHandler.handleError(
                             e,
                             context = "InterstitialAdManager.showAdBeforeAction-$actionName"
                         )
                     }
                 } else {
-                    android.util.Log.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (ads disabled): $actionName")
+                    AppLog.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (ads disabled): $actionName")
                 }
             }
             return
@@ -228,17 +229,17 @@ object InterstitialAdManager {
             val ad = interstitialAd // Store reference to avoid null issues
             // Store action to survive activity lifecycle changes
             pendingAction = action
-            android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Stored pending action for: $actionName")
+            AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Stored pending action for: $actionName")
             
             ad?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
-                    android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Ad dismissed for: $actionName")
-                    android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
+                    AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Ad dismissed for: $actionName")
+                    AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
                     
                     interstitialAd = null
                     val actionToExecute = pendingAction
                     pendingAction = null // Clear immediately to prevent double execution
-                    android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Pending action: ${actionToExecute != null}")
+                    AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Pending action: ${actionToExecute != null}")
                     
                     // Preload next ad immediately (on background)
                     loadAd(activity)
@@ -247,15 +248,15 @@ object InterstitialAdManager {
                     // This delay allows the activity to fully resume and prevents
                     // interference with lifecycle observers that might trigger on ON_RESUME
                     Handler(Looper.getMainLooper()).postDelayed({
-                        android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Executing action after delay: $actionName")
-                        android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Activity state after delay: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
+                        AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Executing action after delay: $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Activity state after delay: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
                         
                         if (actionToExecute != null && !activity.isFinishing && !activity.isDestroyed) {
                             try {
-                                android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - EXECUTING ACTION: $actionName")
+                                AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - EXECUTING ACTION: $actionName")
                                 // Execute action - only once
                                 actionToExecute()
-                                android.util.Log.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Action executed successfully: $actionName")
+                                AppLog.d(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Action executed successfully: $actionName")
                                 
                                 // Log analytics
                                 AnalyticsUtils.logEvent(
@@ -263,14 +264,14 @@ object InterstitialAdManager {
                                     mapOf("action_name" to actionName)
                                 )
                             } catch (e: Exception) {
-                                android.util.Log.e(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Error executing action: ${e.message}", e)
+                                AppLog.e(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Error executing action: ${e.message}", e)
                                 ErrorHandler.handleError(
                                     e,
                                     context = "InterstitialAdManager.onAdDismissedFullScreenContent-$actionName"
                                 )
                             }
                         } else {
-                            android.util.Log.w(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Skipping action (activity finishing/destroyed or no action): $actionName")
+                            AppLog.w(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Skipping action (activity finishing/destroyed or no action): $actionName")
                         }
                     }, 200) // Small delay to let activity resume complete and avoid lifecycle conflicts
                 }
@@ -285,7 +286,7 @@ object InterstitialAdManager {
 
                 override fun onAdShowedFullScreenContent() {
                     updateLastAdShownTime() // Update cooldown timestamp when ad is shown (AdMob policy compliance)
-                    android.util.Log.d(TAG, "InterstitialAdManager onAdShowedFullScreenContent - Ad shown for: $actionName")
+                    AppLog.d(TAG, "InterstitialAdManager onAdShowedFullScreenContent - Ad shown for: $actionName")
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.AppFullScreenAdShown,
                         mapOf("action_name" to actionName)
@@ -306,7 +307,7 @@ object InterstitialAdManager {
                             try {
                                 actionToExecute()
                             } catch (e: Exception) {
-                                android.util.Log.e(
+                                AppLog.e(
                                     "InterstitialAdManager",
                                     "Error executing action after ad failure: ${e.message}",
                                     e
@@ -326,28 +327,28 @@ object InterstitialAdManager {
             }
 
             // Show ad
-            android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Showing ad for: $actionName")
+            AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Showing ad for: $actionName")
             ad?.show(activity)
         } else {
             // No ad available - proceed with action immediately
-            android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - No ad available, executing action immediately: $actionName")
+            AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - No ad available, executing action immediately: $actionName")
             // This ensures user action is never blocked
             pendingAction = null // Clear any pending action
             Handler(Looper.getMainLooper()).post {
                 if (!activity.isFinishing && !activity.isDestroyed) {
                     try {
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (no ad): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (no ad): $actionName")
                         action()
-                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (no ad): $actionName")
+                        AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (no ad): $actionName")
                     } catch (e: Exception) {
-                        android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (no ad): ${e.message}", e)
+                        AppLog.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (no ad): ${e.message}", e)
                         ErrorHandler.handleError(
                             e,
                             context = "InterstitialAdManager.showAdBeforeAction-$actionName"
                         )
                     }
                 } else {
-                    android.util.Log.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action: $actionName")
+                    AppLog.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action: $actionName")
                 }
             }
             
@@ -386,7 +387,7 @@ object InterstitialAdManager {
             val timeSinceLastAd = System.currentTimeMillis() - lastAdShownTime
             val minInterval = getMinAdIntervalMs()
             val remainingSeconds = ((minInterval - timeSinceLastAd) / 1000).toInt()
-            android.util.Log.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown")
+            AppLog.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown")
             // Silently skip ad (better UX than showing too frequently)
             // But ad is loading in background for next opportunity
             onAdClosed()
@@ -395,7 +396,7 @@ object InterstitialAdManager {
         
         // Check if ads are enabled (RemoteConfig kill switch)
         if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
-            android.util.Log.d(TAG, "Ads disabled via RemoteConfig")
+            AppLog.d(TAG, "Ads disabled via RemoteConfig")
             onAdClosed()
             return
         }
@@ -437,7 +438,7 @@ object InterstitialAdManager {
             // No ad available yet - but we're loading it in background for next opportunity
             // Proceed with callback immediately (don't block user)
             // Next call will have ad ready (revenue optimized)
-            android.util.Log.d(TAG, "Ad not loaded yet, but loading in background for next opportunity")
+            AppLog.d(TAG, "Ad not loaded yet, but loading in background for next opportunity")
             onAdClosed()
         }
     }
@@ -466,7 +467,7 @@ object InterstitialAdManager {
      * This ensures no ads are shown after premium purchase
      */
     fun clearAd() {
-        android.util.Log.d(TAG, "clearAd() - Clearing interstitial ad")
+        AppLog.d(TAG, "clearAd() - Clearing interstitial ad")
         interstitialAd = null
         isLoading = false
         pendingAction = null
