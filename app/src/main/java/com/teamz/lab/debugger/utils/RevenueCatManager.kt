@@ -227,15 +227,43 @@ object RevenueCatManager {
             return
         }
         
+        // Track restore initiated
+        AnalyticsUtils.logEvent(
+            AnalyticsEvent.PremiumRestoreInitiated,
+            mapOf("source" to "manual_restore")
+        )
+        
         Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
             override fun onReceived(customerInfo: CustomerInfo) {
                 Log.d(TAG, "Purchases restored successfully")
                 updatePremiumStatus(customerInfo)
+                
+                // Track restore completed
+                val hasPremium = RevenueCatManager.isPremium()
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.PremiumRestoreCompleted,
+                    mapOf(
+                        "has_premium" to hasPremium,
+                        "source" to "manual_restore"
+                    )
+                )
+                
                 onSuccess()
             }
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to restore purchases: ${error.message}")
+                
+                // Track restore failed
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.PremiumRestoreFailed,
+                    mapOf(
+                        "error_code" to error.code.name,
+                        "error_message" to (error.message ?: "unknown"),
+                        "source" to "manual_restore"
+                    )
+                )
+                
                 onError(error.message)
             }
         })
@@ -418,10 +446,14 @@ object RevenueCatManager {
                 val storeProduct = product.product as? StoreProduct
                 Log.d(TAG, "Purchasing product: ${product.identifier}, price: ${storeProduct?.price}")
                 
-                // Track purchase attempt
+                // Track purchase initiated
                 AnalyticsUtils.logEvent(
-                    AnalyticsEvent.DrawerItemClicked,
-                    mapOf("item" to "purchase_attempt", "product_id" to (storeProduct?.id ?: product.identifier))
+                    AnalyticsEvent.PremiumPurchaseInitiated,
+                    mapOf(
+                        "product_id" to (storeProduct?.id ?: product.identifier),
+                        "product_price" to (storeProduct?.price?.formatted ?: "unknown"),
+                        "offering_id" to OFFERING_ID
+                    )
                 )
                 
                 // Purchase the product directly
@@ -435,11 +467,15 @@ object RevenueCatManager {
                             Log.d(TAG, "Purchase successful: ${transaction.productIds}")
                             updatePremiumStatus(customerInfo)
                             
-                            // Track purchase success
+                            // Track purchase completed
                             val purchasedProductId = (product.product as? StoreProduct)?.id ?: product.identifier
                             AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "purchase_success", "product_id" to purchasedProductId)
+                                AnalyticsEvent.PremiumPurchaseCompleted,
+                                mapOf(
+                                    "product_id" to purchasedProductId,
+                                    "product_ids" to transaction.productIds.joinToString(","),
+                                    "source" to "direct_purchase"
+                                )
                             )
                             
                             onSuccess()
@@ -449,6 +485,21 @@ object RevenueCatManager {
                             error: com.revenuecat.purchases.PurchasesError,
                             userCancelled: Boolean
                         ) {
+                            // Track purchase error
+                            AnalyticsUtils.logEvent(
+                                if (userCancelled) {
+                                    AnalyticsEvent.PremiumPurchaseCancelled
+                                } else {
+                                    AnalyticsEvent.PremiumPurchaseFailed
+                                },
+                                mapOf(
+                                    "product_id" to ((product.product as? StoreProduct)?.id ?: product.identifier),
+                                    "error_code" to error.code.name,
+                                    "error_message" to (error.message ?: "unknown"),
+                                    "user_cancelled" to userCancelled.toString(),
+                                    "source" to "direct_purchase"
+                                )
+                            )
                             if (userCancelled) {
                                 Log.d(TAG, "User cancelled purchase")
                                 // Track cancellation

@@ -235,21 +235,22 @@ fun ExpandableInfoList(
                     // 🔄 Dynamically load an ad when expanded, but only if a new one exists
                     // AdMob Best Practice: Use different ad for expanded view vs list ads
                     // Use key to prevent unnecessary LaunchedEffect restarts
-                    LaunchedEffect(key1 = expanded, key2 = actualIndex) {
-                        if (expanded && inlineAd == null) {
-                            if (RemoteConfigUtils.shouldShowNativeAds()) {
-                                // Use position-specific ad to ensure different ad in expanded view
-                                val positionId = "device_info_expanded_$actualIndex"
-                                val newAd = NativeAdManager.getAdForPosition(positionId)
-                                newAd?.let {
-                                    val logKey = "expanded_$actualIndex"
-                                    if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != it.hashCode()) {
-                                        Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
-                                                "Ad hash: ${it.hashCode()}, Position: $positionId")
-                                        shownAdHashes[logKey] = it.hashCode()
-                                    }
-                                    inlineAds[actualIndex] = it
+                    // Reactive check for ads - updates when premium is purchased
+                    val shouldShowAdsInline = RemoteConfigUtils.shouldShowNativeAdsReactive()
+                    
+                    LaunchedEffect(key1 = expanded, key2 = actualIndex, key3 = shouldShowAdsInline) {
+                        if (expanded && inlineAd == null && shouldShowAdsInline) {
+                            // Use position-specific ad to ensure different ad in expanded view
+                            val positionId = "device_info_expanded_$actualIndex"
+                            val newAd = NativeAdManager.getAdForPosition(positionId)
+                            newAd?.let {
+                                val logKey = "expanded_$actualIndex"
+                                if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != it.hashCode()) {
+                                    Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
+                                            "Ad hash: ${it.hashCode()}, Position: $positionId")
+                                    shownAdHashes[logKey] = it.hashCode()
                                 }
+                                inlineAds[actualIndex] = it
                             }
                         }
                     }

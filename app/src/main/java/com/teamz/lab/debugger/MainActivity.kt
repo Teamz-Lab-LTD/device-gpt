@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -364,20 +365,87 @@ fun DebuggerApp(activity: ComponentActivity) {
     val context = LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
     // Check intent for navigation from widget (lock screen widget tap)
+    // Support both old index-based and new name-based navigation for backward compatibility
     val initialTab = remember(activity) {
         val intent = activity.intent
         val navigateToSection = intent?.getIntExtra("navigate_to_section", -1) ?: -1
-        if (navigateToSection >= 0) {
-            // Log analytics for widget click
+        val navigateToTab = intent?.getStringExtra("navigate_to_tab") ?: ""
+        val source = intent?.getStringExtra("source") ?: "unknown"
+        val trackWidgetTap = intent?.getBooleanExtra("track_widget_tap", false) ?: false
+        val widgetAction = intent?.getStringExtra("widget_action") ?: ""
+        
+        // Calculate tab indices dynamically based on leaderboard configuration
+        val isLeaderboardEnabled = RemoteConfigUtils.isLeaderboardEnabled()
+        val leaderboardTabPosition = RemoteConfigUtils.getLeaderboardTabPosition()
+        val totalTabs = if (isLeaderboardEnabled) 5 else 4
+        
+        // Find health tab index dynamically
+        val healthTabIndex = when {
+            // Leaderboard at start (index 0)
+            isLeaderboardEnabled && leaderboardTabPosition == 0 -> 3
+            // Leaderboard at end (index -1 means last)
+            isLeaderboardEnabled && leaderboardTabPosition == -1 -> 2
+            // No leaderboard
+            else -> 2
+        }
+        
+        val targetTab = when {
+            // New name-based navigation (preferred)
+            navigateToTab.equals("health", ignoreCase = true) -> healthTabIndex
+            // Old index-based navigation (backward compatibility)
+            navigateToSection >= 0 -> navigateToSection
+            else -> -1
+        }
+        
+        if (targetTab >= 0) {
+            // Log analytics for widget tap
+            if (trackWidgetTap || source == "lock_screen_widget") {
+                AnalyticsUtils.logEvent(AnalyticsEvent.WidgetTapped, mapOf(
+                    "source" to source,
+                    "target_section" to targetTab,
+                    "navigation_method" to if (navigateToTab.isNotEmpty()) "name_based" else "index_based"
+                ))
+            }
+            // Also log tab view for consistency
             AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed, mapOf(
-                "source" to (intent?.getStringExtra("source") ?: "unknown")
+                "source" to source
             ))
-            navigateToSection
+            targetTab
         } else {
             0
         }
     }
     var selectedTab by remember { mutableIntStateOf(initialTab) } // Current tab index
+    
+    // Handle widget action (e.g., clear RAM)
+    val widgetAction = remember(activity) {
+        activity.intent?.getStringExtra("widget_action") ?: ""
+    }
+    
+    LaunchedEffect(widgetAction) {
+        if (widgetAction == "clear_ram") {
+            // Show interstitial ad before clearing RAM from widget
+            InterstitialAdManager.showAdBeforeAction(
+                activity = activity,
+                actionName = "clear_ram_widget"
+            ) {
+                // Action to execute after ad is dismissed (or if ad fails)
+                val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.WidgetTapped,
+                    mapOf(
+                        "source" to "lock_screen_widget",
+                        "action" to "clear_ram",
+                        "success" to success
+                    )
+                )
+            }
+            // Clear the action to prevent re-execution
+            activity.intent?.removeExtra("widget_action")
+        }
+    }
+    
     val appName = remember {
         val applicationInfo = context.packageManager.getApplicationInfo(context.packageName, 0)
         context.packageManager.getApplicationLabel(applicationInfo).toString()
@@ -530,12 +598,16 @@ fun DebuggerApp(activity: ComponentActivity) {
                 val aiTooltipState = rememberTooltipState()
                 val premiumTooltipState = rememberTooltipState()
                 
-                // Check premium status
-                val isPremium = RevenueCatManager.isPremium()
+                // Reactive premium status check - automatically updates when premium is purchased
+                val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
+                val currentPremiumStatus = premiumStatus
+                val isPremium = currentPremiumStatus is RevenueCatManager.PremiumStatus.Premium && 
+                    (currentPremiumStatus as? RevenueCatManager.PremiumStatus.Premium)?.isActive == true
+                
                 var productPrice by remember { mutableStateOf<String?>(null) }
                 
                 // Fetch price dynamically from RevenueCat
-                LaunchedEffect(Unit) {
+                LaunchedEffect(isPremium) {
                     if (!isPremium) {
                         RevenueCatManager.getLifetimeProductPrice(
                             onSuccess = { price ->
@@ -626,9 +698,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                         // Main FAB matching other FABs style with continuous subtle animation
                         FloatingActionButton(
                             onClick = {
-                                AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf("source" to "premium_fab"))
-                                AnalyticsUtils.logEvent(AnalyticsEvent.LifetimeSubscriptionClicked, mapOf(
-                                    "source" to "premium_fab",
+                                AnalyticsUtils.logEvent(AnalyticsEvent.PremiumFabClicked, mapOf(
                                     "price" to (productPrice ?: "2.99"),
                                     "type" to "lifetime"
                                 ))

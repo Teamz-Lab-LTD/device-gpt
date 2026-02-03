@@ -63,8 +63,8 @@ fun HealthSection(
     // - Global time-based throttling
     // - Ad loading and showing
 
-    // Native ad state
-    val shouldShowNativeAds = remember { RemoteConfigUtils.shouldShowNativeAds() }
+    // Native ad state - reactive check that updates when premium is purchased
+    val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
     val nativeAds = remember { NativeAdManager.nativeAds }
     var currentNativeAd by remember {
         mutableStateOf<com.google.android.gms.ads.nativead.NativeAd?>(
@@ -204,6 +204,686 @@ fun HealthSection(
                     Spacer(modifier = Modifier.height(8.dp)) // Spacing after ad
                 }
             }
+        }
+
+        // Quick Actions Section Header
+        item(key = "quick_actions_header") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Bolt,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Quick Actions",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // RAM Optimization Card (Quick Action)
+        item(key = "ram_optimization") {
+            var ramUsage by remember { mutableStateOf("--") }
+            var ramPercent by remember { mutableIntStateOf(0) }
+            var isClearing by remember { mutableStateOf(false) }
+            var lastClearResult by remember { mutableStateOf<String?>(null) }
+            
+            LaunchedEffect(Unit) {
+                val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                ramUsage = ramInfo
+                // Extract percentage
+                val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+            }
+            
+            // Update RAM usage periodically
+            LaunchedEffect(Unit) {
+                while (true) {
+                    kotlinx.coroutines.delay(5000) // Update every 5 seconds
+                    val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                    ramUsage = ramInfo
+                    val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                    ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                }
+            }
+            
+            RamOptimizationCard(
+                ramUsage = ramUsage,
+                ramPercent = ramPercent,
+                isClearing = isClearing,
+                lastClearResult = lastClearResult,
+                onClearRam = {
+                    // Set loading state immediately so user sees feedback right away
+                    isClearing = true
+                    
+                    // Log button click analytics
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetTapped,
+                        mapOf(
+                            "source" to "health_section",
+                            "action" to "free_ram_button_clicked",
+                            "ram_percent_before" to ramPercent
+                        )
+                    )
+                    
+                    // Show interstitial ad before clearing RAM
+                    val activity = context as? android.app.Activity
+                    if (activity != null) {
+                        InterstitialAdManager.showAdBeforeAction(
+                            activity = activity,
+                            actionName = "clear_ram"
+                        ) {
+                            // Action to execute after ad is dismissed (or if ad fails)
+                            coroutineScope.launch {
+                                try {
+                                    val ramPercentBefore = ramPercent
+                                    val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
+                                    lastClearResult = message
+                                    isClearing = false
+                                    
+                                    // Update RAM usage after clearing
+                                    kotlinx.coroutines.delay(1000)
+                                    val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                                    ramUsage = ramInfo
+                                    val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                                    ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                    
+                                    // Log RAM clear completion analytics
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "clear_ram_completed",
+                                            "success" to success,
+                                            "ram_percent_before" to ramPercentBefore,
+                                            "ram_percent_after" to ramPercent,
+                                            "freed_mb" to (ramPercentBefore - ramPercent)
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    lastClearResult = "Error: ${e.message}"
+                                    isClearing = false
+                                    com.teamz.lab.debugger.utils.handleError(e)
+                                    
+                                    // Log error analytics
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "clear_ram_error",
+                                            "error" to (e.message ?: "Unknown error")
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        // Fallback if no activity context
+                        isClearing = true
+                        coroutineScope.launch {
+                            try {
+                                val ramPercentBefore = ramPercent
+                                val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
+                                lastClearResult = message
+                                isClearing = false
+                                
+                                // Update RAM usage after clearing
+                                kotlinx.coroutines.delay(1000)
+                                val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                                ramUsage = ramInfo
+                                val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                                ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                
+                                // Log completion analytics
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.WidgetTapped,
+                                    mapOf(
+                                        "source" to "health_section",
+                                        "action" to "clear_ram_completed",
+                                        "success" to success,
+                                        "ram_percent_before" to ramPercentBefore,
+                                        "ram_percent_after" to ramPercent
+                                    )
+                                )
+                            } catch (e: Exception) {
+                                lastClearResult = "Error: ${e.message}"
+                                isClearing = false
+                                com.teamz.lab.debugger.utils.handleError(e)
+                            }
+                        }
+                    }
+                },
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val content = """
+RAM Usage: $ramUsage
+Current Usage: $ramPercent%
+
+Free RAM action optimizes background processes and clears memory to improve device performance.
+                        """.trimIndent()
+                        handler("RAM Optimization", content)
+                    }
+                }
+            )
+        }
+
+        // Storage Cleanup Card (Quick Action)
+        item(key = "storage_cleanup") {
+            var storageUsage by remember { mutableStateOf("--") }
+            var storagePercent by remember { mutableIntStateOf(0) }
+            var isClearing by remember { mutableStateOf(false) }
+            var lastClearResult by remember { mutableStateOf<String?>(null) }
+            var showStorageGuideDialog by remember { mutableStateOf(false) }
+            
+            LaunchedEffect(Unit) {
+                val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                storageUsage = storageInfo
+                storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+            }
+            
+            // Update storage usage periodically
+            LaunchedEffect(Unit) {
+                while (true) {
+                    kotlinx.coroutines.delay(10000) // Update every 10 seconds
+                    val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                    storageUsage = storageInfo
+                    storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                }
+            }
+            
+            // Storage Guide Dialog
+            if (showStorageGuideDialog) {
+                AlertDialog(
+                    onDismissRequest = { showStorageGuideDialog = false },
+                    title = {
+                        Text(
+                            text = "How to Clear Storage",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column {
+                            Text(
+                                text = "To clear app caches and free up storage:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                                Text(
+                                    text = "Option 1: Grant 'All files access' permission",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                                Text(
+                                    text = "• Enable 'Allow access to manage all files' in the settings screen",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                                )
+                                Text(
+                                    text = "• This allows the app to clear more cache automatically",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            Text(
+                                text = "Option 2: Clear cache manually",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                            Text(
+                                text = "1. Go to Settings > Apps",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "2. Select an app",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "3. Tap 'Storage' > 'Clear Cache'",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Or use Settings > Storage to see overall storage usage and recommendations.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showStorageGuideDialog = false
+                                // Try to open settings again
+                                val opened = com.teamz.lab.debugger.utils.openStorageSettings(context)
+                                if (!opened) {
+                                    // If still can't open, show toast
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Please go to Settings > Storage manually",
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        ) {
+                            Text("Open Settings")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showStorageGuideDialog = false }) {
+                            Text("Close")
+                        }
+                    }
+                )
+            }
+            
+            StorageCleanupCard(
+                storageUsage = storageUsage,
+                storagePercent = storagePercent,
+                isClearing = isClearing,
+                lastClearResult = lastClearResult,
+                onCleanStorage = {
+                    isClearing = true
+                    
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetTapped,
+                        mapOf(
+                            "source" to "health_section",
+                            "action" to "clean_storage_button_clicked",
+                            "storage_percent_before" to storagePercent
+                        )
+                    )
+                    
+                    val activity = context as? android.app.Activity
+                    if (activity != null) {
+                        InterstitialAdManager.showAdBeforeAction(
+                            activity = activity,
+                            actionName = "clean_storage"
+                        ) {
+                            coroutineScope.launch {
+                                try {
+                                    val storagePercentBefore = storagePercent
+                                    val (success, message, shouldOpenSettings) = com.teamz.lab.debugger.utils.clearStorageCache(context)
+                                    isClearing = false
+                                    
+                                    if (success) {
+                                        // Cache was cleared successfully
+                                        lastClearResult = message
+                                        kotlinx.coroutines.delay(1000)
+                                        val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                                        storageUsage = storageInfo
+                                        storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                                        
+                                        AnalyticsUtils.logEvent(
+                                            AnalyticsEvent.WidgetTapped,
+                                            mapOf(
+                                                "source" to "health_section",
+                                                "action" to "clean_storage_completed",
+                                                "success" to true,
+                                                "storage_percent_before" to storagePercentBefore,
+                                                "storage_percent_after" to storagePercent
+                                            )
+                                        )
+                                    } else if (shouldOpenSettings) {
+                                        // Need to open settings
+                                        lastClearResult = message
+                                        kotlinx.coroutines.delay(500)
+                                        
+                                        val settingsOpened = com.teamz.lab.debugger.utils.openStorageSettings(context)
+                                        if (!settingsOpened) {
+                                            // Settings couldn't be opened - show guide dialog
+                                            showStorageGuideDialog = true
+                                        }
+                                        
+                                        AnalyticsUtils.logEvent(
+                                            AnalyticsEvent.WidgetTapped,
+                                            mapOf(
+                                                "source" to "health_section",
+                                                "action" to "clean_storage_opened_settings",
+                                                "settings_opened" to settingsOpened
+                                            )
+                                        )
+                                    } else {
+                                        lastClearResult = message
+                                    }
+                                } catch (e: Exception) {
+                                    lastClearResult = "Error: ${e.message}"
+                                    isClearing = false
+                                    com.teamz.lab.debugger.utils.handleError(e)
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "clean_storage_error",
+                                            "error" to (e.message ?: "Unknown error")
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        isClearing = true
+                        coroutineScope.launch {
+                            try {
+                                val (success, message, shouldOpenSettings) = com.teamz.lab.debugger.utils.clearStorageCache(context)
+                                isClearing = false
+                                
+                                if (success) {
+                                    lastClearResult = message
+                                    kotlinx.coroutines.delay(1000)
+                                    val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                                    storageUsage = storageInfo
+                                    storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                                } else if (shouldOpenSettings) {
+                                    lastClearResult = message
+                                    kotlinx.coroutines.delay(500)
+                                    val settingsOpened = com.teamz.lab.debugger.utils.openStorageSettings(context)
+                                    if (!settingsOpened) {
+                                        showStorageGuideDialog = true
+                                    }
+                                } else {
+                                    lastClearResult = message
+                                }
+                            } catch (e: Exception) {
+                                lastClearResult = "Error: ${e.message}"
+                                isClearing = false
+                                com.teamz.lab.debugger.utils.handleError(e)
+                            }
+                        }
+                    }
+                },
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val content = """
+Storage Usage: $storageUsage
+Current Usage: $storagePercent%
+
+Storage cleanup clears app caches and temporary files to free up space.
+                        """.trimIndent()
+                        handler("Storage Cleanup", content)
+                    }
+                }
+            )
+        }
+
+        // Battery Optimization Card (Quick Action)
+        item(key = "battery_optimization") {
+            var batteryHealth by remember { mutableIntStateOf(70) }
+            var batteryInfo by remember { mutableStateOf("--") }
+            var isOptimizing by remember { mutableStateOf(false) }
+            var lastOptimizeResult by remember { mutableStateOf<String?>(null) }
+            
+            LaunchedEffect(Unit) {
+                batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+            }
+            
+            // Update battery info periodically
+            LaunchedEffect(Unit) {
+                while (true) {
+                    kotlinx.coroutines.delay(15000) // Update every 15 seconds
+                    batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                    batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                }
+            }
+            
+            BatteryOptimizationCard(
+                batteryHealth = batteryHealth,
+                batteryInfo = batteryInfo,
+                isOptimizing = isOptimizing,
+                lastOptimizeResult = lastOptimizeResult,
+                onOptimizeBattery = {
+                    isOptimizing = true
+                    
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetTapped,
+                        mapOf(
+                            "source" to "health_section",
+                            "action" to "optimize_battery_button_clicked",
+                            "battery_health_before" to batteryHealth
+                        )
+                    )
+                    
+                    val activity = context as? android.app.Activity
+                    if (activity != null) {
+                        InterstitialAdManager.showAdBeforeAction(
+                            activity = activity,
+                            actionName = "optimize_battery"
+                        ) {
+                            coroutineScope.launch {
+                                try {
+                                    val batteryHealthBefore = batteryHealth
+                                    val (success, message) = com.teamz.lab.debugger.utils.optimizeBattery(context)
+                                    lastOptimizeResult = message
+                                    isOptimizing = false
+                                    
+                                    kotlinx.coroutines.delay(1000)
+                                    batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                                    batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                                    
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "optimize_battery_completed",
+                                            "success" to success,
+                                            "battery_health_before" to batteryHealthBefore,
+                                            "battery_health_after" to batteryHealth
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    lastOptimizeResult = "Error: ${e.message}"
+                                    isOptimizing = false
+                                    com.teamz.lab.debugger.utils.handleError(e)
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "optimize_battery_error",
+                                            "error" to (e.message ?: "Unknown error")
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        isOptimizing = true
+                        coroutineScope.launch {
+                            try {
+                                val (success, message) = com.teamz.lab.debugger.utils.optimizeBattery(context)
+                                lastOptimizeResult = message
+                                isOptimizing = false
+                            } catch (e: Exception) {
+                                lastOptimizeResult = "Error: ${e.message}"
+                                isOptimizing = false
+                                com.teamz.lab.debugger.utils.handleError(e)
+                            }
+                        }
+                    }
+                },
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val content = """
+Battery Health: $batteryHealth%
+Battery Status: $batteryInfo
+
+Battery optimization provides suggestions to improve battery life and health.
+                        """.trimIndent()
+                        handler("Battery Optimization", content)
+                    }
+                }
+            )
+        }
+
+        // App Cache Cleaner Card (Quick Action)
+        item(key = "app_cache_cleaner") {
+            var cacheSize by remember { mutableStateOf("--") }
+            var appCount by remember { mutableIntStateOf(0) }
+            var isClearing by remember { mutableStateOf(false) }
+            var lastClearResult by remember { mutableStateOf<String?>(null) }
+            
+            LaunchedEffect(Unit) {
+                val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
+                appCount = appsWithCache.size
+                val totalCache = appsWithCache.sumOf { it.cacheSize }
+                val totalCacheMB = totalCache / (1024 * 1024)
+                cacheSize = "$totalCacheMB MB"
+            }
+            
+            // Update cache info periodically
+            LaunchedEffect(Unit) {
+                while (true) {
+                    kotlinx.coroutines.delay(20000) // Update every 20 seconds
+                    val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
+                    appCount = appsWithCache.size
+                    val totalCache = appsWithCache.sumOf { it.cacheSize }
+                    val totalCacheMB = totalCache / (1024 * 1024)
+                    cacheSize = "$totalCacheMB MB"
+                }
+            }
+            
+            AppCacheCleanerCard(
+                cacheSize = cacheSize,
+                appCount = appCount,
+                isClearing = isClearing,
+                lastClearResult = lastClearResult,
+                onClearCache = {
+                    isClearing = true
+                    
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetTapped,
+                        mapOf(
+                            "source" to "health_section",
+                            "action" to "clear_app_cache_button_clicked",
+                            "cache_size_mb" to (cacheSize.replace(" MB", "").toIntOrNull() ?: 0),
+                            "app_count" to appCount
+                        )
+                    )
+                    
+                    val activity = context as? android.app.Activity
+                    if (activity != null) {
+                        InterstitialAdManager.showAdBeforeAction(
+                            activity = activity,
+                            actionName = "clear_app_cache"
+                        ) {
+                            coroutineScope.launch {
+                                try {
+                                    val cacheSizeBefore = cacheSize
+                                    val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
+                                    var totalFreed = 0L
+                                    var clearedCount = 0
+                                    
+                                    // Clear top 20 apps with largest cache
+                                    appsWithCache.take(20).forEach { appInfo ->
+                                        val freed = com.teamz.lab.debugger.utils.clearAppCache(context, appInfo.packageName)
+                                        if (freed > 0) {
+                                            totalFreed += freed
+                                            clearedCount++
+                                        }
+                                    }
+                                    
+                                    val freedMB = totalFreed / (1024 * 1024)
+                                    lastClearResult = if (freedMB > 0) {
+                                        "Freed ${freedMB} MB cache from ${clearedCount} apps."
+                                    } else {
+                                        "Cache already clean. No cache to clear."
+                                    }
+                                    isClearing = false
+                                    
+                                    kotlinx.coroutines.delay(1000)
+                                    val updatedApps = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
+                                    appCount = updatedApps.size
+                                    val totalCache = updatedApps.sumOf { it.cacheSize }
+                                    val totalCacheMB = totalCache / (1024 * 1024)
+                                    cacheSize = "$totalCacheMB MB"
+                                    
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "clear_app_cache_completed",
+                                            "success" to true,
+                                            "freed_mb" to freedMB,
+                                            "apps_cleared" to clearedCount
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    lastClearResult = "Error: ${e.message}"
+                                    isClearing = false
+                                    com.teamz.lab.debugger.utils.handleError(e)
+                                    AnalyticsUtils.logEvent(
+                                        AnalyticsEvent.WidgetTapped,
+                                        mapOf(
+                                            "source" to "health_section",
+                                            "action" to "clear_app_cache_error",
+                                            "error" to (e.message ?: "Unknown error")
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        isClearing = true
+                        coroutineScope.launch {
+                            try {
+                                val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
+                                var totalFreed = 0L
+                                var clearedCount = 0
+                                
+                                appsWithCache.take(20).forEach { appInfo ->
+                                    val freed = com.teamz.lab.debugger.utils.clearAppCache(context, appInfo.packageName)
+                                    if (freed > 0) {
+                                        totalFreed += freed
+                                        clearedCount++
+                                    }
+                                }
+                                
+                                val freedMB = totalFreed / (1024 * 1024)
+                                lastClearResult = if (freedMB > 0) {
+                                    "Freed ${freedMB} MB cache from ${clearedCount} apps."
+                                } else {
+                                    "Cache already clean."
+                                }
+                                isClearing = false
+                            } catch (e: Exception) {
+                                lastClearResult = "Error: ${e.message}"
+                                isClearing = false
+                                com.teamz.lab.debugger.utils.handleError(e)
+                            }
+                        }
+                    }
+                },
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val content = """
+App Cache: $cacheSize
+Apps with Cache: $appCount
+
+App cache cleaner clears temporary files from apps to free up storage space.
+                        """.trimIndent()
+                        handler("App Cache Cleaner", content)
+                    }
+                }
+            )
         }
 
         // Privacy Dashboard Card
@@ -1268,6 +1948,726 @@ private fun PrivacyDashboardCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RamOptimizationCard(
+    ramUsage: String,
+    ramPercent: Int,
+    isClearing: Boolean,
+    lastClearResult: String?,
+    onClearRam: () -> Unit,
+    onAIClick: (() -> Unit)? = null
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            when {
+                ramPercent > 85 -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                ramPercent > 70 -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = "RAM",
+                    tint = when {
+                        ramPercent > 85 -> MaterialTheme.colorScheme.error
+                        ramPercent > 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "RAM Optimization",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = ramUsage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AIIcon.icon,
+                            contentDescription = "Get AI insights about RAM",
+                            tint = AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // RAM Usage Progress
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Memory Usage",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        color = when {
+                            ramPercent > 85 -> MaterialTheme.colorScheme.errorContainer
+                            ramPercent > 70 -> DesignSystemColors.NeonGreen
+                            else -> DesignSystemColors.NeonGreen
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "$ramPercent%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            // Always use black text on neon green background for visibility
+                            color = when {
+                                ramPercent > 85 -> MaterialTheme.colorScheme.onErrorContainer
+                                else -> DesignSystemColors.Dark // Black text on neon green
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { ramPercent / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = when {
+                        ramPercent > 85 -> MaterialTheme.colorScheme.error
+                        ramPercent > 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Free RAM Button
+            Button(
+                onClick = onClearRam,
+                enabled = !isClearing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = when {
+                        ramPercent > 85 -> MaterialTheme.colorScheme.error
+                        ramPercent > 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                )
+            ) {
+                if (isClearing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Optimizing...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Free RAM",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            // Show result message with neon green background (alpha) supporting both light and dark modes
+            if (lastClearResult != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = lastClearResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+            
+            // Info text
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Clears background processes to free up memory and improve performance",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StorageCleanupCard(
+    storageUsage: String,
+    storagePercent: Int,
+    isClearing: Boolean,
+    lastClearResult: String?,
+    onCleanStorage: () -> Unit,
+    onAIClick: (() -> Unit)? = null
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            when {
+                storagePercent > 90 -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                storagePercent > 80 -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = "Storage",
+                    tint = when {
+                        storagePercent > 90 -> MaterialTheme.colorScheme.error
+                        storagePercent > 80 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Storage Cleanup",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = storageUsage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AIIcon.icon,
+                            contentDescription = "Get AI insights about storage",
+                            tint = AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Storage Usage Progress
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Storage Usage",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        color = when {
+                            storagePercent > 90 -> MaterialTheme.colorScheme.errorContainer
+                            storagePercent > 80 -> DesignSystemColors.NeonGreen
+                            else -> DesignSystemColors.NeonGreen
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "$storagePercent%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = when {
+                                storagePercent > 90 -> MaterialTheme.colorScheme.onErrorContainer
+                                else -> DesignSystemColors.Dark
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { storagePercent / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = when {
+                        storagePercent > 90 -> MaterialTheme.colorScheme.error
+                        storagePercent > 80 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Clean Storage Button
+            Button(
+                onClick = onCleanStorage,
+                enabled = !isClearing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = when {
+                        storagePercent > 90 -> MaterialTheme.colorScheme.error
+                        storagePercent > 80 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                )
+            ) {
+                if (isClearing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Cleaning...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Clean Storage",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            // Show result message
+            if (lastClearResult != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = lastClearResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+            
+            // Info text
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Clears app caches and temporary files to free up storage space",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun BatteryOptimizationCard(
+    batteryHealth: Int,
+    batteryInfo: String,
+    isOptimizing: Boolean,
+    lastOptimizeResult: String?,
+    onOptimizeBattery: () -> Unit,
+    onAIClick: (() -> Unit)? = null
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            when {
+                batteryHealth < 50 -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                batteryHealth < 70 -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.BatteryStd,
+                    contentDescription = "Battery",
+                    tint = when {
+                        batteryHealth < 50 -> MaterialTheme.colorScheme.error
+                        batteryHealth < 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Battery Optimization",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = batteryInfo,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        maxLines = 3,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+                    )
+                }
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AIIcon.icon,
+                            contentDescription = "Get AI insights about battery",
+                            tint = AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Battery Health Progress
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Battery Health",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        color = when {
+                            batteryHealth < 50 -> MaterialTheme.colorScheme.errorContainer
+                            batteryHealth < 70 -> DesignSystemColors.NeonGreen
+                            else -> DesignSystemColors.NeonGreen
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "$batteryHealth%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = when {
+                                batteryHealth < 50 -> MaterialTheme.colorScheme.onErrorContainer
+                                else -> DesignSystemColors.Dark
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { batteryHealth / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = when {
+                        batteryHealth < 50 -> MaterialTheme.colorScheme.error
+                        batteryHealth < 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Optimize Battery Button
+            Button(
+                onClick = onOptimizeBattery,
+                enabled = !isOptimizing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = when {
+                        batteryHealth < 50 -> MaterialTheme.colorScheme.error
+                        batteryHealth < 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                )
+            ) {
+                if (isOptimizing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Optimizing...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.PowerSettingsNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Optimize Battery",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            // Show result message
+            if (lastOptimizeResult != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = lastOptimizeResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+            
+            // Info text
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Provides suggestions to improve battery life and health",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppCacheCleanerCard(
+    cacheSize: String,
+    appCount: Int,
+    isClearing: Boolean,
+    lastClearResult: String?,
+    onClearCache: () -> Unit,
+    onAIClick: (() -> Unit)? = null
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Build,
+                    contentDescription = "Cache",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "App Cache Cleaner",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$cacheSize in $appCount apps",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AIIcon.icon,
+                            contentDescription = "Get AI insights about cache",
+                            tint = AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Cache Info
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Total Cache",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        color = DesignSystemColors.NeonGreen,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = cacheSize,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = DesignSystemColors.Dark,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "$appCount apps have cache data",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Clear Cache Button
+            Button(
+                onClick = onClearCache,
+                enabled = !isClearing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                if (isClearing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Clearing...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Clear App Cache",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            // Show result message
+            if (lastClearResult != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = lastClearResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+            
+            // Info text
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Clears temporary files from apps to free up storage space",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }

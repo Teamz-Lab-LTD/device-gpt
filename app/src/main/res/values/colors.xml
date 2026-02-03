@@ -7,4 +7,15 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Design System Colors for Widget -->
+    <color name="widget_neon_green">#FFD9FE06</color>
+    <color name="widget_dark">#FF12151A</color>
+    <color name="widget_dark_ii">#FF1D1F25</color>
+    <color name="widget_background">#FF1D1F25</color>
+    <color name="widget_text_primary">#FFF2F2F2</color>
+    <color name="widget_text_secondary">#FFD9D9D9</color>
+    <color name="widget_text_hint">#FFA6A6A6</color>
+    <color name="widget_border">#FFDDDDDD</color>
+    <color name="widget_accent">#FFD9FE06</color>
 </resources>

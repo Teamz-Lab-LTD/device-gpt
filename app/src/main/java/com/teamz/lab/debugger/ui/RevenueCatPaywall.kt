@@ -49,6 +49,19 @@ fun RevenueCatPaywall(
     // Fetch the specific offering to show the custom "device-gpt" paywall
     var offering by remember { mutableStateOf<com.revenuecat.purchases.Offering?>(null) }
     
+    // Track paywall shown
+    LaunchedEffect(showPaywall) {
+        if (showPaywall && !isPremium) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.PremiumPaywallShown,
+                mapOf(
+                    "source" to analyticsSource,
+                    "offering_id" to RevenueCatManager.OFFERING_ID
+                )
+            )
+        }
+    }
+    
     // Fetch offering when paywall should be shown
     LaunchedEffect(showPaywall) {
         if (showPaywall && !isPremium && offering == null) {
@@ -65,6 +78,14 @@ fun RevenueCatPaywall(
                     
                     override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
                         Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.PremiumPaywallDismissed,
+                            mapOf(
+                                "source" to analyticsSource,
+                                "reason" to "offering_fetch_failed",
+                                "error" to purchasesError.message
+                            )
+                        )
                     }
                 }
             )
@@ -82,7 +103,17 @@ fun RevenueCatPaywall(
     if (showPaywall && !isPremium && offering != null) {
         Paywall(
             options = PaywallOptions.Builder(
-                dismissRequest = onDismiss
+                dismissRequest = {
+                    // Track paywall dismissed
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.PremiumPaywallDismissed,
+                        mapOf(
+                            "source" to analyticsSource,
+                            "reason" to "user_dismissed"
+                        )
+                    )
+                    onDismiss()
+                }
             )
                 .setOffering(offering!!) // Use the fetched "device-gpt-offering"
                 .setListener(
@@ -99,12 +130,38 @@ fun RevenueCatPaywall(
                             InterstitialAdManager.clearAd()
                             AppOpenAdManager.clearAd()
                             
+                            // Track purchase completed with detailed info
+                            val productId = storeTransaction.productIds.firstOrNull() ?: "unknown"
                             AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "purchase_success", "source" to analyticsSource)
+                                AnalyticsEvent.PremiumPurchaseCompleted,
+                                mapOf(
+                                    "source" to analyticsSource,
+                                    "product_id" to productId,
+                                    "product_ids" to storeTransaction.productIds.joinToString(",")
+                                )
                             )
                             onDismiss()
                             Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                        }
+                        
+                        override fun onPurchaseError(error: com.revenuecat.purchases.PurchasesError) {
+                            // Track purchase error
+                            // Check if user cancelled by examining error message or code
+                            val userCancelled = error.message?.contains("cancelled", ignoreCase = true) == true ||
+                                error.message?.contains("cancel", ignoreCase = true) == true
+                            AnalyticsUtils.logEvent(
+                                if (userCancelled) {
+                                    AnalyticsEvent.PremiumPurchaseCancelled
+                                } else {
+                                    AnalyticsEvent.PremiumPurchaseFailed
+                                },
+                                mapOf(
+                                    "source" to analyticsSource,
+                                    "error_code" to error.code.name,
+                                    "error_message" to (error.message ?: "unknown"),
+                                    "user_cancelled" to userCancelled.toString()
+                                )
+                            )
                         }
                         
                         override fun onRestoreCompleted(customerInfo: com.revenuecat.purchases.CustomerInfo) {
@@ -117,13 +174,38 @@ fun RevenueCatPaywall(
                                 InterstitialAdManager.clearAd()
                                 AppOpenAdManager.clearAd()
                                 
+                                // Track restore completed
                                 AnalyticsUtils.logEvent(
-                                    AnalyticsEvent.DrawerItemClicked,
-                                    mapOf("item" to "restore_purchases_success", "source" to analyticsSource)
+                                    AnalyticsEvent.PremiumRestoreCompleted,
+                                    mapOf(
+                                        "source" to analyticsSource,
+                                        "has_premium" to true
+                                    )
                                 )
                                 onDismiss()
                                 Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                // Track restore completed but no premium found
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.PremiumRestoreCompleted,
+                                    mapOf(
+                                        "source" to analyticsSource,
+                                        "has_premium" to false
+                                    )
+                                )
                             }
+                        }
+                        
+                        override fun onRestoreError(error: com.revenuecat.purchases.PurchasesError) {
+                            // Track restore error
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.PremiumRestoreFailed,
+                                mapOf(
+                                    "source" to analyticsSource,
+                                    "error_code" to error.code.name,
+                                    "error_message" to (error.message ?: "unknown")
+                                )
+                            )
                         }
                     }
                 )

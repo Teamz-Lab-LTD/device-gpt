@@ -559,10 +559,25 @@ fun LeaderboardSection(activity: Activity) {
                 }
             }
             
-            // Premium: Show Your Device Ranking (for premium users only)
+            // Premium: Show Your Device Ranking (for premium users only) - using original UserRankCard design
             if (isPremium && userRank > 0) {
                 item(key = "premium_user_rank") {
-                    PremiumUserRankCard(
+                    // Track premium user rank card viewed
+                    LaunchedEffect(selectedCategory, userRank) {
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.PremiumUserRankCardViewed,
+                            mapOf(
+                                "category" to selectedCategory.id,
+                                "rank" to userRank,
+                                "total_entries" to (if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                                    appPowerEntries.size
+                                } else {
+                                    leaderboardEntries.size
+                                })
+                            )
+                        )
+                    }
+                    UserRankCard(
                         rank = userRank, 
                         category = selectedCategory,
                         totalEntries = if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
@@ -573,6 +588,10 @@ fun LeaderboardSection(activity: Activity) {
                         onViewInsights = { 
                             selectedDeviceId = null // Will use current device
                             showDeviceInsights = true
+                        },
+                        onViewBestDevices = {
+                            // Trigger the Best Devices modal to show
+                            triggerBestDevices++
                         }
                     )
                 }
@@ -585,8 +604,8 @@ fun LeaderboardSection(activity: Activity) {
                         category = selectedCategory,
                         totalEntries = leaderboardEntries.size,
                         onUnlockClick = {
-                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf(
-                                "item" to "user_rank_premium_gate",
+                            AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                "source" to "user_rank_card",
                                 "category" to selectedCategory.id
                             ))
                             showPremiumPaywall = true
@@ -712,7 +731,14 @@ fun LeaderboardSection(activity: Activity) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .clickable { showPremiumPaywallAppPower = true }
+                                            .clickable {
+                                                AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                                    "source" to "leaderboard_app_power_blur",
+                                                    "rank" to originalRank,
+                                                    "category" to "app_power_monitoring"
+                                                ))
+                                                showPremiumPaywallAppPower = true
+                                            }
                                     ) {
                                         // Show rank prominently on the left (unblurred)
                                         Row(
@@ -791,7 +817,14 @@ fun LeaderboardSection(activity: Activity) {
                                                 )
                                                 Spacer(modifier = Modifier.height(8.dp))
                                                 Button(
-                                                    onClick = { showPremiumPaywallAppPower = true },
+                                                    onClick = {
+                                                        AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                                            "source" to "leaderboard_app_power_button",
+                                                            "rank" to originalRank,
+                                                            "category" to "app_power_monitoring"
+                                                        ))
+                                                        showPremiumPaywallAppPower = true
+                                                    },
                                                     colors = ButtonDefaults.buttonColors(
                                                         containerColor = DesignSystemColors.NeonGreen,
                                                         contentColor = DesignSystemColors.Dark
@@ -935,9 +968,10 @@ fun LeaderboardSection(activity: Activity) {
                             onClick = {
                                         if (shouldBlur) {
                                             // Show paywall if user tries to click blurred item
-                                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf(
-                                                "item" to "leaderboard_premium_gate",
-                                                "rank" to originalRank
+                                            AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                                "source" to "leaderboard_blur",
+                                                "rank" to originalRank,
+                                                "category" to selectedCategory.id
                                             ))
                                             showPremiumPaywall = true
                                         } else {
@@ -1050,7 +1084,14 @@ fun LeaderboardSection(activity: Activity) {
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Button(
-                                                onClick = { showPremiumPaywall = true },
+                                                onClick = {
+                                                    AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                                        "source" to "leaderboard_blur_button",
+                                                        "rank" to originalRank,
+                                                        "category" to selectedCategory.id
+                                                    ))
+                                                    showPremiumPaywall = true
+                                                },
                                                 colors = ButtonDefaults.buttonColors(
                                                     containerColor = DesignSystemColors.NeonGreen,
                                                     contentColor = DesignSystemColors.Dark
@@ -1866,17 +1907,21 @@ fun PremiumUserRankCard(
     totalEntries: Int = 0,
     onViewInsights: (() -> Unit)? = null
 ) {
+    // Yellow/gold color for premium styling (matching the previous nice widget)
+    val premiumYellow = Color(0xFFFFD700) // Gold color
+    val premiumYellowDark = Color(0xFFB8860B) // Dark goldenrod for borders
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = DesignSystemColors.NeonGreen.copy(alpha = 0.15f)
+            containerColor = premiumYellow.copy(alpha = 0.15f)
         ),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = 2.dp,
-            color = DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
+            color = premiumYellow.copy(alpha = 0.5f)
         )
     ) {
         Column(
@@ -1895,14 +1940,14 @@ fun PremiumUserRankCard(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = DesignSystemColors.NeonGreen,
+                        tint = premiumYellow,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = "Premium",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = DesignSystemColors.NeonGreen
+                        color = premiumYellow
                     )
                 }
                 Text(
@@ -1920,12 +1965,12 @@ fun PremiumUserRankCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Rank number with premium styling
+                // Rank number with premium yellow/gold styling
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .background(
-                            color = DesignSystemColors.NeonGreen,
+                            color = premiumYellow,
                             shape = RoundedCornerShape(12.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -1934,7 +1979,7 @@ fun PremiumUserRankCard(
                         text = "#$rank",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
-                        color = DesignSystemColors.Dark
+                        color = Color.Black
                     )
                 }
                 
@@ -1970,21 +2015,23 @@ fun PremiumUserRankCard(
                     onClick = onViewInsights,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DesignSystemColors.NeonGreen,
-                        contentColor = DesignSystemColors.Dark
+                        containerColor = premiumYellow,
+                        contentColor = Color.Black
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.Black
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "View Device Insights",
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black
                     )
                 }
             }

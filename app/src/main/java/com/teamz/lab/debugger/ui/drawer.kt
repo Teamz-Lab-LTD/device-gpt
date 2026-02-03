@@ -387,9 +387,8 @@ fun DrawerContent(
                     .scale(pulseScale) // Apply scale animation
                     .clickable {
                         // Show RevenueCat paywall designed in console
-                        AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads_widget"))
-                        AnalyticsUtils.logEvent(AnalyticsEvent.LifetimeSubscriptionClicked, mapOf(
-                            "source" to "drawer_remove_ads_widget",
+                        AnalyticsUtils.logEvent(AnalyticsEvent.PremiumDrawerCardClicked, mapOf(
+                            "source" to "drawer",
                             "price" to (productPrice ?: "2.99"),
                             "type" to "lifetime"
                         ))
@@ -517,7 +516,9 @@ fun DrawerContent(
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 4.dp)
                     .clickable {
-                        AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "premium_badge_clicked"))
+                        AnalyticsUtils.logEvent(AnalyticsEvent.PremiumBadgeClicked, mapOf(
+                            "source" to "drawer"
+                        ))
                         showPremiumInfoDialog = true
                     },
                 shape = RoundedCornerShape(12.dp),
@@ -810,8 +811,8 @@ fun DrawerContent(
             label = "Add to Home Screen"
         ) {
             AnalyticsUtils.logEvent(
-                AnalyticsEvent.DrawerItemClicked, mapOf(
-                    "item" to "add_widget_home"
+                AnalyticsEvent.WidgetAddToHomeScreenClicked, mapOf(
+                    "android_version" to Build.VERSION.SDK_INT
                 )
             )
             // Try to request widget pinning (Android 8.0+)
@@ -821,18 +822,40 @@ fun DrawerContent(
                 
                 try {
                     val success = appWidgetManager.requestPinAppWidget(componentName, null, null)
-                    if (!success) {
+                    if (success) {
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.WidgetAddToHomeScreenSuccess, mapOf(
+                                "method" to "programmatic"
+                            )
+                        )
+                    } else {
                         // If pinning not supported, show instructions
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.WidgetAddToHomeScreenFailed, mapOf(
+                                "reason" to "pinning_not_supported"
+                            )
+                        )
                         widgetInstructionType = "home"
                         showWidgetInstructions = true
                     }
                 } catch (e: Exception) {
                     // Fallback to instructions dialog
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetAddToHomeScreenFailed, mapOf(
+                            "reason" to "exception",
+                            "error" to (e.message ?: "unknown")
+                        )
+                    )
                     widgetInstructionType = "home"
                     showWidgetInstructions = true
                 }
             } else {
                 // For older Android, show instructions
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.WidgetAddToHomeScreenFailed, mapOf(
+                        "reason" to "android_version_too_old"
+                    )
+                )
                 widgetInstructionType = "home"
                 showWidgetInstructions = true
             }
@@ -845,8 +868,8 @@ fun DrawerContent(
                 label = "Add to Lock Screen"
             ) {
                 AnalyticsUtils.logEvent(
-                    AnalyticsEvent.DrawerItemClicked, mapOf(
-                        "item" to "add_widget_lock"
+                    AnalyticsEvent.WidgetAddToLockScreenClicked, mapOf(
+                        "android_version" to Build.VERSION.SDK_INT
                     )
                 )
                 // Lock screen widgets cannot be added programmatically
@@ -858,6 +881,18 @@ fun DrawerContent(
         
         // Widget Instructions Dialog
         if (showWidgetInstructions) {
+            // Track when instructions dialog is shown
+            LaunchedEffect(showWidgetInstructions) {
+                if (showWidgetInstructions) {
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.WidgetInstructionsShown, mapOf(
+                            "type" to widgetInstructionType,
+                            "android_version" to Build.VERSION.SDK_INT
+                        )
+                    )
+                }
+            }
+            
             AlertDialog(
                 onDismissRequest = { showWidgetInstructions = false },
                 icon = {
@@ -893,6 +928,33 @@ fun DrawerContent(
                             Text(
                                 text = "1. Long-press on home screen\n2. Tap 'Widgets'\n3. Find 'DeviceGPT'\n4. Drag to home screen",
                                 style = MaterialTheme.typography.bodySmall
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "📊 What the Widget Shows:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "• Health Score & Daily Streak (most prominent)\n• Battery % with charging status (AC/USB/Wireless)\n• Temperature (°C)\n• Power consumption (Watts)\n• RAM usage (%)\n• Network speed (Mbps)\n• Update time indicator",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "🔄 Data Updates:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "• Updates every 15 seconds automatically\n• Requires 'Real-time Monitor' to be enabled\n• Shows 'Live' when data is fresh (< 5s)\n• All data comes from real system APIs (not estimates)",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "💡 Tip: Tap the widget to open Health section directly!",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         } else if (widgetInstructionType == "lock") {
                             Text(

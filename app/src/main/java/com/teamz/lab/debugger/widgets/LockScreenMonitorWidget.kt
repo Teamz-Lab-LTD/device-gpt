@@ -9,6 +9,8 @@ import android.os.Build
 import android.widget.RemoteViews
 import com.teamz.lab.debugger.MainActivity
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.utils.AnalyticsEvent
+import com.teamz.lab.debugger.utils.AnalyticsUtils
 
 /**
  * Device Monitor Widget
@@ -36,6 +38,19 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         android.util.Log.d("DeviceGPT_Widget", "onUpdate called for ${appWidgetIds.size} widget(s)")
+        
+        // Track widget display
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.WidgetDisplayed, mapOf(
+                    "widget_count" to appWidgetIds.size,
+                    "android_version" to Build.VERSION.SDK_INT
+                )
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("DeviceGPT_Widget", "Failed to log analytics", e)
+        }
+        
         // Update all widget instances
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
@@ -80,72 +95,178 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val streak = prefs.getInt("streak", 0)
         val lastUpdate = prefs.getLong("last_update", 0)
         
-        // Format data for display
-        val networkInfo = buildString {
-            append(download)
-            if (upload.isNotEmpty()) append(" • $upload")
-            if (latency.isNotEmpty()) append(" • $latency")
-        }
+        // Get battery percentage and charging status (stored separately for accuracy)
+        val batteryPercent = prefs.getInt("battery_percent", -1)
+        val isCharging = prefs.getBoolean("battery_charging", false)
+        val isFull = prefs.getBoolean("battery_full", false)
+        val chargingType = prefs.getString("charging_type", "") ?: ""
         
-        val cpuInfo = if (cpu.isNotEmpty()) " • $cpu" else ""
-        val ramInfo = ram + cpuInfo
+        // Get psychologically compelling messages
+        val alertMessage = prefs.getString("alert_message", "") ?: ""
+        val ctaMessage = prefs.getString("cta_message", "Tap to optimize →") ?: "Tap to optimize →"
         
-        // Extract key values for compact display (safe extraction with fallbacks)
-        val batteryPercent = try {
-            battery.substringAfter(":").substringBefore("%").trim().takeIf { it.isNotEmpty() } ?: 
-            battery.substringAfter("%").substringBefore("%").trim().takeIf { it.isNotEmpty() } ?: "--"
-        } catch (e: Exception) { "--" }
-        
-        val tempValue = try {
-            thermal.substringAfter("🌡️").substringBefore("°C").trim().takeIf { it.isNotEmpty() } ?: "--"
-        } catch (e: Exception) { "--" }
-        
-        val powerValue = try {
-            power.substringAfter(":").substringBefore("W").trim().takeIf { it.isNotEmpty() } ?: "--"
+        // Extract temperature - use stored value first, fallback to parsing thermal string
+        val tempValue = prefs.getString("temperature_value", null) ?: try {
+            // Fallback: try to extract from thermal string
+            val pattern1 = Regex("🌡️[^:]*:\\s*([\\d.]+)°C")
+            pattern1.find(thermal)?.groupValues?.get(1)
+                ?: Regex("🔋[^:]*:\\s*([\\d.]+)°C").find(thermal)?.groupValues?.get(1)
+                ?: Regex("([\\d.]+)°C").find(thermal)?.groupValues?.get(1)
+                ?: "--"
         } catch (e: Exception) { "--" }
         
         val ramPercent = try {
-            ramInfo.substringAfter("(").substringBefore("%)").trim().takeIf { it.isNotEmpty() } ?: "--"
+            ram.substringAfter("(").substringBefore("%)").trim().takeIf { it.isNotEmpty() } ?: "--"
         } catch (e: Exception) { "--" }
         
-        val networkCompact = try {
-            download.substringAfter("↓").substringBefore("Mbps").trim().takeIf { it.isNotEmpty() } ?: 
-            download.substringAfter(" ").substringBefore(" ").trim().takeIf { it.isNotEmpty() } ?: "--"
-        } catch (e: Exception) { "--" }
+        // MOST IMPORTANT: Health Score (Psychological Trigger #1)
+        views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10")
         
-        // Update widget views - Optimized for lock screen glanceability
-        // Health Score & Streak are most prominent (in header)
-        views.setTextViewText(R.id.widget_health_score, "🏥 $healthScore/10")
-        views.setTextViewText(R.id.widget_streak, "🔥 $streak")
+        // Streak (FOMO Trigger)
+        views.setTextViewText(R.id.widget_streak, if (streak > 0) "🔥 $streak days" else "")
         
-        // Compact stats in rows
-        views.setTextViewText(R.id.widget_battery, "🔋 ${if (batteryPercent != "--") "$batteryPercent%" else "--"}")
-        views.setTextViewText(R.id.widget_thermal, "🌡️ ${if (tempValue != "--") "${tempValue}°C" else "--"}")
-        views.setTextViewText(R.id.widget_power, "⚡ ${if (powerValue != "--") "${powerValue}W" else "--"}")
+        // Critical Alert/Issue (Urgency Trigger - Most Compelling)
+        if (alertMessage.isNotEmpty()) {
+            views.setViewVisibility(R.id.widget_alert, android.view.View.VISIBLE)
+            views.setTextViewText(R.id.widget_alert, alertMessage)
+        } else {
+            views.setViewVisibility(R.id.widget_alert, android.view.View.GONE)
+        }
         
-        // Secondary stats
-        views.setTextViewText(R.id.widget_ram, "🧠 ${if (ramPercent != "--") "${ramPercent}%" else "--"}")
-        views.setTextViewText(R.id.widget_network, "📶 ${if (networkCompact != "--") "${networkCompact}Mbps" else "--"}")
+        // Get additional info
+        val storageUsedTotal = prefs.getString("storage_used_total", "---") ?: "---"
+        val downloadSpeed = prefs.getString("download_speed", "---") ?: "---"
+        val uploadSpeed = prefs.getString("upload_speed", "---") ?: "---"
+        val hasInternet = prefs.getBoolean("has_internet", false) // Get actual connectivity status
+        val powerValue = try {
+            power.substringAfter(":").substringBefore("W").trim().takeIf { it.isNotEmpty() } ?: "---"
+        } catch (e: Exception) { "---" }
         
-        // Show last update time
+        // Key Metrics Row 1 (What Users Care About Most) - Clear labels for users
+        val batteryDisplay = when {
+            batteryPercent >= 0 -> {
+                when {
+                    isFull -> "Battery: 100%"
+                    isCharging && chargingType.isNotEmpty() -> "Battery: $batteryPercent% (Charging via $chargingType)"
+                    isCharging -> "Battery: $batteryPercent% (Charging)"
+                    else -> "Battery: $batteryPercent%"
+                }
+            }
+            else -> "Battery: ---"
+        }
+        views.setTextViewText(R.id.widget_battery, batteryDisplay)
+        
+        // Temperature with clear label - show "---" on errors
+        val tempDisplay = if (tempValue != "--" && tempValue.isNotEmpty()) {
+            val temp = tempValue.toFloatOrNull() ?: 0f
+            when {
+                temp > 0f -> {
+                    when {
+                        temp > 45f -> "Temp: ${temp.toInt()}°C (Hot!)"
+                        temp > 40f -> "Temp: ${temp.toInt()}°C (Warm)"
+                        else -> "Temp: ${temp.toInt()}°C"
+                    }
+                }
+                else -> "Temp: ---"
+            }
+        } else {
+            "Temp: ---"
+        }
+        views.setTextViewText(R.id.widget_thermal, tempDisplay)
+        
+        // RAM with clear label - show "---" on errors
+        views.setTextViewText(R.id.widget_ram, "RAM: ${if (ramPercent != "--" && ramPercent.isNotEmpty()) "${ramPercent}%" else "---"}")
+        
+        // Key Metrics Row 2 (Additional Info) - Show storage in used/total format
+        views.setTextViewText(R.id.widget_storage, "Disk: $storageUsedTotal")
+        
+        // Beautify network - show speed like system monitor (download ↓ • upload ↑)
+        val networkDisplay = when {
+            !hasInternet -> 
+                "Internet: ---"
+            downloadSpeed == "---" && uploadSpeed == "---" -> 
+                "Internet: ---"
+            downloadSpeed != "---" && uploadSpeed != "---" -> 
+                "Internet: $downloadSpeed ↓ • $uploadSpeed ↑"
+            downloadSpeed != "---" -> 
+                "Internet: $downloadSpeed ↓"
+            uploadSpeed != "---" -> 
+                "Internet: $uploadSpeed ↑"
+            else -> 
+                "Internet: ---"
+        }
+        views.setTextViewText(R.id.widget_network, networkDisplay)
+        
+        views.setTextViewText(R.id.widget_power, "Drain: ${if (powerValue != "---") "${powerValue}W" else "---"}")
+        
+        // Key Metrics Row 3 (CPU & FPS) - show "---" on errors
+        // Extract CPU percentage from cpu string (format: "CPU: X.XX / Y.YY GHz (Z%) • N active cores")
+        val cpuPercent = try {
+            val cpuPercentMatch = Regex("\\((\\d+)%\\)").find(cpu)
+            cpuPercentMatch?.groupValues?.get(1) ?: "---"
+        } catch (e: Exception) { "---" }
+        views.setTextViewText(R.id.widget_cpu, "CPU: ${if (cpuPercent != "---" && cpuPercent.isNotEmpty()) "${cpuPercent}%" else "---"}")
+        
+        // Extract FPS from fps_data (format: "FPS: 59 • Drop Rate: 1.0%")
+        val fpsData = prefs.getString("fps_data", "") ?: ""
+        val fpsValue = try {
+            val fpsMatch = Regex("FPS:\\s*(\\d+)").find(fpsData)
+            fpsMatch?.groupValues?.get(1) ?: "---"
+        } catch (e: Exception) { "---" }
+        views.setTextViewText(R.id.widget_fps, "FPS: ${if (fpsValue != "---" && fpsValue.isNotEmpty()) fpsValue else "---"}")
+        
+        // Compelling CTA (Click Trigger)
+        views.setTextViewText(R.id.widget_cta, ctaMessage)
+        
+        // Status indicator in Row 3 - show most meaningful actionable info
+        // Priority: Critical issues > Warnings > Positive status
+        val statusText = when {
+            // Critical issues (highest priority)
+            tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🔥 Overheating"
+            ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "⚠️ Slow Device"
+            healthScore < 5 -> "⚠️ Critical"
+            // Warnings (medium priority)
+            tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 40f -> "🌡️ Warm"
+            ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "⚠️ High Usage"
+            healthScore < 7 -> "📉 Needs Care"
+            // Positive status (when everything is good)
+            healthScore >= 8 -> "✅ Optimized"
+            else -> "📊 Good"
+        }
+        views.setTextViewText(R.id.widget_status, statusText)
+        
+        // Update time in bottom right (user-friendly format)
         val timeAgo = if (lastUpdate > 0) {
             val secondsAgo = (System.currentTimeMillis() - lastUpdate) / 1000
             when {
-                secondsAgo < 60 -> "Updated ${secondsAgo}s ago"
-                secondsAgo < 3600 -> "Updated ${secondsAgo / 60}m ago"
-                else -> "Updated ${secondsAgo / 3600}h ago"
+                secondsAgo < 5 -> "Just now"
+                secondsAgo < 60 -> "${secondsAgo}s ago"
+                secondsAgo < 120 -> "1 min ago"
+                secondsAgo < 3600 -> "${secondsAgo / 60} mins ago"
+                secondsAgo < 7200 -> "1 hr ago"
+                else -> "${secondsAgo / 3600} hrs ago"
             }
         } else {
-            "No data"
+            "Initializing"
         }
         views.setTextViewText(R.id.widget_last_update, timeAgo)
         
+        // Get widget action (what to do when tapped)
+        val widgetAction = prefs.getString("widget_action", "") ?: ""
+        
         // Set click intent to open app directly to Health section (quick action)
+        // Use dynamic navigation by tab name instead of index to handle tab order changes
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            // Add extra to navigate to Health section (index 2)
-            putExtra("navigate_to_section", 2)
+            // Use tab name instead of index for dynamic navigation
+            putExtra("navigate_to_tab", "health")
             putExtra("source", "lock_screen_widget")
+            // Add analytics tracking flag
+            putExtra("track_widget_tap", true)
+            // Add widget action (e.g., clear_ram)
+            if (widgetAction.isNotEmpty()) {
+                putExtra("widget_action", widgetAction)
+            }
         }
         val pendingIntent = android.app.PendingIntent.getActivity(
             context, 0, intent,
@@ -153,6 +274,22 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         )
         // Make entire widget clickable - opens Health section directly
         views.setOnClickPendingIntent(R.id.widget_container, pendingIntent)
+        
+        // Track widget update
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.WidgetUpdated, mapOf(
+                    "health_score" to healthScore,
+                    "streak" to streak,
+                    "battery_percent" to batteryPercent,
+                    "is_charging" to isCharging,
+                    "data_age_seconds" to if (lastUpdate > 0) ((System.currentTimeMillis() - lastUpdate) / 1000).toInt() else -1
+                )
+            )
+        } catch (e: Exception) {
+            // Analytics failure shouldn't break widget
+            android.util.Log.w("DeviceGPT_Widget", "Failed to log analytics", e)
+        }
         
         // Update widget
         try {

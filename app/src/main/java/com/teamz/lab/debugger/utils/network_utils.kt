@@ -306,12 +306,8 @@ fun getCompactLatency(): String {
         val latency = match?.groups?.get(1)?.value?.toDoubleOrNull()
 
         if (latency != null) {
-            when {
-                latency < 30 -> "Delay: ${"%.0f".format(latency)}ms"
-                latency < 100 -> "Delay: ${"%.0f".format(latency)}ms"
-                latency < 200 -> "Delay: ${"%.0f".format(latency)}ms"
-                else -> "Latency: ${"%.0f".format(latency)}ms"
-            }
+            // Return just the value, label will be added by caller
+            "${"%.0f".format(latency)}ms"
         } else {
             ""
         }

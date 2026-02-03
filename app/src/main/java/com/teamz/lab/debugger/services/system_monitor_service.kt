@@ -6,6 +6,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -129,8 +133,8 @@ class SystemMonitorService : Service() {
                     } // Real sysfs files
                     val thermalDeferred = async { 
                         ensureActive() // Check cancellation before starting
-                        getCompactPowerState(context) 
-                    } // Real PowerManager
+                        getThermalZoneTemperatures(context) 
+                    } // Real thermal zones
                     val batteryDeferred = async { 
                         ensureActive() // Check cancellation before starting
                         getCompactBatteryStatus(context) 
@@ -183,7 +187,7 @@ class SystemMonitorService : Service() {
                         break // Exit loop if cancelled
                     }
                     val ramInfo = try {
-                        ramDeferred.await() + if (cpuInfo.isNotBlank()) " • $cpuInfo" else ""
+                        ramDeferred.await() // Don't append CPU here - it will be shown separately
                     } catch (e: CancellationException) {
                         break // Exit loop if cancelled
                     }
@@ -273,14 +277,83 @@ class SystemMonitorService : Service() {
                         RetentionNotificationManager.sendTemperatureAlert(context, temperature)
                     }
 
-                    val compactContent = """
-🔋 $battery
-🧠 Ram : $ramInfo
-📶 $download ↓ • $upload ↑ • $latency
-🎮 ${fpsDataFlow.value}
-🌡️ $thermal
-$powerInfo
-""".trimIndent()
+                    // Get power state info (doze, saver, thermal)
+                    val powerState = getCompactPowerState(context)
+                    
+                    // Format with nice icons and clear labels
+                    // Note: Battery already includes temperature (🔥 40.9°C), so no separate temp line needed
+                    val batteryLabel = "🔋 $battery"
+                    val ramLabel = "🧠 RAM: $ramInfo"
+                    // CPU shown once, separately (not appended to RAM)
+                    val cpuLabel = if (cpuInfo.isNotBlank()) "⚙️ $cpuInfo" else ""
+                    
+                    // Check actual network connectivity, not just speed test results
+                    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    val activeNetwork = connectivityManager.activeNetwork
+                    val networkCapabilities = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
+                    val hasInternet = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                                     networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+                    
+                    // Beautify network label - check actual connectivity first
+                    val networkLabel = if (!hasInternet) {
+                        "📶 Internet: ⚠️ No connection"
+                    } else if (download.contains("Speed Test Failed", ignoreCase = true) || 
+                              download.contains("Failed", ignoreCase = true)) {
+                        // Has connection but speed test failed (might be slow/unstable)
+                        "📶 Internet: ✅ Connected (speed test unavailable)"
+                    } else {
+                        // Extract clean values to avoid duplication
+                        val downloadValue = download.replace("↓", "").trim()
+                        val uploadValue = upload.replace("↑", "").trim()
+                        // Latency is now just the value (e.g., "123ms"), no need to remove "Delay:" or "Latency:"
+                        val latencyValue = latency.trim()
+                        if (latencyValue.isNotEmpty()) {
+                            "📶 Internet: $downloadValue ↓ • $uploadValue ↑ • Latency: $latencyValue"
+                        } else {
+                            "📶 Internet: $downloadValue ↓ • $uploadValue ↑"
+                        }
+                    }
+                    
+                    val fpsLabel = "🎮 ${fpsDataFlow.value}"
+                    
+                    // Power consumption (battery drain rate) - clear label
+                    val powerLabel = if (powerInfo.isNotEmpty()) {
+                        val powerMatch = Regex("(\\d+\\.?\\d*)\\s*W").find(powerInfo)
+                        powerMatch?.groupValues?.get(1)?.let { 
+                            "⚡ Battery Drain: ${it}W"
+                        } ?: "⚡ Battery Drain: --"
+                    } else {
+                        "⚡ Battery Drain: --"
+                    }
+                    
+                    // Power state info - make it clearer by separating thermal from power saver/doze
+                    val powerStateParts = powerState.split(" • ")
+                    val thermalStatus = powerStateParts.getOrNull(0) ?: "N/A"
+                    val saverStatus = powerStateParts.getOrNull(1) ?: ""
+                    val dozeStatus = powerStateParts.getOrNull(2) ?: ""
+                    
+                    // Build clearer labels
+                    val powerStateLabel = buildString {
+                        append("💡 Thermal: $thermalStatus")
+                        if (saverStatus.isNotEmpty()) {
+                            append(" • $saverStatus")
+                        }
+                        if (dozeStatus.isNotEmpty()) {
+                            append(" • $dozeStatus")
+                        }
+                    }
+                    
+                    val compactContent = buildString {
+                        appendLine(batteryLabel)
+                        appendLine(ramLabel)
+                        if (cpuLabel.isNotEmpty()) {
+                            appendLine(cpuLabel)
+                        }
+                        appendLine(networkLabel)
+                        appendLine(fpsLabel)
+                        appendLine(powerLabel)
+                        appendLine(powerStateLabel)
+                    }.trimIndent()
 
                     // Check if still active before storing data
                     if (!isActive) break
@@ -296,7 +369,9 @@ $powerInfo
                         upload,
                         latency,
                         powerInfo,
-                        thermal
+                        thermal,
+                        hasInternet,
+                        fpsDataFlow.value
                     )
 
                     // Check if still active before updating notification
@@ -382,7 +457,9 @@ $powerInfo
         upload: String,
         latency: String,
         power: String,
-        thermal: String
+        thermal: String,
+        hasInternet: Boolean,
+        fpsData: String
     ) {
         android.util.Log.d("DeviceGPT_Service", "Storing widget data: battery=$battery, power=$power, ram=$ram")
         try {
@@ -392,6 +469,101 @@ $powerInfo
                 HealthScoreUtils.calculateDailyHealthScore(context)
             }
             val streak = HealthScoreUtils.getDailyStreak(context)
+            
+            // Extract battery percentage and charging status
+            val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val batteryPercent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            val batteryStatus = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            val isCharging = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING
+            val isFull = batteryStatus == BatteryManager.BATTERY_STATUS_FULL
+            val plugged = batteryIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
+            val chargingType = when (plugged) {
+                BatteryManager.BATTERY_PLUGGED_AC -> "AC"
+                BatteryManager.BATTERY_PLUGGED_USB -> "USB"
+                BatteryManager.BATTERY_PLUGGED_WIRELESS -> "Wireless"
+                else -> ""
+            }
+            
+            // Extract values for alert generation
+            val tempValueStr = try {
+                thermal.substringAfter("🌡️").substringBefore("°C").trim().takeIf { it.isNotEmpty() } ?: "0"
+            } catch (e: Exception) { "0" }
+            
+            val ramPercentStr = try {
+                ram.substringAfter("(").substringBefore("%)").trim().takeIf { it.isNotEmpty() } ?: "0"
+            } catch (e: Exception) { "0" }
+            
+            val powerValueStr = try {
+                power.substringAfter(":").substringBefore("W").trim().takeIf { it.isNotEmpty() } ?: "0"
+            } catch (e: Exception) { "0" }
+            
+            // Extract storage info - get used/total format (e.g., "324/234 GB")
+            val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage() // Returns "availableGB GB / totalGB GB"
+            val storageUsedTotal = try {
+                val storageMatch = Regex("(\\d+)\\s*GB\\s*/\\s*(\\d+)\\s*GB").find(storageInfo)
+                if (storageMatch != null) {
+                    val availableGB = storageMatch.groupValues[1].toIntOrNull() ?: 0
+                    val totalGB = storageMatch.groupValues[2].toIntOrNull() ?: 0
+                    val usedGB = totalGB - availableGB
+                    "$usedGB/$totalGB GB"
+                } else {
+                    "---"
+                }
+            } catch (e: Exception) { "---" }
+            
+            val storagePercent = try {
+                val storageMatch = Regex("(\\d+)%").find(getMemoryAndStorageInfo(context))
+                storageMatch?.groupValues?.get(1) ?: "0"
+            } catch (e: Exception) { "0" }
+            
+            // Extract network speeds separately for widget display
+            val downloadSpeed = try {
+                if (download.contains("Speed Test Failed", ignoreCase = true) || 
+                    download.contains("Failed", ignoreCase = true) ||
+                    download.contains("No internet", ignoreCase = true)) {
+                    "---"
+                } else {
+                    download.replace("↓", "").trim().substringBefore("Mbps").trim().takeIf { it.isNotEmpty() } ?: "---"
+                }
+            } catch (e: Exception) { "---" }
+            
+            val uploadSpeed = try {
+                if (upload.contains("Failed", ignoreCase = true)) {
+                    "---"
+                } else {
+                    upload.replace("↑", "").trim().substringBefore("Mbps").trim().takeIf { it.isNotEmpty() } ?: "---"
+                }
+            } catch (e: Exception) { "---" }
+            
+            // Extract temperature from thermal string - try multiple patterns
+            val extractedTemp = try {
+                // Try pattern 1: "🌡️ Type: 42.5°C"
+                val pattern1 = Regex("🌡️[^:]*:\\s*([\\d.]+)°C")
+                pattern1.find(thermal)?.groupValues?.get(1)?.toFloatOrNull()
+                    // Try pattern 2: "🔋 Battery: 35.0°C"
+                    ?: Regex("🔋[^:]*:\\s*([\\d.]+)°C").find(thermal)?.groupValues?.get(1)?.toFloatOrNull()
+                    // Try pattern 3: Just "42.5°C" anywhere
+                    ?: Regex("([\\d.]+)°C").find(thermal)?.groupValues?.get(1)?.toFloatOrNull()
+                    ?: 0f
+            } catch (e: Exception) { 0f }
+            
+            // Store temperature separately for widget (like battery)
+            val tempForWidget = if (extractedTemp > 0f) extractedTemp.toString() else "--"
+            
+            // Generate psychologically compelling alert/issue message
+            val alertMessage = generateCompellingAlert(context, healthScore, batteryPercent, tempValueStr, ramPercentStr, powerValueStr, streak)
+            
+            // Generate compelling CTA based on device state
+            val ctaMessage = generateCompellingCTA(context, healthScore, batteryPercent, tempValueStr, ramPercentStr, streak)
+            
+            // Determine widget action (what happens when user taps)
+            val widgetAction = when {
+                ramPercentStr.toIntOrNull() ?: 0 > 70 -> "clear_ram"
+                tempValueStr.toFloatOrNull() ?: 0f > 40f -> "check_temp"
+                healthScore < 7 -> "improve_health"
+                else -> ""
+            }
             
             val prefs = context.getSharedPreferences("lock_screen_widget_data", Context.MODE_PRIVATE)
             prefs.edit().apply {
@@ -406,11 +578,127 @@ $powerInfo
                 putLong("last_update", System.currentTimeMillis())
                 putInt("health_score", healthScore)
                 putInt("streak", streak)
+                // Store battery percentage and status separately for widget
+                putInt("battery_percent", batteryPercent)
+                putBoolean("battery_charging", isCharging)
+                putBoolean("battery_full", isFull)
+                putString("charging_type", chargingType)
+                // Store compelling messages for widget
+                putString("alert_message", alertMessage)
+                putString("cta_message", ctaMessage)
+                putString("widget_action", widgetAction)
+                // Store additional info for widget
+                putString("storage_percent", storagePercent)
+                putString("storage_used_total", storageUsedTotal) // Store storage in used/total format
+                putString("download_speed", downloadSpeed) // Store download speed separately
+                putString("upload_speed", uploadSpeed) // Store upload speed separately
+                putString("temperature_value", tempForWidget) // Store temperature separately
+                putBoolean("has_internet", hasInternet) // Store actual internet connectivity status
+                putString("fps_data", fpsData) // Store FPS data for widget
                 apply()
             }
             android.util.Log.d("DeviceGPT_Service", "Widget data stored successfully. Health: $healthScore/10, Streak: $streak days")
         } catch (e: Exception) {
             android.util.Log.e("DeviceGPT_Service", "Error storing widget data", e)
+        }
+    }
+    
+    /**
+     * Generate psychologically compelling alert message to trigger user action
+     */
+    private suspend fun generateCompellingAlert(
+        context: Context,
+        healthScore: Int,
+        batteryPercent: Int,
+        tempValue: String,
+        ramPercent: String,
+        powerValue: String,
+        streak: Int
+    ): String {
+        return try {
+            // Priority 1: Critical issues (highest urgency)
+            val temp = tempValue.toFloatOrNull() ?: 0f
+            if (temp > 45f) {
+                return "⚠️ Phone overheating! ${temp.toInt()}°C - Tap to fix"
+            }
+            
+            val ram = ramPercent.toIntOrNull() ?: 0
+            if (ram > 85) {
+                return "⚠️ Phone is slow! Tap to optimize" // Removed RAM % - already shown in widget
+            }
+            
+            if (healthScore < 5) {
+                return "⚠️ Health score ${healthScore}/10 - Needs attention!"
+            }
+            
+            // Priority 2: Warnings (medium urgency)
+            if (temp > 40f) {
+                return "🌡️ Phone getting hot (${temp.toInt()}°C)"
+            }
+            
+            if (ram > 70) {
+                return "⚠️ High RAM usage - Tap to optimize" // Removed RAM % - already shown in widget
+            }
+            
+            if (healthScore < 7) {
+                return "📉 Health score ${healthScore}/10 - Improve now"
+            }
+            
+            // Priority 3: Streak protection (FOMO)
+            if (streak >= 7) {
+                return "🔥 Don't break your ${streak}-day streak!"
+            }
+            
+            if (streak >= 3) {
+                return "⚡ Keep your ${streak}-day streak alive!"
+            }
+            
+            // Priority 4: Positive reinforcement
+            if (healthScore >= 8) {
+                return "✅ Great health! Maintain it"
+            }
+            
+            // Default: Action-oriented message
+            "📱 Check your device health"
+        } catch (e: Exception) {
+            ""
+        }
+    }
+    
+    /**
+     * Generate compelling CTA message to trigger clicks
+     */
+    private suspend fun generateCompellingCTA(
+        context: Context,
+        healthScore: Int,
+        batteryPercent: Int,
+        tempValue: String,
+        ramPercent: String,
+        streak: Int
+    ): String {
+        return try {
+            val temp = tempValue.toFloatOrNull() ?: 0f
+            val ram = ramPercent.toIntOrNull() ?: 0
+            
+            when {
+                // Critical issues - urgent CTA
+                temp > 45f -> "Tap to optimize →"
+                ram > 85 -> "Tap to optimize →"
+                healthScore < 5 -> "Tap to optimize →"
+                // Warnings - action CTA
+                temp > 40f -> "Tap to optimize →"
+                ram > 70 -> "Tap to optimize →"
+                healthScore < 7 -> "Tap to optimize →"
+                // Streak protection - FOMO CTA
+                streak >= 7 -> "Tap to optimize →"
+                streak >= 3 -> "Tap to optimize →"
+                // Positive - engagement CTA
+                healthScore >= 8 -> "Tap to optimize →"
+                // Default - curiosity CTA
+                else -> "Tap to optimize →"
+            }
+        } catch (e: Exception) {
+            "Tap to optimize →"
         }
     }
 
