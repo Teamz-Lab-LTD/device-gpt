@@ -404,4 +404,15 @@ object InterstitialAdManager {
         isLoading = false
         loadAd(context)
     }
+    
+    /**
+     * Clear/dispose of loaded ad (useful when user purchases premium)
+     * This ensures no ads are shown after premium purchase
+     */
+    fun clearAd() {
+        android.util.Log.d(TAG, "clearAd() - Clearing interstitial ad")
+        interstitialAd = null
+        isLoading = false
+        pendingAction = null
+    }
 }

@@ -129,6 +129,8 @@ object RevenueCatManager {
     
     /**
      * Fetch current customer info and update premium status
+     * For anonymous users, this will automatically sync with Google Play purchases
+     * and restore any purchases tied to the current Google account
      */
     private fun fetchCustomerInfo() {
         if (!isInitialized) {
@@ -142,6 +144,34 @@ object RevenueCatManager {
             override fun onReceived(customerInfo: CustomerInfo) {
                 this@RevenueCatManager.customerInfo = customerInfo
                 updatePremiumStatus(customerInfo)
+                
+                // For anonymous users: If no premium found, try to restore purchases from Google Play
+                // This handles the case where user purchased as anonymous, uninstalled, and reinstalled
+                // Google Play purchases are tied to Google account, so they can be restored
+                val hasPremium = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID] != null
+                if (!hasPremium) {
+                    Log.d(TAG, "No premium found in customer info, attempting automatic restore from Google Play...")
+                    // Silently attempt to restore purchases from Google Play
+                    // This is safe because restorePurchases() queries Google Play for purchases
+                    // tied to the current Google account, regardless of RevenueCat user ID
+                    Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {
+                        override fun onReceived(restoredCustomerInfo: CustomerInfo) {
+                            val restoredPremium = restoredCustomerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
+                            if (restoredPremium != null) {
+                                Log.d(TAG, "✅ Premium automatically restored from Google Play after reinstall!")
+                                this@RevenueCatManager.customerInfo = restoredCustomerInfo
+                                updatePremiumStatus(restoredCustomerInfo)
+                            } else {
+                                Log.d(TAG, "No purchases found in Google Play for this account")
+                            }
+                        }
+                        
+                        override fun onError(error: com.revenuecat.purchases.PurchasesError) {
+                            // Silent fail - this is expected if user never purchased
+                            Log.d(TAG, "No purchases to restore (this is normal for new users): ${error.message}")
+                        }
+                    })
+                }
             }
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {

@@ -116,9 +116,7 @@ import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
-import com.revenuecat.purchases.ui.revenuecatui.Paywall
-import com.revenuecat.purchases.ui.revenuecatui.PaywallOptions
-import com.revenuecat.purchases.ui.revenuecatui.PaywallListener
+import com.teamz.lab.debugger.ui.RevenueCatPaywall
 import androidx.compose.ui.window.DialogProperties
 import android.util.Log
 
@@ -257,6 +255,13 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         android.util.Log.d("MainActivity", "onStart() - MainActivity onStart called, wasAdShowing: $wasAdShowing, isFirstLaunch: $isFirstLaunch")
         
+        // Check premium status before showing app open ad
+        val isPremium = RevenueCatManager.isPremium()
+        if (isPremium) {
+            android.util.Log.d("MainActivity", "onStart() - ⚠️ User has premium, skipping app open ad")
+            // Clear any loaded ads
+            AppOpenAdManager.clearAd()
+        } else {
         // Only show app open ad if:
         // 1. Not resuming from an interstitial ad
         // 2. This is a cold start (first launch) OR app was in background for significant time
@@ -272,6 +277,7 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             android.util.Log.d("MainActivity", "onStart() - ⚠️ Skipping app open ad (resuming from interstitial)")
+            }
         }
         wasAdShowing = false
         
@@ -357,7 +363,21 @@ fun DebuggerApp(activity: ComponentActivity) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
-    var selectedTab by remember { mutableIntStateOf(0) } // Current tab index
+    // Check intent for navigation from widget (lock screen widget tap)
+    val initialTab = remember(activity) {
+        val intent = activity.intent
+        val navigateToSection = intent?.getIntExtra("navigate_to_section", -1) ?: -1
+        if (navigateToSection >= 0) {
+            // Log analytics for widget click
+            AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed, mapOf(
+                "source" to (intent?.getStringExtra("source") ?: "unknown")
+            ))
+            navigateToSection
+        } else {
+            0
+        }
+    }
+    var selectedTab by remember { mutableIntStateOf(initialTab) } // Current tab index
     val appName = remember {
         val applicationInfo = context.packageManager.getApplicationInfo(context.packageName, 0)
         context.packageManager.getApplicationLabel(applicationInfo).toString()
@@ -1375,79 +1395,12 @@ https://play.google.com/store/apps/details?id=${context.packageName}
     
     // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
     // Full screen composable approach (not dialog)
-    // RevenueCat handles all UI, loading, and error states automatically
-    // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls#android
-    val isPremiumForPaywall = RevenueCatManager.isPremium()
-    
-    // Fetch the specific offering to show the custom "device-gpt" paywall
-    var offering by remember { mutableStateOf<com.revenuecat.purchases.Offering?>(null) }
-    
-    LaunchedEffect(showRevenueCatPaywall) {
-        if (showRevenueCatPaywall && !isPremiumForPaywall && offering == null) {
-            com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
-                object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
-                    override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
-                        if (targetOffering != null) {
-                            offering = targetOffering
-                        } else {
-                            Log.e("RevenueCatPaywall", "Offering '${RevenueCatManager.OFFERING_ID}' not found. Available: ${offerings.all.keys}")
-                        }
-                    }
-                    
-                    override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
-                        Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
-                    }
-                }
-            )
-        }
-    }
-    
-    // Reset offering when dialog is dismissed
-    LaunchedEffect(showRevenueCatPaywall) {
-        if (!showRevenueCatPaywall) {
-            offering = null
-        }
-    }
-    
-    // Show Paywall as full screen composable with the specific offering
-    if (showRevenueCatPaywall && !isPremiumForPaywall && offering != null) {
-        Paywall(
-            options = PaywallOptions.Builder(
-                dismissRequest = { showRevenueCatPaywall = false }
-            )
-                .setOffering(offering!!) // Use the fetched "device-gpt-offering"
-                .setListener(
-                    object : PaywallListener {
-                        override fun onPurchaseCompleted(
-                            customerInfo: com.revenuecat.purchases.CustomerInfo,
-                            storeTransaction: com.revenuecat.purchases.models.StoreTransaction
-                        ) {
-                            RevenueCatManager.updatePremiumStatus(customerInfo)
-                            AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "purchase_success", "source" to "revenuecat_paywall")
-                            )
-                            showRevenueCatPaywall = false
-                            Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                        }
-                        
-                        override fun onRestoreCompleted(customerInfo: com.revenuecat.purchases.CustomerInfo) {
-                            RevenueCatManager.updatePremiumStatus(customerInfo)
-                            AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "restore_purchases_success", "source" to "revenuecat_paywall")
-                            )
-                            if (RevenueCatManager.isPremium()) {
-                                showRevenueCatPaywall = false
-                                Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                )
-                .build()
-        )
-    }
+    // Using reusable composable component
+    RevenueCatPaywall(
+        showPaywall = showRevenueCatPaywall,
+        onDismiss = { showRevenueCatPaywall = false },
+        analyticsSource = "revenuecat_paywall"
+    )
     
 }
 

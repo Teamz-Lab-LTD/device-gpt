@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.0"
+androidxJunit = "1.1.5"
 appUpdate = "2.1.0"
 coilCompose = "2.4.0"
 firebaseBom = "33.13.0"
@@ -27,10 +28,13 @@ uiTextGoogleFonts = "1.8.1"
 playServicesMeasurementApi = "22.4.0"
 lifecycleProcess = "2.9.0"
 uiautomator = "2.3.0"
+workRuntimeKtx = "2.11.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-junit-v115 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 app-update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

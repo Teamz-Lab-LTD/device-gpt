@@ -40,7 +40,8 @@ import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.teamz.lab.debugger.BuildConfig
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
-import com.teamz.lab.debugger.utils.RemoteConfigUtils.shouldShowNativeAds
+import com.teamz.lab.debugger.utils.RemoteConfigUtils
+import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.copyToClipboard
 import com.teamz.lab.debugger.utils.AdRevenueOptimizer
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
@@ -208,16 +209,20 @@ fun ExpandableInfoList(
         ) { index, item ->
             when (item) {
                 is ListItem.AdItem -> {
-                    // Render ad (logging reduced - only log once per position)
-                    val logKey = "display_${item.index}"
-                    if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != item.ad.hashCode()) {
-                        Log.d("AdDisplay", "📺 Displaying ad at position ${item.index}, " +
-                                "Ad hash: ${item.ad.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
-                        shownAdHashes[logKey] = item.ad.hashCode()
+                    // Centralized reactive premium check - automatically hides when premium is purchased
+                    val shouldShowAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+                    if (shouldShowAds) {
+                        // Render ad (logging reduced - only log once per position)
+                        val logKey = "display_${item.index}"
+                        if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != item.ad.hashCode()) {
+                            Log.d("AdDisplay", "📺 Displaying ad at position ${item.index}, " +
+                                    "Ad hash: ${item.ad.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
+                            shownAdHashes[logKey] = item.ad.hashCode()
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        AdMobNativeAdCard(nativeAd = item.ad)
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    AdMobNativeAdCard(nativeAd = item.ad)
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 is ListItem.InfoItem -> {
                     // Render info item
@@ -232,7 +237,7 @@ fun ExpandableInfoList(
                     // Use key to prevent unnecessary LaunchedEffect restarts
                     LaunchedEffect(key1 = expanded, key2 = actualIndex) {
                         if (expanded && inlineAd == null) {
-                            if (shouldShowNativeAds()) {
+                            if (RemoteConfigUtils.shouldShowNativeAds()) {
                                 // Use position-specific ad to ensure different ad in expanded view
                                 val positionId = "device_info_expanded_$actualIndex"
                                 val newAd = NativeAdManager.getAdForPosition(positionId)
@@ -329,17 +334,21 @@ fun ExpandableInfoList(
                                     }
                                 )
                         )
-                        if (showExpandedAd) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            AnimatedVisibility(
-                                visible = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                AdMobNativeAdCard(
-                                    bottomPadding = 0,
-                                    nativeAd = inlineAd!!
-                                )
+                        // Centralized reactive premium check - automatically hides when premium is purchased
+                        val shouldShowAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+                        if (showExpandedAd && shouldShowAds) {
+                            inlineAd?.let {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                AnimatedVisibility(
+                                    visible = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    AdMobNativeAdCard(
+                                        bottomPadding = 0,
+                                        nativeAd = it
+                                    )
+                                }
                             }
                         }
                     }

@@ -3,7 +3,7 @@
     <string name="app_name">DeviceGPT</string>
     
     <!-- Widget -->
-    <string name="lock_screen_widget_description">Monitor your device on home screen: power, battery, RAM, CPU, network, health score, and daily streak</string>
+    <string name="lock_screen_widget_description">Monitor your device on home screen or lock screen: health score, streak, battery, temperature, power, RAM, and network</string>
     
     <!-- Common -->
     <string name="loading">Loading…</string>

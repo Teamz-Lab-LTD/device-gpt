@@ -17,7 +17,9 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.derivedStateOf
@@ -25,9 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.*
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.RevenueCatManager
 import kotlinx.coroutines.launch
 import android.util.Log
 import com.teamz.lab.debugger.BuildConfig
@@ -49,6 +55,13 @@ import com.google.android.gms.ads.nativead.NativeAd
 fun LeaderboardSection(activity: Activity) {
     val context = activity
     val scope = rememberCoroutineScope()
+    
+    // Premium paywall state (declared at composable level for proper scope)
+    var showPremiumPaywall by remember { mutableStateOf(false) }
+    var showPremiumPaywallAppPower by remember { mutableStateOf(false) }
+    val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
+    val currentPremiumStatus = premiumStatus
+    val isPremium = currentPremiumStatus is RevenueCatManager.PremiumStatus.Premium && currentPremiumStatus.isActive
     
     // RemoteConfig settings
     val adFrequency = remember { RemoteConfigUtils.getLeaderboardAdFrequency() }
@@ -303,12 +316,21 @@ fun LeaderboardSection(activity: Activity) {
     // Collapsible trust explanation
     var isTrustExpanded by remember { mutableStateOf(false) }
     
+    // Centralized reactive premium check - automatically updates when premium status changes
+    val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+    
     // Native Banner Ad at top (AdMob recommended placement) - stable across recompositions
     // AdMob Best Practice: Use different ad for top banner vs list ads to maximize revenue
     // Only change when ad pool changes, not on every recomposition
-    val topBannerAd = remember(NativeAdManager.nativeAds.size) {
+    // Only fetch ad if user is not premium and native ads are enabled (centralized reactive check)
+    val topBannerAd = remember(NativeAdManager.nativeAds.size, shouldShowNativeAds) {
+        // Don't fetch ad if user is premium or native ads are disabled
+        if (!shouldShowNativeAds) {
+            null
+        } else {
         // Use position-specific ad assignment to ensure different ads in different places
         NativeAdManager.getAdForPosition("leaderboard_top_banner")
+        }
     }
     
     Column(
@@ -467,12 +489,18 @@ fun LeaderboardSection(activity: Activity) {
         
         // Pre-calculate ad assignments based on original entry indices
         // AdMob Best Practice: Assign DIFFERENT ads to different positions to maximize revenue
+        // Only create ad assignments if user is not premium and native ads are enabled
         val adAssignments = remember(
             if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size 
             else leaderboardEntries.size,
             selectedCategory.id,
-            validAdsSize
+            validAdsSize,
+            shouldShowNativeAds
         ) {
+            // Don't create ad assignments if user is premium or native ads are disabled (centralized reactive check)
+            if (!shouldShowNativeAds) {
+                emptyMap<Int, NativeAd>()
+            } else {
             val validAds = NativeAdManager.nativeAds.filterNotNull()
             if (validAds.isEmpty()) {
                 emptyMap<Int, NativeAd>()
@@ -494,6 +522,7 @@ fun LeaderboardSection(activity: Activity) {
                     }
                 }
                 assignments
+                }
             }
         }
         
@@ -511,6 +540,9 @@ fun LeaderboardSection(activity: Activity) {
             }
         }
         
+        // Note: showPremiumPaywall and showPremiumPaywallAppPower are declared at the top level
+        // of LeaderboardSection composable (lines 61-62) to ensure proper scope
+        
         // Scrollable content (ad, user rank, and list)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -518,36 +550,46 @@ fun LeaderboardSection(activity: Activity) {
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             // Native Banner Ad at top (AdMob recommended placement)
+            // Centralized reactive check - automatically hides when premium is purchased
+            if (shouldShowNativeAds) {
             topBannerAd?.let {
                 item {
                     AdMobNativeAdCard(nativeAd = it, bottomPadding = 8)
+                    }
                 }
             }
             
-            // User rank display with navigation to insights (only for device categories)
-            if (userRank > 0 && selectedCategory != LeaderboardCategory.APP_POWER_MONITORING && selectedCategory != LeaderboardCategory.BEST_DEVICE) {
-                item {
-                        UserRankCard(
+            // Premium: Show Your Device Ranking (for premium users only)
+            if (isPremium && userRank > 0) {
+                item(key = "premium_user_rank") {
+                    PremiumUserRankCard(
                         rank = userRank, 
                         category = selectedCategory,
-                        totalEntries = leaderboardEntries.size,
-                        onViewInsights = { 
-                            AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
-                                "source" to "leaderboard_view_insights",
-                                "category" to selectedCategory.id,
-                                "user_rank" to userRank
-                            ))
-                            // Open dialog immediately - no ad before opening
-                            triggerDeviceInsights++
+                        totalEntries = if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                            appPowerEntries.size
+                        } else {
+                            leaderboardEntries.size
                         },
-                        onViewBestDevices = { 
-                            AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
-                                "source" to "leaderboard_view_best_devices",
-                                "category" to selectedCategory.id,
-                                "user_rank" to userRank
+                        onViewInsights = { 
+                            selectedDeviceId = null // Will use current device
+                            showDeviceInsights = true
+                        }
+                    )
+                }
+            }
+            
+            // User rank display with premium gate for non-premium users
+            if (!isPremium && userRank > 0 && selectedCategory != LeaderboardCategory.APP_POWER_MONITORING && selectedCategory != LeaderboardCategory.BEST_DEVICE) {
+                item {
+                    UserRankCardPremiumGate(
+                        category = selectedCategory,
+                        totalEntries = leaderboardEntries.size,
+                        onUnlockClick = {
+                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf(
+                                "item" to "user_rank_premium_gate",
+                                "category" to selectedCategory.id
                             ))
-                            // Open dialog immediately - no ad before opening
-                            triggerBestDevices++
+                            showPremiumPaywall = true
                         }
                     )
                 }
@@ -617,16 +659,176 @@ fun LeaderboardSection(activity: Activity) {
                     // Render filtered app power entries with original ranks
                     filteredAppPowerEntriesWithRank.forEachIndexed { filteredIndex, (entry, originalRank) ->
                         item(key = "app_entry_$filteredIndex") {
+                            // Blur first 3 items for non-premium users
+                            val shouldBlur = !isPremium && filteredIndex < 3
+                            
+                            // Get price dynamically for premium prompt
+                            var premiumPriceAppPower by remember { mutableStateOf("$2.99") }
+                            LaunchedEffect(filteredIndex) {
+                                if (shouldBlur && filteredIndex == 0) { // Only fetch once for first item
+                                    RevenueCatManager.getLifetimeProductPrice(
+                                        onSuccess = { price -> premiumPriceAppPower = price },
+                                        onError = { /* Keep default $2.99 */ }
+                                    )
+                                }
+                            }
+                            
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                // Apply blur directly to the card content for free users
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .then(
+                                            if (shouldBlur) {
+                                                Modifier.blur(radius = 20.dp)
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                ) {
                             AppPowerLeaderboardEntryCard(
                                 rank = originalRank, // Use original rank, not filtered index
                                 entry = entry
                             )
+                                }
+                                
+                                // Premium gate overlay for first 3 items (non-premium only)
+                                // Shows rank clearly (#1, #2, #3) with premium prompt
+                                if (shouldBlur) {
+                                    // Semi-transparent overlay to further obscure the blurred content
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(
+                                                if (isSystemInDarkTheme()) {
+                                                    Color.Black.copy(alpha = 0.5f)
+                                                } else {
+                                                    Color.White.copy(alpha = 0.6f)
+                                                }
+                                            )
+                                    )
+                                    
+                                    // Premium prompt overlay - positioned to show rank clearly
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable { showPremiumPaywallAppPower = true }
+                                    ) {
+                                        // Show rank prominently on the left (unblurred)
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Rank number - clear and prominent (background is reverse of text color)
+                                            // Calculate if text is light or dark based on luminance
+                                            val textColor = MaterialTheme.colorScheme.onSurface
+                                            val textLuminance = (0.299 * textColor.red + 0.587 * textColor.green + 0.114 * textColor.blue)
+                                            val rankBgColor = if (textLuminance > 0.5) {
+                                                // Text is light (dark mode) → use dark background
+                                                Color.Black.copy(alpha = 0.7f)
+                                            } else {
+                                                // Text is dark (light mode) → use white background
+                                                Color.White.copy(alpha = 0.9f)
+                                            }
+                                            
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(64.dp)
+                                                    .background(
+                                                        color = rankBgColor,
+                                                        shape = RoundedCornerShape(12.dp)
+                                                    )
+                                                    .border(
+                                                        width = 2.dp,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        shape = RoundedCornerShape(12.dp)
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "#$originalRank",
+                                                    style = MaterialTheme.typography.headlineLarge,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                            
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            
+                                            // Premium prompt on the right
+                                            Column(
+                                                modifier = Modifier.weight(1f),
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Star,
+                                                        contentDescription = null,
+                                                        tint = if (isSystemInDarkTheme()) {
+                                                            DesignSystemColors.NeonGreen
+                                                        } else {
+                                                            MaterialTheme.colorScheme.onSurface
+                                                        },
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                    Text(
+                                                        text = "Premium Required",
+                                                        style = MaterialTheme.typography.titleMedium,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = "See all app data & unlock full leaderboard access forever",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Button(
+                                                    onClick = { showPremiumPaywallAppPower = true },
+                                                    colors = ButtonDefaults.buttonColors(
+                                                        containerColor = DesignSystemColors.NeonGreen,
+                                                        contentColor = DesignSystemColors.Dark
+                                                    ),
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ) {
+                                                    Column(
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        modifier = Modifier.padding(vertical = 4.dp)
+                                                    ) {
+                                                        Text(
+                                                            "Unlock Lifetime Access",
+                                                            style = MaterialTheme.typography.labelMedium,
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                        Text(
+                                                            "$premiumPriceAppPower • See Everything Forever",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            fontWeight = FontWeight.Normal
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         
                         // Show native ad every N entries (using mapped indices)
+                        // Centralized reactive check - automatically hides when premium is purchased
+                        if (shouldShowNativeAds) {
                         filteredAdAssignments[filteredIndex]?.let { nativeAd ->
                             item(key = "app_ad_$filteredIndex") {
                                 AdMobNativeAdCard(nativeAd = nativeAd, bottomPadding = 16)
+                                }
                             }
                         }
                     }
@@ -682,7 +884,7 @@ fun LeaderboardSection(activity: Activity) {
                                         kotlinx.coroutines.delay(2000)
                                         // Reload leaderboard
                                         retryCount++
-                                    } catch (e: Exception) {
+                                    } catch (_: Exception) {
                                         hasError = true
                                         errorMessage = "Failed to upload data. Please try again."
                                     } finally {
@@ -699,11 +901,46 @@ fun LeaderboardSection(activity: Activity) {
                 filteredLeaderboardEntriesWithRank.forEachIndexed { filteredIndex, (entry, originalRank) ->
                     // Leaderboard entry
                     item(key = "entry_$filteredIndex") {
+                        // Blur first 3 items for non-premium users
+                        val shouldBlur = !isPremium && filteredIndex < 3
+                        
+                        // Get price dynamically for premium prompt
+                        var premiumPrice by remember { mutableStateOf("$2.99") }
+                        LaunchedEffect(filteredIndex) {
+                            if (shouldBlur && filteredIndex == 0) { // Only fetch once for first item
+                                RevenueCatManager.getLifetimeProductPrice(
+                                    onSuccess = { price -> premiumPrice = price },
+                                    onError = { /* Keep default $2.99 */ }
+                                )
+                            }
+                        }
+                        
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            // Apply blur directly to the card content for free users
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(
+                                        if (shouldBlur) {
+                                            Modifier.blur(radius = 20.dp)
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
+                            ) {
                         LeaderboardEntryCard(
                             rank = originalRank, // Use original rank, not filtered index
                             entry = entry,
                             category = selectedCategory,
                             onClick = {
+                                        if (shouldBlur) {
+                                            // Show paywall if user tries to click blurred item
+                                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf(
+                                                "item" to "leaderboard_premium_gate",
+                                                "rank" to originalRank
+                                            ))
+                                            showPremiumPaywall = true
+                                        } else {
                                 AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
                                     "source" to "leaderboard_entry",
                                     "category" to selectedCategory.id,
@@ -713,20 +950,167 @@ fun LeaderboardSection(activity: Activity) {
                                 // Set selected device and show insights
                                 selectedDeviceId = entry.normalizedDeviceId
                                 showDeviceInsights = true
+                                        }
+                                    }
+                                )
                             }
-                        )
+                            
+                            // Premium gate overlay for first 3 items (non-premium only)
+                            // Shows rank clearly (#1, #2, #3) with premium prompt
+                            if (shouldBlur) {
+                                // Semi-transparent overlay to further obscure the blurred content
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            if (isSystemInDarkTheme()) {
+                                                Color.Black.copy(alpha = 0.5f)
+                                            } else {
+                                                Color.White.copy(alpha = 0.6f)
+                                            }
+                                        )
+                                )
+                                
+                                // Premium prompt overlay - positioned to show rank clearly
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable { showPremiumPaywall = true }
+                                ) {
+                                    // Show rank prominently on the left (unblurred)
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Rank number - clear and prominent (background is reverse of text color)
+                                        // Calculate if text is light or dark based on luminance
+                                        val textColor = MaterialTheme.colorScheme.onSurface
+                                        val textLuminance = (0.299 * textColor.red + 0.587 * textColor.green + 0.114 * textColor.blue)
+                                        val rankBgColor = if (textLuminance > 0.5) {
+                                            // Text is light (dark mode) → use dark background
+                                            Color.Black.copy(alpha = 0.7f)
+                                        } else {
+                                            // Text is dark (light mode) → use white background
+                                            Color.White.copy(alpha = 0.9f)
+                                        }
+                                        
+                                        Box(
+                                            modifier = Modifier
+                                                .size(64.dp)
+                                                .background(
+                                                    color = rankBgColor,
+                                                    shape = RoundedCornerShape(12.dp)
+                                                )
+                                                .border(
+                                                    width = 2.dp,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    shape = RoundedCornerShape(12.dp)
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "#$originalRank",
+                                                style = MaterialTheme.typography.headlineLarge,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        
+                                        // Premium prompt on the right
+                                        Column(
+                                            modifier = Modifier.weight(1f),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSurface, // Use text color in both modes
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Text(
+                                                    text = "Premium Required",
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "See all device data & unlock full leaderboard access forever",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Button(
+                                                onClick = { showPremiumPaywall = true },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = DesignSystemColors.NeonGreen,
+                                                    contentColor = DesignSystemColors.Dark
+                                                ),
+                                                modifier = Modifier.fillMaxWidth(),
+                                                shape = RoundedCornerShape(8.dp)
+                                            ) {
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    modifier = Modifier.padding(vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        "Unlock Lifetime Access",
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                    Text(
+                                                        "$premiumPrice • See Everything Forever",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        fontWeight = FontWeight.Normal
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     
                     // Show native ad every N entries (AdMob policy compliant)
                     // Use mapped ad assignments for filtered indices
+                    // Centralized reactive check - automatically hides when premium is purchased
+                    if (shouldShowNativeAds) {
                     filteredAdAssignments[filteredIndex]?.let { nativeAd ->
                         item(key = "ad_$filteredIndex") {
                             AdMobNativeAdCard(nativeAd = nativeAd, bottomPadding = 16)
+                            }
                         }
                     }
                 }
             }
         }
+    }
+    
+    // Premium Paywall for leaderboard premium gate (outside LazyColumn)
+    if (showPremiumPaywall) {
+        RevenueCatPaywall(
+            showPaywall = showPremiumPaywall,
+            onDismiss = { showPremiumPaywall = false },
+            analyticsSource = "leaderboard_premium_gate"
+        )
+    }
+    
+    if (showPremiumPaywallAppPower) {
+        RevenueCatPaywall(
+            showPaywall = showPremiumPaywallAppPower,
+            onDismiss = { showPremiumPaywallAppPower = false },
+            analyticsSource = "leaderboard_app_power_premium_gate"
+        )
     }
     
     // Device Insights - Show as large dialog with better UX
@@ -1381,6 +1765,227 @@ fun UserRankCard(
                     ) {
                         Text("Best Devices", style = MaterialTheme.typography.labelSmall)
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * User Rank Card with Premium Gate - Shows "---" for non-premium users
+ */
+@Composable
+fun UserRankCardPremiumGate(
+    category: LeaderboardCategory,
+    totalEntries: Int = 0,
+    onUnlockClick: () -> Unit
+) {
+    // Get price dynamically
+    var premiumPrice by remember { mutableStateOf("$2.99") }
+    LaunchedEffect(Unit) {
+        RevenueCatManager.getLifetimeProductPrice(
+            onSuccess = { price -> premiumPrice = price },
+            onError = { /* Keep default $2.99 */ }
+        )
+    }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onUnlockClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = DesignSystemColors.NeonGreen.copy(alpha = 0.2f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🏆",
+                    fontSize = 32.sp,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Your rank: ---",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "You're in the top --% for ${category.displayName}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "See details please",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Button(
+                onClick = onUnlockClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DesignSystemColors.NeonGreen,
+                    contentColor = DesignSystemColors.Dark
+                )
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        "Unlock Lifetime Access",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "$premiumPrice • See Everything Forever",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Premium User Rank Card - Shows device ranking for premium users
+ */
+@Composable
+fun PremiumUserRankCard(
+    rank: Int,
+    category: LeaderboardCategory,
+    totalEntries: Int = 0,
+    onViewInsights: (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = DesignSystemColors.NeonGreen.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 2.dp,
+            color = DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Premium badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = DesignSystemColors.NeonGreen,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Premium",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = DesignSystemColors.NeonGreen
+                    )
+                }
+                Text(
+                    text = "Your Device",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Rank display
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Rank number with premium styling
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(
+                            color = DesignSystemColors.NeonGreen,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "#$rank",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = DesignSystemColors.Dark
+                    )
+                }
+                
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Your Ranking",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (totalEntries > 0) {
+                        val percentile = calculateTopPercent(rank, totalEntries)
+                        Text(
+                            text = "Top $percentile% • ${category.displayName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = category.displayName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            // View Insights button
+            if (onViewInsights != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onViewInsights,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DesignSystemColors.NeonGreen,
+                        contentColor = DesignSystemColors.Dark
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "View Device Insights",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }

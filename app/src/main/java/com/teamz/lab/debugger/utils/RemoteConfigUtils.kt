@@ -1,5 +1,8 @@
 package com.teamz.lab.debugger.utils
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.firebase.ktx.Firebase
@@ -82,6 +85,23 @@ object RemoteConfigUtils {
     fun shouldShowNativeAds(): Boolean {
         // Premium users never see ads
         if (RevenueCatManager.isPremium()) {
+            return false
+        }
+        return remoteConfig.getBoolean("show_native_ads")
+    }
+    
+    /**
+     * Reactive composable to check if native ads should be shown
+     * This automatically updates when premium status changes
+     * Use this in Compose UI instead of shouldShowNativeAds() for reactive updates
+     */
+    @Composable
+    fun shouldShowNativeAdsReactive(): Boolean {
+        val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
+        val isPremium = premiumStatus is RevenueCatManager.PremiumStatus.Premium && 
+            (premiumStatus as? RevenueCatManager.PremiumStatus.Premium)?.isActive == true
+        // Premium users never see ads
+        if (isPremium) {
             return false
         }
         return remoteConfig.getBoolean("show_native_ads")

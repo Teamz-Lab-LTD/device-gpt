@@ -163,7 +163,7 @@ dependencies {
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     // WorkManager for reliable background notification scheduling
-    implementation("androidx.work:work-runtime-ktx:2.11.1")
+    implementation(libs.androidx.work.runtime.ktx)
     // RevenueCat for subscription management and ad removal
     implementation(libs.purchases)
     // RevenueCat Paywall UI SDK for displaying paywalls designed in RevenueCat console
@@ -172,16 +172,16 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.13")
     testImplementation("androidx.test:core:1.5.0")
-    testImplementation("androidx.test.ext:junit:1.1.5")
-    testImplementation("org.mockito:mockito-core:5.1.1")
+    testImplementation(libs.androidx.junit.v115)
+    testImplementation("org.mockito:mockito-core:5.21.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     // UiAutomator for real device notification testing
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation(libs.androidx.uiautomator)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(kotlin("test"))

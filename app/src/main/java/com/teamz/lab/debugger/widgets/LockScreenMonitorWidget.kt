@@ -90,14 +90,42 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val cpuInfo = if (cpu.isNotEmpty()) " • $cpu" else ""
         val ramInfo = ram + cpuInfo
         
-        // Update widget views
-        views.setTextViewText(R.id.widget_battery, battery)
-        views.setTextViewText(R.id.widget_ram, ramInfo)
-        views.setTextViewText(R.id.widget_network, networkInfo)
-        views.setTextViewText(R.id.widget_power, power)
-        views.setTextViewText(R.id.widget_thermal, thermal)
-        views.setTextViewText(R.id.widget_health_score, "🏥 Health: $healthScore/10")
-        views.setTextViewText(R.id.widget_streak, "🔥 Streak: $streak days")
+        // Extract key values for compact display (safe extraction with fallbacks)
+        val batteryPercent = try {
+            battery.substringAfter(":").substringBefore("%").trim().takeIf { it.isNotEmpty() } ?: 
+            battery.substringAfter("%").substringBefore("%").trim().takeIf { it.isNotEmpty() } ?: "--"
+        } catch (e: Exception) { "--" }
+        
+        val tempValue = try {
+            thermal.substringAfter("🌡️").substringBefore("°C").trim().takeIf { it.isNotEmpty() } ?: "--"
+        } catch (e: Exception) { "--" }
+        
+        val powerValue = try {
+            power.substringAfter(":").substringBefore("W").trim().takeIf { it.isNotEmpty() } ?: "--"
+        } catch (e: Exception) { "--" }
+        
+        val ramPercent = try {
+            ramInfo.substringAfter("(").substringBefore("%)").trim().takeIf { it.isNotEmpty() } ?: "--"
+        } catch (e: Exception) { "--" }
+        
+        val networkCompact = try {
+            download.substringAfter("↓").substringBefore("Mbps").trim().takeIf { it.isNotEmpty() } ?: 
+            download.substringAfter(" ").substringBefore(" ").trim().takeIf { it.isNotEmpty() } ?: "--"
+        } catch (e: Exception) { "--" }
+        
+        // Update widget views - Optimized for lock screen glanceability
+        // Health Score & Streak are most prominent (in header)
+        views.setTextViewText(R.id.widget_health_score, "🏥 $healthScore/10")
+        views.setTextViewText(R.id.widget_streak, "🔥 $streak")
+        
+        // Compact stats in rows
+        views.setTextViewText(R.id.widget_battery, "🔋 ${if (batteryPercent != "--") "$batteryPercent%" else "--"}")
+        views.setTextViewText(R.id.widget_thermal, "🌡️ ${if (tempValue != "--") "${tempValue}°C" else "--"}")
+        views.setTextViewText(R.id.widget_power, "⚡ ${if (powerValue != "--") "${powerValue}W" else "--"}")
+        
+        // Secondary stats
+        views.setTextViewText(R.id.widget_ram, "🧠 ${if (ramPercent != "--") "${ramPercent}%" else "--"}")
+        views.setTextViewText(R.id.widget_network, "📶 ${if (networkCompact != "--") "${networkCompact}Mbps" else "--"}")
         
         // Show last update time
         val timeAgo = if (lastUpdate > 0) {
@@ -112,14 +140,18 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         }
         views.setTextViewText(R.id.widget_last_update, timeAgo)
         
-        // Set click intent to open app
+        // Set click intent to open app directly to Health section (quick action)
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            // Add extra to navigate to Health section (index 2)
+            putExtra("navigate_to_section", 2)
+            putExtra("source", "lock_screen_widget")
         }
         val pendingIntent = android.app.PendingIntent.getActivity(
             context, 0, intent,
             android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
+        // Make entire widget clickable - opens Health section directly
         views.setOnClickPendingIntent(R.id.widget_container, pendingIntent)
         
         // Update widget

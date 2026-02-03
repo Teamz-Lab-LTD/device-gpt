@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Person
@@ -83,7 +84,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -118,15 +118,15 @@ import com.teamz.lab.debugger.utils.PermissionManager
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.string
-import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
-import com.revenuecat.purchases.ui.revenuecatui.PaywallDialog
-import com.revenuecat.purchases.ui.revenuecatui.PaywallDialogOptions
-import com.revenuecat.purchases.ui.revenuecatui.PaywallListener
+import com.teamz.lab.debugger.ui.RevenueCatPaywall
 import com.revenuecat.purchases.ui.revenuecatui.Paywall
 import com.revenuecat.purchases.ui.revenuecatui.PaywallOptions
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import com.teamz.lab.debugger.widgets.LockScreenMonitorWidget
 
 @Composable
 fun DrawerContent(
@@ -378,16 +378,7 @@ fun DrawerContent(
             )
             
             // Additional shimmer/glow effect for the entire card
-            val shimmerAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.3f,
-                targetValue = 0.7f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(2000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "shimmer_alpha"
-            )
-            
+
             // Enhanced animated card with multiple effects
             Card(
                 modifier = Modifier
@@ -442,7 +433,7 @@ fun DrawerContent(
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = null,
-                                tint = DesignSystemColors.NeonGreen.copy(alpha = glowAlpha),
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier
                                     .size(20.dp)
                                     .rotate(starRotation) // Rotate star with pause
@@ -518,15 +509,25 @@ fun DrawerContent(
                 }
             }
         } else {
-            // Show premium status badge if user has premium
+            // Show premium status badge if user has premium - clickable to show premium info
+            var showPremiumInfoDialog by remember { mutableStateOf(false) }
+            
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .clickable {
+                        AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "premium_badge_clicked"))
+                        showPremiumInfoDialog = true
+                    },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                    containerColor = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                border = BorderStroke(
+                    width = 1.5.dp,
+                    color = DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
                 )
             ) {
                 Row(
@@ -537,20 +538,82 @@ fun DrawerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Default.Verified,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
+                        tint = DesignSystemColors.NeonGreen,
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Premium Active - No Ads",
+                        text = "Premium Active",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontSize = 12.sp
+                        fontSize = 13.sp
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
+            }
+            
+            // Premium Info Dialog - shows when user clicks premium badge
+            if (showPremiumInfoDialog) {
+                AlertDialog(
+                    onDismissRequest = { showPremiumInfoDialog = false },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Verified,
+                            contentDescription = null,
+                            tint = DesignSystemColors.NeonGreen,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    },
+                    title = {
+                        Text(
+                            text = "DeviceGPT Premium",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "You're enjoying an ad-free experience!",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "✓ All ads removed\n✓ Lifetime access\n✓ Full app features\n✓ Support development",
+                                style = MaterialTheme.typography.bodyMedium,
+                                lineHeight = 24.sp
+                            )
+                            Text(
+                                text = "Thank you for supporting DeviceGPT!",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { showPremiumInfoDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = DesignSystemColors.NeonGreen,
+                                contentColor = DesignSystemColors.Dark
+                            )
+                        ) {
+                            Text("Got it")
+                        }
+                    }
+                )
             }
         }
         
@@ -728,6 +791,175 @@ fun DrawerContent(
             }
         }
 
+        // Widget Setup Section
+        Text(
+            text = "Widget",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
+        
+        var showWidgetInstructions by remember { mutableStateOf(false) }
+        var widgetInstructionType by remember { mutableStateOf("") } // "home" or "lock"
+        
+        // Add to Home Screen Button (Programmatic - Android 8.0+)
+        IconTextButton(
+            icon = Icons.Default.Star,
+            label = "Add to Home Screen"
+        ) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DrawerItemClicked, mapOf(
+                    "item" to "add_widget_home"
+                )
+            )
+            // Try to request widget pinning (Android 8.0+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val componentName = ComponentName(context, LockScreenMonitorWidget::class.java)
+                
+                try {
+                    val success = appWidgetManager.requestPinAppWidget(componentName, null, null)
+                    if (!success) {
+                        // If pinning not supported, show instructions
+                        widgetInstructionType = "home"
+                        showWidgetInstructions = true
+                    }
+                } catch (e: Exception) {
+                    // Fallback to instructions dialog
+                    widgetInstructionType = "home"
+                    showWidgetInstructions = true
+                }
+            } else {
+                // For older Android, show instructions
+                widgetInstructionType = "home"
+                showWidgetInstructions = true
+            }
+        }
+        
+        // Add to Lock Screen Button (Manual instructions only - Android 14+)
+        if (Build.VERSION.SDK_INT >= 34) { // Android 14+ (API 34+)
+            IconTextButton(
+                icon = Icons.Default.Verified,
+                label = "Add to Lock Screen"
+            ) {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.DrawerItemClicked, mapOf(
+                        "item" to "add_widget_lock"
+                    )
+                )
+                // Lock screen widgets cannot be added programmatically
+                // Show instructions dialog
+                widgetInstructionType = "lock"
+                showWidgetInstructions = true
+            }
+        }
+        
+        // Widget Instructions Dialog
+        if (showWidgetInstructions) {
+            AlertDialog(
+                onDismissRequest = { showWidgetInstructions = false },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(48.dp)
+                    )
+                },
+                title = {
+                    Text(
+                        text = "Add Device Monitor Widget",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (widgetInstructionType == "home") {
+                            Text(
+                                text = "Add Widget to Home Screen",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "📱 Manual Steps:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "1. Long-press on home screen\n2. Tap 'Widgets'\n3. Find 'DeviceGPT'\n4. Drag to home screen",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        } else if (widgetInstructionType == "lock") {
+                            Text(
+                                text = "Add Widget to Lock Screen",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "🔒 Lock Screen Widgets (Android 14+):",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Lock screen widgets must be added manually:\n\n1. Lock your phone\n2. Long-press on lock screen\n3. Tap 'Customize' or 'Edit'\n4. Tap 'Add Widget' or 'Widgets'\n5. Find 'DeviceGPT'\n6. Add to lock screen\n\n⚠️ Note: Lock screen widgets may not be available on all devices or Android versions.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        } else {
+                            // Fallback - show both
+                            Text(
+                                text = "See your health score & streak on your home screen or lock screen!",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "📱 For Home Screen:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "1. Long-press on home screen\n2. Tap 'Widgets'\n3. Find 'DeviceGPT'\n4. Drag to home screen",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            if (Build.VERSION.SDK_INT >= 34) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "🔒 For Lock Screen (Android 14+):",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "1. Long-press on lock screen\n2. Tap 'Customize' or 'Edit'\n3. Tap 'Add Widget' or 'Widgets'\n4. Find 'DeviceGPT'\n5. Add to lock screen\n\nNote: Lock screen widgets may not be available on all devices.",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        Text(
+                            text = "💡 Tip: Widget shows health score, streak, battery, temperature & more!",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showWidgetInstructions = false },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DesignSystemColors.NeonGreen,
+                            contentColor = DesignSystemColors.Dark
+                        )
+                    ) {
+                        Text("Got it")
+                    }
+                }
+            )
+        }
+
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 16.dp),
             color = MaterialTheme.colorScheme.outline
@@ -879,79 +1111,12 @@ fun DrawerContent(
 
     // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
     // Full screen composable approach (not dialog)
-    // RevenueCat handles all UI, loading, and error states automatically
-    // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls#android
-    val isPremiumForPaywall = RevenueCatManager.isPremium()
-    
-    // Fetch the specific offering to show the custom "device-gpt" paywall
-    var offering by remember { mutableStateOf<com.revenuecat.purchases.Offering?>(null) }
-    
-    LaunchedEffect(showPremiumDialog) {
-        if (showPremiumDialog && !isPremiumForPaywall && offering == null) {
-            com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
-                object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
-                    override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
-                        if (targetOffering != null) {
-                            offering = targetOffering
-                        } else {
-                            android.util.Log.e("RevenueCatPaywall", "Offering '${RevenueCatManager.OFFERING_ID}' not found. Available: ${offerings.all.keys}")
-                        }
-                    }
-                    
-                    override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
-                        android.util.Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
-                    }
-                }
-            )
-        }
-    }
-    
-    // Reset offering when dialog is dismissed
-    LaunchedEffect(showPremiumDialog) {
-        if (!showPremiumDialog) {
-            offering = null
-        }
-    }
-    
-    // Show Paywall as full screen composable with the specific offering
-    if (showPremiumDialog && !isPremiumForPaywall && offering != null) {
-        Paywall(
-            options = PaywallOptions.Builder(
-                dismissRequest = { showPremiumDialog = false }
-            )
-                .setOffering(offering!!) // Use the fetched "device-gpt-offering"
-                .setListener(
-                    object : PaywallListener {
-                        override fun onPurchaseCompleted(
-                            customerInfo: com.revenuecat.purchases.CustomerInfo,
-                            storeTransaction: com.revenuecat.purchases.models.StoreTransaction
-                        ) {
-                            RevenueCatManager.updatePremiumStatus(customerInfo)
-                            AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "purchase_success", "source" to "revenuecat_paywall_drawer")
-                            )
-                            showPremiumDialog = false
-                            Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                        }
-                        
-                        override fun onRestoreCompleted(customerInfo: com.revenuecat.purchases.CustomerInfo) {
-                            RevenueCatManager.updatePremiumStatus(customerInfo)
-                            AnalyticsUtils.logEvent(
-                                AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "restore_purchases_success", "source" to "revenuecat_paywall_drawer")
-                            )
-                            if (RevenueCatManager.isPremium()) {
-                                showPremiumDialog = false
-                                Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                )
-                .build()
-        )
-    }
+    // Using reusable composable component
+    RevenueCatPaywall(
+        showPaywall = showPremiumDialog,
+        onDismiss = { showPremiumDialog = false },
+        analyticsSource = "revenuecat_paywall_drawer"
+    )
     
     NotificationPermissionDialog(
         showDialog = showNotificationDialog && !context.isDoNotAskMeAgain(),

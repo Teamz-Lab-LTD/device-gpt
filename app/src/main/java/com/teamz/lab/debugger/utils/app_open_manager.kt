@@ -260,4 +260,16 @@ object AppOpenAdManager {
         }
         return "AppOpenAdManager State - appOpenAd: ${appOpenAd != null}, isLoading: $isLoading, isShowingAd: $isShowingAd, timeSinceLastAd: ${timeSinceLastAd}s, backgroundTime: ${backgroundTime}s"
     }
+    
+    /**
+     * Clear/dispose of loaded ad (useful when user purchases premium)
+     * This ensures no app open ads are shown after premium purchase
+     */
+    fun clearAd() {
+        android.util.Log.d(TAG, "clearAd() - Clearing app open ad")
+        appOpenAd = null
+        isLoading = false
+        isShowingAd = false
+        pendingActivityRef = null
+    }
 }
