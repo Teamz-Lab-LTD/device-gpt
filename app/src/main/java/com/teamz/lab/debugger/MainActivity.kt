@@ -674,7 +674,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -706,7 +706,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showRevenueCatPaywall = true
                             },
                             modifier = Modifier
-                                .padding(horizontal = 6.dp)
+                                .padding(horizontal = 8.dp)
                                 .scale(pulseScale) // Continuous subtle pulse
                                 .semantics {
                                     // Make it properly focusable and accessible
@@ -764,7 +764,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showPriceInputDialog = true
                             }
                         },
-                        modifier = Modifier.padding(horizontal = 6.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -807,7 +807,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showAIDialog = true
                             }
                         },
-                        modifier = Modifier.padding(horizontal = 6.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -836,7 +836,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                 }
                 // Share FAB (existing)
                 FloatingActionButton(
-                    modifier = Modifier.padding(horizontal = 6.dp),
+                    modifier = Modifier,
                     onClick = {
                         if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) {
                             AnalyticsUtils.logEvent(AnalyticsEvent.FabShareClicked, mapOf(

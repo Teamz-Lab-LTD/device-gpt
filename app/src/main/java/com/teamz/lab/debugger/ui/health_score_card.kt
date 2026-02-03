@@ -176,11 +176,13 @@ fun HealthScoreCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .clickable(onClick = onScoreClick)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = null,
+                                contentDescription = "Scroll to improvements",
                                 tint = DesignSystemColors.Dark.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
                             )

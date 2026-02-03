@@ -33,6 +33,23 @@
         <intent>
             <action android:name="android.settings.APPLICATION_DEVELOPMENT_SETTINGS" />
         </intent>
+        
+        <!-- Battery settings intents for battery optimization feature -->
+        <intent>
+            <action android:name="android.settings.BATTERY_SAVER_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.APPLICATION_DETAILS_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.SETTINGS" />
+        </intent>
 
         <package android:name="com.android.keylogger" />
         <package android:name="com.refog.keylogger" />

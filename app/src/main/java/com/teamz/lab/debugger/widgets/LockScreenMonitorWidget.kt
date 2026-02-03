@@ -122,8 +122,13 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         // MOST IMPORTANT: Health Score (Psychological Trigger #1)
         views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10")
         
-        // Streak (FOMO Trigger)
-        views.setTextViewText(R.id.widget_streak, if (streak > 0) "🔥 $streak days" else "")
+        // Streak (FOMO Trigger) - fix grammar: "1 day" vs "2 days"
+        val streakText = if (streak > 0) {
+            if (streak == 1) "🔥 1 day" else "🔥 $streak days"
+        } else {
+            ""
+        }
+        views.setTextViewText(R.id.widget_streak, streakText)
         
         // Critical Alert/Issue (Urgency Trigger - Most Compelling)
         if (alertMessage.isNotEmpty()) {
@@ -219,19 +224,77 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         views.setTextViewText(R.id.widget_cta, ctaMessage)
         
         // Status indicator in Row 3 - show most meaningful actionable info
-        // Priority: Critical issues > Warnings > Positive status
-        val statusText = when {
-            // Critical issues (highest priority)
-            tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🔥 Overheating"
-            ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "⚠️ Slow Device"
-            healthScore < 5 -> "⚠️ Critical"
-            // Warnings (medium priority)
-            tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 40f -> "🌡️ Warm"
-            ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "⚠️ High Usage"
-            healthScore < 7 -> "📉 Needs Care"
-            // Positive status (when everything is good)
-            healthScore >= 8 -> "✅ Optimized"
-            else -> "📊 Good"
+        // When alert is showing primary issue, show secondary critical info to avoid redundancy
+        val statusText = if (alertMessage.isNotEmpty()) {
+            // Alert is showing primary issue, so show secondary/other critical info
+            // Check in priority order and return first match, or fallback to general status
+            var secondaryStatus: String? = null
+            
+            // Priority 1: Check storage space (important secondary metric)
+            if (secondaryStatus == null && storageUsedTotal != "---") {
+                try {
+                    val storageMatch = Regex("(\\d+)/(\\d+)").find(storageUsedTotal)
+                    if (storageMatch != null) {
+                        val usedGB = storageMatch.groupValues[1].toIntOrNull() ?: 0
+                        val totalGB = storageMatch.groupValues[2].toIntOrNull() ?: 1
+                        val storagePercent = if (totalGB > 0) (usedGB * 100) / totalGB else 0
+                        secondaryStatus = when {
+                            storagePercent > 90 -> "💾 Low Space"
+                            storagePercent > 80 -> "💾 Storage Full"
+                            else -> null
+                        }
+                    }
+                } catch (e: Exception) { /* Continue to next check */ }
+            }
+            
+            // Priority 2: Check power drain (important secondary metric)
+            if (secondaryStatus == null && powerValue != "---") {
+                try {
+                    val drain = powerValue.toFloatOrNull() ?: 0f
+                    secondaryStatus = when {
+                        drain > 10f -> "⚡ High Drain"
+                        drain > 7f -> "⚡ High Power"
+                        else -> null
+                    }
+                } catch (e: Exception) { /* Continue to next check */ }
+            }
+            
+            // Priority 3: Check network quality
+            if (secondaryStatus == null) {
+                secondaryStatus = when {
+                    !hasInternet -> "📶 No Net"
+                    downloadSpeed != "---" -> {
+                        try {
+                            val speed = downloadSpeed.toFloatOrNull() ?: 0f
+                            if (speed < 0.5f) "📶 Slow Net" else null
+                        } catch (e: Exception) { null }
+                    }
+                    else -> null
+                }
+            }
+            
+            // Fallback: Always show something meaningful - positive status or monitoring status
+            // This ensures the field is never empty
+            secondaryStatus ?: when {
+                healthScore >= 8 -> "✅ Good"
+                healthScore >= 7 -> "📊 OK"
+                else -> "📊 Monitoring"
+            }
+        } else {
+            // No alert shown, so show primary status here
+            when {
+                // Critical issues (highest priority)
+                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🔥 Overheating"
+                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "⚠️ Slow Device"
+                healthScore < 5 -> "⚠️ Critical"
+                // Warnings (medium priority)
+                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 40f -> "🌡️ Warm"
+                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "⚠️ High Usage"
+                healthScore < 7 -> "📉 Needs Care"
+                // Positive status (when everything is good)
+                healthScore >= 8 -> "✅ Optimized"
+                else -> "📊 Good"
+            }
         }
         views.setTextViewText(R.id.widget_status, statusText)
         

@@ -1,6 +1,7 @@
 package com.teamz.lab.debugger.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,6 +37,12 @@ import com.teamz.lab.debugger.utils.calculatePrivacyScore
 import com.teamz.lab.debugger.utils.getPrivacyThreatsToday
 import com.teamz.lab.debugger.utils.getRecentCameraMicUsageLog
 import com.teamz.lab.debugger.utils.AIIcon
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.runtime.DisposableEffect
+import android.os.Environment
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun HealthSection(
@@ -46,6 +53,60 @@ fun HealthSection(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Track pending actions that should execute after permission is granted
+    var pendingStorageAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var pendingBatteryAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var pendingCacheAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    
+    // Lifecycle observer to detect when user returns from settings
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // Check if permissions were granted and execute pending actions
+                coroutineScope.launch {
+                    kotlinx.coroutines.delay(500) // Small delay to ensure settings are closed
+                    
+                    // Check storage permission and execute pending action
+                    pendingStorageAction?.let { action ->
+                        val hasAllFilesAccess = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                            Environment.isExternalStorageManager()
+                        } else {
+                            false
+                        }
+                        if (hasAllFilesAccess) {
+                            pendingStorageAction = null
+                            action() // Execute the pending storage cleanup
+                        }
+                    }
+                    
+                    // Check battery optimization and execute pending action
+                    pendingBatteryAction?.let { action ->
+                        pendingBatteryAction = null
+                        action() // Execute the pending battery optimization
+                    }
+                    
+                    // Check cache permission and execute pending action
+                    pendingCacheAction?.let { action ->
+                        val hasAllFilesAccess = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                            Environment.isExternalStorageManager()
+                        } else {
+                            false
+                        }
+                        if (hasAllFilesAccess) {
+                            pendingCacheAction = null
+                            action() // Execute the pending cache cleanup
+                        }
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     // State management for loading and data refresh
     var isScanning by remember { mutableStateOf(false) }
@@ -160,11 +221,16 @@ fun HealthSection(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+            bottom = 120.dp // Extra space for FABs at bottom (Cert, AI, Send buttons)
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Health Score Card
-        item {
+        item(key = "health_score") {
             HealthScoreCard(
                 context = context,
                 onScanClick = handleScanClick,
@@ -175,12 +241,50 @@ fun HealthSection(
                     AnalyticsUtils.logEvent(AnalyticsEvent.HealthScoreClicked, mapOf(
                         "current_score" to currentHealthScore
                     ))
-                    // Scroll to recommendations section
+                    // Scroll to recommendations section at the bottom
                     coroutineScope.launch {
-                        // Find the recommendations item index (after native ad if present)
-                        val recommendationsIndex = if (shouldShowNativeAds && nativeAds.isNotEmpty()) 2 else 1
-                        listState.animateScrollToItem(recommendationsIndex)
-                        AnalyticsUtils.logEvent(AnalyticsEvent.HealthRecommendationsViewed)
+                        try {
+                            // Find recommendations item by key - it's at the bottom now
+                            // First, try to find it in visible items
+                            val visibleItems = listState.layoutInfo.visibleItemsInfo
+                            val visibleItem = visibleItems.find { it.key == "recommendations" }
+                            
+                            if (visibleItem != null) {
+                                // Item is visible, scroll to it
+                                listState.animateScrollToItem(visibleItem.index)
+                            } else {
+                                // Item not visible, scroll to end and then find it
+                                val totalItems = listState.layoutInfo.totalItemsCount
+                                if (totalItems > 0) {
+                                    // Scroll near the end first
+                                    listState.animateScrollToItem(maxOf(0, totalItems - 5))
+                                    // Wait a bit for layout to update
+                                    kotlinx.coroutines.delay(100)
+                                    // Now try to find it again
+                                    val updatedVisibleItems = listState.layoutInfo.visibleItemsInfo
+                                    val foundItem = updatedVisibleItems.find { it.key == "recommendations" }
+                                    foundItem?.let {
+                                        listState.animateScrollToItem(it.index)
+                                    } ?: run {
+                                        // Last resort: scroll to very end
+                                        listState.animateScrollToItem(totalItems - 1)
+                                    }
+                                }
+                            }
+                            AnalyticsUtils.logEvent(AnalyticsEvent.HealthRecommendationsViewed, mapOf(
+                                "source" to "health_score_clicked"
+                            ))
+                        } catch (e: Exception) {
+                            // If all else fails, scroll to end
+                            try {
+                                val totalItems = listState.layoutInfo.totalItemsCount
+                                if (totalItems > 0) {
+                                    listState.animateScrollToItem(totalItems - 1)
+                                }
+                            } catch (e2: Exception) {
+                                // Ignore scroll errors
+                            }
+                        }
                     }
                 },
                 onAIClick = onAIClick
@@ -190,7 +294,7 @@ fun HealthSection(
         // Native Ad (just above Smart Recommendations for better revenue)
         // Policy: Single native ad per screen, adequate spacing, clearly labeled
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item {
+            item(key = "native_ad_top") {
                 // Use position-specific ad to ensure proper rotation
                 val nativeAd = NativeAdManager.getAdForPosition("health_section_top")
                 if (nativeAd != null) {
@@ -230,6 +334,18 @@ fun HealthSection(
             }
         }
 
+        // Native Ad (after Quick Actions header)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_quick_actions") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_quick_actions_header")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
         // RAM Optimization Card (Quick Action)
         item(key = "ram_optimization") {
             var ramUsage by remember { mutableStateOf("--") }
@@ -245,14 +361,17 @@ fun HealthSection(
                 ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
             }
             
-            // Update RAM usage periodically
+            // Update RAM usage periodically - pause when scrolling for better performance
             LaunchedEffect(Unit) {
                 while (true) {
                     kotlinx.coroutines.delay(5000) // Update every 5 seconds
-                    val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
-                    ramUsage = ramInfo
-                    val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
-                    ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                    // Skip update if user is scrolling to prevent lag
+                    if (!listState.isScrollInProgress) {
+                        val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                        ramUsage = ramInfo
+                        val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                        ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                    }
                 }
             }
             
@@ -376,6 +495,18 @@ Free RAM action optimizes background processes and clears memory to improve devi
             )
         }
 
+        // Native Ad (after RAM Optimization)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_ram") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_ram")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
         // Storage Cleanup Card (Quick Action)
         item(key = "storage_cleanup") {
             var storageUsage by remember { mutableStateOf("--") }
@@ -390,13 +521,16 @@ Free RAM action optimizes background processes and clears memory to improve devi
                 storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
             }
             
-            // Update storage usage periodically
+            // Update storage usage periodically - pause when scrolling for better performance
             LaunchedEffect(Unit) {
                 while (true) {
                     kotlinx.coroutines.delay(10000) // Update every 10 seconds
-                    val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
-                    storageUsage = storageInfo
-                    storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                    // Skip update if user is scrolling to prevent lag
+                    if (!listState.isScrollInProgress) {
+                        val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                        storageUsage = storageInfo
+                        storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                    }
                 }
             }
             
@@ -544,14 +678,52 @@ Free RAM action optimizes background processes and clears memory to improve devi
                                             )
                                         )
                                     } else if (shouldOpenSettings) {
-                                        // Need to open settings
+                                        // Need to open settings - set pending action to retry after permission is granted
                                         lastClearResult = message
-                                        kotlinx.coroutines.delay(500)
                                         
+                                        // Set pending action to retry storage cleanup when user returns
+                                        pendingStorageAction = {
+                                            coroutineScope.launch {
+                                                try {
+                                                    isClearing = true
+                                                    val storagePercentBefore = storagePercent
+                                                    val (retrySuccess, retryMessage, retryShouldOpenSettings) = com.teamz.lab.debugger.utils.clearStorageCache(context)
+                                                    isClearing = false
+                                                    
+                                                    if (retrySuccess) {
+                                                        lastClearResult = retryMessage
+                                                        kotlinx.coroutines.delay(1000)
+                                                        val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                                                        storageUsage = storageInfo
+                                                        storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                                                        
+                                                        AnalyticsUtils.logEvent(
+                                                            AnalyticsEvent.WidgetTapped,
+                                                            mapOf(
+                                                                "source" to "health_section",
+                                                                "action" to "clean_storage_completed_after_permission",
+                                                                "success" to true,
+                                                                "storage_percent_before" to storagePercentBefore,
+                                                                "storage_percent_after" to storagePercent
+                                                            )
+                                                        )
+                                                    } else {
+                                                        lastClearResult = retryMessage
+                                                    }
+                                                } catch (e: Exception) {
+                                                    lastClearResult = "Error: ${e.message}"
+                                                    isClearing = false
+                                                    com.teamz.lab.debugger.utils.handleError(e)
+                                                }
+                                            }
+                                        }
+                                        
+                                        kotlinx.coroutines.delay(500)
                                         val settingsOpened = com.teamz.lab.debugger.utils.openStorageSettings(context)
                                         if (!settingsOpened) {
                                             // Settings couldn't be opened - show guide dialog
                                             showStorageGuideDialog = true
+                                            pendingStorageAction = null // Clear pending if settings can't be opened
                                         }
                                         
                                         AnalyticsUtils.logEvent(
@@ -625,25 +797,144 @@ Storage cleanup clears app caches and temporary files to free up space.
             )
         }
 
+        // Native Ad (after Storage Cleanup)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_storage") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_storage")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
         // Battery Optimization Card (Quick Action)
         item(key = "battery_optimization") {
             var batteryHealth by remember { mutableIntStateOf(70) }
             var batteryInfo by remember { mutableStateOf("--") }
             var isOptimizing by remember { mutableStateOf(false) }
             var lastOptimizeResult by remember { mutableStateOf<String?>(null) }
+            var showBatteryGuideDialog by remember { mutableStateOf(false) }
             
             LaunchedEffect(Unit) {
                 batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
                 batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
             }
             
-            // Update battery info periodically
+            // Update battery info periodically - pause when scrolling for better performance
             LaunchedEffect(Unit) {
                 while (true) {
                     kotlinx.coroutines.delay(15000) // Update every 15 seconds
-                    batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
-                    batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                    // Skip update if user is scrolling to prevent lag
+                    if (!listState.isScrollInProgress) {
+                        batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                        batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                    }
                 }
+            }
+            
+            // Battery Guide Dialog
+            if (showBatteryGuideDialog) {
+                AlertDialog(
+                    onDismissRequest = { showBatteryGuideDialog = false },
+                    title = {
+                        Text(
+                            text = "How to Optimize Battery",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column {
+                            Text(
+                                text = "To optimize battery life and health:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = "1. Enable Battery Saver Mode",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Go to Settings > Battery > Battery Saver",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Enable 'Turn on automatically' at 15% or 5%",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "2. Optimize App Battery Usage",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Go to Settings > Battery > Battery optimization",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Set apps to 'Optimized' or 'Restricted'",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "3. General Tips",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Lower screen brightness",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Close unused apps",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                            Text(
+                                text = "• Don't keep phone at 100% charge",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showBatteryGuideDialog = false
+                                val opened = com.teamz.lab.debugger.utils.openBatterySettings(context)
+                                if (!opened) {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Please go to Settings > Battery manually",
+                                        android.widget.Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        ) {
+                            Text("Open Settings")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showBatteryGuideDialog = false }) {
+                            Text("Close")
+                        }
+                    }
+                )
             }
             
             BatteryOptimizationCard(
@@ -672,24 +963,82 @@ Storage cleanup clears app caches and temporary files to free up space.
                             coroutineScope.launch {
                                 try {
                                     val batteryHealthBefore = batteryHealth
-                                    val (success, message) = com.teamz.lab.debugger.utils.optimizeBattery(context)
-                                    lastOptimizeResult = message
+                                    val (success, message, shouldOpenSettings) = com.teamz.lab.debugger.utils.optimizeBattery(context)
                                     isOptimizing = false
                                     
-                                    kotlinx.coroutines.delay(1000)
-                                    batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
-                                    batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
-                                    
-                                    AnalyticsUtils.logEvent(
-                                        AnalyticsEvent.WidgetTapped,
-                                        mapOf(
-                                            "source" to "health_section",
-                                            "action" to "optimize_battery_completed",
-                                            "success" to success,
-                                            "battery_health_before" to batteryHealthBefore,
-                                            "battery_health_after" to batteryHealth
+                                    if (success) {
+                                        lastOptimizeResult = message
+                                        kotlinx.coroutines.delay(1000)
+                                        batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                                        batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                                        
+                                        AnalyticsUtils.logEvent(
+                                            AnalyticsEvent.WidgetTapped,
+                                            mapOf(
+                                                "source" to "health_section",
+                                                "action" to "optimize_battery_completed",
+                                                "success" to true,
+                                                "battery_health_before" to batteryHealthBefore,
+                                                "battery_health_after" to batteryHealth
+                                            )
                                         )
-                                    )
+                                    } else if (shouldOpenSettings) {
+                                        lastOptimizeResult = message
+                                        
+                                        // Set pending action to retry battery optimization when user returns
+                                        pendingBatteryAction = {
+                                            coroutineScope.launch {
+                                                try {
+                                                    isOptimizing = true
+                                                    val batteryHealthBefore = batteryHealth
+                                                    val (retrySuccess, retryMessage, retryShouldOpenSettings) = com.teamz.lab.debugger.utils.optimizeBattery(context)
+                                                    isOptimizing = false
+                                                    
+                                                    if (retrySuccess) {
+                                                        lastOptimizeResult = retryMessage
+                                                        kotlinx.coroutines.delay(1000)
+                                                        batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                                                        batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                                                        
+                                                        AnalyticsUtils.logEvent(
+                                                            AnalyticsEvent.WidgetTapped,
+                                                            mapOf(
+                                                                "source" to "health_section",
+                                                                "action" to "optimize_battery_completed_after_settings",
+                                                                "success" to true,
+                                                                "battery_health_before" to batteryHealthBefore,
+                                                                "battery_health_after" to batteryHealth
+                                                            )
+                                                        )
+                                                    } else {
+                                                        lastOptimizeResult = retryMessage
+                                                    }
+                                                } catch (e: Exception) {
+                                                    lastOptimizeResult = "Error: ${e.message}"
+                                                    isOptimizing = false
+                                                    com.teamz.lab.debugger.utils.handleError(e)
+                                                }
+                                            }
+                                        }
+                                        
+                                        kotlinx.coroutines.delay(500)
+                                        val settingsOpened = com.teamz.lab.debugger.utils.openBatterySettings(context)
+                                        if (!settingsOpened) {
+                                            showBatteryGuideDialog = true
+                                            pendingBatteryAction = null // Clear pending if settings can't be opened
+                                        }
+                                        
+                                        AnalyticsUtils.logEvent(
+                                            AnalyticsEvent.WidgetTapped,
+                                            mapOf(
+                                                "source" to "health_section",
+                                                "action" to "optimize_battery_opened_settings",
+                                                "settings_opened" to settingsOpened
+                                            )
+                                        )
+                                    } else {
+                                        lastOptimizeResult = message
+                                    }
                                 } catch (e: Exception) {
                                     lastOptimizeResult = "Error: ${e.message}"
                                     isOptimizing = false
@@ -709,9 +1058,21 @@ Storage cleanup clears app caches and temporary files to free up space.
                         isOptimizing = true
                         coroutineScope.launch {
                             try {
-                                val (success, message) = com.teamz.lab.debugger.utils.optimizeBattery(context)
-                                lastOptimizeResult = message
+                                val (success, message, shouldOpenSettings) = com.teamz.lab.debugger.utils.optimizeBattery(context)
                                 isOptimizing = false
+                                
+                                if (success) {
+                                    lastOptimizeResult = message
+                                } else if (shouldOpenSettings) {
+                                    lastOptimizeResult = message
+                                    kotlinx.coroutines.delay(500)
+                                    val settingsOpened = com.teamz.lab.debugger.utils.openBatterySettings(context)
+                                    if (!settingsOpened) {
+                                        showBatteryGuideDialog = true
+                                    }
+                                } else {
+                                    lastOptimizeResult = message
+                                }
                             } catch (e: Exception) {
                                 lastOptimizeResult = "Error: ${e.message}"
                                 isOptimizing = false
@@ -734,157 +1095,21 @@ Battery optimization provides suggestions to improve battery life and health.
             )
         }
 
-        // App Cache Cleaner Card (Quick Action)
-        item(key = "app_cache_cleaner") {
-            var cacheSize by remember { mutableStateOf("--") }
-            var appCount by remember { mutableIntStateOf(0) }
-            var isClearing by remember { mutableStateOf(false) }
-            var lastClearResult by remember { mutableStateOf<String?>(null) }
-            
-            LaunchedEffect(Unit) {
-                val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
-                appCount = appsWithCache.size
-                val totalCache = appsWithCache.sumOf { it.cacheSize }
-                val totalCacheMB = totalCache / (1024 * 1024)
-                cacheSize = "$totalCacheMB MB"
-            }
-            
-            // Update cache info periodically
-            LaunchedEffect(Unit) {
-                while (true) {
-                    kotlinx.coroutines.delay(20000) // Update every 20 seconds
-                    val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
-                    appCount = appsWithCache.size
-                    val totalCache = appsWithCache.sumOf { it.cacheSize }
-                    val totalCacheMB = totalCache / (1024 * 1024)
-                    cacheSize = "$totalCacheMB MB"
+        // Native Ad (after Battery Optimization)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_battery") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_battery")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-            
-            AppCacheCleanerCard(
-                cacheSize = cacheSize,
-                appCount = appCount,
-                isClearing = isClearing,
-                lastClearResult = lastClearResult,
-                onClearCache = {
-                    isClearing = true
-                    
-                    AnalyticsUtils.logEvent(
-                        AnalyticsEvent.WidgetTapped,
-                        mapOf(
-                            "source" to "health_section",
-                            "action" to "clear_app_cache_button_clicked",
-                            "cache_size_mb" to (cacheSize.replace(" MB", "").toIntOrNull() ?: 0),
-                            "app_count" to appCount
-                        )
-                    )
-                    
-                    val activity = context as? android.app.Activity
-                    if (activity != null) {
-                        InterstitialAdManager.showAdBeforeAction(
-                            activity = activity,
-                            actionName = "clear_app_cache"
-                        ) {
-                            coroutineScope.launch {
-                                try {
-                                    val cacheSizeBefore = cacheSize
-                                    val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
-                                    var totalFreed = 0L
-                                    var clearedCount = 0
-                                    
-                                    // Clear top 20 apps with largest cache
-                                    appsWithCache.take(20).forEach { appInfo ->
-                                        val freed = com.teamz.lab.debugger.utils.clearAppCache(context, appInfo.packageName)
-                                        if (freed > 0) {
-                                            totalFreed += freed
-                                            clearedCount++
-                                        }
-                                    }
-                                    
-                                    val freedMB = totalFreed / (1024 * 1024)
-                                    lastClearResult = if (freedMB > 0) {
-                                        "Freed ${freedMB} MB cache from ${clearedCount} apps."
-                                    } else {
-                                        "Cache already clean. No cache to clear."
-                                    }
-                                    isClearing = false
-                                    
-                                    kotlinx.coroutines.delay(1000)
-                                    val updatedApps = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
-                                    appCount = updatedApps.size
-                                    val totalCache = updatedApps.sumOf { it.cacheSize }
-                                    val totalCacheMB = totalCache / (1024 * 1024)
-                                    cacheSize = "$totalCacheMB MB"
-                                    
-                                    AnalyticsUtils.logEvent(
-                                        AnalyticsEvent.WidgetTapped,
-                                        mapOf(
-                                            "source" to "health_section",
-                                            "action" to "clear_app_cache_completed",
-                                            "success" to true,
-                                            "freed_mb" to freedMB,
-                                            "apps_cleared" to clearedCount
-                                        )
-                                    )
-                                } catch (e: Exception) {
-                                    lastClearResult = "Error: ${e.message}"
-                                    isClearing = false
-                                    com.teamz.lab.debugger.utils.handleError(e)
-                                    AnalyticsUtils.logEvent(
-                                        AnalyticsEvent.WidgetTapped,
-                                        mapOf(
-                                            "source" to "health_section",
-                                            "action" to "clear_app_cache_error",
-                                            "error" to (e.message ?: "Unknown error")
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        isClearing = true
-                        coroutineScope.launch {
-                            try {
-                                val appsWithCache = com.teamz.lab.debugger.utils.getAppCacheSizes(context)
-                                var totalFreed = 0L
-                                var clearedCount = 0
-                                
-                                appsWithCache.take(20).forEach { appInfo ->
-                                    val freed = com.teamz.lab.debugger.utils.clearAppCache(context, appInfo.packageName)
-                                    if (freed > 0) {
-                                        totalFreed += freed
-                                        clearedCount++
-                                    }
-                                }
-                                
-                                val freedMB = totalFreed / (1024 * 1024)
-                                lastClearResult = if (freedMB > 0) {
-                                    "Freed ${freedMB} MB cache from ${clearedCount} apps."
-                                } else {
-                                    "Cache already clean."
-                                }
-                                isClearing = false
-                            } catch (e: Exception) {
-                                lastClearResult = "Error: ${e.message}"
-                                isClearing = false
-                                com.teamz.lab.debugger.utils.handleError(e)
-                            }
-                        }
-                    }
-                },
-                onAIClick = onItemAIClick?.let { handler ->
-                    {
-                        val content = """
-App Cache: $cacheSize
-Apps with Cache: $appCount
-
-App cache cleaner clears temporary files from apps to free up storage space.
-                        """.trimIndent()
-                        handler("App Cache Cleaner", content)
-                    }
-                }
-            )
         }
+
+        // App Cache Cleaner Card removed - redundant with Storage Cleanup
+        // Both features do the same thing (clear app cache), so keeping only Storage Cleanup
+        // which is more comprehensive and shows overall storage usage
 
         // Privacy Dashboard Card
         item(key = "privacy_dashboard") {
@@ -921,7 +1146,7 @@ $recentUsage
 
         // Native Ad (after Privacy Dashboard)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item {
+            item(key = "native_ad_privacy") {
                 val nativeAd = NativeAdManager.getAdForPosition("health_section_privacy")
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -979,72 +1204,8 @@ Health Score: $currentHealthScore/10
 
         // Native Ad (after Today's Tasks)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item {
+            item(key = "native_ad_tasks") {
                 val nativeAd = NativeAdManager.getAdForPosition("health_section_tasks")
-                if (nativeAd != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AdMobNativeAdCard(nativeAd = nativeAd)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-        }
-
-        // Intelligent Improvement Suggestions
-        item(key = "recommendations") {
-            val suggestions =
-                HealthScoreUtils.getImprovementSuggestions(context, currentHealthScore)
-            if (suggestions.isNotEmpty()) {
-                // Add visual connection from score to recommendations
-                if (currentHealthScore < 8) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDownward,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Improvements for your score: $currentHealthScore/10",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            ImprovementSuggestionsCard(
-                suggestions = suggestions, 
-                currentScore = currentHealthScore,
-                onAIClick = onItemAIClick?.let { handler ->
-                    {
-                        AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
-                            "source" to "health_recommendations",
-                            "item_title" to "Smart Recommendations"
-                        ))
-                        val suggestionsText = suggestions.joinToString("\n") { "• $it" }
-                        val content = """
-Health Score: $currentHealthScore/10
-Improvement Suggestions:
-$suggestionsText
-                        """.trimIndent()
-                        handler("Smart Recommendations", content)
-                    }
-                }
-            )
-            }
-        }
-
-        // Native Ad (after Recommendations)
-        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_recommendations")
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1056,7 +1217,7 @@ $suggestionsText
         // Removed Device Analysis - redundant with Device Info tab
 
         // Temperature History Card
-        item {
+        item(key = "temperature_history") {
             TemperatureHistoryCard(
                 context = context,
                 onAIClick = onItemAIClick?.let { handler ->
@@ -1086,7 +1247,7 @@ Trend: $trend
 
         // Native Ad (after Temperature History)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item {
+            item(key = "native_ad_temperature") {
                 val nativeAd = NativeAdManager.getAdForPosition("health_section_temperature")
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -1097,7 +1258,7 @@ Trend: $trend
         }
 
         // Health History
-        item {
+        item(key = "health_history") {
             LaunchedEffect(Unit) {
                 AnalyticsUtils.logEvent(AnalyticsEvent.HealthHistoryViewed)
             }
@@ -1129,8 +1290,60 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
                 }
             )
         }
-        item {
-            Spacer(modifier = Modifier.height(40.dp))
+
+        // Native Ad (after Health History)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_history") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_history")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
+        // Intelligent Improvement Suggestions - At the bottom
+        item(key = "recommendations") {
+            val suggestions =
+                HealthScoreUtils.getImprovementSuggestions(context, currentHealthScore)
+            if (suggestions.isNotEmpty()) {
+                ImprovementSuggestionsCard(
+                    suggestions = suggestions, 
+                    currentScore = currentHealthScore,
+                    onAIClick = onItemAIClick?.let { handler ->
+                        {
+                            AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                                "source" to "health_recommendations",
+                                "item_title" to "Smart Recommendations"
+                            ))
+                            val suggestionsText = suggestions.joinToString("\n") { "• $it" }
+                            val content = """
+Health Score: $currentHealthScore/10
+Improvement Suggestions:
+$suggestionsText
+                            """.trimIndent()
+                            handler("Smart Recommendations", content)
+                        }
+                    }
+                )
+            }
+        }
+
+        // Native Ad (after Recommendations)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_recommendations") {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_recommendations")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
+        item(key = "bottom_spacer") {
+            Spacer(modifier = Modifier.height(80.dp)) // Extra space to prevent FAB overlap
         }
 
     }
@@ -1798,7 +2011,11 @@ private fun PrivacyDashboardCard(
         shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(
             2.dp,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            when {
+                privacyScore < 50 -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                privacyScore < 70 -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+            }
         )
     ) {
         Column(
@@ -1811,17 +2028,24 @@ private fun PrivacyDashboardCard(
                 Icon(
                     imageVector = Icons.Default.Security,
                     contentDescription = "Privacy",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = when {
+                        privacyScore < 50 -> MaterialTheme.colorScheme.error
+                        privacyScore < 70 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Privacy Dashboard",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.weight(1f))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Privacy Dashboard",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
@@ -1837,53 +2061,69 @@ private fun PrivacyDashboardCard(
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Privacy Score
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Privacy Score",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Surface(
-                    color = when {
-                        privacyScore >= 80 -> MaterialTheme.colorScheme.primaryContainer
-                        privacyScore >= 60 -> MaterialTheme.colorScheme.secondaryContainer
-                        else -> MaterialTheme.colorScheme.errorContainer
-                    },
-                    shape = RoundedCornerShape(8.dp)
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$privacyScore/100",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = when {
-                            privacyScore >= 80 -> MaterialTheme.colorScheme.onPrimaryContainer
-                            privacyScore >= 60 -> MaterialTheme.colorScheme.onSecondaryContainer
-                            else -> MaterialTheme.colorScheme.onErrorContainer
-                        },
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        text = "Privacy Score",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
+                    Surface(
+                        color = when {
+                            privacyScore >= 80 -> DesignSystemColors.NeonGreen
+                            privacyScore >= 60 -> MaterialTheme.colorScheme.secondaryContainer
+                            else -> MaterialTheme.colorScheme.errorContainer
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "$privacyScore/100",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = when {
+                                privacyScore >= 80 -> DesignSystemColors.Dark
+                                privacyScore >= 60 -> MaterialTheme.colorScheme.onSecondaryContainer
+                                else -> MaterialTheme.colorScheme.onErrorContainer
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                // Progress bar
+                LinearProgressIndicator(
+                    progress = { privacyScore / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = when {
+                        privacyScore >= 80 -> DesignSystemColors.NeonGreen
+                        privacyScore >= 60 -> MaterialTheme.colorScheme.secondary
+                        else -> MaterialTheme.colorScheme.error
+                    },
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Threats Today
             if (threats.isNotEmpty()) {
                 Text(
                     text = "Threats Today:",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 threats.take(3).forEach { threat ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1900,11 +2140,11 @@ private fun PrivacyDashboardCard(
                             text = threat,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
             } else {
                 Row(
@@ -1913,15 +2153,15 @@ private fun PrivacyDashboardCard(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Safe",
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = DesignSystemColors.NeonGreen,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "No threats detected today",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -1943,11 +2183,19 @@ private fun PrivacyDashboardCard(
                         text = "Recent mic/camera access detected",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
             }
+            
+            // Info text
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Monitors device security and privacy threats",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }
@@ -2505,7 +2753,7 @@ private fun BatteryOptimizationCard(
             // Info text
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Provides suggestions to improve battery life and health",
+                text = "Closes background apps and opens battery optimization settings",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )

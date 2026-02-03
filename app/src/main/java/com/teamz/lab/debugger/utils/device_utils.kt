@@ -123,13 +123,10 @@ fun clearRam(context: Context): Pair<Boolean, String> {
             }
         }
         
-        // Force garbage collection to free memory
+        // Force garbage collection to free memory (non-blocking)
         System.gc()
         
-        // Wait a moment for memory to be freed
-        Thread.sleep(500)
-        
-        // Check memory after cleanup
+        // Check memory after cleanup (no sleep - let GC happen asynchronously)
         val memoryInfoAfter = android.app.ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfoAfter)
         val usedRamAfter = (memoryInfoAfter.totalMem - memoryInfoAfter.availMem) / (1024 * 1024)
@@ -2413,9 +2410,11 @@ fun getAppCacheSizes(context: Context): List<AppCacheInfo> {
 
 /**
  * Clear cache for a specific app
+ * Note: This only works for our own app or apps we have permission to access
  */
 fun clearAppCache(context: Context, packageName: String): Long {
     return try {
+        // Try to clear cache directory
         val cacheDir = File(context.cacheDir.parent, packageName)
         val sizeBefore = if (cacheDir.exists()) {
             cacheDir.walkTopDown().sumOf { it.length() }
@@ -2423,14 +2422,129 @@ fun clearAppCache(context: Context, packageName: String): Long {
             0L
         }
         
-        if (cacheDir.exists()) {
+        if (cacheDir.exists() && cacheDir.canWrite()) {
             cacheDir.deleteRecursively()
+            sizeBefore
+        } else {
+            0L // Can't access this app's cache
+        }
+    } catch (e: Exception) {
+        // Permission denied or cache in use
+        0L
+    }
+}
+
+/**
+ * Clear app cache with permission handling
+ * Priority 1: Try to clear cache via app (if we have permission)
+ * Priority 2: Open storage settings
+ * Priority 3: Show guide modal
+ */
+fun clearAppCacheWithPermission(context: Context): Triple<Boolean, String, Boolean> {
+    return try {
+        var totalFreed = 0L
+        var appsCleared = 0
+        
+        // Priority 1: Always clear our own app's cache (we have permission for this)
+        try {
+            val ourCacheDir = context.cacheDir
+            if (ourCacheDir.exists()) {
+                val cacheSize = ourCacheDir.walkTopDown().sumOf { it.length() }
+                ourCacheDir.deleteRecursively()
+                totalFreed += cacheSize
+                appsCleared++
+            }
+        } catch (e: Exception) {
+            // Cache might be in use
         }
         
-        sizeBefore
+        // Try to clear external cache directory
+        try {
+            val externalCacheDir = context.externalCacheDir
+            if (externalCacheDir != null && externalCacheDir.exists()) {
+                val cacheSize = externalCacheDir.walkTopDown().sumOf { it.length() }
+                externalCacheDir.deleteRecursively()
+                totalFreed += cacheSize
+            }
+        } catch (e: Exception) {
+            // External cache might be in use
+        }
+        
+        // Check if we have "All files access" permission
+        val hasAllFilesAccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            false
+        }
+        
+        // Try to clear other apps' cache if we have permission
+        if (hasAllFilesAccess) {
+            try {
+                // Get apps with cache
+                val appsWithCache = getAppCacheSizes(context)
+                val appsToClear = appsWithCache.take(20) // More apps with permission
+                
+                appsToClear.forEach { appInfo ->
+                    try {
+                        val freed = clearAppCache(context, appInfo.packageName)
+                        if (freed > 0) {
+                            totalFreed += freed
+                            appsCleared++
+                        }
+                    } catch (e: Exception) {
+                        // Skip apps that can't be cleared
+                    }
+                }
+            } catch (e: Exception) {
+                // Can't access app cache info
+            }
+        } else {
+            // Without permission, try a few apps (might work for some)
+            try {
+                val appsWithCache = getAppCacheSizes(context)
+                val appsToClear = appsWithCache.take(5) // Limited without permission
+                
+                appsToClear.forEach { appInfo ->
+                    try {
+                        val freed = clearAppCache(context, appInfo.packageName)
+                        if (freed > 0) {
+                            totalFreed += freed
+                            appsCleared++
+                        }
+                    } catch (e: Exception) {
+                        // Skip apps that can't be cleared
+                    }
+                }
+            } catch (e: Exception) {
+                // Can't access app cache info
+            }
+        }
+        
+        // Force garbage collection
+        System.gc()
+        
+        val freedMB = totalFreed / (1024 * 1024)
+        
+        if (freedMB > 0) {
+            val message = if (hasAllFilesAccess) {
+                "Freed ${freedMB} MB cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}."
+            } else if (appsCleared > 0) {
+                "Freed ${freedMB} MB cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}. Grant 'All files access' permission to clear more."
+            } else {
+                "Freed ${freedMB} MB cache. Grant 'All files access' permission to clear more app caches."
+            }
+            Triple(true, message, false)
+        } else {
+            // No cache cleared - check if we need permission
+            if (!hasAllFilesAccess && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Triple(false, "Grant 'All files access' permission to clear app caches. Opening settings...", true)
+            } else {
+                Triple(false, "Need permission to clear app caches. Opening storage settings...", true)
+            }
+        }
     } catch (e: Exception) {
         handleError(e)
-        0L
+        Triple(false, "Unable to clear cache: ${e.message ?: "Unknown error"}. Opening settings...", true)
     }
 }
 
@@ -2640,8 +2754,16 @@ fun getStorageUsagePercent(context: Context): Int {
 
 /**
  * Optimize battery - provides suggestions and opens battery settings
+ * Priority 1: Try to optimize via app (close background apps, suggest optimizations)
+ * Priority 2: Open battery settings
+ * Priority 3: Show guide modal
+ * 
+ * @return Triple<Boolean, String, Boolean> where:
+ *   - Boolean: success status
+ *   - String: message
+ *   - Boolean: should open settings (true) or show modal (false)
  */
-fun optimizeBattery(context: Context): Pair<Boolean, String> {
+fun optimizeBattery(context: Context): Triple<Boolean, String, Boolean> {
     return try {
         val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
         val batteryInfo = getBatteryChargingInfo(context)
@@ -2649,8 +2771,44 @@ fun optimizeBattery(context: Context): Pair<Boolean, String> {
         
         var suggestions = mutableListOf<String>()
         var optimizations = 0
+        var actionsTaken = 0
         
-        // Check battery health
+        // Priority 1: Try to optimize via app
+        // Close background apps if too many are running
+        try {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val runningApps = activityManager.runningAppProcesses?.size ?: 0
+            if (runningApps > 10) {
+                // Try to kill some background processes (same logic as clearRam)
+                val ourPackageName = context.packageName
+                val processesKilled = activityManager.runningAppProcesses?.count { processInfo ->
+                    if (processInfo.importance > android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE &&
+                        processInfo.importance < android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
+                        !processInfo.pkgList.contains(ourPackageName)) {
+                        try {
+                            android.os.Process.killProcess(processInfo.pid)
+                            true
+                        } catch (e: Exception) {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } ?: 0
+                
+                if (processesKilled > 0) {
+                    actionsTaken++
+                    suggestions.add("Closed $processesKilled background apps")
+                } else {
+                    suggestions.add("Close ${runningApps - 5} background apps manually")
+                }
+                optimizations++
+            }
+        } catch (e: Exception) {
+            // Can't kill processes
+        }
+        
+        // Check battery health and provide suggestions
         if (batteryInfo.contains("Overheat") || (batteryTemp != null && batteryTemp > 40f)) {
             suggestions.add("Remove phone case to cool down")
             suggestions.add("Close battery-draining apps")
@@ -2665,28 +2823,114 @@ fun optimizeBattery(context: Context): Pair<Boolean, String> {
         // Check if battery saver is off
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
         if (powerManager != null && !powerManager.isPowerSaveMode) {
-            suggestions.add("Enable battery saver mode")
+            suggestions.add("Enable battery saver mode in settings")
             optimizations++
         }
         
-        // Get running apps that might drain battery
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        val runningApps = activityManager.runningAppProcesses?.size ?: 0
-        if (runningApps > 10) {
-            suggestions.add("Close ${runningApps - 5} background apps")
-            optimizations++
+        // Check if app is ignoring battery optimizations (Android 6.0+)
+        var isIgnoringBatteryOptimizations = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && powerManager != null) {
+            try {
+                isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+            } catch (e: Exception) {
+                // Permission might not be granted, that's okay
+            }
         }
         
-        val message = if (optimizations > 0) {
-            "Found $optimizations optimization${if (optimizations > 1) "s" else ""}. ${suggestions.take(2).joinToString(" ")}"
+        // If we took actions, return success
+        if (actionsTaken > 0) {
+            Triple(true, "Optimized battery. ${suggestions.take(2).joinToString(" ")}", false)
+        } else if (optimizations > 0) {
+            // Found optimizations but need user to do them - open settings
+            Triple(false, "Found $optimizations optimization${if (optimizations > 1) "s" else ""}. Opening battery settings...", true)
         } else {
-            "Battery is optimized. Your device is running efficiently."
+            Triple(true, "Battery is optimized. Your device is running efficiently.", false)
         }
-        
-        Pair(true, message)
     } catch (e: Exception) {
         handleError(e)
-        Pair(false, "Unable to optimize battery: ${e.message ?: "Unknown error"}")
+        Triple(false, "Unable to optimize battery: ${e.message ?: "Unknown error"}. Opening settings...", true)
+    }
+}
+
+/**
+ * Check if the app is ignoring battery optimizations
+ * Returns true if the app is exempt from battery optimization, false otherwise
+ */
+fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        try {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: false
+        } catch (e: Exception) {
+            false
+        }
+    } else {
+        true // On older Android versions, apps are not restricted
+    }
+}
+
+/**
+ * Open battery settings screen
+ * Returns true if settings were opened, false if not available
+ */
+fun openBatterySettings(context: Context): Boolean {
+    return try {
+        // Priority 1: Try battery optimization settings (Android 6.0+) - For app-specific optimization
+        // This is the correct screen for "battery optimization" feature
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                val batteryOptimizationIntent = Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                batteryOptimizationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                if (batteryOptimizationIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(batteryOptimizationIntent)
+                    return true
+                }
+            } catch (e: Exception) {
+                // Continue to next option
+            }
+        }
+        
+        // Priority 2: Try battery saver settings (Android 5.0+) - For device-wide battery saver
+        try {
+            val batterySaverIntent = Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
+            batterySaverIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (batterySaverIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(batterySaverIntent)
+                return true
+            }
+        } catch (e: Exception) {
+            // Continue to next option
+        }
+        
+        // Fallback: Open app settings where user can find battery optimization
+        try {
+            val appSettingsIntent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            appSettingsIntent.data = android.net.Uri.parse("package:${context.packageName}")
+            appSettingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (appSettingsIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(appSettingsIntent)
+                return true
+            }
+        } catch (e: Exception) {
+            // Continue to next option
+        }
+        
+        // Last resort: Open main settings
+        try {
+            val mainSettingsIntent = Intent(android.provider.Settings.ACTION_SETTINGS)
+            mainSettingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (mainSettingsIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(mainSettingsIntent)
+                return true
+            }
+        } catch (e: Exception) {
+            // All options failed
+        }
+        
+        false
+    } catch (e: Exception) {
+        handleError(e)
+        false
     }
 }
 

@@ -164,16 +164,27 @@ object HealthScoreUtils {
         var streak = 0
         var currentDate = today
         
-        // Check consecutive days starting from today
+        // Check consecutive days starting from today going backwards
+        // This ensures the streak increases day by day as long as user scans daily
         while (true) {
             val hasScannedToday = history.any { it.first == currentDate }
             if (hasScannedToday) {
                 streak++
                 // Move to previous day
-                calendar.time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(currentDate) ?: break
-                calendar.add(Calendar.DAY_OF_YEAR, -1)
-                currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                try {
+                    val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(currentDate)
+                    if (parsedDate != null) {
+                        calendar.time = parsedDate
+                        calendar.add(Calendar.DAY_OF_YEAR, -1)
+                        currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                    } else {
+                        break
+                    }
+                } catch (e: Exception) {
+                    break
+                }
             } else {
+                // No scan found for this day, streak ends here
                 break
             }
         }
