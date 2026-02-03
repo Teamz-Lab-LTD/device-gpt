@@ -3,6 +3,7 @@ package com.teamz.lab.debugger.ui
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,8 +24,30 @@ import com.teamz.lab.debugger.utils.handleError
 import com.teamz.lab.debugger.utils.FpsDataCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AnalyticsEvent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun DeviceInfoSection(
@@ -55,14 +78,42 @@ fun DeviceInfoSection(
     var lastFpsUpdateTime by remember { mutableStateOf(0L) }
     var lastFrameRate by remember { mutableStateOf("") }
     var lastFrameDropData by remember { mutableStateOf("") }
+    
+    // Pre-compile Regex outside callbacks to prevent ANR (Regex compilation blocks main thread)
+    // Regex compilation involves native code that can block, so we compile once and reuse
+    val dropRateRegex = remember { Regex("([\\d.]+)%") }
 
     // GPU info surface (required for OpenGL context)
+    var gpuSurfaceView by remember { mutableStateOf<android.opengl.GLSurfaceView?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    
+    // Properly clean up GLSurfaceView to prevent ANR during hardware renderer destruction
+    DisposableEffect(Unit) {
+        onDispose {
+            // Clean up GLSurfaceView asynchronously to prevent blocking hardware renderer destruction
+            gpuSurfaceView?.let { view ->
+                coroutineScope.launch(Dispatchers.Main) {
+                    try {
+                        // Stop rendering and release resources
+                        view.onPause()
+                        view.queueEvent {
+                            // Release OpenGL resources on render thread
+                        }
+                    } catch (e: Exception) {
+                        // Ignore cleanup errors
+                    }
+                }
+            }
+        }
+    }
+    
     if (showGpuSurface) {
-        AndroidView(factory = {
-            createGpuInfoSurfaceView(it) { info ->
+        AndroidView(factory = { ctx ->
+            createGpuInfoSurfaceView(ctx) { info ->
                 viewModel.updateGpuDetails(info)
                 showGpuSurface = false
             }.apply {
+                gpuSurfaceView = this
                 layoutParams = android.view.ViewGroup.LayoutParams(1, 1)
                 requestRender()
             }
@@ -75,59 +126,74 @@ fun DeviceInfoSection(
     }
 
     // Handle FPS data (main thread callbacks) - throttled to prevent recomposition loop
-    LaunchedEffect(Unit) {
-        // Ensure we're on main thread for Choreographer
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-            // Cache FPS data when collected on main thread (for future background uploads)
-            getFPS { fps ->
-                val fpsText = "$fps FPS"
-                lastFps = fps
-                lastFrameRate = fpsText
-                
-                // Throttle updates: only update ViewModel every 500ms
-                val now = System.currentTimeMillis()
-                if (now - lastFpsUpdateTime > 500) {
-                    val currentState = viewModel.state.value
-                    // Use lastFrameDropData (cached) instead of currentState.frameDropData
-                    // This ensures we preserve frameDropData even if it was set before frameRate
-                    val frameDropToUse = if (lastFrameDropData.isNotEmpty()) lastFrameDropData else currentState.frameDropData
-                    // Only update if value changed
-                    if (fpsText != currentState.frameRate) {
-                        // android.util.Log.d("DeviceInfoSection", "📊 getFPS callback: updating frameRate='$fpsText', frameDropData='${frameDropToUse.take(50)}...'") // Disabled: Too verbose
-                        viewModel.updateFpsInfo(fpsText, frameDropToUse)
-                    }
-                    lastFpsUpdateTime = now
+    // Use DisposableEffect to properly clean up callbacks when composable is disposed
+    DisposableEffect(Unit) {
+        var isActive = true
+        
+        // Store cleanup functions for FPS and frame drop callbacks
+        val cleanupFps = getFPS { fps ->
+            // Check if composable is still active before updating state
+            if (!isActive) return@getFPS
+            
+            val fpsText = "$fps FPS"
+            lastFps = fps
+            lastFrameRate = fpsText
+            
+            // Throttle updates: only update ViewModel every 500ms
+            val now = System.currentTimeMillis()
+            if (now - lastFpsUpdateTime > 500) {
+                val currentState = viewModel.state.value
+                // Use lastFrameDropData (cached) instead of currentState.frameDropData
+                // This ensures we preserve frameDropData even if it was set before frameRate
+                val frameDropToUse = if (lastFrameDropData.isNotEmpty()) lastFrameDropData else currentState.frameDropData
+                // Only update if value changed
+                if (fpsText != currentState.frameRate) {
+                    // android.util.Log.d("DeviceInfoSection", "📊 getFPS callback: updating frameRate='$fpsText', frameDropData='${frameDropToUse.take(50)}...'") // Disabled: Too verbose
+                    viewModel.updateFpsInfo(fpsText, frameDropToUse)
                 }
-                
-                // Cache FPS immediately (drop rate will be added when available)
-                FpsDataCache.saveFpsData(context, fps, 0.0, "FPS: $fps")
+                lastFpsUpdateTime = now
             }
             
-            getFrameDropRate { frameDropData ->
-                lastFrameDropData = frameDropData
-                
-                // Extract and cache frame drop rate along with FPS
-                val dropRateMatch = Regex("([\\d.]+)%").find(frameDropData)
-                val dropRate = dropRateMatch?.groupValues?.get(1)?.toDoubleOrNull() ?: 0.0
-                
-                // Throttle updates: only update ViewModel every 500ms
-                val now = System.currentTimeMillis()
-                if (now - lastFpsUpdateTime > 500) {
-                    val currentState = viewModel.state.value
-                    // Use lastFrameRate (cached) instead of currentState.frameRate
-                    // This ensures we preserve frameRate even if it was set before frameDropData
-                    val frameRateToUse = if (lastFrameRate.isNotEmpty()) lastFrameRate else currentState.frameRate
-                    // Only update if value changed
-                    if (frameDropData != currentState.frameDropData) {
-                        // android.util.Log.d("DeviceInfoSection", "📊 getFrameDropRate callback: updating frameRate='$frameRateToUse', frameDropData='${frameDropData.take(50)}...'") // Disabled: Too verbose
-                        viewModel.updateFpsInfo(frameRateToUse, frameDropData)
-                    }
-                    lastFpsUpdateTime = now
+            // Cache FPS immediately (drop rate will be added when available)
+            FpsDataCache.saveFpsData(context, fps, 0.0, "FPS: $fps")
+        }
+        
+        val cleanupFrameDrop = getFrameDropRate { frameDropData ->
+            // Check if composable is still active before updating state
+            if (!isActive) return@getFrameDropRate
+            
+            lastFrameDropData = frameDropData
+            
+            // Extract and cache frame drop rate along with FPS
+            // Use pre-compiled Regex to prevent ANR (Regex compilation blocks main thread)
+            val dropRateMatch = dropRateRegex.find(frameDropData)
+            val dropRate = dropRateMatch?.groupValues?.get(1)?.toDoubleOrNull() ?: 0.0
+            
+            // Throttle updates: only update ViewModel every 500ms
+            val now = System.currentTimeMillis()
+            if (now - lastFpsUpdateTime > 500) {
+                val currentState = viewModel.state.value
+                // Use lastFrameRate (cached) instead of currentState.frameRate
+                // This ensures we preserve frameRate even if it was set before frameDropData
+                val frameRateToUse = if (lastFrameRate.isNotEmpty()) lastFrameRate else currentState.frameRate
+                // Only update if value changed
+                if (frameDropData != currentState.frameDropData) {
+                    // android.util.Log.d("DeviceInfoSection", "📊 getFrameDropRate callback: updating frameRate='$frameRateToUse', frameDropData='${frameDropData.take(50)}...'") // Disabled: Too verbose
+                    viewModel.updateFpsInfo(frameRateToUse, frameDropData)
                 }
-                
-                // Cache both FPS and drop rate for future leaderboard uploads
-                FpsDataCache.saveFpsData(context, lastFps, dropRate, "FPS: $lastFps • Drop Rate: ${String.format(java.util.Locale.getDefault(), "%.1f", dropRate)}%")
+                lastFpsUpdateTime = now
             }
+            
+            // Cache both FPS and drop rate for future leaderboard uploads
+            FpsDataCache.saveFpsData(context, lastFps, dropRate, "FPS: $lastFps • Drop Rate: ${String.format(java.util.Locale.getDefault(), "%.1f", dropRate)}%")
+        }
+        
+        onDispose {
+            // Mark as inactive when composable is disposed to prevent state updates
+            isActive = false
+            // Unregister Choreographer callbacks to prevent LeftCompositionCancellationException
+            cleanupFps()
+            cleanupFrameDrop()
         }
     }
 
@@ -247,5 +313,6 @@ fun DeviceInfoSection(
         onItemAIClick = if (state.isFullyLoaded) onItemAIClick else null
     )
 }
+
 
 

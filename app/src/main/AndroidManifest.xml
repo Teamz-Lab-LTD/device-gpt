@@ -21,6 +21,10 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+    
+    <!-- BILLING permission required for in-app purchases -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+    
     <queries>
         <intent>
             <action android:name="android.settings.APPLICATION_DEVELOPMENT_SETTINGS" />

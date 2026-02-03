@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
+import java.util.Calendar
 
 /**
  * RetentionNotificationManager - Handles automatic local notifications for user retention
@@ -33,12 +34,19 @@ object RetentionNotificationManager {
     // Deduplication: Track last notification sent time to prevent duplicates
     private const val PREF_LAST_NOTIFICATION_TIME = "last_notification_time"
     private const val PREF_LAST_NOTIFICATION_TITLE = "last_notification_title"
-    private const val MIN_NOTIFICATION_INTERVAL_MS = 5000L // 5 seconds minimum between same notifications
+    private const val MIN_NOTIFICATION_INTERVAL_MS = 60000L // 1 minute minimum between ANY notifications (prevents spam)
     
     // Smart retention: Track user engagement to send personalized notifications
     private const val PREF_NOTIFICATION_COUNT_TODAY = "notification_count_today"
     private const val PREF_LAST_NOTIFICATION_DATE = "last_notification_date"
-    private const val MAX_NOTIFICATIONS_PER_DAY = 3 // Maximum notifications per day to avoid spam
+    private const val MAX_NOTIFICATIONS_PER_DAY = 1 // Maximum 1 notification per day (user requested)
+    
+    // Context-aware notification tracking
+    private const val PREF_LAST_TEMPERATURE_ALERT = "last_temperature_alert"
+    private const val PREF_LAST_PRIVACY_ALERT = "last_privacy_alert"
+    private const val PREF_LAST_TASK_REMINDER = "last_task_reminder"
+    private const val PREF_LAST_HEALTH_SCORE_ALERT = "last_health_score_alert"
+    private const val PREF_LAST_BATTERY_ALERT = "last_battery_alert"
     
     // User preference: Allow users to disable notifications
     private const val PREF_NOTIFICATIONS_ENABLED = "notifications_enabled"
@@ -162,7 +170,10 @@ object RetentionNotificationManager {
         
         // Only send if user hasn't scanned today
         if (lastScanDate != today) {
-            val healthScore = HealthScoreUtils.calculateDailyHealthScore(context)
+            // Use runBlocking since this is called from a non-suspend context
+            val healthScore = kotlinx.coroutines.runBlocking {
+                HealthScoreUtils.calculateDailyHealthScore(context)
+            }
             val streak = HealthScoreUtils.getDailyStreak(context)
             
             // Only send if user has an active streak or low health score
@@ -218,6 +229,7 @@ object RetentionNotificationManager {
     /**
      * Send notification with proper channel setup and deduplication
      * Includes smart daily limit to prevent notification spam
+     * ENHANCED: Only allows 1 notification per day maximum (user requirement)
      */
     fun sendNotification(title: String, message: String, channel: String, context: Context) {
         try {
@@ -226,13 +238,25 @@ object RetentionNotificationManager {
                 return // User has disabled notifications, don't send
             }
             
+            // ENHANCED: Check global notification cooldown (1 minute between ANY notifications)
+            val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+            val lastNotificationTime = prefs.getLong(PREF_LAST_NOTIFICATION_TIME, 0L)
+            val currentTime = System.currentTimeMillis()
+            
+            // Don't send if notification was sent less than 1 minute ago (prevents multiple notifications at same time)
+            if ((currentTime - lastNotificationTime) < MIN_NOTIFICATION_INTERVAL_MS) {
+                android.util.Log.d("RetentionNotificationManager", "Skipping notification - too soon after last one (${(currentTime - lastNotificationTime) / 1000}s ago)")
+                return
+            }
+            
             // Check for duplicates before sending
             if (!shouldSendNotification(context, title, channel)) {
                 return // Skip duplicate notification
             }
             
-            // Smart daily limit: Don't send more than MAX_NOTIFICATIONS_PER_DAY per day
+            // Smart daily limit: Don't send more than MAX_NOTIFICATIONS_PER_DAY per day (1 notification max)
             if (!canSendNotificationToday(context)) {
+                android.util.Log.d("RetentionNotificationManager", "Skipping notification - daily limit reached")
                 return // Skip to avoid notification spam
             }
             
@@ -267,11 +291,19 @@ object RetentionNotificationManager {
             
             notificationManager.notify(notificationId, notification)
             
-            // Record that we sent this notification
+            // Record that we sent this notification (global timestamp for cooldown)
+            // Use existing prefs variable from above
+            prefs.edit {
+                putLong(PREF_LAST_NOTIFICATION_TIME, System.currentTimeMillis())
+            }
+            
+            // Record that we sent this notification (channel-specific)
             recordNotificationSent(context, title, channel)
             
             // Track daily notification count
             incrementDailyNotificationCount(context)
+            
+            android.util.Log.d("RetentionNotificationManager", "Notification sent: $title (daily count: ${prefs.getInt(PREF_NOTIFICATION_COUNT_TODAY, 0)})")
         } catch (e: Exception) {
             // Handle notification sending errors gracefully
             e.printStackTrace()
@@ -284,9 +316,9 @@ object RetentionNotificationManager {
      * Made internal so Worker classes can use it
      */
     internal fun shouldSendNotification(context: Context, title: String, channel: String): Boolean {
-        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
-        val lastTime = prefs.getLong("${PREF_LAST_NOTIFICATION_TIME}_${channel}", 0L)
-        val lastTitle = prefs.getString("${PREF_LAST_NOTIFICATION_TITLE}_${channel}", "")
+        val notificationPrefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val lastTime = notificationPrefs.getLong("${PREF_LAST_NOTIFICATION_TIME}_${channel}", 0L)
+        val lastTitle = notificationPrefs.getString("${PREF_LAST_NOTIFICATION_TITLE}_${channel}", "")
         val currentTime = System.currentTimeMillis()
         
         // Don't send if same title was sent recently
@@ -459,6 +491,134 @@ object RetentionNotificationManager {
             tipWorkRequest
         )
     }
+    
+    // ============================================================================
+    // CONTEXT-AWARE NOTIFICATION TRIGGERS
+    // ============================================================================
+    
+    /**
+     * Send temperature alert notification (real-time, not scheduled)
+     * Only sends if temperature is critical and not already alerted today
+     */
+    fun sendTemperatureAlert(context: Context, temperature: Float) {
+        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastAlertDate = prefs.getString(PREF_LAST_TEMPERATURE_ALERT, "")
+        
+        // Only send if critical temperature and not already alerted today
+        if (temperature > 40f && lastAlertDate != today) {
+            val title = when {
+                temperature > 45f -> "🔥 Critical: Phone Overheating!"
+                else -> "🌡️ Phone Getting Hot"
+            }
+            val message = when {
+                temperature > 45f -> "Your phone is ${temperature.toInt()}°C! Stop using it and let it cool down immediately."
+                else -> "Your phone is ${temperature.toInt()}°C. Close apps and let it cool down."
+            }
+            
+            sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
+            
+            prefs.edit {
+                putString(PREF_LAST_TEMPERATURE_ALERT, today)
+            }
+        }
+    }
+    
+    /**
+     * Send privacy alert notification when mic/camera used unexpectedly
+     */
+    fun sendPrivacyAlert(context: Context, threatType: String, details: String) {
+        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastAlertDate = prefs.getString(PREF_LAST_PRIVACY_ALERT, "")
+        
+        // Only send once per day
+        if (lastAlertDate != today) {
+            val title = when (threatType) {
+                "mic" -> "🎤 Microphone Used Unexpectedly"
+                "camera" -> "📷 Camera Used Unexpectedly"
+                else -> "🔐 Privacy Alert"
+            }
+            val message = when (threatType) {
+                "mic" -> "An app used your microphone. Review permissions in settings."
+                "camera" -> "An app accessed your camera. Check which app and why."
+                else -> details
+            }
+            
+            sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
+            
+            prefs.edit {
+                putString(PREF_LAST_PRIVACY_ALERT, today)
+            }
+        }
+    }
+    
+    /**
+     * Send task reminder notification if user hasn't completed tasks by 6 PM
+     */
+    fun sendTaskReminder(context: Context, completedCount: Int, totalTasks: Int) {
+        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastReminderDate = prefs.getString(PREF_LAST_TASK_REMINDER, "")
+        
+        // Only send once per day, after 6 PM
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        
+        if (currentHour >= 18 && lastReminderDate != today && completedCount < totalTasks) {
+            val remaining = totalTasks - completedCount
+            val title = "📋 Complete Your Daily Tasks"
+            val message = "You have $remaining task${if (remaining > 1) "s" else ""} remaining. Complete them to maintain your streak!"
+            
+            sendNotification(title, message, ENGAGEMENT_CHANNEL, context)
+            
+            prefs.edit {
+                putString(PREF_LAST_TASK_REMINDER, today)
+            }
+        }
+    }
+    
+    /**
+     * Send health score drop alert if score dropped significantly
+     */
+    fun sendHealthScoreDropAlert(context: Context, currentScore: Int, previousScore: Int) {
+        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastAlertDate = prefs.getString(PREF_LAST_HEALTH_SCORE_ALERT, "")
+        
+        // Only send if score dropped by 2+ points and not already alerted today
+        if ((previousScore - currentScore) >= 2 && lastAlertDate != today) {
+            val title = "⚠️ Health Score Dropped"
+            val message = "Your device health dropped from $previousScore/10 to $currentScore/10. Check what needs attention!"
+            
+            sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
+            
+            prefs.edit {
+                putString(PREF_LAST_HEALTH_SCORE_ALERT, today)
+            }
+        }
+    }
+    
+    /**
+     * Send battery drain alert when power consumption spikes
+     */
+    fun sendBatteryDrainAlert(context: Context, powerWatts: Double) {
+        val prefs = context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val lastAlertDate = prefs.getString(PREF_LAST_BATTERY_ALERT, "")
+        
+        // Only send if critical power consumption and not already alerted today
+        if (powerWatts > 10.0 && lastAlertDate != today) {
+            val title = "⚡ High Battery Drain Detected"
+            val message = "Your phone is using ${String.format("%.1f", powerWatts)}W. Close apps to save battery!"
+            
+            sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
+            
+            prefs.edit {
+                putString(PREF_LAST_BATTERY_ALERT, today)
+            }
+        }
+    }
 }
 
 // ============================================================================
@@ -476,7 +636,10 @@ class DailyHealthReminderWorker(context: Context, params: WorkerParameters) : Wo
             
             // Only send if user hasn't scanned today
             if (lastScanDate != today) {
-                val healthScore = HealthScoreUtils.calculateDailyHealthScore(applicationContext)
+                // Use runBlocking since Worker runs on background thread
+                val healthScore = kotlinx.coroutines.runBlocking {
+                    HealthScoreUtils.calculateDailyHealthScore(applicationContext)
+                }
                 val streak = HealthScoreUtils.getDailyStreak(applicationContext)
                 
                 val title = when {
@@ -737,7 +900,10 @@ class PersonalizedTipWorker(context: Context, params: WorkerParameters) : Worker
         return try {
             val streak = HealthScoreUtils.getDailyStreak(applicationContext)
             val totalScans = HealthScoreUtils.getTotalScans(applicationContext)
-            val healthScore = HealthScoreUtils.calculateDailyHealthScore(applicationContext)
+            // Use runBlocking since Worker runs on background thread
+            val healthScore = kotlinx.coroutines.runBlocking {
+                HealthScoreUtils.calculateDailyHealthScore(applicationContext)
+            }
             val lastScanDate = HealthScoreUtils.getLastScanDate(applicationContext)
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
             

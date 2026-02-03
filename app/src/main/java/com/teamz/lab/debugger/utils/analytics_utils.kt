@@ -230,6 +230,7 @@ enum class AnalyticsEvent(val eventName: String) {
     FabCertificateClicked("fab_certificate_clicked"),
     FabAIClicked("fab_ai_clicked"),
     FabShareClicked("fab_share_clicked"),
+    LifetimeSubscriptionClicked("lifetime_subscription_clicked"),
     // Health tab events
     HealthScanStarted("health_scan_started"),
     HealthScanCompleted("health_scan_completed"),

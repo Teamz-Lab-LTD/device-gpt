@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.teamz.lab.debugger.utils.RevenueCatManager
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import kotlinx.coroutines.launch
 
 /**
@@ -37,34 +38,59 @@ import kotlinx.coroutines.launch
 fun PremiumPurchaseDialog(
     onDismiss: () -> Unit,
     activity: android.app.Activity,
-    title: String = "Remove Ads Forever",
-    subtitle: String = "Enjoy an ad-free experience and support the app",
+    title: String = "DeviceGPT Premium",
+    subtitle: String? = null, // Will be generated dynamically with price
     benefits: List<String> = listOf(
         "✅ No ads - ever",
-        "✅ Faster app experience",
+        "✅ Faster app performance",
         "✅ Support development",
-        "✅ Cancel anytime"
+        "✅ One-time payment - no subscriptions"
     )
 ) {
     var isPurchasing by remember { mutableStateOf(false) }
     var purchaseError by remember { mutableStateOf<String?>(null) }
     var purchaseSuccess by remember { mutableStateOf(false) }
+    var productPrice by remember { mutableStateOf<String?>(null) }
     val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
     val scope = rememberCoroutineScope()
+    
+    // Fetch price dynamically from RevenueCat
+    LaunchedEffect(Unit) {
+        RevenueCatManager.getLifetimeProductPrice(
+            onSuccess = { price ->
+                productPrice = price
+            },
+            onError = { error ->
+                // Fallback to default if price fetch fails
+                productPrice = "$2.99"
+                android.util.Log.w("PremiumPurchaseDialog", "Failed to fetch price: $error, using fallback")
+            }
+        )
+    }
+    
+    // Generate subtitle with dynamic price
+    val displaySubtitle = subtitle ?: if (productPrice != null) {
+        "Remove Ads Forever - $productPrice • Lifetime Access"
+    } else {
+        "Remove Ads Forever • Lifetime Access"
+    }
     
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.9f) // 90% of screen width for better visibility
                 .padding(8.dp),
-            shape = MaterialTheme.shapes.large
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp), // Increased from 24dp to 32dp
+                    .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp) // Increased from 16dp to 20dp
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Success state
                 if (purchaseSuccess || premiumStatus is RevenueCatManager.PremiumStatus.Premium) {
@@ -75,63 +101,87 @@ fun PremiumPurchaseDialog(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp), // Increased from 64dp to 80dp
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(80.dp),
+                            tint = DesignSystemColors.NeonGreen
                         )
                         Text(
-                            text = "Welcome to Premium!",
-                            style = MaterialTheme.typography.headlineMedium, // Changed from headlineSmall to headlineMedium
+                            text = "Welcome to DeviceGPT Premium!",
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "All ads have been removed. Enjoy your ad-free experience!",
-                            style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
+                            text = "All ads have been removed. Enjoy your ad-free DeviceGPT experience!",
+                            style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Button(
                             onClick = onDismiss,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = DesignSystemColors.NeonGreen,
+                                contentColor = DesignSystemColors.Dark
+                            )
                         ) {
-                            Text("Got it!")
+                            Text("Got it!", fontWeight = FontWeight.Bold)
                         }
                     }
                 } else {
-                    // Purchase flow
+                    // Purchase flow - DeviceGPT branded
+                    // Star icon with DeviceGPT branding
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        modifier = Modifier.size(72.dp), // Increased from 48dp to 72dp
-                        tint = MaterialTheme.colorScheme.primary
+                        modifier = Modifier.size(72.dp),
+                        tint = DesignSystemColors.NeonGreen
                     )
                     
+                    // DeviceGPT Premium title
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineMedium, // Changed from headlineSmall to headlineMedium
+                        text = "⭐ DeviceGPT Premium",
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    // Benefits list
+                    // Price and value proposition - dynamically fetched
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = DesignSystemColors.NeonGreen.copy(alpha = 0.15f),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = displaySubtitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = DesignSystemColors.NeonGreen,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    
+                    // Benefits list with DeviceGPT context
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp) // Increased from 8dp to 12dp
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         benefits.forEach { benefit ->
-                            Text(
-                                text = benefit,
-                                style = MaterialTheme.typography.bodyLarge, // Changed from bodyMedium to bodyLarge
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                fontSize = 16.sp // Explicit font size
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Text(
+                                    text = benefit,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                     
@@ -168,8 +218,8 @@ fun PremiumPurchaseDialog(
                             onClick = {
                                 isPurchasing = true
                                 purchaseError = null
-                                // Use new showPaywall method which includes analytics
-                                RevenueCatManager.showPaywall(
+                                // Call purchaseProduct to trigger the purchase flow
+                                RevenueCatManager.purchaseProduct(
                                     activity = activity,
                                     onSuccess = {
                                         isPurchasing = false
@@ -187,18 +237,28 @@ fun PremiumPurchaseDialog(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(56.dp), // Increased button height
-                            enabled = !isPurchasing
+                                .height(56.dp),
+                            enabled = !isPurchasing,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = DesignSystemColors.NeonGreen,
+                                contentColor = DesignSystemColors.Dark
+                            )
                         ) {
                             if (isPurchasing) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp), // Increased from 16dp to 24dp
-                                    strokeWidth = 3.dp // Increased from 2dp to 3dp
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 3.dp,
+                                    color = DesignSystemColors.Dark
                                 )
                             } else {
                                 Text(
-                                    "Remove Ads",
-                                    style = MaterialTheme.typography.bodyLarge // Larger text
+                                    text = if (productPrice != null) {
+                                        "Get Premium - $productPrice"
+                                    } else {
+                                        "Get Premium"
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }

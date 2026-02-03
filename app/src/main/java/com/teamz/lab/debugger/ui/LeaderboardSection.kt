@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +65,66 @@ fun LeaderboardSection(activity: Activity) {
     var userRank by remember { mutableIntStateOf(-1) }
     var retryCount by remember { mutableIntStateOf(0) }
     
+    // Search state with debouncing for performance
+    var searchQuery by remember { mutableStateOf("") }
+    var debouncedSearchQuery by remember { mutableStateOf("") }
+    
+    // Debounce search query to avoid excessive filtering
+    LaunchedEffect(searchQuery) {
+        kotlinx.coroutines.delay(300) // 300ms debounce
+        debouncedSearchQuery = searchQuery
+    }
+    
+    // Filtered entries with original rank preserved
+    // Use Pair<Entry, OriginalRank> to preserve ranking information
+    val filteredLeaderboardEntriesWithRank = remember(leaderboardEntries, debouncedSearchQuery) {
+        derivedStateOf {
+            if (debouncedSearchQuery.isEmpty()) {
+                // No search - return entries with their original ranks (index + 1)
+                leaderboardEntries.mapIndexed { index, entry -> 
+                    Pair(entry, index + 1)
+                }
+            } else {
+                val query = debouncedSearchQuery.lowercase().trim()
+                // Filter but preserve original rank
+                leaderboardEntries.mapIndexedNotNull { originalIndex, entry ->
+                    val matches = entry.displayName.lowercase().contains(query) ||
+                        entry.normalizedBrand.lowercase().contains(query) ||
+                        entry.normalizedModel.lowercase().contains(query) ||
+                        entry.normalizedDeviceId.lowercase().contains(query)
+                    if (matches) {
+                        Pair(entry, originalIndex + 1) // Preserve original rank
+                    } else {
+                        null
+                    }
+                }
+            }
+        }
+    }.value
+    
+    val filteredAppPowerEntriesWithRank = remember(appPowerEntries, debouncedSearchQuery) {
+        derivedStateOf {
+            if (debouncedSearchQuery.isEmpty()) {
+                // No search - return entries with their original ranks (index + 1)
+                appPowerEntries.mapIndexed { index, entry -> 
+                    Pair(entry, index + 1)
+                }
+            } else {
+                val query = debouncedSearchQuery.lowercase().trim()
+                // Filter but preserve original rank
+                appPowerEntries.mapIndexedNotNull { originalIndex, entry ->
+                    val matches = entry.appName.lowercase().contains(query) ||
+                        entry.packageName.lowercase().contains(query)
+                    if (matches) {
+                        Pair(entry, originalIndex + 1) // Preserve original rank
+                    } else {
+                        null
+                    }
+                }
+            }
+        }
+    }.value
+    
     // Dialog state - using separate state to ensure proper updates
     var showDeviceInsights by remember { mutableStateOf(false) }
     var showBestDevices by remember { mutableStateOf(false) }
@@ -90,6 +152,36 @@ fun LeaderboardSection(activity: Activity) {
     
     LaunchedEffect(Unit) {
         showDataRetentionReminder = LeaderboardManager.shouldShowDataRetentionReminder(context)
+    }
+    
+    // Track previous debounced query for analytics
+    var previousDebouncedQuery by remember { mutableStateOf("") }
+    
+    // Log search analytics after filtering completes
+    LaunchedEffect(debouncedSearchQuery, filteredLeaderboardEntriesWithRank.size, filteredAppPowerEntriesWithRank.size, selectedCategory.id) {
+        if (debouncedSearchQuery.isNotEmpty() && debouncedSearchQuery != previousDebouncedQuery) {
+            val hasResults = when {
+                selectedCategory == LeaderboardCategory.APP_POWER_MONITORING -> filteredAppPowerEntriesWithRank.isNotEmpty()
+                else -> filteredLeaderboardEntriesWithRank.isNotEmpty()
+            }
+            
+            AnalyticsUtils.logEvent(AnalyticsEvent.SearchUsed, mapOf(
+                "source" to "leaderboard",
+                "category" to selectedCategory.id,
+                "category_name" to selectedCategory.displayName,
+                "query_length" to debouncedSearchQuery.length,
+                "query" to debouncedSearchQuery.take(50), // Limit query length for analytics
+                "has_results" to hasResults,
+                "result_count" to when {
+                    selectedCategory == LeaderboardCategory.APP_POWER_MONITORING -> filteredAppPowerEntriesWithRank.size
+                    else -> filteredLeaderboardEntriesWithRank.size
+                }
+            ))
+            previousDebouncedQuery = debouncedSearchQuery
+        } else if (debouncedSearchQuery.isEmpty() && previousDebouncedQuery.isNotEmpty()) {
+            // Search cleared - reset tracking
+            previousDebouncedQuery = ""
+        }
     }
     
     // Show interstitial ad on first view (if enabled and not debug mode)
@@ -286,6 +378,7 @@ fun LeaderboardSection(activity: Activity) {
                     leaderboardEntries = emptyList()
                     appPowerEntries = emptyList()
                     userRank = -1
+                    searchQuery = "" // Clear search when category changes
                     selectedCategory = newCategory
                 },
                 onCategoryInfoClick = { category ->
@@ -297,6 +390,44 @@ fun LeaderboardSection(activity: Activity) {
                     showCategoryInfoDialog = true
                 }
             )
+            
+            // Search bar - optimized with good UI/UX
+            if (!isLoading && !hasError && (leaderboardEntries.isNotEmpty() || appPowerEntries.isNotEmpty())) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Column {
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        placeholder = when (selectedCategory) {
+                            LeaderboardCategory.APP_POWER_MONITORING -> "Search apps..."
+                            else -> "Search devices..."
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    // Show result count when searching
+                    if (debouncedSearchQuery.isNotEmpty()) {
+                        val resultCount = if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                            filteredAppPowerEntriesWithRank.size
+                        } else {
+                            filteredLeaderboardEntriesWithRank.size
+                        }
+                        val totalCount = if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                            appPowerEntries.size
+                        } else {
+                            leaderboardEntries.size
+                        }
+                        
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "$resultCount of $totalCount ${if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) "apps" else "devices"}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+            }
         }
         
         // Track native ads list for stable ad assignments
@@ -304,13 +435,40 @@ fun LeaderboardSection(activity: Activity) {
         val nativeAdsList = remember { NativeAdManager.nativeAds }
         val validAdsSize = remember { derivedStateOf { nativeAdsList.filterNotNull().size } }.value
         
-        // Pre-calculate ad assignments to prevent frequent changes
+        // Create mapping from filtered indices to original indices for ad assignments
+        val filteredToOriginalIndexMap = remember(
+            if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                appPowerEntries.size to filteredAppPowerEntriesWithRank.size
+            } else {
+                leaderboardEntries.size to filteredLeaderboardEntriesWithRank.size
+            },
+            debouncedSearchQuery,
+            selectedCategory.id
+        ) {
+            if (debouncedSearchQuery.isEmpty()) {
+                // No search - indices match 1:1
+                emptyMap<Int, Int>()
+            } else {
+                if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                    // Map for app power entries - use the rank from the pair (rank - 1 = index)
+                    filteredAppPowerEntriesWithRank.mapIndexedNotNull { filteredIndex, (filteredEntry, originalRank) ->
+                        val originalIndex = originalRank - 1 // Convert rank to index
+                        if (originalIndex >= 0) filteredIndex to originalIndex else null
+                    }.toMap()
+                } else {
+                    // Map for device entries - use the rank from the pair (rank - 1 = index)
+                    filteredLeaderboardEntriesWithRank.mapIndexedNotNull { filteredIndex, (filteredEntry, originalRank) ->
+                        val originalIndex = originalRank - 1 // Convert rank to index
+                        if (originalIndex >= 0) filteredIndex to originalIndex else null
+                    }.toMap()
+                }
+            }
+        }
+        
+        // Pre-calculate ad assignments based on original entry indices
         // AdMob Best Practice: Assign DIFFERENT ads to different positions to maximize revenue
-        // This ensures each ad position gets a stable, unique ad that doesn't change on recomposition
-        // Only recalculate when entries, category, or ad pool size actually change
         val adAssignments = remember(
             if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size 
-            else if (selectedCategory == LeaderboardCategory.BEST_DEVICE) leaderboardEntries.size
             else leaderboardEntries.size,
             selectedCategory.id,
             validAdsSize
@@ -325,18 +483,31 @@ fun LeaderboardSection(activity: Activity) {
                 } else {
                     leaderboardEntries.size
                 }
-                (0 until entriesSize).forEach { index ->
-                    if ((index + 1) % adFrequency == 0) {
+                (0 until entriesSize).forEach { originalIndex ->
+                    if ((originalIndex + 1) % adFrequency == 0) {
                         // Use position-specific ad assignment to ensure different ads in different positions
-                        // This maximizes revenue by preventing ad fatigue (AdMob best practice)
-                        val positionId = "leaderboard_list_${selectedCategory.id}_$index"
+                        val positionId = "leaderboard_list_${selectedCategory.id}_$originalIndex"
                         val ad = NativeAdManager.getAdForPosition(positionId)
                         if (ad != null) {
-                            assignments[index] = ad
+                            assignments[originalIndex] = ad
                         }
                     }
                 }
                 assignments
+            }
+        }
+        
+        // Map ad assignments from original indices to filtered indices
+        val filteredAdAssignments = remember(adAssignments, filteredToOriginalIndexMap) {
+            if (filteredToOriginalIndexMap.isEmpty()) {
+                // No search - use ad assignments as-is, but map to filtered indices
+                adAssignments.mapKeys { it.key }
+            } else {
+                // Map original indices to filtered indices
+                val reverseMap = filteredToOriginalIndexMap.entries.associate { (filtered, original) -> original to filtered }
+                adAssignments.mapNotNull { (originalIndex, ad) ->
+                    reverseMap[originalIndex]?.let { filteredIndex -> filteredIndex to ad }
+                }.toMap()
             }
         }
         
@@ -396,71 +567,147 @@ fun LeaderboardSection(activity: Activity) {
                 }
             } else if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
                 // App Power Leaderboard
-                if (appPowerEntries.isEmpty()) {
+                if (filteredAppPowerEntriesWithRank.isEmpty()) {
                     item {
-                        EmptyAppPowerLeaderboardCard(
-                            onInfoClick = {
-                                // Show info about app power monitoring
+                        if (debouncedSearchQuery.isNotEmpty()) {
+                            // Show "no results" message when searching
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "🔍",
+                                        fontSize = 48.sp,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    Text(
+                                        text = "No results found",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                    Text(
+                                        text = "Try searching with a different term",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                        )
+                        } else {
+                            EmptyAppPowerLeaderboardCard(
+                                onInfoClick = {
+                                    // Show info about app power monitoring
+                                }
+                            )
+                        }
                     }
                 } else {
-                    // Render app power entries
-                    appPowerEntries.forEachIndexed { index, entry ->
-                        item(key = "app_entry_$index") {
+                    // Render filtered app power entries with original ranks
+                    filteredAppPowerEntriesWithRank.forEachIndexed { filteredIndex, (entry, originalRank) ->
+                        item(key = "app_entry_$filteredIndex") {
                             AppPowerLeaderboardEntryCard(
-                                rank = index + 1,
+                                rank = originalRank, // Use original rank, not filtered index
                                 entry = entry
                             )
                         }
                         
-                        // Show native ad every N entries
-                        adAssignments[index]?.let { nativeAd ->
-                            item(key = "app_ad_$index") {
+                        // Show native ad every N entries (using mapped indices)
+                        filteredAdAssignments[filteredIndex]?.let { nativeAd ->
+                            item(key = "app_ad_$filteredIndex") {
                                 AdMobNativeAdCard(nativeAd = nativeAd, bottomPadding = 16)
                             }
                         }
                     }
                 }
-            } else if (leaderboardEntries.isEmpty()) {
+            } else if (filteredLeaderboardEntriesWithRank.isEmpty()) {
                 item {
-                    EmptyLeaderboardCard(
-                        category = selectedCategory,
-                        onUploadClick = {
-                            scope.launch {
-                                isLoading = true
-                                try {
-                                    // Force upload data immediately
-                                    com.teamz.lab.debugger.utils.LeaderboardDataUpload.forceUpload(context)
-                                    // Wait a bit for upload to complete
-                                    kotlinx.coroutines.delay(2000)
-                                    // Reload leaderboard
-                                    retryCount++
-                                } catch (e: Exception) {
-                                    hasError = true
-                                    errorMessage = "Failed to upload data. Please try again."
-                                } finally {
-                                    isLoading = false
-                                }
+                    if (debouncedSearchQuery.isNotEmpty()) {
+                        // Show "no results" message when searching
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "🔍",
+                                    fontSize = 48.sp,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = "No results found",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                                Text(
+                                    text = "Try searching with a different term",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
-                    )
+                    } else {
+                        EmptyLeaderboardCard(
+                            category = selectedCategory,
+                            onUploadClick = {
+                                scope.launch {
+                                    isLoading = true
+                                    try {
+                                        // Force upload data immediately
+                                        com.teamz.lab.debugger.utils.LeaderboardDataUpload.forceUpload(context)
+                                        // Wait a bit for upload to complete
+                                        kotlinx.coroutines.delay(2000)
+                                        // Reload leaderboard
+                                        retryCount++
+                                    } catch (e: Exception) {
+                                        hasError = true
+                                        errorMessage = "Failed to upload data. Please try again."
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                }
+                            }
+                        )
+                    }
                 }
             } else {
-                // Render leaderboard entries with ads interspersed
+                // Render filtered leaderboard entries with ads interspersed
                 // Use pre-calculated assignments to prevent frequent changes
-                leaderboardEntries.forEachIndexed { index, entry ->
+                filteredLeaderboardEntriesWithRank.forEachIndexed { filteredIndex, (entry, originalRank) ->
                     // Leaderboard entry
-                    item(key = "entry_$index") {
+                    item(key = "entry_$filteredIndex") {
                         LeaderboardEntryCard(
-                            rank = index + 1,
+                            rank = originalRank, // Use original rank, not filtered index
                             entry = entry,
                             category = selectedCategory,
                             onClick = {
                                 AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
                                     "source" to "leaderboard_entry",
                                     "category" to selectedCategory.id,
-                                    "rank" to (index + 1),
+                                    "rank" to originalRank, // Use original rank for analytics
                                     "device_id" to entry.normalizedDeviceId
                                 ))
                                 // Set selected device and show insights
@@ -471,9 +718,9 @@ fun LeaderboardSection(activity: Activity) {
                     }
                     
                     // Show native ad every N entries (AdMob policy compliant)
-                    // Use pre-calculated assignment to prevent frequent changes
-                    adAssignments[index]?.let { nativeAd ->
-                        item(key = "ad_$index") {
+                    // Use mapped ad assignments for filtered indices
+                    filteredAdAssignments[filteredIndex]?.let { nativeAd ->
+                        item(key = "ad_$filteredIndex") {
                             AdMobNativeAdCard(nativeAd = nativeAd, bottomPadding = 16)
                         }
                     }
@@ -1360,6 +1607,60 @@ fun ErrorStateCard(
             }
         }
     }
+}
+
+/**
+ * Optimized Search Bar with good UI/UX
+ */
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = { onQueryChange("") }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            cursorColor = MaterialTheme.colorScheme.primary
+        ),
+        textStyle = MaterialTheme.typography.bodyMedium
+    )
 }
 
 @Composable

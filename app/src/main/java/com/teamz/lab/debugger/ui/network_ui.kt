@@ -38,6 +38,7 @@ import com.teamz.lab.debugger.utils.testNetworkLatency
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun NetworkInfoSection(
@@ -46,14 +47,12 @@ fun NetworkInfoSection(
     onItemAIClick: ((String, String) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkCapabilities = connectivityManager.activeNetwork?.let { activeNetwork ->
-        connectivityManager.getNetworkCapabilities(activeNetwork)
-    }
-
     val coroutineScope = rememberCoroutineScope()
     val loadingText = context.string(R.string.loading)
+    
+    // Network capabilities must be retrieved asynchronously to prevent ANR
+    // ConnectivityManager.getActiveNetwork() is a blocking Binder call
+    // We'll retrieve it in the async block and cache it
 
     var ipAddress by remember { mutableStateOf(loadingText) }
     var mobileSpeed by remember { mutableStateOf(loadingText) }
@@ -76,38 +75,74 @@ fun NetworkInfoSection(
     var pingResults by remember { mutableStateOf(loadingText) }
     var networkUsageStats by remember { mutableStateOf(loadingText) }
     var healthScore by remember { mutableStateOf(loadingText) }
-
+    var latencyText by remember { mutableStateOf(loadingText) }
+    var networkType by remember { mutableStateOf(loadingText) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     fun refreshNetworkInfo() {
-        coroutineScope.launch(Dispatchers.Main) {
+        // Prevent concurrent refreshes
+        if (isRefreshing) {
+            return
+        }
+        
+        // Launch on IO dispatcher to avoid blocking main thread
+        coroutineScope.launch(Dispatchers.IO) {
+            // Set refreshing flag on main thread
+            withContext(Dispatchers.Main) {
+                isRefreshing = true
+            }
+            
+            try {
+            // Get network capabilities asynchronously to prevent ANR
+            // ConnectivityManager.getActiveNetwork() is a blocking Binder call that must not run on main thread
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val networkCapabilitiesDeferred = async(Dispatchers.IO) {
+                try {
+                    connectivityManager.activeNetwork?.let { activeNetwork ->
+                        connectivityManager.getNetworkCapabilities(activeNetwork)
+                    }
+                } catch (e: Exception) {
+                    // If network capabilities retrieval fails, continue without it
+                    android.util.Log.w("NetworkInfoSection", "Failed to get network capabilities: ${e.message}", e)
+                    null
+                }
+            }
+            
+            // Await network capabilities before using it
+            val networkCapabilities = networkCapabilitiesDeferred.await()
+            
+            // All async calls explicitly use Dispatchers.IO to prevent blocking main thread
             val mobileSpeedDeferred = async(Dispatchers.IO) { getMobileSpeed(networkCapabilities) }
+            val networkTypeDeferred = async(Dispatchers.IO) { getNetworkType(context) }
             val ipvSupportDeferred = async(Dispatchers.IO) { getIPv4v6Support() }
             val packetLossDeferred = async(Dispatchers.IO) { getPacketLoss() }
             val jitterDeferred = async(Dispatchers.IO) { getJitter() }
-            val captivePortalStatusDeferred =
-                async(Dispatchers.IO) { getCaptivePortalStatus(context) }
+            val captivePortalStatusDeferred = async(Dispatchers.IO) { getCaptivePortalStatus(context) }
             val gatewayAddressDeferred = async(Dispatchers.IO) { getGatewayAddress() }
             val dnsServersDeferred = async(Dispatchers.IO) { getDnsServers(context) }
             val mtuSizeDeferred = async(Dispatchers.IO) { getMtu() }
             val internetUptimeDeferred = async(Dispatchers.IO) { getInternetUptime() }
             val localIpAddressDeferred = async(Dispatchers.IO) { getLocalIPAddress(context) }
             val ipAddressDeferred = async(Dispatchers.IO) { getPublicIPAddressFromIPInfo() }
-            val govSurveillanceDeferred =
-                async(Dispatchers.IO) { checkInternetPrivacyAndSurveillance() }
+            val govSurveillanceDeferred = async(Dispatchers.IO) { checkInternetPrivacyAndSurveillance() }
             val downloadSpeedDeferred = async(Dispatchers.IO) { getNetworkDownloadSpeed() }
             val uploadSpeedDeferred = async(Dispatchers.IO) { getNetworkUploadSpeed() }
             val wifiInfoDeferred = async(Dispatchers.IO) { getWiFiInformation(context) }
             val ispDetailsDeferred = async(Dispatchers.IO) { getISPDetails() }
             val streamingServersDeferred = async(Dispatchers.IO) { checkISPStreamingServers() }
 
+            // Await these on IO thread (non-blocking for main thread)
             val packetLossText = packetLossDeferred.await()
             val jitterText = jitterDeferred.await()
             val downloadSpeedText = downloadSpeedDeferred.await()
             val uploadSpeedText = uploadSpeedDeferred.await()
 
+            // Ensure testNetworkLatency runs on IO dispatcher to prevent blocking main thread
+            val latencyDeferred = async(Dispatchers.IO) { testNetworkLatency() }
+            // All async calls explicitly use Dispatchers.IO to prevent blocking main thread
             val latencyMsDeferred = async(Dispatchers.IO) {
                 val regex = Regex("time=(\\d+(\\.\\d+)?)")
-                val match = regex.find(testNetworkLatency())
+                val match = regex.find(latencyDeferred.await())
                 match?.groups?.get(1)?.value?.toDoubleOrNull() ?: 0.0
             }
 
@@ -128,46 +163,85 @@ fun NetworkInfoSection(
                 Regex("([\\d.]+)").find(uploadSpeedText)?.groups?.get(1)?.value?.toDoubleOrNull() ?: 0.0
             }
 
+            val pingDeferred = async(Dispatchers.IO) { pingPopularServers() }
 
-            coroutineScope.launch {
+            // Await all deferred values on IO thread (non-blocking for main thread)
+            val mobileSpeedResult = mobileSpeedDeferred.await()
+            val ipvSupportResult = ipvSupportDeferred.await()
+            val packetLossResult = packetLossDeferred.await()
+            val jitterResult = jitterDeferred.await()
+            val captivePortalStatusResult = captivePortalStatusDeferred.await()
+            val gatewayAddressResult = gatewayAddressDeferred.await()
+            val dnsServersResult = dnsServersDeferred.await()
+            val mtuSizeResult = mtuSizeDeferred.await()
+            val internetUptimeResult = internetUptimeDeferred.await()
+            val localIpAddressResult = localIpAddressDeferred.await()
+            val ipAddressResult = ipAddressDeferred.await()
+            val govSurveillanceResult = govSurveillanceDeferred.await()
+            val downloadSpeedResult = downloadSpeedDeferred.await()
+            val uploadSpeedResult = uploadSpeedDeferred.await()
+            val wifiInfoResult = wifiInfoDeferred.await()
+            val ispDetailsResult = ispDetailsDeferred.await()
+            val ispStreamingServersResult = streamingServersDeferred.await()
+            val pingResultsResult = pingDeferred.await()
+            val latencyTextResult = latencyDeferred.await()
+            val networkTypeResult = networkTypeDeferred.await()
+            
+            val latencyMsResult = latencyMsDeferred.await()
+            val jitterMsResult = jitterMsDeferred.await()
+            val packetLossPercentResult = packetLossPercentDeferred.await()
+            val downloadMbpsResult = downloadMbpsDeferred.await()
+            val uploadMbpsResult = uploadMbpsDeferred.await()
+            
+            val healthScoreResult = calculateInternetHealthScore(
+                latencyMsResult,
+                jitterMsResult,
+                packetLossPercentResult,
+                downloadMbpsResult,
+                uploadMbpsResult
+            )
+
+            // Update all UI state in a single main thread context (non-blocking)
+            withContext(Dispatchers.Main) {
+                mobileSpeed = mobileSpeedResult
+                ipvSupport = ipvSupportResult
+                packetLoss = packetLossResult
+                jitter = jitterResult
+                captivePortalStatus = captivePortalStatusResult
+                gatewayAddress = gatewayAddressResult
+                dnsServers = dnsServersResult
+                mtuSize = mtuSizeResult
+                internetUptime = internetUptimeResult
+                localIpAddress = localIpAddressResult
+                ipAddress = ipAddressResult
+                govSurveillance = govSurveillanceResult
+                downloadSpeed = downloadSpeedResult
+                uploadSpeed = uploadSpeedResult
+                wifiInfo = wifiInfoResult
+                ispDetails = ispDetailsResult
+                ispStreamingServers = ispStreamingServersResult
+                pingResults = pingResultsResult
+                latencyText = latencyTextResult
+                networkType = networkTypeResult
+                healthScore = healthScoreResult
+            }
+
+            // Update network usage stats separately (may take time)
+            launch(Dispatchers.IO) {
                 val resultBuilder = StringBuilder()
                 getNetworkUsageStatsThrottled(context) { usage ->
                     resultBuilder.append("${usage.period}\nWi-Fi: ${usage.wifiUsage} | Mobile: ${usage.mobileUsage}\n\n")
                 }
-                networkUsageStats = resultBuilder.toString().trim()
+                withContext(Dispatchers.Main) {
+                    networkUsageStats = resultBuilder.toString().trim()
+                }
             }
-
-            val pingDeferred = async(Dispatchers.IO) { pingPopularServers() }
-
-            // Update each variable as soon as the result arrives (non-blocking)
-            launch { mobileSpeed = mobileSpeedDeferred.await() }
-            launch { ipvSupport = ipvSupportDeferred.await() }
-            launch { packetLoss = packetLossDeferred.await() }
-            launch { jitter = jitterDeferred.await() }
-            launch { captivePortalStatus = captivePortalStatusDeferred.await() }
-            launch { gatewayAddress = gatewayAddressDeferred.await() }
-            launch { dnsServers = dnsServersDeferred.await() }
-            launch { mtuSize = mtuSizeDeferred.await() }
-            launch { internetUptime = internetUptimeDeferred.await() }
-            launch { localIpAddress = localIpAddressDeferred.await() }
-            launch { ipAddress = ipAddressDeferred.await() }
-            launch { govSurveillance = govSurveillanceDeferred.await() }
-            launch { downloadSpeed = downloadSpeedDeferred.await() }
-            launch { uploadSpeed = uploadSpeedDeferred.await() }
-            launch { wifiInfo = wifiInfoDeferred.await() }
-            launch { ispDetails = ispDetailsDeferred.await() }
-            launch { ispStreamingServers = streamingServersDeferred.await() }
-            launch { pingResults = pingDeferred.await() }
-            launch {
-                healthScore = calculateInternetHealthScore(
-                    latencyMsDeferred.await(),
-                    jitterMsDeferred.await(),
-                    packetLossPercentDeferred.await(),
-                    downloadMbpsDeferred.await(),
-                    uploadMbpsDeferred.await()
-                )
+            } finally {
+                // Reset refreshing flag
+                withContext(Dispatchers.Main) {
+                    isRefreshing = false
+                }
             }
-
         }
     }
 
@@ -187,14 +261,14 @@ fun NetworkInfoSection(
         "Upload Speed" to uploadSpeed,
         "Network Packet Loss" to packetLoss,
         "Connection Stability (Jitter)" to jitter,
-        "Response Speed (Latency)" to testNetworkLatency(),
+        "Response Speed (Latency)" to latencyText,
         "Ping Test to Popular Servers" to pingResults,
         "Internet Protocol Support" to ipvSupport,
         "Local IP Addresses" to localIpAddress,
         "Public IP Address" to ipAddress,
         "Router IP Address (Gateway)" to gatewayAddress,
         "Complete Wi-Fi Information" to wifiInfo,
-        "Connected Network" to getNetworkType(context),
+        "Connected Network" to networkType,
         "Requires Login to Use Internet (Captive Portal)" to captivePortalStatus, // Non-Tech: Redirect on connect, Tech: Captive Portal
         "DNS Servers" to dnsServers, // ✅ Shows DNS Details
         "Data Packet Limit (MTU)" to mtuSize, // Tech: MTU, Non-Tech: Packet Size Limit

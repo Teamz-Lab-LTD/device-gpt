@@ -23,11 +23,29 @@ object ThemeManager {
     
     fun initialize(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedTheme = prefs.getString(KEY_SELECTED_THEME, AppTheme.DESIGN_SYSTEM_DARK.name)
-        val savedDarkMode = prefs.getBoolean(KEY_IS_DARK_MODE, true)
         
-        _currentTheme = AppTheme.valueOf(savedTheme ?: AppTheme.DESIGN_SYSTEM_DARK.name)
-        _isDarkMode = savedDarkMode
+        // Check if this is first launch (no saved theme preference)
+        val isFirstLaunch = !prefs.contains(KEY_SELECTED_THEME)
+        
+        // Always default to dark theme - for new users and as fallback
+        val savedTheme = prefs.getString(KEY_SELECTED_THEME, AppTheme.DESIGN_SYSTEM_DARK.name)
+        val savedDarkMode = prefs.getBoolean(KEY_IS_DARK_MODE, true) // Default to true (dark mode)
+        
+        // On first launch, force dark mode
+        if (isFirstLaunch) {
+            _currentTheme = AppTheme.DESIGN_SYSTEM_DARK
+            _isDarkMode = true
+            // Save the dark mode preference
+            prefs.edit {
+                putString(KEY_SELECTED_THEME, AppTheme.DESIGN_SYSTEM_DARK.name)
+                putBoolean(KEY_IS_DARK_MODE, true)
+            }
+        } else {
+            // For existing users, load their saved preference
+            // But if no dark mode preference exists, default to dark
+            _currentTheme = AppTheme.valueOf(savedTheme ?: AppTheme.DESIGN_SYSTEM_DARK.name)
+            _isDarkMode = savedDarkMode
+        }
     }
     
     fun setTheme(theme: AppTheme, context: Context) {

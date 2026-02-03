@@ -308,7 +308,38 @@ fun shareWithAIAppRobust(
         Log.d(tag, "Successfully shared with $aiAppName (text + ${if (fileUri != null) "file" else "no file"})")
         
         ShareResult.Success(diagnostics)
+    } catch (e: android.content.ActivityNotFoundException) {
+        // App not installed - this is expected and not an error
+        Log.d(tag, "$aiAppName is not installed on this device")
+        
+        // FALLBACK: Copy to clipboard
+        if (config.enableClipboardFallback) {
+            val clipboardSuccess = copyToClipboardRobust(context, sanitizedContent, "Device Report")
+            if (clipboardSuccess) {
+                Toast.makeText(
+                    context,
+                    "$aiAppName is not installed. Content copied to clipboard. Please paste manually.",
+                    Toast.LENGTH_LONG
+                ).show()
+                return ShareResult.PartialSuccess("Shared via clipboard", diagnostics)
+            }
+        }
+        
+        // Last resort: Try chooser
+        try {
+            val chooserIntent = Intent.createChooser(shareIntent, "Share with $aiAppName")
+            context.startActivity(chooserIntent)
+            ShareResult.PartialSuccess("Opened share chooser", diagnostics)
+        } catch (e2: android.content.ActivityNotFoundException) {
+            // No apps available to handle the share - this is expected
+            ShareResult.Failure("No apps available to share. Content may be copied to clipboard.", fallbackUsed = true)
+        } catch (e2: Exception) {
+            // Only log unexpected errors
+            ErrorHandler.handleError(e2, context = "RobustAIShare.chooser-$aiAppName")
+            ShareResult.Failure("All sharing methods failed: ${e2.message}", fallbackUsed = true)
+        }
     } catch (e: Exception) {
+        // Handle other unexpected errors (not ActivityNotFoundException)
         Log.e(tag, "Error sharing with $aiAppName: ${e.message}", e)
         ErrorHandler.handleError(e, context = "RobustAIShare.share-$aiAppName")
         
@@ -330,7 +361,12 @@ fun shareWithAIAppRobust(
             val chooserIntent = Intent.createChooser(shareIntent, "Share with $aiAppName")
             context.startActivity(chooserIntent)
             ShareResult.PartialSuccess("Opened share chooser", diagnostics)
+        } catch (e2: android.content.ActivityNotFoundException) {
+            // No apps available to handle the share - this is expected
+            ShareResult.Failure("No apps available to share. Content may be copied to clipboard.", fallbackUsed = true)
         } catch (e2: Exception) {
+            // Only log unexpected errors
+            ErrorHandler.handleError(e2, context = "RobustAIShare.chooser-$aiAppName")
             ShareResult.Failure("All sharing methods failed: ${e2.message}", fallbackUsed = true)
         }
     }

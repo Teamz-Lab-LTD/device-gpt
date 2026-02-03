@@ -223,7 +223,7 @@ object DataCollectionManager {
     }
     
     // REUSE existing HealthScoreUtils
-    private fun collectHealthScoreFromExisting(context: Context): HealthScoreData {
+    private suspend fun collectHealthScoreFromExisting(context: Context): HealthScoreData {
         // REUSE existing functions
         val currentScore = HealthScoreUtils.calculateDailyHealthScore(context)
         val bestScore = HealthScoreUtils.getBestScore(context)
@@ -404,7 +404,8 @@ object DataCollectionManager {
         if (isMainThread) {
             // We're on main thread, can safely call getCompactFpsAndDropRate
             val latch = java.util.concurrent.CountDownLatch(1)
-            getCompactFpsAndDropRate { data ->
+            var cleanup: (() -> Unit)? = null
+            cleanup = getCompactFpsAndDropRate { data ->
                 fpsData = data
                 fps = extractFPS(data)
                 frameDropRate = extractFrameDropRate(data)
@@ -420,6 +421,9 @@ object DataCollectionManager {
             } catch (e: Exception) {
                 // Timeout - try to use cached data
                 android.util.Log.w("DataCollectionManager", "FPS collection timeout, trying cache...")
+            } finally {
+                // Always clean up the callback
+                cleanup?.invoke()
             }
         } else {
             // We're on background thread - try to use cached FPS data

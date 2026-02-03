@@ -18,7 +18,7 @@ object HealthScoreUtils {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun calculateDailyHealthScore(context: Context): Int {
+    suspend fun calculateDailyHealthScore(context: Context): Int = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         var score = 10 // Start with perfect score
 
         // Battery Health (0-3 points) - Using existing battery functions
@@ -55,7 +55,10 @@ object HealthScoreUtils {
         }
 
         // Security Status (0-2 points)
-        val securityInfo = getSecurityInfo(context)
+        // getSecurityInfo is a suspend function, use runBlocking to call it
+        val securityInfo = kotlinx.coroutines.runBlocking {
+            getSecurityInfo(context)
+        }
         if (securityInfo.contains("❌") || securityInfo.contains("⚠️")) {
             score -= 2
         }
@@ -74,7 +77,7 @@ object HealthScoreUtils {
             score -= 1
         }
 
-        return maxOf(1, score) // Minimum score of 1
+        maxOf(1, score) // Minimum score of 1 (last expression is returned from lambda)
     }
 
     fun saveHealthScore(context: Context, score: Int) {
@@ -326,7 +329,10 @@ object HealthScoreUtils {
         }
         
         // Analyze security status - USER-FRIENDLY recommendations based on actual issues
-        val securityInfo = getSecurityInfo(context)
+        // getSecurityInfo is a suspend function, so we need to call it with withContext
+        val securityInfo = kotlinx.coroutines.runBlocking {
+            getSecurityInfo(context)
+        }
         when {
             securityInfo.contains("❌ Security shield is off") -> {
                 suggestions.add("🛡️ Your phone's security system is turned off - this is unusual and risky")
@@ -420,4 +426,400 @@ object HealthScoreUtils {
     }
 
     // Device Analysis function removed - redundant with Device Info tab
+    
+    /**
+     * Daily Task System - Creates actionable tasks for users to complete daily
+     */
+    data class DailyTask(
+        val id: String,
+        val title: String,
+        val description: String,
+        val icon: String,
+        val priority: TaskPriority,
+        val actionType: TaskActionType
+    )
+    
+    enum class TaskPriority {
+        HIGH, MEDIUM, LOW
+    }
+    
+    enum class TaskActionType {
+        CLOSE_APPS,
+        REVOKE_PERMISSION,
+        CHECK_TEMPERATURE,
+        CLEAR_CACHE,
+        RESTART_PHONE,
+        CHARGE_BATTERY,
+        UPDATE_APPS,
+        REVIEW_PRIVACY
+    }
+    
+    private const val KEY_TASKS_TODAY = "tasks_today"
+    private const val KEY_TASKS_COMPLETED = "tasks_completed_today"
+    private const val KEY_TASKS_DATE = "tasks_date"
+    
+    // Temperature history tracking
+    private const val KEY_TEMPERATURE_HISTORY = "temperature_history"
+    
+    /**
+     * Generate daily actionable tasks based on current device state
+     */
+    fun generateDailyTasks(context: Context, healthScore: Int): List<DailyTask> {
+        val tasks = mutableListOf<DailyTask>()
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        
+        // Check if tasks were already generated today
+        val prefs = getPrefs(context)
+        val tasksDate = prefs.getString(KEY_TASKS_DATE, "")
+        if (tasksDate == today) {
+            // Return saved tasks for today
+            return getSavedTasks(context)
+        }
+        
+        // Generate new tasks based on device state
+        val batteryInfo = getBatteryChargingInfo(context)
+        val storageInfo = getMemoryAndStorageInfo(context)
+        val ramUsage = getRamUsage(context)
+        val thermalStatus = getThermalZoneTemperatures(context)
+        val securityInfo = kotlinx.coroutines.runBlocking {
+            getSecurityInfo(context)
+        }
+        
+        // Task 1: RAM/App Management
+        val ramMatch = Regex("\\((\\d+)%\\)").find(ramUsage)
+        val ramUsagePercent = ramMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+        if (ramUsagePercent > 70) {
+            val appCount = if (ramUsagePercent > 85) 5 else 3
+            tasks.add(
+                DailyTask(
+                    id = "close_apps_$today",
+                    title = "Close $appCount background apps",
+                    description = "Your phone is using ${ramUsagePercent}% RAM. Close unused apps to improve performance.",
+                    icon = "📱",
+                    priority = if (ramUsagePercent > 85) TaskPriority.HIGH else TaskPriority.MEDIUM,
+                    actionType = TaskActionType.CLOSE_APPS
+                )
+            )
+        }
+        
+        // Task 2: Temperature Check
+        val tempMatch = Regex("(\\d+\\.?\\d*)°C").find(thermalStatus)
+        val temperature = tempMatch?.groupValues?.get(1)?.toFloatOrNull() ?: 0f
+        if (temperature > 35f) {
+            tasks.add(
+                DailyTask(
+                    id = "check_temp_$today",
+                    title = "Check temperature (currently ${temperature.toInt()}°C)",
+                    description = if (temperature > 40f) 
+                        "Your phone is getting warm. Let it cool down." 
+                    else 
+                        "Monitor your phone's temperature to prevent overheating.",
+                    icon = "🌡️",
+                    priority = if (temperature > 40f) TaskPriority.HIGH else TaskPriority.MEDIUM,
+                    actionType = TaskActionType.CHECK_TEMPERATURE
+                )
+            )
+        }
+        
+        // Task 3: Privacy/Permissions
+        if (securityInfo.contains("Permissions:") || securityInfo.contains("⚠️")) {
+            tasks.add(
+                DailyTask(
+                    id = "review_privacy_$today",
+                    title = "Review app permissions",
+                    description = "Some apps may have unnecessary permissions. Review and revoke unused ones.",
+                    icon = "🔐",
+                    priority = TaskPriority.MEDIUM,
+                    actionType = TaskActionType.REVIEW_PRIVACY
+                )
+            )
+        }
+        
+        // Task 4: Storage Management
+        val storageMatch = Regex("(\\d+\\.?\\d*)\\s*(GB|MB)").find(storageInfo)
+        if (storageMatch != null) {
+            val available = storageMatch.groupValues[1].toFloatOrNull() ?: 0f
+            val unit = storageMatch.groupValues[2]
+            val availableGB = if (unit == "MB") available / 1024f else available
+            if (availableGB < 5f) {
+                tasks.add(
+                    DailyTask(
+                        id = "clear_storage_$today",
+                        title = "Free up storage space",
+                        description = "You have ${String.format("%.1f", availableGB)}GB left. Clear cache and delete unused files.",
+                        icon = "💾",
+                        priority = if (availableGB < 2f) TaskPriority.HIGH else TaskPriority.MEDIUM,
+                        actionType = TaskActionType.CLEAR_CACHE
+                    )
+                )
+            }
+        }
+        
+        // Task 5: Battery Health
+        if (batteryInfo.contains("Battery Full") || batteryInfo.contains("Overheat")) {
+            tasks.add(
+                DailyTask(
+                    id = "battery_care_$today",
+                    title = "Optimize battery charging",
+                    description = if (batteryInfo.contains("Battery Full"))
+                        "Unplug your phone. Keeping it at 100% damages the battery."
+                    else
+                        "Your battery is overheating. Remove case and let it cool.",
+                    icon = "🔋",
+                    priority = TaskPriority.MEDIUM,
+                    actionType = TaskActionType.CHARGE_BATTERY
+                )
+            )
+        }
+        
+        // If no critical tasks, add general maintenance tasks
+        if (tasks.isEmpty() || tasks.size < 3) {
+            tasks.add(
+                DailyTask(
+                    id = "restart_phone_$today",
+                    title = "Restart your phone",
+                    description = "Weekly restart helps clear memory and improve performance.",
+                    icon = "🔄",
+                    priority = TaskPriority.LOW,
+                    actionType = TaskActionType.RESTART_PHONE
+                )
+            )
+        }
+        
+        // Limit to 5 tasks max
+        val finalTasks = tasks.take(5)
+        
+        // Save tasks for today
+        saveTasks(context, finalTasks)
+        
+        return finalTasks
+    }
+    
+    /**
+     * Get tasks for today (either generated or saved)
+     */
+    fun getDailyTasks(context: Context, healthScore: Int): List<DailyTask> {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val prefs = getPrefs(context)
+        val tasksDate = prefs.getString(KEY_TASKS_DATE, "")
+        
+        return if (tasksDate == today) {
+            getSavedTasks(context)
+        } else {
+            generateDailyTasks(context, healthScore)
+        }
+    }
+    
+    /**
+     * Mark a task as completed
+     */
+    fun completeTask(context: Context, taskId: String) {
+        val prefs = getPrefs(context)
+        val completedTasks = prefs.getStringSet(KEY_TASKS_COMPLETED, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        completedTasks.add(taskId)
+        prefs.edit {
+            putStringSet(KEY_TASKS_COMPLETED, completedTasks)
+        }
+        
+        // Track task completion for streak bonus
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val tasksCompletedToday = completedTasks.count { it.contains(today) }
+        if (tasksCompletedToday >= 3) {
+            // Bonus: Completing 3+ tasks gives a small streak boost
+            val streak = getDailyStreak(context)
+            if (streak > 0) {
+                // Small bonus - already counted in daily scan
+            }
+        }
+    }
+    
+    /**
+     * Check if task is completed
+     */
+    fun isTaskCompleted(context: Context, taskId: String): Boolean {
+        val prefs = getPrefs(context)
+        val completedTasks = prefs.getStringSet(KEY_TASKS_COMPLETED, mutableSetOf()) ?: mutableSetOf()
+        return completedTasks.contains(taskId)
+    }
+    
+    /**
+     * Get number of completed tasks today
+     */
+    fun getCompletedTasksCount(context: Context): Int {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val prefs = getPrefs(context)
+        val completedTasks = prefs.getStringSet(KEY_TASKS_COMPLETED, mutableSetOf()) ?: mutableSetOf()
+        return completedTasks.count { it.contains(today) }
+    }
+    
+    /**
+     * Save tasks for today
+     */
+    private fun saveTasks(context: Context, tasks: List<DailyTask>) {
+        val prefs = getPrefs(context)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val tasksJson = tasks.joinToString("|||") { "${it.id}::${it.title}::${it.description}::${it.icon}::${it.priority}::${it.actionType}" }
+        prefs.edit {
+            putString(KEY_TASKS_TODAY, tasksJson)
+            putString(KEY_TASKS_DATE, today)
+        }
+    }
+    
+    /**
+     * Get saved tasks for today
+     */
+    private fun getSavedTasks(context: Context): List<DailyTask> {
+        val prefs = getPrefs(context)
+        val tasksJson = prefs.getString(KEY_TASKS_TODAY, "") ?: return emptyList()
+        if (tasksJson.isEmpty()) return emptyList()
+        
+        return tasksJson.split("|||").mapNotNull { taskStr ->
+            val parts = taskStr.split("::")
+            if (parts.size >= 6) {
+                try {
+                    DailyTask(
+                        id = parts[0],
+                        title = parts[1],
+                        description = parts[2],
+                        icon = parts[3],
+                        priority = TaskPriority.valueOf(parts[4]),
+                        actionType = TaskActionType.valueOf(parts[5])
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+        }
+    }
+    
+    // ============================================================================
+    // TEMPERATURE HISTORY TRACKING
+    // ============================================================================
+    
+    data class TemperatureDataPoint(
+        val date: String,
+        val maxTemp: Float,
+        val minTemp: Float,
+        val avgTemp: Float
+    )
+    
+    /**
+     * Save today's temperature data
+     */
+    fun saveTemperatureData(context: Context, temperature: Float) {
+        val prefs = getPrefs(context)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        
+        // Get existing history
+        val historyJson = prefs.getString(KEY_TEMPERATURE_HISTORY, "") ?: ""
+        val history = parseTemperatureHistory(historyJson)
+        
+        // Find or create today's entry
+        val todayIndex = history.indexOfFirst { it.date == today }
+        if (todayIndex >= 0) {
+            // Update existing entry
+            val existing = history[todayIndex]
+            history[todayIndex] = TemperatureDataPoint(
+                date = today,
+                maxTemp = maxOf(existing.maxTemp, temperature),
+                minTemp = minOf(existing.minTemp, temperature),
+                avgTemp = (existing.avgTemp + temperature) / 2f // Simple average
+            )
+        } else {
+            // Add new entry
+            history.add(
+                TemperatureDataPoint(
+                    date = today,
+                    maxTemp = temperature,
+                    minTemp = temperature,
+                    avgTemp = temperature
+                )
+            )
+        }
+        
+        // Keep only last 7 days
+        val recentHistory = history.takeLast(7)
+        
+        // Save back
+        val updatedJson = serializeTemperatureHistory(recentHistory)
+        prefs.edit {
+            putString(KEY_TEMPERATURE_HISTORY, updatedJson)
+        }
+    }
+    
+    /**
+     * Get 7-day temperature history
+     */
+    fun getTemperatureHistory(context: Context, days: Int = 7): List<TemperatureDataPoint> {
+        val prefs = getPrefs(context)
+        val historyJson = prefs.getString(KEY_TEMPERATURE_HISTORY, "") ?: ""
+        val history = parseTemperatureHistory(historyJson)
+        return history.takeLast(days)
+    }
+    
+    /**
+     * Get peak temperature from history
+     */
+    fun getPeakTemperature(context: Context): Float? {
+        val history = getTemperatureHistory(context, 7)
+        return history.maxOfOrNull { it.maxTemp }
+    }
+    
+    /**
+     * Parse temperature history from JSON string
+     */
+    private fun parseTemperatureHistory(json: String): MutableList<TemperatureDataPoint> {
+        if (json.isEmpty()) return mutableListOf()
+        
+        return try {
+            json.split("|||").mapNotNull { entry ->
+                val parts = entry.split("::")
+                if (parts.size >= 4) {
+                    TemperatureDataPoint(
+                        date = parts[0],
+                        maxTemp = parts[1].toFloatOrNull() ?: 0f,
+                        minTemp = parts[2].toFloatOrNull() ?: 0f,
+                        avgTemp = parts[3].toFloatOrNull() ?: 0f
+                    )
+                } else {
+                    null
+                }
+            }.toMutableList()
+        } catch (e: Exception) {
+            mutableListOf()
+        }
+    }
+    
+    /**
+     * Serialize temperature history to JSON string
+     */
+    private fun serializeTemperatureHistory(history: List<TemperatureDataPoint>): String {
+        return history.joinToString("|||") { 
+            "${it.date}::${it.maxTemp}::${it.minTemp}::${it.avgTemp}"
+        }
+    }
+    
+    /**
+     * Get temperature trend (increasing, decreasing, stable)
+     */
+    fun getTemperatureTrend(context: Context): String {
+        val history = getTemperatureHistory(context, 7)
+        if (history.size < 2) return "Not enough data"
+        
+        val recent = history.takeLast(3).map { it.avgTemp }
+        val older = history.dropLast(3).takeLast(3).map { it.avgTemp }
+        
+        if (older.isEmpty()) return "Not enough data"
+        
+        val recentAvg = recent.average()
+        val olderAvg = older.average()
+        
+        return when {
+            recentAvg > olderAvg + 2 -> "📈 Increasing"
+            recentAvg < olderAvg - 2 -> "📉 Decreasing"
+            else -> "📊 Stable"
+        }
+    }
 } 

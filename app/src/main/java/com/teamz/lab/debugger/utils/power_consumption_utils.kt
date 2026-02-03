@@ -1472,13 +1472,13 @@ object PowerConsumptionUtils {
             val isEnabled = try {
                 bluetoothAdapter.isEnabled
             } catch (e: SecurityException) {
-                handleError(e)
-                // Permission check passed but still got SecurityException - might be a runtime issue
+                // Permission denied - this is expected when BLUETOOTH_SCAN permission isn't granted
+                // Don't log this as an error
                 return ComponentPowerData(
                     "Bluetooth", 
                     0.0, 
                     "Permission required", 
-                    "Bluetooth permission may need to be granted again", 
+                    "BLUETOOTH_SCAN permission required", 
                     "🔵"
                 )
             }
@@ -1486,16 +1486,18 @@ object PowerConsumptionUtils {
             val isDiscovering = try {
                 bluetoothAdapter.isDiscovering
             } catch (e: SecurityException) {
-                handleError(e)
+                // Permission denied - BLUETOOTH_SCAN permission required for isDiscovering
+                // This is expected and not an error
                 false
             }
 
             // Check if we have Bluetooth permissions before accessing bonded devices
             val isConnected = try {
                 bluetoothAdapter.bondedDevices?.isNotEmpty() ?: false
-                } catch (e: SecurityException) {
-                    handleError(e)
-                    false
+            } catch (e: SecurityException) {
+                // Permission denied - this is expected when Bluetooth permissions aren't granted
+                // Don't log this as an error
+                false
             }
 
             // Research-based Bluetooth power model (fallback when system data unavailable)
@@ -1516,9 +1518,10 @@ object PowerConsumptionUtils {
 
             val deviceCount = try {
                 bluetoothAdapter.bondedDevices?.size ?: 0
-                } catch (e: SecurityException) {
-                    handleError(e)
-                    0
+            } catch (e: SecurityException) {
+                // Permission denied - this is expected when Bluetooth permissions aren't granted
+                // Don't log this as an error
+                0
             }
 
             val details = when {
@@ -1590,8 +1593,23 @@ object PowerConsumptionUtils {
         return try {
             val telephonyManager =
                 context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val networkType = telephonyManager.networkType
-            val isDataEnabled = telephonyManager.isDataEnabled
+            
+            // Try to get network type - requires READ_PHONE_STATE permission
+            val networkType = try {
+                telephonyManager.networkType
+            } catch (e: SecurityException) {
+                // Permission denied - this is expected and not an error
+                // Use fallback value
+                -1
+            }
+            
+            // Try to get data enabled status - may also require permissions
+            val isDataEnabled = try {
+                telephonyManager.isDataEnabled
+            } catch (e: SecurityException) {
+                // Permission denied - assume data is enabled as fallback
+                true
+            }
 
             // Research-based cellular power model varies by ACTUAL network type
             // Based on PowerTutor research: 5G ~1.2W, 4G LTE ~0.8W, 3G ~0.5W, 2G ~0.2W
@@ -1602,6 +1620,7 @@ object PowerConsumptionUtils {
                 TelephonyManager.NETWORK_TYPE_HSPA -> 0.5 // 3G HSPA (research-based)
                 TelephonyManager.NETWORK_TYPE_EDGE -> 0.3 // 2G EDGE (research-based)
                 TelephonyManager.NETWORK_TYPE_GPRS -> 0.2 // 2G GPRS (research-based)
+                -1 -> if (isDataEnabled) 0.5 else 0.1 // Fallback when permission denied
                 else -> if (isDataEnabled) 0.5 else 0.1 // Default based on data state
             }
 
@@ -1612,6 +1631,7 @@ object PowerConsumptionUtils {
                 TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
                 TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE"
                 TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
+                -1 -> "Unknown (Permission required)"
                 else -> "Unknown"
             }
 
@@ -1622,7 +1642,17 @@ object PowerConsumptionUtils {
                 details = "Data ${if (isDataEnabled) "enabled" else "disabled"}",
                 icon = "📱"
             )
+        } catch (e: SecurityException) {
+            // Permission denied - return fallback data
+            ComponentPowerData(
+                component = "Cellular",
+                powerConsumption = 0.5, // Default estimate
+                status = "Unknown (Permission required)",
+                details = "READ_PHONE_STATE permission required",
+                icon = "📱"
+            )
         } catch (e: Exception) {
+            // Only log unexpected errors
             handleError(e)
             ComponentPowerData("Cellular", 0.0, "Error", "Unable to read", "📱")
         }

@@ -11,11 +11,15 @@ import android.net.TrafficStats
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Process
+import android.os.Process as AndroidProcess
+// Note: Using java.lang.Process for Runtime.exec(), android.os.Process for myUid()
 import android.text.format.Formatter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -59,7 +63,35 @@ fun getNetworkDownloadSpeed(): String {
         val duration = (end - start) / 1_000_000_000.0
         val speed = 10 / duration
         "${"%.2f".format(speed)} Mbps"
+    } catch (e: UnknownHostException) {
+        // DNS resolution failure or no internet connection
+        // This is expected when network is unavailable and not an error
+        "Speed Test Failed ❌ (No internet connection)"
+    } catch (e: java.net.ConnectException) {
+        // Connection failed - server unreachable, network down, or firewall blocking
+        // This is expected when network is unavailable and not an error
+        "Speed Test Failed ❌ (Connection failed)"
+    } catch (e: java.net.SocketTimeoutException) {
+        // Connection timeout - network may be slow or unavailable
+        "Speed Test Failed ❌ (Connection timeout)"
+    } catch (e: javax.net.ssl.SSLHandshakeException) {
+        // SSL handshake failures (handshake aborted, certificate issues, etc.)
+        // These are expected when network is unstable, SSL/TLS issues, or connection interrupted
+        "Speed Test Failed ❌ (SSL handshake failed)"
+    } catch (e: javax.net.ssl.SSLException) {
+        // SSL/TLS connection errors (connection abort, handshake failure, etc.)
+        // These are expected when network is unstable or connection is interrupted
+        "Speed Test Failed ❌ (Connection interrupted)"
+    } catch (e: java.net.SocketException) {
+        // Socket errors (connection reset, broken pipe, etc.)
+        // These are expected when network is unstable, connection is reset by server, or firewall issues
+        "Speed Test Failed ❌ (Connection reset)"
+    } catch (e: java.io.IOException) {
+        // Network I/O errors (connection refused, etc.)
+        // These are expected network conditions
+        "Speed Test Failed ❌ (Network unavailable)"
     } catch (e: Exception) {
+        // Only log unexpected errors
         handleError(e)
         "Speed Test Failed ❌"
     }
@@ -85,37 +117,183 @@ fun getNetworkUploadSpeed(): String {
         val duration = (end - start) / 1_000_000_000.0
         val speed = dataSizeMB / duration
         "${"%.2f".format(speed)} Mbps"
+    } catch (e: UnknownHostException) {
+        // DNS resolution failure or no internet connection
+        // This is expected when network is unavailable and not an error
+        "Upload Test Failed ❌ (No internet connection)"
+    } catch (e: java.net.ConnectException) {
+        // Connection failed - server unreachable, network down, or firewall blocking
+        // This is expected when network is unavailable and not an error
+        "Upload Test Failed ❌ (Connection failed)"
+    } catch (e: java.net.SocketTimeoutException) {
+        // Connection timeout - network may be slow or unavailable
+        "Upload Test Failed ❌ (Connection timeout)"
+    } catch (e: javax.net.ssl.SSLHandshakeException) {
+        // SSL handshake failures (handshake aborted, certificate issues, etc.)
+        // These are expected when network is unstable, SSL/TLS issues, or connection interrupted
+        "Upload Test Failed ❌ (SSL handshake failed)"
+    } catch (e: javax.net.ssl.SSLException) {
+        // SSL/TLS connection errors (connection abort, handshake failure, etc.)
+        // These are expected when network is unstable or connection is interrupted
+        "Upload Test Failed ❌ (Connection interrupted)"
+    } catch (e: java.net.SocketException) {
+        // Socket errors (connection reset, broken pipe, etc.)
+        // These are expected when network is unstable, connection is reset by server, or firewall issues
+        "Upload Test Failed ❌ (Connection reset)"
+    } catch (e: java.io.IOException) {
+        // Network I/O errors (connection refused, etc.)
+        // These are expected network conditions
+        "Upload Test Failed ❌ (Network unavailable)"
     } catch (e: Exception) {
+        // Only log unexpected errors
         handleError(e)
         "Upload Test Failed ❌"
     }
 }
 
 
-fun testNetworkLatency(): String {
-    return try {
-        val process = Runtime.getRuntime().exec("ping -c 1 8.8.8.8")
-        val output = process.inputStream.bufferedReader().readText()
-
-        val timeRegex = Regex("time=(\\d+(\\.\\d+)?)")
-        val match = timeRegex.find(output)
-        val latency = match?.groups?.get(1)?.value
-
-        if (latency != null) {
-            val ms = latency.toDouble()
-            val quality = when {
-                ms < 50 -> "📶 Excellent Connection"
-                ms < 100 -> "✅ Good Connection"
-                ms < 200 -> "⚠️ Average Connection"
-                else -> "❌ Slow Connection"
-            }
-            "$quality (Latency: ${"%.1f".format(ms)} ms)"
-        } else {
-            "⚠️ Unable to measure latency"
+suspend fun testNetworkLatency(): String = withContext(Dispatchers.IO) {
+    try {
+        withTimeout(7000) { // 7 seconds total timeout (5s wait + 2s read)
+            testNetworkLatencyInternal()
         }
-    } catch (e: Exception) {
-        handleError(e)
+    } catch (e: TimeoutCancellationException) {
+        "⚠️ Unable to measure latency (timeout)"
+    }
+}
+
+private suspend fun testNetworkLatencyInternal(): String {
+    var process: java.lang.Process? = null
+    var inputStream: java.io.InputStream? = null
+    return try {
+        // Use timeout to prevent hanging (3 seconds max via -W flag)
+        process = Runtime.getRuntime().exec("ping -c 1 -W 3 8.8.8.8") as java.lang.Process
+        inputStream = process.inputStream
+        
+        // Wait for process with timeout (5 seconds max)
+        // Process.waitFor(long, TimeUnit) is only available from API 26+
+        val finished = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)
+        } else {
+            // For older versions, just wait (ping -W 3 will timeout after 3 seconds)
+            process.waitFor()
+            true
+        }
+        
+        if (!finished) {
+            // Process didn't finish in time, destroy it
+            process.destroyForcibly()
+            inputStream?.close()
+            return "⚠️ Unable to measure latency (timeout)"
+        }
+        
+        // Check exit code - 0 means success
+        if (process.exitValue() != 0) {
+            inputStream?.close()
+            return "⚠️ Unable to measure latency"
+        }
+        
+        // Read output with size limit to prevent blocking on large outputs
+        // Ping output is typically small (< 1KB), so 4KB limit is safe
+        // Use available() to check if data is ready before reading
+        // Only read if data is immediately available to avoid blocking
+        var available = inputStream.available()
+        if (available == 0) {
+            // No data available immediately - wait a short time and check again
+            // This prevents blocking on read() if stream isn't ready
+            kotlinx.coroutines.delay(100) // Brief wait for stream to be ready (suspend function)
+            available = inputStream.available()
+        }
+        
+        if (available > 0) {
+            // Read only the available bytes to avoid blocking
+            val buffer = ByteArray(minOf(available, 4096)) // Read up to available bytes or 4KB max
+            var totalRead = 0
+            var bytesRead: Int
+            
+            // Read with timeout protection - read in small chunks with a maximum wait time
+            val startReadTime = System.currentTimeMillis()
+            val maxReadTime = 1000L // 1 second max for reading (reduced from 2s)
+            
+            // Read only if data is available (non-blocking)
+            while (totalRead < buffer.size && (System.currentTimeMillis() - startReadTime) < maxReadTime) {
+                // Yield to allow coroutine cancellation and prevent blocking
+                kotlinx.coroutines.yield()
+                
+                // Check if data is available before reading to avoid blocking
+                val bytesAvailable = inputStream.available()
+                if (bytesAvailable == 0 && totalRead > 0) {
+                    // No more data available and we've read something - break
+                    break
+                }
+                
+                if (bytesAvailable > 0) {
+                    // Read only available bytes to avoid blocking
+                    val readSize = minOf(buffer.size - totalRead, bytesAvailable)
+                    bytesRead = inputStream.read(buffer, totalRead, readSize)
+                    if (bytesRead == -1) break
+                    totalRead += bytesRead
+                    
+                    // If we've read enough data, break early
+                    if (totalRead >= 512) break // Ping output is usually < 512 bytes
+                } else {
+                    // No data available - use delay instead of Thread.sleep for coroutine cancellation
+                    kotlinx.coroutines.delay(50) // Brief wait if no data available
+                }
+            }
+            
+            inputStream.close()
+            
+            if (totalRead > 0) {
+                val outputText = String(buffer, 0, totalRead)
+                
+                val timeRegex = Regex("time=(\\d+(\\.\\d+)?)")
+                val match = timeRegex.find(outputText)
+                val latency = match?.groups?.get(1)?.value
+
+                if (latency != null) {
+                    val ms = latency.toDouble()
+                    val quality = when {
+                        ms < 50 -> "📶 Excellent Connection"
+                        ms < 100 -> "✅ Good Connection"
+                        ms < 200 -> "⚠️ Average Connection"
+                        else -> "❌ Slow Connection"
+                    }
+                    return "$quality (Latency: ${"%.1f".format(ms)} ms)"
+                }
+            }
+        }
+        
+        inputStream.close()
+        
+        // If no data read or parsing failed, return fallback
         "⚠️ Unable to measure latency"
+    } catch (e: java.io.IOException) {
+        // Network I/O errors - expected when network is unavailable
+        inputStream?.close()
+        "⚠️ Unable to measure latency (network unavailable)"
+    } catch (e: InterruptedException) {
+        // Process was interrupted
+        process?.destroyForcibly()
+        inputStream?.close()
+        "⚠️ Unable to measure latency (interrupted)"
+    } catch (e: Exception) {
+        // Only log unexpected errors
+        handleError(e)
+        inputStream?.close()
+        "⚠️ Unable to measure latency"
+    } finally {
+        // Ensure process and streams are cleaned up
+        try {
+            inputStream?.close()
+        } catch (e: Exception) {
+            // Ignore close errors
+        }
+        try {
+            process?.destroyForcibly()
+        } catch (e: Exception) {
+            // Ignore destroy errors
+        }
     }
 }
 
@@ -360,7 +538,12 @@ fun checkISPStreamingServers(): String {
     val detectedStreamingServers = streamingCDNs.map { (service, domain) ->
         val ip = try {
             InetAddress.getByName(domain).hostAddress
+        } catch (e: UnknownHostException) {
+            // DNS resolution failure is expected for generic/ISP-specific domains
+            // This is not an error - just means the domain doesn't exist for this user's ISP
+            "Not Found ❌"
         } catch (e: Exception) {
+            // Only log non-DNS errors (network issues, etc.)
             handleError(e)
             "Not Found ❌"
         }
@@ -370,7 +553,12 @@ fun checkISPStreamingServers(): String {
     val detectedMovieServers = ispMovieServers.map { (service, domain) ->
         val ip = try {
             InetAddress.getByName(domain).hostAddress
+        } catch (e: UnknownHostException) {
+            // DNS resolution failure is expected for generic/ISP-specific domains
+            // This is not an error - just means the domain doesn't exist for this user's ISP
+            "Not Found ❌"
         } catch (e: Exception) {
+            // Only log non-DNS errors (network issues, etc.)
             handleError(e)
             "Not Found ❌"
         }
@@ -571,7 +759,35 @@ fun checkISPTracking(): String {
             connection.connect()
             val code = connection.responseCode
             Pair(code == expectedCode, code)
+        } catch (e: UnknownHostException) {
+            // DNS resolution failure or no internet connection
+            // This is expected when network is unavailable and not an error
+            Pair(false, null)
+        } catch (e: java.net.ConnectException) {
+            // Connection failed - server unreachable, network down, or firewall blocking
+            // This is expected when network is unavailable and not an error
+            Pair(false, null)
+        } catch (e: java.net.SocketTimeoutException) {
+            // Connection timeout - network may be slow or unavailable
+            Pair(false, null)
+        } catch (e: javax.net.ssl.SSLHandshakeException) {
+            // SSL handshake failures (handshake aborted, certificate issues, etc.)
+            // These are expected when network is unstable, SSL/TLS issues, or connection interrupted
+            Pair(false, null)
+        } catch (e: javax.net.ssl.SSLException) {
+            // SSL/TLS connection errors (connection abort, handshake failure, etc.)
+            // These are expected when network is unstable or connection is interrupted
+            Pair(false, null)
+        } catch (e: java.net.SocketException) {
+            // Socket errors (connection reset, broken pipe, etc.)
+            // These are expected when network is unstable, connection is reset by server, or firewall issues
+            Pair(false, null)
+        } catch (e: java.io.IOException) {
+            // Network I/O errors (connection refused, etc.)
+            // These are expected network conditions
+            Pair(false, null)
         } catch (e: Exception) {
+            // Only log unexpected errors
             handleError(e)
             Pair(false, null)
         }
@@ -602,7 +818,12 @@ fun checkDPIDetection(): String {
         } else {
             "✅ No DPI Detected"
         }
+    } catch (e: java.io.IOException) {
+        // Network I/O errors or command execution failures
+        // These are expected when network is unavailable or ping command fails
+        "❌ Unable to Check DPI (Network unavailable)"
     } catch (e: Exception) {
+        // Only log unexpected errors
         handleError(e)
         "❌ Unable to Check DPI"
     }
@@ -623,7 +844,35 @@ fun checkSSLCertificateHijack(): String {
         } else {
             "✅ SSL Certificates Appear Normal"
         }
+    } catch (e: UnknownHostException) {
+        // DNS resolution failure or no internet connection
+        // This is expected when network is unavailable and not an error
+        "❌ Unable to Check SSL Certificates (No internet connection)"
+    } catch (e: java.net.ConnectException) {
+        // Connection failed - server unreachable, network down, or firewall blocking
+        // This is expected when network is unavailable and not an error
+        "❌ Unable to Check SSL Certificates (Connection failed)"
+    } catch (e: java.net.SocketTimeoutException) {
+        // Connection timeout - network may be slow or unavailable
+        "❌ Unable to Check SSL Certificates (Connection timeout)"
+    } catch (e: javax.net.ssl.SSLHandshakeException) {
+        // SSL handshake failures (handshake aborted, certificate issues, etc.)
+        // These are expected when network is unstable, SSL/TLS issues, or connection interrupted
+        "❌ Unable to Check SSL Certificates (SSL handshake failed)"
+    } catch (e: javax.net.ssl.SSLException) {
+        // SSL/TLS connection errors (connection abort, handshake failure, etc.)
+        // These are expected when network is unstable or connection is interrupted
+        "❌ Unable to Check SSL Certificates (Connection interrupted)"
+    } catch (e: java.net.SocketException) {
+        // Socket errors (connection reset, broken pipe, etc.)
+        // These are expected when network is unstable, connection is reset by server, or firewall issues
+        "❌ Unable to Check SSL Certificates (Connection reset)"
+    } catch (e: java.io.IOException) {
+        // Network I/O errors (connection refused, etc.)
+        // These are expected network conditions
+        "❌ Unable to Check SSL Certificates (Network unavailable)"
     } catch (e: Exception) {
+        // Only log unexpected errors (SSL errors, certificate issues, etc.)
         handleError(e)
         "❌ Unable to Check SSL Certificates"
     }
@@ -643,7 +892,35 @@ fun checkTransparentProxy(): String {
         } else {
             "✅ No Transparent Proxy Detected\n"
         }
+    } catch (e: UnknownHostException) {
+        // DNS resolution failure or no internet connection
+        // This is expected when network is unavailable and not an error
+        "❌ Unable to Check for Proxy Interception (No internet connection)\n"
+    } catch (e: java.net.ConnectException) {
+        // Connection failed - server unreachable, network down, or firewall blocking
+        // This is expected when network is unavailable and not an error
+        "❌ Unable to Check for Proxy Interception (Connection failed)\n"
+    } catch (e: java.net.SocketTimeoutException) {
+        // Connection timeout - network may be slow or unavailable
+        "❌ Unable to Check for Proxy Interception (Connection timeout)\n"
+    } catch (e: javax.net.ssl.SSLHandshakeException) {
+        // SSL handshake failures (handshake aborted, certificate issues, etc.)
+        // These are expected when network is unstable, SSL/TLS issues, or connection interrupted
+        "❌ Unable to Check for Proxy Interception (SSL handshake failed)\n"
+    } catch (e: javax.net.ssl.SSLException) {
+        // SSL/TLS connection errors (connection abort, handshake failure, etc.)
+        // These are expected when network is unstable or connection is interrupted
+        "❌ Unable to Check for Proxy Interception (Connection interrupted)\n"
+    } catch (e: java.net.SocketException) {
+        // Socket errors (connection reset, broken pipe, etc.)
+        // These are expected when network is unstable, connection is reset by server, or firewall issues
+        "❌ Unable to Check for Proxy Interception (Connection reset)\n"
+    } catch (e: java.io.IOException) {
+        // Network I/O errors (connection refused, etc.)
+        // These are expected network conditions
+        "❌ Unable to Check for Proxy Interception (Network unavailable)\n"
     } catch (e: Exception) {
+        // Only log unexpected errors
         handleError(e)
         "❌ Unable to Check for Proxy Interception\n"
     }
@@ -659,7 +936,12 @@ fun checkDNSManipulation(): String {
         } else {
             "✅ DNS Requests Appear Normal\n"
         }
+    } catch (e: UnknownHostException) {
+        // DNS resolution failure - network may be down or DNS unavailable
+        // This is expected in some network conditions and not an error
+        "❌ Unable to Check DNS Manipulation (DNS unavailable)\n"
     } catch (e: Exception) {
+        // Only log non-DNS errors
         handleError(e)
         "❌ Unable to Check DNS Manipulation\n"
     }
@@ -892,13 +1174,13 @@ private suspend fun queryUsageSmart(
         val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             appOps.unsafeCheckOpNoThrow(
                 AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
+                AndroidProcess.myUid(),
                 context.packageName
             )
         } else {
             appOps.checkOpNoThrow(
                 AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(),
+                AndroidProcess.myUid(),
                 context.packageName
             )
         }
@@ -1044,13 +1326,13 @@ fun hasUsageStatsPermission(context: Context): Boolean {
     val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         appOps.unsafeCheckOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
+            AndroidProcess.myUid(),
             context.packageName
         )
     } else {
         appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
-            Process.myUid(),
+            AndroidProcess.myUid(),
             context.packageName
         )
     }

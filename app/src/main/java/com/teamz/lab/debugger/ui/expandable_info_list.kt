@@ -1,8 +1,10 @@
 package com.teamz.lab.debugger.ui
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
@@ -41,6 +44,7 @@ import com.teamz.lab.debugger.utils.RemoteConfigUtils.shouldShowNativeAds
 import com.teamz.lab.debugger.utils.copyToClipboard
 import com.teamz.lab.debugger.utils.AdRevenueOptimizer
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.utils.AIPromptGenerator
 import com.teamz.lab.debugger.utils.AdConfig
 
 // Sealed class to represent list items (info or ad)
@@ -56,7 +60,7 @@ private sealed class ListItem {
  */
 fun generateItemPrompt(itemTitle: String, itemContent: String, appName: String, promptMode: PromptMode): String {
     // Delegate to centralized prompt generator
-    return com.teamz.lab.debugger.utils.AIPromptGenerator.generateItemPrompt(
+    return AIPromptGenerator.generateItemPrompt(
         itemTitle = itemTitle,
         itemContent = itemContent,
         appName = appName,
@@ -97,11 +101,33 @@ fun ExpandableInfoList(
     
     // Create index map once for O(1) lookup instead of O(n) indexOfFirst
     val originalIndexMap = remember(infoList) {
-        infoList.mapIndexedNotNull { index, (key, _) -> key to index }.toMap()
+        infoList.mapIndexed { index, (key, _) -> key to index }.toMap()
     }
     
     // Create flattened list with info items and ads - optimized with index map
-    val flattenedList = remember(filteredInfo.value, originalIndexMap) {
+    // Cache ad positions to prevent repeated lookups during recomposition
+    val adPositionCache = remember(filteredInfo.value, originalIndexMap) {
+        val cache = mutableMapOf<Int, NativeAd?>()
+        val filtered = filteredInfo.value
+        filtered.forEachIndexed { filteredIndex, (key, _) ->
+            val actualIndex = originalIndexMap[key] ?: filteredIndex
+            if (actualIndex % 5 == 0 && actualIndex != 0 && actualIndex < infoList.size) {
+                val positionId = "device_info_list_$actualIndex"
+                // Cache ad lookup to prevent blocking during composition
+                cache[actualIndex] = try {
+                    NativeAdManager.getAdForPosition(positionId)
+                } catch (e: Exception) {
+                    // If ad lookup fails, cache null to prevent ANR
+                    null
+                }
+            }
+        }
+        cache
+    }
+    
+    // Create flattened list using cached ads to prevent blocking during composition
+    // This only recomputes when filteredInfo or adPositionCache changes
+    val flattenedList = remember(filteredInfo.value, originalIndexMap, adPositionCache) {
         val list = mutableListOf<ListItem>()
         val filtered = filteredInfo.value
         filtered.forEachIndexed { filteredIndex, (key, value) ->
@@ -109,12 +135,10 @@ fun ExpandableInfoList(
             val actualIndex = originalIndexMap[key] ?: filteredIndex
             
             // Add ad before item if it's a 5th item (except first)
-            if (actualIndex % 5 == 0 && actualIndex != 0 && actualIndex < infoList.size) {
-                val positionId = "device_info_list_$actualIndex"
-                val listAd = NativeAdManager.getAdForPosition(positionId)
-                listAd?.let {
-                    list.add(ListItem.AdItem(actualIndex, it))
-                }
+            // Use cached ad to prevent blocking during composition
+            val cachedAd = adPositionCache[actualIndex]
+            cachedAd?.let {
+                list.add(ListItem.AdItem(actualIndex, it))
             }
             
             // Add the info item
@@ -126,6 +150,17 @@ fun ExpandableInfoList(
     // Single expanded state map instead of per-item state (reduces recompositions)
     val expandedItems = remember { mutableStateMapOf<Int, Boolean>() }
     val inlineAds = remember { mutableStateMapOf<Int, NativeAd?>() }
+    
+    // Pre-compute merged TextStyle outside the loop to prevent ANR from TextStyle.merge
+    // TextStyle.merge is expensive and can block if called repeatedly during recomposition
+    // This is computed once and reused for all items, preventing repeated merges
+    // Access MaterialTheme outside remember block to avoid Composable context issues
+    val materialTypography = MaterialTheme.typography
+    val titleTextStyle = remember(materialTypography) {
+        materialTypography.bodyMedium.copy(
+            fontWeight = FontWeight.SemiBold
+        )
+    }
     
     val lazyListState = rememberLazyListState()
 
@@ -159,21 +194,24 @@ fun ExpandableInfoList(
         }
         
         // List items with virtualization - only visible items are composed
+        // Use stable keys to prevent unnecessary recompositions during scroll
         itemsIndexed(
             items = flattenedList,
             key = { index, item ->
+                // Use stable keys based on item identity to prevent recomposition during scroll
+                // Include hashCode to ensure keys are unique and stable
                 when (item) {
-                    is ListItem.AdItem -> "ad_${item.index}"
-                    is ListItem.InfoItem -> "info_${item.index}_${item.key}"
+                    is ListItem.AdItem -> "ad_${item.index}_${item.ad.hashCode()}"
+                    is ListItem.InfoItem -> "info_${item.index}_${item.key.hashCode()}"
                 }
             }
-        ) { _, item ->
+        ) { index, item ->
             when (item) {
                 is ListItem.AdItem -> {
                     // Render ad (logging reduced - only log once per position)
                     val logKey = "display_${item.index}"
                     if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != item.ad.hashCode()) {
-                        android.util.Log.d("AdDisplay", "📺 Displaying ad at position ${item.index}, " +
+                        Log.d("AdDisplay", "📺 Displaying ad at position ${item.index}, " +
                                 "Ad hash: ${item.ad.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
                         shownAdHashes[logKey] = item.ad.hashCode()
                     }
@@ -201,7 +239,7 @@ fun ExpandableInfoList(
                                 newAd?.let {
                                     val logKey = "expanded_$actualIndex"
                                     if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != it.hashCode()) {
-                                        android.util.Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
+                                        Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
                                                 "Ad hash: ${it.hashCode()}, Position: $positionId")
                                         shownAdHashes[logKey] = it.hashCode()
                                     }
@@ -228,8 +266,7 @@ fun ExpandableInfoList(
                         ) {
                             Text(
                                 text = key,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                                style = titleTextStyle,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.weight(1f)
                             )
@@ -330,7 +367,7 @@ fun AppCard(
             .padding(bottom = bottomPadding.dp),
         shape = RoundedCornerShape(12.dp),
         colors = colors,
-        border = androidx.compose.foundation.BorderStroke(
+        border = BorderStroke(
             width = 1.dp,
             color = borderColor
         )
@@ -363,7 +400,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     
                     val currentCount = NativeAdManager.nativeAds.filterNotNull().size
                     val targetCount = NativeAdManager.getTargetAdCount()
-                    android.util.Log.i(TAG, "✅ Native ad loaded! Total ads in cache: $currentCount/$targetCount")
+                    Log.i(TAG, "✅ Native ad loaded! Total ads in cache: $currentCount/$targetCount")
                     
                     AnalyticsUtils.logEvent(AnalyticsEvent.AdLoaded, mapOf(
                         "ad_type" to "native",
@@ -378,14 +415,14 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     // If we still need more ads, trigger another load attempt
                     // Note: Removed isCurrentlyLoading() check to allow continuation
                     if (currentCount < targetCount) {
-                        android.util.Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
+                        Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
                         coroutineScope.launch {
                             // Wait for throttle period before next request
                             delay(11000) // 10s throttle + 1s buffer
                             if (!activity.isDestroyed && 
                                 NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
                                 NativeAdManager.canMakeRequest()) {
-                                android.util.Log.d(TAG, "📤 Loading additional ad...")
+                                Log.d(TAG, "📤 Loading additional ad...")
                                 NativeAdManager.setLoading(true) // Set loading before request
                                 NativeAdManager.recordRequest()
                                 adLoaderRef?.loadAd(AdRequest.Builder().build())
@@ -396,7 +433,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                                     NativeAdManager.setLoading(false)
                                 }
                             } else if (!NativeAdManager.canMakeRequest()) {
-                                android.util.Log.d(TAG, "⏸️ Cannot make request yet (throttled), will retry later")
+                                Log.d(TAG, "⏸️ Cannot make request yet (throttled), will retry later")
                                 // Reset loading flag so continuation can retry
                                 NativeAdManager.setLoading(false)
                             }
@@ -424,7 +461,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     
                     NativeAdManager.recordFailedLoad(errorCode, errorMessage)
                     
-                    android.util.Log.w(TAG, "❌ Ad load failed - Code: $errorCode, " +
+                    Log.w(TAG, "❌ Ad load failed - Code: $errorCode, " +
                             "Message: $errorMessage, Current ads: $currentCount/$targetCount, " +
                             "Retry count: $retryCount")
                     
@@ -458,7 +495,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                             retryCount++
                             val retryDelay = 10000L // 10 seconds (increased from 5s)
                             
-                            android.util.Log.d(TAG, "🔄 Scheduling retry #$retryCount in ${retryDelay/1000} seconds...")
+                            Log.d(TAG, "🔄 Scheduling retry #$retryCount in ${retryDelay/1000} seconds...")
                             
                             adLoaderRef?.let { loader ->
                                 coroutineScope.launch {
@@ -466,26 +503,26 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                                     if (!activity.isDestroyed && 
                                         NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
                                         NativeAdManager.canMakeRequest()) {
-                                        android.util.Log.d(TAG, "🔄 Executing retry #$retryCount...")
+                                        Log.d(TAG, "🔄 Executing retry #$retryCount...")
                                         NativeAdManager.recordRequest()
                                         loader.loadAd(AdRequest.Builder().build())
                                     }
                                 }
                             }
                         } else {
-                            android.util.Log.w(TAG, "⚠️ Max retries reached. Stopping retry attempts.")
+                            Log.w(TAG, "⚠️ Max retries reached. Stopping retry attempts.")
                         }
                     } else {
                         if (!NativeAdManager.canRetry()) {
-                            android.util.Log.w(TAG, "⚠️ Max retries reached ($retryCount). Stopping retry attempts.")
+                            Log.w(TAG, "⚠️ Max retries reached ($retryCount). Stopping retry attempts.")
                         } else if (errorCode in nonRetryableErrors) {
-                            android.util.Log.w(TAG, "⚠️ Non-retryable error ($errorCode). Not retrying.")
+                            Log.w(TAG, "⚠️ Non-retryable error ($errorCode). Not retrying.")
                         }
                     }
                 }
 
                 override fun onAdClicked() {
-                    android.util.Log.d(TAG, "👆 Ad clicked")
+                    Log.d(TAG, "👆 Ad clicked")
                     AnalyticsUtils.logEvent(AnalyticsEvent.AdClicked, mapOf("ad_type" to "native"))
                     AdRevenueOptimizer.trackAdClick(activity, "native")
                 }
@@ -497,7 +534,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
         val targetAdCount = NativeAdManager.getTargetAdCount()
         val currentCount = NativeAdManager.nativeAds.filterNotNull().size
         
-        android.util.Log.d(TAG, "🚀 Checking ad loader - Current: $currentCount, Target: $targetAdCount")
+        Log.d(TAG, "🚀 Checking ad loader - Current: $currentCount, Target: $targetAdCount")
         
         // Mark as initialized (only first time), but continue loading if we don't have enough ads
         val isFirstInit = NativeAdManager.tryMarkInitialized()
@@ -507,40 +544,40 @@ fun rememberAdLoader(activity: Activity): AdLoader {
         // Only check loading flag for first initialization to prevent duplicate initial loads
         if (currentCount < targetAdCount && NativeAdManager.canMakeRequest()) {
             if (isFirstInit && NativeAdManager.isCurrentlyLoading()) {
-                android.util.Log.d(TAG, "⏳ Already loading ads (first init), skipping duplicate...")
+                Log.d(TAG, "⏳ Already loading ads (first init), skipping duplicate...")
                 return@LaunchedEffect
             }
             
             if (isFirstInit) {
-                android.util.Log.d(TAG, "🆕 First initialization")
+                Log.d(TAG, "🆕 First initialization")
             } else {
-                android.util.Log.d(TAG, "🔄 Continuing to load more ads (need ${targetAdCount - currentCount} more)")
+                Log.d(TAG, "🔄 Continuing to load more ads (need ${targetAdCount - currentCount} more)")
             }
             
             NativeAdManager.setLoading(true)
             val adsToLoad = targetAdCount - currentCount
             
-            android.util.Log.i(TAG, "📥 Loading $adsToLoad more ads (staggered by 10+ seconds each to respect throttling)...")
+            Log.i(TAG, "📥 Loading $adsToLoad more ads (staggered by 10+ seconds each to respect throttling)...")
             
             repeat(adsToLoad) { index ->
                 // Stagger by 10+ seconds to respect throttling (MIN_REQUEST_INTERVAL_MS = 10000)
-                kotlinx.coroutines.delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
+                delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
                 if (!activity.isDestroyed && 
                     NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
                     
                     // Check if we can make request, if not, wait and retry
                     if (NativeAdManager.canMakeRequest()) {
-                        android.util.Log.d(TAG, "📤 Requesting ad ${index + 1}/$adsToLoad...")
+                        Log.d(TAG, "📤 Requesting ad ${index + 1}/$adsToLoad...")
                         NativeAdManager.recordRequest()
                         adLoader.loadAd(AdRequest.Builder().build())
                     } else {
-                        android.util.Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
+                        Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
                         // Wait for throttle period and retry
-                        kotlinx.coroutines.delay(10000L) // Wait for throttle period
+                        delay(10000L) // Wait for throttle period
                         if (NativeAdManager.canMakeRequest() && 
                             !activity.isDestroyed &&
                             NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
-                            android.util.Log.d(TAG, "📤 Retrying ad ${index + 1}/$adsToLoad...")
+                            Log.d(TAG, "📤 Retrying ad ${index + 1}/$adsToLoad...")
                             NativeAdManager.recordRequest()
                             adLoader.loadAd(AdRequest.Builder().build())
                         }
@@ -561,19 +598,19 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 delay(timeout)
                 NativeAdManager.setLoading(false)
                 val finalCount = NativeAdManager.nativeAds.filterNotNull().size
-                android.util.Log.i(TAG, "📊 Load attempt completed - Current ads: $finalCount/$targetAdCount")
+                Log.i(TAG, "📊 Load attempt completed - Current ads: $finalCount/$targetAdCount")
                 if (finalCount < targetAdCount) {
                     NativeAdManager.logStats()
                     // If still need more ads and can make request, continue loading
                     if (NativeAdManager.canMakeRequest() && !activity.isDestroyed) {
-                        android.util.Log.d(TAG, "🔄 Continuing to load remaining ads...")
+                        Log.d(TAG, "🔄 Continuing to load remaining ads...")
                         val remainingAds = targetAdCount - finalCount
                         repeat(remainingAds) { index ->
                             delay(index * 11000L + 1000L) // Stagger by 11s to respect throttling
                             if (!activity.isDestroyed && 
                                 NativeAdManager.nativeAds.filterNotNull().size < targetAdCount &&
                                 NativeAdManager.canMakeRequest()) {
-                                android.util.Log.d(TAG, "📤 Requesting additional ad ${index + 1}/$remainingAds...")
+                                Log.d(TAG, "📤 Requesting additional ad ${index + 1}/$remainingAds...")
                                 NativeAdManager.setLoading(true)
                                 NativeAdManager.recordRequest()
                                 adLoader.loadAd(AdRequest.Builder().build())
@@ -586,19 +623,19 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                             }
                         }
                     } else {
-                        android.util.Log.d(TAG, "⏸️ Cannot continue loading - throttled or activity destroyed")
+                        Log.d(TAG, "⏸️ Cannot continue loading - throttled or activity destroyed")
                     }
                 } else {
-                    android.util.Log.i(TAG, "✅ Successfully loaded all $finalCount ads!")
+                    Log.i(TAG, "✅ Successfully loaded all $finalCount ads!")
                 }
             }
         } else {
             if (currentCount >= targetAdCount) {
-                android.util.Log.d(TAG, "✅ Already have enough ads ($currentCount >= $targetAdCount)")
+                Log.d(TAG, "✅ Already have enough ads ($currentCount >= $targetAdCount)")
             } else if (NativeAdManager.isCurrentlyLoading()) {
-                android.util.Log.d(TAG, "⏳ Already loading ads...")
+                Log.d(TAG, "⏳ Already loading ads...")
             } else {
-                android.util.Log.d(TAG, "⏸️ Cannot make request (throttled)")
+                Log.d(TAG, "⏸️ Cannot make request (throttled)")
             }
         }
     }

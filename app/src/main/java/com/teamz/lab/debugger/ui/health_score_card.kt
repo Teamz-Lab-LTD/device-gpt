@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,8 +36,11 @@ fun HealthScoreCard(
     onScoreClick: () -> Unit = {},
     onAIClick: (() -> Unit)? = null
 ) {
-    // Make UI reactive to data changes by using derivedStateOf
-    val healthScore by remember { derivedStateOf { HealthScoreUtils.calculateDailyHealthScore(context) } }
+    // Make UI reactive to data changes - use async state to prevent ANR
+    var healthScore by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        healthScore = HealthScoreUtils.calculateDailyHealthScore(context)
+    }
     val dailyStreak by remember { derivedStateOf { HealthScoreUtils.getDailyStreak(context) } }
     val bestScore by remember { derivedStateOf { HealthScoreUtils.getBestScore(context) } }
     val totalScans by remember { derivedStateOf { HealthScoreUtils.getTotalScans(context) } }

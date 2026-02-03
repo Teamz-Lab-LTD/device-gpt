@@ -86,9 +86,24 @@ object AppOpenAdManager {
                     }
                 },
                 onFailure = { error ->
-                    android.util.Log.e(TAG, "loadAd() - ❌ Ad failed to load: ${error.message}, code: ${error.code}")
                     isLoading = false
                     pendingActivityRef = null // Clear pending activity on failure
+                    
+                    // Handle "Unable to obtain a JavascriptEngine" error gracefully
+                    // This is a known issue with Google Mobile Ads SDK when WebView is not available
+                    val errorMessage = error.message ?: ""
+                    val isJavascriptEngineError = errorMessage.contains("JavascriptEngine", ignoreCase = true) || 
+                                                  errorMessage.contains("javascript engine", ignoreCase = true) ||
+                                                  errorMessage.contains("Unable to obtain", ignoreCase = true) ||
+                                                  errorMessage.contains("unable to obtain", ignoreCase = true)
+                    
+                    if (isJavascriptEngineError) {
+                        android.util.Log.w(TAG, "loadAd() - ⚠️ WebView/JavascriptEngine not available (code: ${error.code}) - this is expected on some devices. Skipping error logging.")
+                        // Don't log this as an error - it's a known non-fatal issue
+                        return@loadAdWithRetry
+                    }
+                    
+                    android.util.Log.e(TAG, "loadAd() - ❌ Ad failed to load: $errorMessage, code: ${error.code}")
                     handleError(Exception(error.message))
                 }
             )
@@ -186,6 +201,15 @@ object AppOpenAdManager {
                 isShowingAd = false
                 pendingActivityRef = null // Clear pending activity on failure
                 loadAd(activity) // Preload next ad
+                
+                // Handle "Unable to obtain a JavascriptEngine" error gracefully
+                val errorMessage = p0.message ?: ""
+                if (errorMessage.contains("JavascriptEngine", ignoreCase = true) || 
+                    errorMessage.contains("Unable to obtain", ignoreCase = true)) {
+                    android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ WebView/JavascriptEngine not available - this is expected on some devices. Skipping error logging.")
+                    return
+                }
+                
                 handleError(Exception(p0.message))
             }
         }
@@ -196,6 +220,15 @@ object AppOpenAdManager {
             android.util.Log.d(TAG, "showAdIfAvailable() - ✅ show() called successfully")
         } catch (e: Exception) {
             android.util.Log.e(TAG, "showAdIfAvailable() - ❌ Exception showing ad: ${e.message}", e)
+            
+            // Handle "Unable to obtain a JavascriptEngine" error gracefully
+            val errorMessage = e.message ?: ""
+            if (errorMessage.contains("JavascriptEngine", ignoreCase = true) || 
+                errorMessage.contains("Unable to obtain", ignoreCase = true)) {
+                android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ WebView/JavascriptEngine not available - this is expected on some devices. Skipping error logging.")
+                return
+            }
+            
             handleError(e)
         }
     }

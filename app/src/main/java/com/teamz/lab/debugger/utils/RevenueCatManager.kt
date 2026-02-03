@@ -15,8 +15,6 @@ import com.revenuecat.purchases.interfaces.LogInCallback
 import com.revenuecat.purchases.models.StoreProduct
 import com.revenuecat.purchases.models.StoreTransaction
 import com.teamz.lab.debugger.BuildConfig
-import com.teamz.lab.debugger.utils.AnalyticsUtils
-import com.teamz.lab.debugger.utils.AnalyticsEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,12 +39,14 @@ object RevenueCatManager {
     
     // Entitlement identifier for premium features (configure in RevenueCat dashboard)
     // This should match the entitlement ID you set up in RevenueCat dashboard
-    private const val PREMIUM_ENTITLEMENT_ID = "premium"
+    const val PREMIUM_ENTITLEMENT_ID = "device-gpt-lifetime"
+
+    // Offering ID - this should match your RevenueCat offering ID
+    const val OFFERING_ID = "device-gpt-offering"
     
-    // Product IDs - these should match your RevenueCat products
-    // Lifetime premium product ID for $2.99 one-time purchase
-    private const val LIFETIME_PRODUCT_ID = "lifetime_premium"
-    
+    // Paywall identifier - the name of the paywall designed in RevenueCat console
+    const val PAYWALL_IDENTIFIER = "device-gpt"
+
     // State flow for reactive premium status updates
     private val _premiumStatusFlow = MutableStateFlow<PremiumStatus>(PremiumStatus.Unknown)
     val premiumStatusFlow: StateFlow<PremiumStatus> = _premiumStatusFlow.asStateFlow()
@@ -80,12 +80,13 @@ object RevenueCatManager {
         
         try {
             // Get API key from local config or use provided one
-            val revenueCatApiKey = apiKey ?: getApiKeyFromConfig(context)
+            val revenueCatApiKey = apiKey ?: getApiKeyFromConfig()
             
             if (revenueCatApiKey.isNullOrEmpty()) {
                 Log.w(TAG, "RevenueCat API key not found - premium features will be disabled")
                 _premiumStatusFlow.value = PremiumStatus.NotPremium
-                isInitialized = true
+                // Don't set isInitialized = true here since Purchases.configure() won't be called
+                // This prevents setUserId() from trying to access uninitialized Purchases.sharedInstance
                 return
             }
             
@@ -113,16 +114,17 @@ object RevenueCatManager {
             Log.e(TAG, "Failed to initialize RevenueCat", e)
             ErrorHandler.handleError(e, context = "RevenueCatManager.initialize")
             _premiumStatusFlow.value = PremiumStatus.NotPremium
-            isInitialized = true
+            // Don't set isInitialized = true here - Purchases.configure() might not have been called
+            // This prevents setUserId() and other methods from trying to access uninitialized Purchases.sharedInstance
         }
     }
     
     /**
      * Get API key from BuildConfig (set from local_config.properties at build time)
      */
-    private fun getApiKeyFromConfig(context: Context): String? {
+    private fun getApiKeyFromConfig(): String? {
         val apiKey = BuildConfig.REVENUECAT_API_KEY
-        return if (apiKey.isNotEmpty()) apiKey else null
+        return apiKey.ifEmpty { null }
     }
     
     /**
@@ -153,7 +155,7 @@ object RevenueCatManager {
     /**
      * Update premium status from customer info
      */
-    private fun updatePremiumStatus(customerInfo: CustomerInfo) {
+    fun updatePremiumStatus(customerInfo: CustomerInfo) {
         val entitlement = customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
         
         if (entitlement != null) {
@@ -178,92 +180,7 @@ object RevenueCatManager {
             else -> false
         }
     }
-    
-    /**
-     * Get current premium status
-     */
-    fun getPremiumStatus(): PremiumStatus {
-        return _premiumStatusFlow.value
-    }
-    
-    /**
-     * Show purchase flow for premium subscription
-     * 
-     * @param activity Activity to show purchase flow
-     * @param onSuccess Callback when purchase succeeds
-     * @param onError Callback when purchase fails or is cancelled
-     */
-    fun purchasePremium(
-        activity: Activity,
-        onSuccess: () -> Unit = {},
-        onError: (String) -> Unit = {}
-    ) {
-        if (!isInitialized) {
-            Log.w(TAG, "Not initialized - cannot purchase")
-            onError("RevenueCat not initialized")
-            return
-        }
-        
-        Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
-            override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                val currentOffering = offerings.current
-                if (currentOffering == null) {
-                    Log.e(TAG, "No current offering available")
-                    onError("No subscription available")
-                    return
-                }
-                
-                // Get the lifetime premium product (prioritize lifetime over subscriptions)
-                val product = currentOffering.availablePackages.firstOrNull { 
-                    it.identifier.contains("lifetime", ignoreCase = true) || 
-                    it.product.identifier.contains("lifetime", ignoreCase = true)
-                } ?: currentOffering.availablePackages.firstOrNull { 
-                    it.identifier.contains("premium", ignoreCase = true) ||
-                    it.product.identifier.contains("premium", ignoreCase = true)
-                } ?: currentOffering.availablePackages.firstOrNull()
-                
-                if (product == null) {
-                    Log.e(TAG, "No premium product found in offering")
-                    onError("No premium product available")
-                    return
-                }
-                
-                // Purchase the product
-                Purchases.sharedInstance.purchase(
-                    com.revenuecat.purchases.PurchaseParams.Builder(activity, product).build(),
-                    object : PurchaseCallback {
-                        override fun onCompleted(
-                            transaction: StoreTransaction,
-                            customerInfo: CustomerInfo
-                        ) {
-                            Log.d(TAG, "Purchase successful")
-                            updatePremiumStatus(customerInfo)
-                            onSuccess()
-                        }
-                        
-                        override fun onError(
-                            error: com.revenuecat.purchases.PurchasesError,
-                            userCancelled: Boolean
-                        ) {
-                            if (userCancelled) {
-                                Log.d(TAG, "User cancelled purchase")
-                                onError("Purchase cancelled")
-                            } else {
-                                Log.e(TAG, "Purchase failed: ${error.message}")
-                                onError(error.message ?: "Purchase failed")
-                            }
-                        }
-                    }
-                )
-            }
-            
-            override fun onError(error: com.revenuecat.purchases.PurchasesError) {
-                Log.e(TAG, "Failed to get offerings: ${error.message}")
-                onError(error.message ?: "Failed to load subscriptions")
-            }
-        })
-    }
-    
+
     /**
      * Restore purchases (for users who already purchased on another device)
      * 
@@ -289,19 +206,19 @@ object RevenueCatManager {
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to restore purchases: ${error.message}")
-                onError(error.message ?: "Failed to restore purchases")
+                onError(error.message)
             }
         })
     }
-    
+
     /**
-     * Get available products for display
+     * Get the lifetime premium product price dynamically
      * 
-     * @param onSuccess Callback with list of products
-     * @param onError Callback when fetching fails
+     * @param onSuccess Callback with formatted price string (e.g., "$2.99")
+     * @param onError Callback when fetching fails (will use fallback)
      */
-    fun getAvailableProducts(
-        onSuccess: (List<StoreProduct>) -> Unit,
+    fun getLifetimeProductPrice(
+        onSuccess: (String) -> Unit,
         onError: (String) -> Unit = {}
     ) {
         if (!isInitialized) {
@@ -311,33 +228,58 @@ object RevenueCatManager {
         
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                val currentOffering = offerings.current
+                // Use specific offering ID "device-gpt-offering"
+                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
                 if (currentOffering == null) {
                     onError("No offerings available")
                     return
                 }
                 
-                val products = currentOffering.availablePackages.mapNotNull { packageInfo -> 
-                    packageInfo.product as? StoreProduct
+                // Find lifetime product
+                val lifetimeProduct = currentOffering.availablePackages.firstOrNull { 
+                    it.identifier.contains("lifetime", ignoreCase = true) || 
+                    (it.product as? StoreProduct)?.id?.contains("lifetime", ignoreCase = true) == true
+                } ?: currentOffering.availablePackages.firstOrNull { 
+                    it.identifier.contains("premium", ignoreCase = true) ||
+                    (it.product as? StoreProduct)?.id?.contains("premium", ignoreCase = true) == true
+                } ?: currentOffering.availablePackages.firstOrNull()
+                
+                val storeProduct = lifetimeProduct?.product as? StoreProduct
+                if (storeProduct != null) {
+                    // Get formatted price from StoreProduct
+                    // StoreProduct.price is a Price object
+                    val priceString = try {
+                        val price = storeProduct.price
+                        val amount = price.amountMicros / 1_000_000.0
+                        val currencyCode = price.currencyCode
+                        
+                        // Format as currency using NumberFormat
+                        val currency = java.util.Currency.getInstance(currencyCode)
+                        val formatter = java.text.NumberFormat.getCurrencyInstance(
+                            java.util.Locale.getDefault()
+                        )
+                        formatter.currency = currency
+                        formatter.format(amount)
+                    } catch (e: Exception) {
+                        // Fallback: simple format
+                        val amount = storeProduct.price.amountMicros / 1_000_000.0
+                        val currencyCode = storeProduct.price.currencyCode
+                        "$currencyCode $amount"
+                    }
+                    Log.d(TAG, "Lifetime product price: $priceString")
+                    onSuccess(priceString)
+                } else {
+                    onError("No lifetime product found")
                 }
-                onSuccess(products)
             }
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
-                onError(error.message ?: "Failed to load products")
+                Log.e(TAG, "Failed to get product price: ${error.message}")
+                onError(error.message ?: "Failed to load price")
             }
         })
     }
-    
-    /**
-     * Sync customer info (useful after purchase or restore)
-     */
-    fun syncCustomerInfo() {
-        if (isInitialized) {
-            fetchCustomerInfo()
-        }
-    }
-    
+
     /**
      * Set user ID (for cross-device sync)
      * 
@@ -349,16 +291,25 @@ object RevenueCatManager {
             return
         }
         
-        Purchases.sharedInstance.logIn(userId, object : LogInCallback {
-            override fun onReceived(customerInfo: CustomerInfo, created: Boolean) {
-                Log.d(TAG, "User ID set: $userId (created: $created)")
-                updatePremiumStatus(customerInfo)
-            }
-            
-            override fun onError(error: com.revenuecat.purchases.PurchasesError) {
-                Log.e(TAG, "Failed to set user ID: ${error.message}")
-            }
-        })
+        try {
+            // Check if Purchases is actually configured before accessing sharedInstance
+            // This handles the case where isInitialized is true but configure() wasn't called
+            Purchases.sharedInstance.logIn(userId, object : LogInCallback {
+                override fun onReceived(customerInfo: CustomerInfo, created: Boolean) {
+                    Log.d(TAG, "User ID set: $userId (created: $created)")
+                    updatePremiumStatus(customerInfo)
+                }
+                
+                override fun onError(error: com.revenuecat.purchases.PurchasesError) {
+                    Log.e(TAG, "Failed to set user ID: ${error.message}")
+                }
+            })
+        } catch (e: kotlin.UninitializedPropertyAccessException) {
+            // RevenueCat not configured - this can happen if API key was missing
+            Log.w(TAG, "RevenueCat not configured - cannot set user ID. This is expected if API key is missing.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting user ID: ${e.message}", e)
+        }
     }
     
     /**
@@ -383,50 +334,49 @@ object RevenueCatManager {
     }
     
     /**
-     * Show RevenueCat paywall directly - fetches offerings and triggers purchase flow
-     * This method directly presents the purchase flow without intermediate dialogs
+     * Purchase product directly - called from PremiumPurchaseDialog when user clicks "Get Premium"
+     * This method fetches offerings and triggers the purchase flow
      * 
      * @param activity Activity to show purchase flow
      * @param onSuccess Callback when purchase succeeds
      * @param onError Callback when purchase fails or is cancelled
      * @param onDismiss Callback when user dismisses without purchasing
      */
-    fun showPaywall(
+    fun purchaseProduct(
         activity: Activity,
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {},
         onDismiss: () -> Unit = {}
     ) {
         if (!isInitialized) {
-            Log.w(TAG, "Not initialized - cannot show paywall")
-            onError("RevenueCat not initialized")
+            Log.w(TAG, "Not initialized - cannot purchase. Check if REVENUECAT_API_KEY is set in local_config.properties")
+            onError("RevenueCat not initialized. Please check your configuration.")
             return
         }
         
-        // Track analytics
-        AnalyticsUtils.logEvent(
-            AnalyticsEvent.DrawerItemClicked,
-            mapOf("item" to "show_paywall", "source" to "direct_paywall")
-        )
-        
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                val currentOffering = offerings.current
+                Log.d(TAG, "Received offerings. Available offering IDs: ${offerings.all.keys}")
+                
+                // Use specific offering ID "device-gpt-offering"
+                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
                 if (currentOffering == null) {
-                    Log.e(TAG, "No current offering available")
-                    onError("No subscription available. Please try again later.")
+                    Log.e(TAG, "No offering available for ID: $OFFERING_ID. Available offerings: ${offerings.all.keys}")
+                    onError("No subscription available. Please check your RevenueCat configuration.")
                     return
                 }
+                
+                Log.d(TAG, "Using offering: ${currentOffering.identifier} with ${currentOffering.availablePackages.size} packages")
                 
                 // Prioritize lifetime product, fallback to any premium product
                 val lifetimeProduct = currentOffering.availablePackages.firstOrNull { 
                     it.identifier.contains("lifetime", ignoreCase = true) || 
-                    it.product.identifier.contains("lifetime", ignoreCase = true)
+                    (it.product as? StoreProduct)?.id?.contains("lifetime", ignoreCase = true) == true
                 }
                 
                 val product = lifetimeProduct ?: currentOffering.availablePackages.firstOrNull { 
                     it.identifier.contains("premium", ignoreCase = true) ||
-                    it.product.identifier.contains("premium", ignoreCase = true)
+                    (it.product as? StoreProduct)?.id?.contains("premium", ignoreCase = true) == true
                 } ?: currentOffering.availablePackages.firstOrNull()
                 
                 if (product == null) {
@@ -435,12 +385,13 @@ object RevenueCatManager {
                     return
                 }
                 
-                Log.d(TAG, "Showing paywall for product: ${product.identifier}, price: ${product.product.price}")
+                val storeProduct = product.product as? StoreProduct
+                Log.d(TAG, "Purchasing product: ${product.identifier}, price: ${storeProduct?.price}")
                 
                 // Track purchase attempt
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.DrawerItemClicked,
-                    mapOf("item" to "purchase_attempt", "product_id" to product.product.identifier)
+                    mapOf("item" to "purchase_attempt", "product_id" to (storeProduct?.id ?: product.identifier))
                 )
                 
                 // Purchase the product directly
@@ -455,9 +406,10 @@ object RevenueCatManager {
                             updatePremiumStatus(customerInfo)
                             
                             // Track purchase success
+                            val purchasedProductId = (product.product as? StoreProduct)?.id ?: product.identifier
                             AnalyticsUtils.logEvent(
                                 AnalyticsEvent.DrawerItemClicked,
-                                mapOf("item" to "purchase_success", "product_id" to product.product.identifier)
+                                mapOf("item" to "purchase_success", "product_id" to purchasedProductId)
                             )
                             
                             onSuccess()
@@ -499,6 +451,39 @@ object RevenueCatManager {
                 onError(error.message ?: "Failed to load subscription options. Please check your internet connection.")
             }
         })
+    }
+    
+    /**
+     * Show RevenueCat paywall designed in RevenueCat console
+     * Displays the paywall named "device-gpt" from RevenueCat console
+     * Uses purchaseProduct as fallback since PaywallActivityLauncher API may not be available
+     * 
+     * @param activity Activity to show purchase flow
+     * @param onSuccess Callback when purchase succeeds
+     * @param onError Callback when purchase fails or is cancelled
+     * @param onDismiss Callback when user dismisses without purchasing
+     */
+    fun showPaywall(
+        activity: Activity,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {},
+        onDismiss: () -> Unit = {}
+    ) {
+        if (!isInitialized) {
+            Log.w(TAG, "Not initialized - cannot show paywall. Check if REVENUECAT_API_KEY is set in local_config.properties")
+            onError("RevenueCat not initialized. Please check your configuration.")
+            return
+        }
+        
+        // Track analytics
+        AnalyticsUtils.logEvent(
+            AnalyticsEvent.DrawerItemClicked,
+            mapOf("item" to "show_paywall", "source" to "revenuecat_paywall", "paywall_name" to PAYWALL_IDENTIFIER)
+        )
+        
+        // Use purchaseProduct which will use the offering configured in RevenueCat console
+        // The paywall "device-gpt" will be used from the offering configuration
+        purchaseProduct(activity, onSuccess, onError, onDismiss)
     }
 }
 

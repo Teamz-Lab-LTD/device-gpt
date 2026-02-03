@@ -36,6 +36,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import javax.microedition.khronos.opengles.GL10
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -336,14 +339,63 @@ $summaryInfo
 """.trimIndent()
 }
 
+/**
+ * Safely read a system file with retry logic for EBUSY errors
+ * EBUSY is expected when reading /sys or /proc files that are being updated by the kernel
+ * FileNotFoundException is expected when files don't exist (e.g., offline CPU cores)
+ */
+private fun readSystemFileSafely(filePath: String, maxRetries: Int = 3, retryDelayMs: Long = 10): String? {
+    var lastException: Exception? = null
+    repeat(maxRetries) { attempt ->
+        try {
+            val file = File(filePath)
+            if (!file.exists()) {
+                // File doesn't exist - this is expected for some system files (e.g., offline CPU cores)
+                return null
+            }
+            return file.readText().trim()
+        } catch (e: java.io.FileNotFoundException) {
+            // File not found - expected when files don't exist (e.g., offline CPU cores, missing sysfs entries)
+            // This is not an error - just return null
+            return null
+        } catch (e: java.io.IOException) {
+            // Check if it's an EBUSY error (Device or resource busy)
+            val errorMessage = e.message ?: ""
+            if (errorMessage.contains("EBUSY", ignoreCase = true) || 
+                errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+                // EBUSY is expected - file is being updated by kernel
+                // Retry after a short delay
+                if (attempt < maxRetries - 1) {
+                    Thread.sleep(retryDelayMs)
+                    lastException = e
+                    return@repeat
+                }
+                // After max retries, return null (file is busy)
+                return null
+            }
+            // Other IO errors - return null
+            return null
+        } catch (e: Exception) {
+            // Other exceptions - return null
+            return null
+        }
+    }
+    return null
+}
+
 fun getMaxFrequenciesPerCore(coreCount: Int): List<Int> {
     val maxFrequencies = mutableListOf<Int>()
     for (i in 0 until coreCount) {
         val path = "/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq"
         try {
-            val freq = File(path).readText().trim().toInt() / 1000 // Convert to MHz
-            maxFrequencies.add(freq)
-        } catch (_: Exception) {
+            val content = readSystemFileSafely(path)
+            if (content != null) {
+                val freq = content.toInt() / 1000 // Convert to MHz
+                maxFrequencies.add(freq)
+            } else {
+                maxFrequencies.add(-1)
+            }
+        } catch (e: Exception) {
             maxFrequencies.add(-1)
         }
     }
@@ -380,10 +432,26 @@ private fun getCpuFrequencies(coreCount: Int): MutableList<Int> {
     for (i in 0 until coreCount) {
         val path = "/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq"
         try {
-            val freq = File(path).readText().trim().toInt() / 1000
-            frequencies.add(freq)
+            val content = readSystemFileSafely(path)
+            if (content != null) {
+                val freq = content.toInt() / 1000
+                frequencies.add(freq)
+            } else {
+                // File doesn't exist or is busy - this is expected for offline CPU cores
+                frequencies.add(-1)
+            }
+        } catch (e: java.io.FileNotFoundException) {
+            // File not found - expected when CPU core is offline or file doesn't exist
+            // This is not an error
+            frequencies.add(-1)
         } catch (e: Exception) {
-            handleError(e)
+            // Only log unexpected errors (not EBUSY, not FileNotFoundException)
+            val errorMessage = e.message ?: ""
+            if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+                !errorMessage.contains("Device or resource busy", ignoreCase = true) &&
+                !errorMessage.contains("No such file or directory", ignoreCase = true)) {
+                handleError(e)
+            }
             frequencies.add(-1)
         }
     }
@@ -403,14 +471,18 @@ fun getCpuArchitecture(): String {
  */
 fun getMaxCpuClockSpeedMHz(): Int {
     return try {
-        val file = File("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
-        if (file.exists()) {
-            file.readText().trim().toInt() / 1000
+        val content = readSystemFileSafely("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+        if (content != null) {
+            content.toInt() / 1000
         } else {
             -1
         }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         -1
     }
 }
@@ -421,12 +493,21 @@ fun getMaxCpuClockSpeedMHz(): Int {
  */
 fun getCpuModel(): String {
     return try {
-        val cpuInfo = File("/proc/cpuinfo").readLines()
-        val modelLine =
-            cpuInfo.firstOrNull { it.startsWith("Hardware") || it.startsWith("model name") }
-        modelLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        val content = readSystemFileSafely("/proc/cpuinfo")
+        if (content != null) {
+            val cpuInfo = content.lines()
+            val modelLine =
+                cpuInfo.firstOrNull { it.startsWith("Hardware") || it.startsWith("model name") }
+            modelLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        } else {
+            "Unavailable"
+        }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -437,15 +518,19 @@ fun getCpuModel(): String {
  */
 fun getMinCpuClockSpeed(): String {
     return try {
-        val file = File("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq")
-        if (file.exists()) {
-            val freq = file.readText().trim().toLong() / 1_000_000.0 // ✅ Convert to Double
+        val content = readSystemFileSafely("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq")
+        if (content != null) {
+            val freq = content.toLong() / 1_000_000.0 // ✅ Convert to Double
             String.format(Locale.getDefault(), "%.2f GHz", freq) // ✅ Format properly as Double
         } else {
             "Unavailable"
         }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -455,12 +540,21 @@ fun getMinCpuClockSpeed(): String {
  */
 fun getCpuVendor(): String {
     return try {
-        val cpuInfo = File("/proc/cpuinfo").readLines()
-        val vendorLine =
-            cpuInfo.firstOrNull { it.startsWith("vendor_id") || it.startsWith("Processor") }
-        vendorLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        val content = readSystemFileSafely("/proc/cpuinfo")
+        if (content != null) {
+            val cpuInfo = content.lines()
+            val vendorLine =
+                cpuInfo.firstOrNull { it.startsWith("vendor_id") || it.startsWith("Processor") }
+            vendorLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        } else {
+            "Unavailable"
+        }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -470,11 +564,20 @@ fun getCpuVendor(): String {
  */
 fun getBogoMips(): String {
     return try {
-        val cpuInfo = File("/proc/cpuinfo").readLines()
-        val bogoMipsLine = cpuInfo.firstOrNull { it.startsWith("BogoMIPS") }
-        bogoMipsLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        val content = readSystemFileSafely("/proc/cpuinfo")
+        if (content != null) {
+            val cpuInfo = content.lines()
+            val bogoMipsLine = cpuInfo.firstOrNull { it.startsWith("BogoMIPS") }
+            bogoMipsLine?.split(":")?.get(1)?.trim() ?: "Unknown"
+        } else {
+            "Unavailable"
+        }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -485,10 +588,14 @@ fun getBogoMips(): String {
  */
 fun getCpuGovernor(): String {
     return try {
-        val file = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
-        if (file.exists()) file.readText().trim() else "Unavailable"
+        val content = readSystemFileSafely("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
+        content ?: "Unavailable"
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -499,12 +606,21 @@ fun getCpuGovernor(): String {
  */
 fun getCpuFeatures(): String {
     return try {
-        val cpuInfo = File("/proc/cpuinfo").readLines()
-        val featuresLine =
-            cpuInfo.firstOrNull { it.startsWith("Features") || it.startsWith("flags") }
-        featuresLine?.split(":")?.get(1)?.trim()?.replace(" ", ", ") ?: "Unavailable"
+        val content = readSystemFileSafely("/proc/cpuinfo")
+        if (content != null) {
+            val cpuInfo = content.lines()
+            val featuresLine =
+                cpuInfo.firstOrNull { it.startsWith("Features") || it.startsWith("flags") }
+            featuresLine?.split(":")?.get(1)?.trim()?.replace(" ", ", ") ?: "Unavailable"
+        } else {
+            "Unavailable"
+        }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -550,15 +666,19 @@ fun getThermalStatus(context: Context): String {
  */
 fun getCpuTemperature(): String {
     return try {
-        val file = File("/sys/class/thermal/thermal_zone0/temp")
-        if (file.exists()) {
-            val temp = file.readText().trim().toFloat() / 1000 // Convert from millidegree to degree
+        val content = readSystemFileSafely("/sys/class/thermal/thermal_zone0/temp")
+        if (content != null) {
+            val temp = content.toFloat() / 1000 // Convert from millidegree to degree
             "%.1f".format(temp)
         } else {
             "Unavailable"
         }
     } catch (e: Exception) {
-        handleError(e)
+        val errorMessage = e.message ?: ""
+        if (!errorMessage.contains("EBUSY", ignoreCase = true) && 
+            !errorMessage.contains("Device or resource busy", ignoreCase = true)) {
+            handleError(e)
+        }
         "Unavailable"
     }
 }
@@ -745,12 +865,17 @@ fun testStorageSpeed(context: Context): String {
 }
 
 
-fun getFPS(callback: (Int) -> Unit) {
+fun getFPS(callback: (Int) -> Unit): () -> Unit {
     var frameCount = 0
     var lastTimestamp = System.nanoTime()
+    var isActive = true
 
     val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
+            // Check if callback is still active before processing
+            if (!isActive) return
+
+            // Keep frame callback lightweight - only collect data
             frameCount++
 
             val currentTime = System.nanoTime()
@@ -758,28 +883,52 @@ fun getFPS(callback: (Int) -> Unit) {
 
             if (elapsedSeconds >= 1.0) {
                 val fps = frameCount / elapsedSeconds
-                callback(fps.roundToInt())
+                val fpsInt = fps.roundToInt()
+
+                // Post callback to main thread handler to avoid blocking frame callback
+                // This ensures the callback doesn't block the frame rendering
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    if (isActive) { // Double-check before calling callback
+                        callback(fpsInt)
+                    }
+                }
 
                 // Reset for next second
                 frameCount = 0
                 lastTimestamp = currentTime
             }
 
-            Choreographer.getInstance().postFrameCallback(this)
+            // Continue monitoring only if still active
+            if (isActive) {
+                Choreographer.getInstance().postFrameCallback(this)
+            }
         }
     }
 
     Choreographer.getInstance().postFrameCallback(frameCallback)
+
+    // Return cleanup function
+    return {
+        isActive = false
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
+    }
 }
 
 
-fun getFrameDropRate(callback: (String) -> Unit) {
+fun getFrameDropRate(callback: (String) -> Unit): () -> Unit {
     var totalFrames = 0
     var droppedFrames = 0
     var lastTimestamp = System.nanoTime()
+    var lastCallbackTime = System.currentTimeMillis()
+    val callbackIntervalMs = 500L // Only call callback every 500ms to prevent ANR
+    var isActive = true
 
     val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
+            // Check if callback is still active before processing
+            if (!isActive) return
+
+            // Keep frame callback lightweight - only collect data
             totalFrames++
 
             // Check if the frame is delayed (16ms per frame in 60Hz)
@@ -789,28 +938,47 @@ fun getFrameDropRate(callback: (String) -> Unit) {
             }
             lastTimestamp = frameTimeNanos
 
-            val dropRate = if (totalFrames > 0) {
-                (droppedFrames.toDouble() / totalFrames) * 100
-            } else 0.0
+            // Throttle callback to prevent ANR - only call every 500ms
+            val now = System.currentTimeMillis()
+            if (now - lastCallbackTime >= callbackIntervalMs) {
+                val dropRate = if (totalFrames > 0) {
+                    (droppedFrames.toDouble() / totalFrames) * 100
+                } else 0.0
 
-            callback(
-                "⚡ Smoothness: $droppedFrames drops (${
+                val result = "⚡ Smoothness: $droppedFrames drops (${
                     String.format(
                         Locale.getDefault(), "%.1f", dropRate
                     )
                 }% stutter)"
-            )
 
-            // Continue monitoring
-            Choreographer.getInstance().postFrameCallback(this)
+                // Post callback to main thread handler to avoid blocking frame callback
+                // This ensures the callback doesn't block the frame rendering
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    if (isActive) { // Double-check before calling callback
+                        callback(result)
+                    }
+                }
+
+                lastCallbackTime = now
+            }
+
+            // Continue monitoring only if still active
+            if (isActive) {
+                Choreographer.getInstance().postFrameCallback(this)
+            }
         }
     }
 
     Choreographer.getInstance().postFrameCallback(frameCallback)
 
+    // Return cleanup function
+    return {
+        isActive = false
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
+    }
 }
 
-fun getCompactFpsAndDropRate(callback: (String) -> Unit) {
+fun getCompactFpsAndDropRate(callback: (String) -> Unit): () -> Unit {
     var totalFrames = 0
     var droppedFrames = 0
     var lastTimestamp = System.nanoTime()
@@ -818,9 +986,16 @@ fun getCompactFpsAndDropRate(callback: (String) -> Unit) {
     var startTime = System.nanoTime()
     var fps = 60
     var dropRate: Double
+    var lastCallbackTime = System.currentTimeMillis()
+    val callbackIntervalMs = 500L // Only call callback every 500ms to prevent ANR
+    var isActive = true
 
     val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
+            // Check if callback is still active before processing
+            if (!isActive) return
+
+            // Keep frame callback lightweight - only collect data
             totalFrames++
 
             // Calculate the elapsed time between frames (in milliseconds)
@@ -842,38 +1017,69 @@ fun getCompactFpsAndDropRate(callback: (String) -> Unit) {
                 startTime = currentTime
             }
 
-            // Calculate drop rate as percentage of dropped frames
-            dropRate = if (totalFrames > 0) {
-                (droppedFrames.toDouble() / totalFrames) * 100.00
-            } else 0.0
+            // Throttle callback to prevent ANR - only call every 500ms
+            val now = System.currentTimeMillis()
+            if (now - lastCallbackTime >= callbackIntervalMs) {
+                // Calculate drop rate as percentage of dropped frames
+                dropRate = if (totalFrames > 0) {
+                    (droppedFrames.toDouble() / totalFrames) * 100.00
+                } else 0.0
 
-            // Prepare the formatted output for FPS and Drop Rate
-            callback(
-                "FPS: $fps • Drop Rate: ${String.format(Locale.getDefault(), "%.1f", dropRate)}%"
-            )
+                // Prepare the formatted output for FPS and Drop Rate
+                val result = "FPS: $fps • Drop Rate: ${String.format(Locale.getDefault(), "%.1f", dropRate)}%"
 
-            // Continue monitoring frames
-            Choreographer.getInstance().postFrameCallback(this)
+                // Post callback to main thread handler to avoid blocking frame callback
+                // This ensures the callback doesn't block the frame rendering
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    if (isActive) { // Double-check before calling callback
+                        callback(result)
+                    }
+                }
+
+                lastCallbackTime = now
+            }
+
+            // Continue monitoring frames only if still active
+            if (isActive) {
+                Choreographer.getInstance().postFrameCallback(this)
+            }
         }
     }
 
     // Post the frame callback to begin monitoring
     Choreographer.getInstance().postFrameCallback(frameCallback)
+
+    // Return cleanup function
+    return {
+        isActive = false
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
+    }
 }
 
 fun hasGNSS(context: Context): Boolean {
+    // FEATURE_GNSS was introduced in Android API 24 (Android 7.0)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        return false
+    }
+    
     return try {
+        // Try to access FEATURE_GNSS constant via reflection
         val field = PackageManager::class.java.getField("FEATURE_GNSS")
         val featureGNSS = field.get(null) as String
         context.packageManager.hasSystemFeature(featureGNSS)
+    } catch (e: NoSuchFieldException) {
+        // FEATURE_GNSS field doesn't exist on this device/Android version
+        // This is expected on some devices and not an error
+        false
     } catch (e: Exception) {
+        // Only log non-NoSuchFieldException errors
         handleError(e)
-        false // Feature not available (Older Android versions)
+        false
     }
 }
 
 
-fun getSecurityInfo(context: Context): String {
+suspend fun getSecurityInfo(context: Context): String = withContext(Dispatchers.IO) {
     val devicePolicyManager =
         context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
@@ -914,7 +1120,7 @@ fun getSecurityInfo(context: Context): String {
     // 🛡️ Offline Malware Signature Scan
     val malwareScan = detectOfflineMalware(context)
 
-    return """
+    """
 🛡️ System Protection (SELinux):
 ${if (isSELinuxEnforced) "✅ Your system protection is active and keeping things safe" else "❌ Security shield is off — less protection against threats"}
 
@@ -1037,7 +1243,7 @@ fun detectOfflineMalware(context: Context): String {
 }
 
 
-fun getPermissionHeatmap(context: Context): String {
+suspend fun getPermissionHeatmap(context: Context): String = withContext(Dispatchers.IO) {
     val pm = context.packageManager
     val dangerousPermissions = listOf(
         Manifest.permission.CAMERA,
@@ -1050,11 +1256,20 @@ fun getPermissionHeatmap(context: Context): String {
     val flaggedApps = mutableMapOf<String, MutableList<String>>()
     val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
 
-    for (app in installedApps) {
+    // Limit to first 50 apps to prevent ANR on devices with many apps
+    // Permission checks are expensive (Binder transactions)
+    val appsToCheck = installedApps.take(50)
+
+    for (app in appsToCheck) {
         val appName = app.loadLabel(pm).toString()
         val granted = mutableListOf<String>()
 
         for (perm in dangerousPermissions) {
+            // Yield periodically to prevent blocking
+            if (granted.size % 10 == 0) {
+                yield()
+            }
+            
             if (ContextCompat.checkSelfPermission(
                     context,
                     perm
@@ -1069,7 +1284,7 @@ fun getPermissionHeatmap(context: Context): String {
         }
     }
 
-    return if (flaggedApps.isEmpty()) {
+    if (flaggedApps.isEmpty()) {
         "✅ No apps with sensitive permissions detected."
     } else {
         flaggedApps.entries.joinToString("\n\n") { (app, perms) ->
@@ -1914,7 +2129,7 @@ fun detectHiddenApps(context: Context): String {
     }
 }
 
-fun getPhoneHackabilityScore(context: Context): String {
+suspend fun getPhoneHackabilityScore(context: Context): String = withContext(Dispatchers.IO) {
     val root = isDeviceRooted()
     val usb = isUsbDebuggingEnabled(context)
     val selinux = getSecurityInfo(context)
@@ -1927,7 +2142,7 @@ fun getPhoneHackabilityScore(context: Context): String {
         else -> "☠️ Critical Risk"
     }
 
-    return "📊 Hackability Score: $rating ($score/3 vulnerabilities found)"
+    "📊 Hackability Score: $rating ($score/3 vulnerabilities found)"
 }
 
 fun getFaceUnlockTrustLevel(context: Context): String {
@@ -1993,6 +2208,93 @@ fun getRecentCameraMicUsageLog(): String {
         handleError(e)
         "❌ Unable to read recent mic/camera usage"
     }
+}
+
+/**
+ * Calculate daily privacy score (0-100) based on device privacy state
+ * Higher score = better privacy
+ */
+fun calculatePrivacyScore(context: Context): Int {
+    var score = 100 // Start with perfect score
+    
+    // Check for monitoring/spyware (-20 points)
+    val monitoringStatus = isDeviceBeingMonitored(context)
+    if (monitoringStatus.contains("Screen Recording") || monitoringStatus.contains("Suspicious")) {
+        score -= 20
+    }
+    
+    // Check for USB debugging (-10 points)
+    val usbDebugStatus = isUsbDebuggingEnabled(context)
+    if (usbDebugStatus.contains("enabled") || usbDebugStatus.contains("Enabled")) {
+        score -= 10
+    }
+    
+    // Check for root access (-15 points)
+    val rootStatus = isDeviceRooted()
+    if (rootStatus.contains("Yes") || rootStatus.contains("Rooted")) {
+        score -= 15
+    }
+    
+    // Check for SSL certificate issues (-10 points)
+    val sslStatus = checkSSLCertificateHijack()
+    if (sslStatus.contains("⚠️") || sslStatus.contains("❌")) {
+        score -= 10
+    }
+    
+    // Check for DPI detection (-10 points)
+    val dpiStatus = checkDPIDetection()
+    if (dpiStatus.contains("⚠️") || dpiStatus.contains("❌")) {
+        score -= 10
+    }
+    
+    // Check for recent mic/camera usage (-5 points per recent usage)
+    val recentUsage = getRecentCameraMicUsageLog()
+    if (recentUsage.contains("Recent usage detected")) {
+        val usageCount = recentUsage.split("\n").count { it.isNotBlank() } - 1 // Subtract header line
+        score -= minOf(15, usageCount * 5) // Max -15 points
+    }
+    
+    // Check for GPS spoofing (-10 points)
+    val spoofingStatus = detectSensorSpoofing(context)
+    if (spoofingStatus.contains("⚠️") || spoofingStatus.contains("❌")) {
+        score -= 10
+    }
+    
+    return maxOf(0, score) // Ensure score is between 0-100
+}
+
+/**
+ * Get privacy threats detected today
+ */
+fun getPrivacyThreatsToday(context: Context): List<String> {
+    val threats = mutableListOf<String>()
+    
+    val monitoringStatus = isDeviceBeingMonitored(context)
+    if (monitoringStatus.contains("Screen Recording") || monitoringStatus.contains("Suspicious")) {
+        threats.add("Screen recording or suspicious apps detected")
+    }
+    
+    val recentUsage = getRecentCameraMicUsageLog()
+    if (recentUsage.contains("Recent usage detected")) {
+        threats.add("Recent microphone or camera access detected")
+    }
+    
+    val usbDebugStatus = isUsbDebuggingEnabled(context)
+    if (usbDebugStatus.contains("enabled") || usbDebugStatus.contains("Enabled")) {
+        threats.add("USB debugging enabled (security risk)")
+    }
+    
+    val rootStatus = isDeviceRooted()
+    if (rootStatus.contains("Yes") || rootStatus.contains("Rooted")) {
+        threats.add("Device is rooted (security risk)")
+    }
+    
+    val sslStatus = checkSSLCertificateHijack()
+    if (sslStatus.contains("⚠️") || sslStatus.contains("❌")) {
+        threats.add("SSL certificate issues detected")
+    }
+    
+    return threats
 }
 
 

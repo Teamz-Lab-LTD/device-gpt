@@ -6,10 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Box
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.handleError
@@ -29,6 +32,10 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.ReviewPromptManager
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.utils.calculatePrivacyScore
+import com.teamz.lab.debugger.utils.getPrivacyThreatsToday
+import com.teamz.lab.debugger.utils.getRecentCameraMicUsageLog
+import com.teamz.lab.debugger.utils.AIIcon
 
 @Composable
 fun HealthSection(
@@ -43,12 +50,11 @@ fun HealthSection(
     // State management for loading and data refresh
     var isScanning by remember { mutableStateOf(false) }
     var scanCompleted by remember { mutableStateOf(false) }
-    var currentHealthScore by remember {
-        mutableIntStateOf(
-            HealthScoreUtils.calculateDailyHealthScore(
-                context
-            )
-        )
+    var currentHealthScore by remember { mutableIntStateOf(0) }
+    
+    // Calculate health score asynchronously since it's a suspend function
+    LaunchedEffect(Unit) {
+        currentHealthScore = HealthScoreUtils.calculateDailyHealthScore(context)
     }
 
     // AdMob interstitial ad tracking
@@ -200,6 +206,109 @@ fun HealthSection(
             }
         }
 
+        // Privacy Dashboard Card
+        item(key = "privacy_dashboard") {
+            var privacyScore by remember { mutableIntStateOf(0) }
+            var threats by remember { mutableStateOf<List<String>>(emptyList()) }
+            var recentUsage by remember { mutableStateOf("") }
+            
+            LaunchedEffect(Unit) {
+                privacyScore = kotlinx.coroutines.runBlocking {
+                    calculatePrivacyScore(context)
+                }
+                threats = getPrivacyThreatsToday(context)
+                recentUsage = getRecentCameraMicUsageLog()
+            }
+            
+            PrivacyDashboardCard(
+                context = context,
+                privacyScore = privacyScore,
+                threats = threats,
+                recentUsage = recentUsage,
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val content = """
+Privacy Score: $privacyScore/100
+Threats Today: ${if (threats.isEmpty()) "None" else threats.joinToString(", ")}
+Recent Mic/Camera Usage:
+$recentUsage
+                        """.trimIndent()
+                        handler("Privacy Dashboard", content)
+                    }
+                }
+            )
+        }
+
+        // Native Ad (after Privacy Dashboard)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_privacy")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
+        // Today's Tasks Card
+        item(key = "daily_tasks") {
+            var dailyTasks by remember { mutableStateOf<List<HealthScoreUtils.DailyTask>>(emptyList()) }
+            var completedCount by remember { mutableIntStateOf(0) }
+            
+            LaunchedEffect(currentHealthScore) {
+                dailyTasks = HealthScoreUtils.getDailyTasks(context, currentHealthScore)
+                completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+            }
+            
+            // Also update when tasks are completed
+            LaunchedEffect(Unit) {
+                dailyTasks = HealthScoreUtils.getDailyTasks(context, currentHealthScore)
+                completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+            }
+            
+            if (dailyTasks.isNotEmpty()) {
+                DailyTasksCard(
+                    tasks = dailyTasks,
+                    completedCount = completedCount,
+                    onTaskComplete = { taskId ->
+                        HealthScoreUtils.completeTask(context, taskId)
+                        completedCount = HealthScoreUtils.getCompletedTasksCount(context)
+                        AnalyticsUtils.logEvent(AnalyticsEvent.AchievementUnlocked, mapOf(
+                            "task_id" to taskId,
+                            "tasks_completed" to completedCount
+                        ))
+                    },
+                    onAIClick = onItemAIClick?.let { handler ->
+                        {
+                            val tasksText = dailyTasks.joinToString("\n") { 
+                                "${if (HealthScoreUtils.isTaskCompleted(context, it.id)) "✅" else "⬜"} ${it.title}"
+                            }
+                            val content = """
+Today's Tasks (${completedCount}/${dailyTasks.size} completed):
+$tasksText
+
+Health Score: $currentHealthScore/10
+                            """.trimIndent()
+                            handler("Today's Tasks", content)
+                        }
+                    }
+                )
+            }
+        }
+
+        // Native Ad (after Today's Tasks)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_tasks")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
         // Intelligent Improvement Suggestions
         item(key = "recommendations") {
             val suggestions =
@@ -252,7 +361,60 @@ $suggestionsText
             }
         }
 
+        // Native Ad (after Recommendations)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_recommendations")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
         // Removed Device Analysis - redundant with Device Info tab
+
+        // Temperature History Card
+        item {
+            TemperatureHistoryCard(
+                context = context,
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        val history = HealthScoreUtils.getTemperatureHistory(context, 7)
+                        val peakTemp = HealthScoreUtils.getPeakTemperature(context)
+                        val trend = HealthScoreUtils.getTemperatureTrend(context)
+                        val historyText = if (history.isNotEmpty()) {
+                            history.joinToString("\n") { 
+                                "${it.date}: Max ${it.maxTemp.toInt()}°C, Avg ${it.avgTemp.toInt()}°C"
+                            }
+                        } else {
+                            "No temperature history yet."
+                        }
+                        val content = """
+7-Day Temperature History:
+$historyText
+
+Peak Temperature: ${peakTemp?.toInt() ?: "N/A"}°C
+Trend: $trend
+                        """.trimIndent()
+                        handler("Temperature History", content)
+                    }
+                }
+            )
+        }
+
+        // Native Ad (after Temperature History)
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item {
+                val nativeAd = NativeAdManager.getAdForPosition("health_section_temperature")
+                if (nativeAd != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
 
         // Health History
         item {
@@ -480,6 +642,308 @@ private fun ImprovementSuggestionsCard(
 }
 
 @Composable
+private fun DailyTasksCard(
+    tasks: List<HealthScoreUtils.DailyTask>,
+    completedCount: Int,
+    onTaskComplete: (String) -> Unit,
+    onAIClick: (() -> Unit)? = null
+) {
+    val context = LocalContext.current
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Tasks",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Today's Tasks",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "$completedCount/${tasks.size} completed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        fontSize = 11.sp
+                    )
+                }
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
+                            contentDescription = "Get AI insights about tasks",
+                            tint = com.teamz.lab.debugger.utils.AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Progress bar
+            LinearProgressIndicator(
+                progress = { completedCount.toFloat() / tasks.size.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            tasks.forEach { task ->
+                val isCompleted = HealthScoreUtils.isTaskCompleted(context, task.id)
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Checkbox(
+                        checked = isCompleted,
+                        onCheckedChange = { checked ->
+                            if (checked && !isCompleted) {
+                                onTaskComplete(task.id)
+                            }
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = task.icon,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = task.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = if (task.priority == HealthScoreUtils.TaskPriority.HIGH) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isCompleted) 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                else 
+                                    MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        if (!isCompleted) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = task.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            
+            if (completedCount == tasks.size && tasks.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "🎉 All tasks completed! Great job!",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemperatureHistoryCard(
+    context: android.content.Context,
+    onAIClick: (() -> Unit)? = null
+) {
+    val history = remember {
+        HealthScoreUtils.getTemperatureHistory(context, 7)
+    }
+    val peakTemp = remember {
+        HealthScoreUtils.getPeakTemperature(context)
+    }
+    val trend = remember {
+        HealthScoreUtils.getTemperatureTrend(context)
+    }
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Thermostat,
+                    contentDescription = "Temperature",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Temperature History",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
+                            contentDescription = "Get AI insights about temperature",
+                            tint = com.teamz.lab.debugger.utils.AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            if (history.isNotEmpty()) {
+                // Peak temperature alert
+                peakTemp?.let { peak ->
+                    if (peak > 40f) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "⚠️ Peak: ${peak.toInt()}°C this week",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+                
+                // Trend indicator
+                if (trend.isNotEmpty() && trend != "Not enough data") {
+                    Text(
+                        text = trend,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                
+                // Simple temperature graph (text-based bars)
+                history.forEach { dataPoint ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = dataPoint.date,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 11.sp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        // Temperature bar visualization
+                        val barWidth = ((dataPoint.avgTemp / 50f) * 100f).coerceIn(0f, 100f).toInt()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        when {
+                                            dataPoint.avgTemp > 40f -> MaterialTheme.colorScheme.error
+                                            dataPoint.avgTemp > 35f -> MaterialTheme.colorScheme.primary
+                                            else -> MaterialTheme.colorScheme.primaryContainer
+                                        }
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${dataPoint.avgTemp.toInt()}°C",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            } else {
+                Text(
+                    text = "No temperature history yet. Temperature will be tracked automatically.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun HealthHistoryCard(
     context: android.content.Context,
     onAIClick: (() -> Unit)? = null
@@ -635,5 +1099,175 @@ private fun getScoreRating(score: Int): String {
         score >= 60 -> "Fair. Some attention needed."
         score >= 40 -> "Needs work. Several issues detected."
         else -> "Critical. Immediate attention recommended."
+    }
+}
+
+@Composable
+private fun PrivacyDashboardCard(
+    context: android.content.Context,
+    privacyScore: Int,
+    threats: List<String>,
+    recentUsage: String,
+    onAIClick: (() -> Unit)? = null
+) {
+    val hasRecentUsage = recentUsage.contains("Recent usage detected")
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Security,
+                    contentDescription = "Privacy",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Privacy Dashboard",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (onAIClick != null) {
+                    IconButton(
+                        onClick = onAIClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = AIIcon.icon,
+                            contentDescription = "Get AI insights about privacy",
+                            tint = AIIcon.color(),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Privacy Score
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Privacy Score",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Surface(
+                    color = when {
+                        privacyScore >= 80 -> MaterialTheme.colorScheme.primaryContainer
+                        privacyScore >= 60 -> MaterialTheme.colorScheme.secondaryContainer
+                        else -> MaterialTheme.colorScheme.errorContainer
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "$privacyScore/100",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = when {
+                            privacyScore >= 80 -> MaterialTheme.colorScheme.onPrimaryContainer
+                            privacyScore >= 60 -> MaterialTheme.colorScheme.onSecondaryContainer
+                            else -> MaterialTheme.colorScheme.onErrorContainer
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Threats Today
+            if (threats.isNotEmpty()) {
+                Text(
+                    text = "Threats Today:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                threats.take(3).forEach { threat ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = "Threat",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = threat,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 11.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Safe",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "No threats detected today",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+            
+            // Recent Mic/Camera Usage
+            if (hasRecentUsage) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Recent usage",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Recent mic/camera access detected",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
     }
 }

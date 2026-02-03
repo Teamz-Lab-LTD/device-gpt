@@ -33,8 +33,8 @@ android {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 9
-        versionName = "3.0.2"
+        versionCode = 10
+        versionName = "3.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -163,9 +163,11 @@ dependencies {
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     // WorkManager for reliable background notification scheduling
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.11.1")
     // RevenueCat for subscription management and ad removal
-    implementation("com.revenuecat.purchases:purchases:8.3.0")
+    implementation(libs.purchases)
+    // RevenueCat Paywall UI SDK for displaying paywalls designed in RevenueCat console
+    implementation(libs.purchases.ui)
     implementation(libs.androidx.uiautomator)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.13")

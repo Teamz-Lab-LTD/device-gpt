@@ -20,6 +20,8 @@ googleGmsGoogleServices = "4.4.2"
 googleFirebaseCrashlytics = "3.0.3"
 playServicesLocation = "21.3.0"
 coreKtxVersion = "1.8.1"
+purchases = "9.20.0"
+purchasesUi = "9.20.0"
 reviewKtx = "2.0.2"
 uiTextGoogleFonts = "1.8.1"
 playServicesMeasurementApi = "22.4.0"
@@ -56,6 +58,8 @@ core-ktx = { group = "com.google.android.play", name = "core-ktx", version.ref =
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version = "1.7.8" }
 play-services-measurement-api = { group = "com.google.android.gms", name = "play-services-measurement-api", version.ref = "playServicesMeasurementApi" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+purchases = { module = "com.revenuecat.purchases:purchases", version.ref = "purchases" }
+purchases-ui = { module = "com.revenuecat.purchases:purchases-ui", version.ref = "purchasesUi" }
 review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 

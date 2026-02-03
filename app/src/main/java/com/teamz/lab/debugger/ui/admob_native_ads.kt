@@ -23,7 +23,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -112,6 +120,7 @@ fun NativeAdView(
 ) {
     val contentViewId by remember { mutableIntStateOf(View.generateViewId()) }
     val adViewId by remember { mutableIntStateOf(View.generateViewId()) }
+    val coroutineScope = rememberCoroutineScope()
     
     // Track impression when ad is displayed
     LaunchedEffect(ad.hashCode()) {
@@ -128,49 +137,138 @@ fun NativeAdView(
     
     AndroidView(
         factory = { context ->
-            val adView = NativeAdView(context).apply {
-                id = adViewId
+            // Create a lightweight container first to avoid blocking composition
+            // Generate container ID outside of async block to prevent JNI blocking during composition
+            val containerId = View.generateViewId()
+            val container = FrameLayout(context).apply {
+                id = containerId
             }
+            
+            // Initialize NativeAdView asynchronously to prevent blocking the main thread
+            // This allows the composition to complete while the ad view is being created
+            // Defer all View creation to prevent JNI blocking during composition
+            coroutineScope.launch(Dispatchers.Main) {
+                try {
+                    // Yield multiple times and add delay to allow other work to proceed
+                    // This prevents ANR during WebView initialization which blocks on ConnectivityManager
+                    // WebView.init() internally calls ConnectivityManager.getActiveNetworkInfo() which can block
+                    kotlinx.coroutines.yield()
+                    kotlinx.coroutines.delay(100) // Delay to let UI settle and other work complete
+                    kotlinx.coroutines.yield()
+                    kotlinx.coroutines.delay(100) // Additional delay to prevent ANR
+                    kotlinx.coroutines.yield()
+                    kotlinx.coroutines.delay(50) // Extra delay before JNI calls
+                    kotlinx.coroutines.yield()
+                    
+                    // Create NativeAdView with timeout to prevent ANR
+                    // WebView initialization can block on ConnectivityManager.getActiveNetworkInfo()
+                    // Even with timeout, the blocking call happens synchronously, so we add delays before it
+                    // Wrap in try-catch to handle any JNI exceptions gracefully
+                    val adView = try {
+                        kotlinx.coroutines.withTimeoutOrNull(2000) { // 2 second timeout
+                            // Yield one more time before creating WebView
+                            kotlinx.coroutines.yield()
+                            // NativeAdView creation involves JNI calls that can block
+                            // Add one more yield before the blocking call
+                            kotlinx.coroutines.delay(50)
+                            NativeAdView(context).apply {
+                                id = adViewId
+                            }
+                        }
+                    } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                        android.util.Log.w("NativeAdView", "NativeAdView creation timed out: ${e.message}")
+                        null
+                    } catch (e: Exception) {
+                        android.util.Log.e("NativeAdView", "Error creating NativeAdView: ${e.message}", e)
+                        null
+                    }
+                    
+                    if (adView == null) {
+                        // If timeout or error, skip ad display to prevent ANR
+                        android.util.Log.w("NativeAdView", "NativeAdView creation failed, skipping ad display")
+                        return@launch
+                    }
 
-            val contentView = ComposeView(context).apply {
-                id = contentViewId
+                    // Yield before creating more views to prevent JNI blocking
+                    kotlinx.coroutines.yield()
+                    kotlinx.coroutines.delay(50)
+                    
+                    val contentView = try {
+                        ComposeView(context).apply {
+                            id = contentViewId
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("NativeAdView", "Error creating ComposeView: ${e.message}", e)
+                        return@launch
+                    }
+
+                    // AdChoices view required by AdMob - also involves JNI calls
+                    // Yield before creating to prevent blocking
+                    kotlinx.coroutines.yield()
+                    val adChoicesView = try {
+                        AdChoicesView(context).apply {
+                            layoutParams = FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                Gravity.TOP or Gravity.END
+                            )
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("NativeAdView", "Error creating AdChoicesView: ${e.message}", e)
+                        return@launch
+                    }
+
+                    adView.addView(contentView)
+                    adView.addView(adChoicesView)
+
+                    // Attach required views
+                    adView.adChoicesView = adChoicesView
+                    adView.headlineView = contentView
+                    adView.bodyView = contentView
+                    adView.iconView = contentView
+                    adView.callToActionView = contentView
+
+                    adView.setNativeAd(ad)
+
+                    contentView.setContent {
+                        adContent(ad, adView)
+                    }
+                    
+                    // Defer adding the ad view to the container until after current layout pass completes
+                    // This prevents ANR from Google Mobile Ads SDK's OnGlobalLayoutListener
+                    // which calls PowerManager.isScreenOn() during layout callbacks
+                    container.post {
+                        // Post again to ensure we're after the layout pass
+                        container.post {
+                            try {
+                                // Only add if container is still attached and adView is valid
+                                if (container.parent != null && adView.parent == null) {
+                                    container.addView(adView)
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.e("NativeAdView", "Error adding ad view to container: ${e.message}", e)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Handle any errors during ad view creation
+                    android.util.Log.e("NativeAdView", "Error creating NativeAdView: ${e.message}", e)
+                }
             }
-
-            // AdChoices view required by AdMob
-            val adChoicesView = AdChoicesView(context).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Gravity.TOP or Gravity.END
-                )
-            }
-
-            adView.addView(contentView)
-            adView.addView(adChoicesView)
-
-            // Attach required views
-            adView.adChoicesView = adChoicesView
-            adView.headlineView = contentView
-            adView.bodyView = contentView
-            adView.iconView = contentView
-            adView.callToActionView = contentView
-
-            adView.setNativeAd(ad)
-
-            contentView.setContent {
-                adContent(ad, adView)
-            }
-
-            adView
+            
+            container
         },
         update = { view ->
-
+            // Find the NativeAdView if it's been created
             val adView = view.findViewById<NativeAdView>(adViewId)
-            val contentView = view.findViewById<ComposeView>(contentViewId)
-
-            adView.setNativeAd(ad)
-            adView.callToActionView = contentView
-            contentView.setContent { adContent(ad, contentView) }
+            if (adView != null) {
+                val contentView = view.findViewById<ComposeView>(contentViewId)
+                if (contentView != null) {
+                    adView.setNativeAd(ad)
+                    adView.callToActionView = contentView
+                    contentView.setContent { adContent(ad, contentView) }
+                }
+            }
         }
     )
 }

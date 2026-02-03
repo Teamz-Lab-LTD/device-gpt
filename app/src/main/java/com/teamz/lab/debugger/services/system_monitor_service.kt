@@ -18,6 +18,7 @@ import com.teamz.lab.debugger.utils.PowerAlerts
 import com.teamz.lab.debugger.utils.PowerConsumptionAggregator
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.DeviceSleepTracker
+import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.R
 
 /**
@@ -51,15 +52,31 @@ class SystemMonitorService : Service() {
     private val notificationId = 1001
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val fpsDataFlow = MutableStateFlow("Initializing...")
+    private var fpsCleanup: (() -> Unit)? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-        startForeground(notificationId, buildNotification("Initializing system monitor..."))
-        startMonitoring()
-        setMonitorServiceRunning(true)
+        try {
+            createNotificationChannel()
+            startForeground(notificationId, buildNotification("Initializing system monitor..."))
+            startMonitoring()
+            setMonitorServiceRunning(true)
+        } catch (e: android.app.ForegroundServiceStartNotAllowedException) {
+            // On Android 12+ (API 31+), foreground services can only be started from certain contexts
+            // This happens when the app is in the background or service is started inappropriately
+            // This is an expected system restriction, not an error - don't log to Crashlytics
+            android.util.Log.d("SystemMonitorService", "Cannot start foreground service: ${e.message}. Service will need to be started when app is in foreground.")
+            // Stop the service since we can't run as foreground
+            setMonitorServiceRunning(false)
+            stopSelf()
+        } catch (e: Exception) {
+            // Handle other unexpected errors
+            ErrorHandler.handleError(e, context = "SystemMonitorService.onCreate")
+            setMonitorServiceRunning(false)
+            stopSelf()
+        }
     }
 
 
@@ -82,22 +99,54 @@ class SystemMonitorService : Service() {
                 try {
                     val context = applicationContext
                     
+                    // Check if still active before starting operations
+                    if (!isActive) break
+                    
                     // Update device sleep tracker
                     android.util.Log.d("DeviceGPT_Service", "Updating device sleep tracker")
                     DeviceSleepTracker.updateSleepState(context)
 
+                    // Check if still active after sleep tracker update
+                    if (!isActive) break
+
                     // All these functions use REAL device data (no estimates):
-                    val downloadDeferred = async { getNetworkDownloadSpeed() } // Real HTTP download
-                    val uploadDeferred = async { getNetworkUploadSpeed() } // Real HTTP upload
-                    val ramDeferred = async { getRamUsage(context) } // Real ActivityManager
-                    val cpuInfoDeferred = async { getCompactCpuInfo() } // Real sysfs files
-                    val thermalDeferred = async { getCompactPowerState(context) } // Real PowerManager
-                    val batteryDeferred = async { getCompactBatteryStatus(context) } // Real BatteryManager
-                    val latencyDeferred = async { getCompactLatency() } // Real ping command
-                    val powerConsumptionDeferred = async { PowerConsumptionUtils.getCompactPowerConsumption(context) } // Real BatteryManager
+                    // Use cancellable coroutines to ensure they can be stopped quickly
+                    val downloadDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getNetworkDownloadSpeed() 
+                    } // Real HTTP download
+                    val uploadDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getNetworkUploadSpeed() 
+                    } // Real HTTP upload
+                    val ramDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getRamUsage(context) 
+                    } // Real ActivityManager
+                    val cpuInfoDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getCompactCpuInfo() 
+                    } // Real sysfs files
+                    val thermalDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getCompactPowerState(context) 
+                    } // Real PowerManager
+                    val batteryDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getCompactBatteryStatus(context) 
+                    } // Real BatteryManager
+                    val latencyDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        getCompactLatency() 
+                    } // Real ping command
+                    val powerConsumptionDeferred = async { 
+                        ensureActive() // Check cancellation before starting
+                        PowerConsumptionUtils.getCompactPowerConsumption(context) 
+                    } // Real BatteryManager
                     
                     // Get power data for alerts and trends
                     val powerDataDeferred = async { 
+                        ensureActive() // Check cancellation before starting
                         try {
                             PowerConsumptionUtils.getPowerConsumptionData(context)
                         } catch (e: Exception) {
@@ -110,27 +159,64 @@ class SystemMonitorService : Service() {
                     }
                     val aggregatedStats = PowerConsumptionAggregator.aggregatedStatsFlow.value
 
+                    // Check if still active before FPS monitoring (which can be blocking)
+                    if (!isActive) break
+                    
                     withContext(Dispatchers.Main) {
-                        getCompactFpsAndDropRate { fpsData ->
-                            fpsDataFlow.value = fpsData
+                        if (isActive) {
+                            // Clean up previous FPS callback if exists
+                            fpsCleanup?.invoke()
+                            // Start new FPS monitoring and store cleanup function
+                            fpsCleanup = getCompactFpsAndDropRate { fpsData ->
+                                fpsDataFlow.value = fpsData
+                            }
                         }
                     }
 
-                    val cpuInfo = cpuInfoDeferred.await()
-                    val ramInfo =
+                    // Check if still active before awaiting results
+                    if (!isActive) break
+                    
+                    // Use cancellable await() - these will throw CancellationException if scope is cancelled
+                    val cpuInfo = try {
+                        cpuInfoDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    val ramInfo = try {
                         ramDeferred.await() + if (cpuInfo.isNotBlank()) " • $cpuInfo" else ""
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
                     
                     // Get power alerts and trend
-                    val powerData = powerDataDeferred.await()
+                    val powerData = try {
+                        powerDataDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
                     val powerAlerts = if (powerData != null && aggregatedStats != null) {
                         PowerAlerts.checkAlerts(context, powerData, aggregatedStats)
                     } else {
                         emptyList()
                     }
                     
+                    // Trigger context-aware notifications for critical alerts
+                    if (powerData != null) {
+                        val totalPowerWatts = powerData.totalPower / 1000.0
+                        if (totalPowerWatts > 10.0) {
+                            RetentionNotificationManager.sendBatteryDrainAlert(context, totalPowerWatts)
+                        }
+                    }
+                    
                     // Build power info with alerts and trends
+                    val powerConsumption = try {
+                        powerConsumptionDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    
                     val powerInfo = buildString {
-                        append(powerConsumptionDeferred.await())
+                        append(powerConsumption)
                         aggregatedStats?.let { stats ->
                             when (stats.powerTrend) {
                                 PowerConsumptionAggregator.PowerTrend.INCREASING -> append(" 📈")
@@ -147,47 +233,106 @@ class SystemMonitorService : Service() {
                         }
                     }
 
+                    // Check if still active before awaiting network operations (which can be slow)
+                    if (!isActive) break
+                    
+                    val battery = try {
+                        batteryDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    val download = try {
+                        downloadDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    val upload = try {
+                        uploadDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    val latency = try {
+                        latencyDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    val thermal = try {
+                        thermalDeferred.await()
+                    } catch (e: CancellationException) {
+                        break // Exit loop if cancelled
+                    }
+                    
+                    // Extract temperature and trigger alert if critical
+                    val tempMatch = Regex("(\\d+\\.?\\d*)°C").find(thermal)
+                    val temperature = tempMatch?.groupValues?.get(1)?.toFloatOrNull() ?: 0f
+                    if (temperature > 0f) {
+                        // Save temperature data for history
+                        HealthScoreUtils.saveTemperatureData(context, temperature)
+                    }
+                    if (temperature > 40f) {
+                        RetentionNotificationManager.sendTemperatureAlert(context, temperature)
+                    }
+
                     val compactContent = """
-🔋 ${batteryDeferred.await()}
+🔋 $battery
 🧠 Ram : $ramInfo
-📶 ${downloadDeferred.await()} ↓ • ${uploadDeferred.await()} ↑ • ${latencyDeferred.await()}
+📶 $download ↓ • $upload ↑ • $latency
 🎮 ${fpsDataFlow.value}
-🌡️ ${thermalDeferred.await()}
+🌡️ $thermal
 $powerInfo
 """.trimIndent()
 
+                    // Check if still active before storing data
+                    if (!isActive) break
+                    
                     // Store data for DeviceGPT widget
                     android.util.Log.d("DeviceGPT_Service", "Collecting data for widget update")
                     storeDataForWidget(
                         context,
-                        batteryDeferred.await(),
+                        battery,
                         ramInfo,
                         cpuInfo,
-                        downloadDeferred.await(),
-                        uploadDeferred.await(),
-                        latencyDeferred.await(),
+                        download,
+                        upload,
+                        latency,
                         powerInfo,
-                        thermalDeferred.await()
+                        thermal
                     )
 
-                    // 🔄 Update Notification on MAIN thread
+                    // Check if still active before updating notification
+                    if (!isActive) break
 
+                    // 🔄 Update Notification on MAIN thread
                     withContext(Dispatchers.Main) {
-                        val manager =
-                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                        manager.notify(notificationId, buildNotification(compactContent))
-                        android.util.Log.d("DeviceGPT_Service", "Notification updated")
-                        
-                        // Update DeviceGPT widget (home screen / lock screen if supported)
-                        android.util.Log.d("DeviceGPT_Service", "Triggering widget update")
-                        com.teamz.lab.debugger.widgets.LockScreenMonitorWidget.updateWidget(context)
+                        if (isActive) {
+                            val manager =
+                                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                            manager.notify(notificationId, buildNotification(compactContent))
+                            android.util.Log.d("DeviceGPT_Service", "Notification updated")
+                            
+                            // Update DeviceGPT widget (home screen / lock screen if supported)
+                            android.util.Log.d("DeviceGPT_Service", "Triggering widget update")
+                            com.teamz.lab.debugger.widgets.LockScreenMonitorWidget.updateWidget(context)
+                        }
                     }
 
+                } catch (e: CancellationException) {
+                    // Service is being stopped, exit gracefully
+                    android.util.Log.d("SystemMonitorService", "Monitoring cancelled, stopping service")
+                    break
                 } catch (e: Exception) {
                     handleError(e)
                 }
 
-                delay(30000) // ⏳ wait 30s
+                // Check if still active before delay
+                if (!isActive) break
+                
+                // Use cancellable delay
+                try {
+                    delay(30000) // ⏳ wait 30s
+                } catch (e: CancellationException) {
+                    break // Exit loop if cancelled during delay
+                }
             }
         }
     }
@@ -228,7 +373,7 @@ $powerInfo
     /**
      * Store monitoring data in SharedPreferences for DeviceGPT widget to read
      */
-    private fun storeDataForWidget(
+    private suspend fun storeDataForWidget(
         context: Context,
         battery: String,
         ram: String,
@@ -242,7 +387,10 @@ $powerInfo
         android.util.Log.d("DeviceGPT_Service", "Storing widget data: battery=$battery, power=$power, ram=$ram")
         try {
             // Get health score and streak before storing
-            val healthScore = HealthScoreUtils.calculateDailyHealthScore(context)
+            // calculateDailyHealthScore is a suspend function, so we can call it directly from this suspend function
+            val healthScore = withContext(Dispatchers.IO) {
+                HealthScoreUtils.calculateDailyHealthScore(context)
+            }
             val streak = HealthScoreUtils.getDailyStreak(context)
             
             val prefs = context.getSharedPreferences("lock_screen_widget_data", Context.MODE_PRIVATE)
@@ -267,8 +415,39 @@ $powerInfo
     }
 
     override fun onDestroy() {
-        setMonitorServiceRunning(false)
+        // Stop foreground immediately to meet Android's timeout requirement
+        // Foreground services must stop within a timeout, so we must remove foreground status first
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(Service.STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
+        } catch (e: Exception) {
+            // If stopForeground fails, continue with cleanup
+            android.util.Log.w("SystemMonitorService", "Error stopping foreground: ${e.message}", e)
+        }
+        
+        // Clean up FPS callback to prevent LeftCompositionCancellationException
+        fpsCleanup?.invoke()
+        fpsCleanup = null
+        
+        // Cancel coroutine scope immediately (non-blocking)
         scope.cancel()
+        
+        // Update service state asynchronously to avoid blocking
+        // Use commit() instead of apply() for immediate write, but don't wait for it
+        try {
+            getSharedPreferences("monitor_service", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("running", false)
+                .commit() // Use commit() for synchronous write, but it's fast
+        } catch (e: Exception) {
+            // If SharedPreferences write fails, continue with cleanup
+            android.util.Log.w("SystemMonitorService", "Error updating service state: ${e.message}", e)
+        }
+        
         super.onDestroy()
     }
 }
@@ -276,12 +455,23 @@ $powerInfo
 
 fun Context.startSystemMonitorService() {
     val intent = Intent(this, SystemMonitorService::class.java)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        ContextCompat.startForegroundService(
-            this, intent
-        )
-    } else {
-        this.startService(intent)
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(
+                this, intent
+            )
+        } else {
+            this.startService(intent)
+        }
+    } catch (e: android.app.ForegroundServiceStartNotAllowedException) {
+        // On Android 12+ (API 31+), foreground services can only be started from certain contexts
+        // This happens when the app is in the background or service is started inappropriately
+        // This is an expected system restriction, not an error - don't log to Crashlytics
+        android.util.Log.d("SystemMonitorService", "Cannot start foreground service from background: ${e.message}. Service will need to be started when app is in foreground.")
+    } catch (e: IllegalStateException) {
+        // Handle other service start errors
+        android.util.Log.w("SystemMonitorService", "Cannot start service: ${e.message}")
+        ErrorHandler.handleError(e, context = "SystemMonitorService.startSystemMonitorService")
     }
 }
 

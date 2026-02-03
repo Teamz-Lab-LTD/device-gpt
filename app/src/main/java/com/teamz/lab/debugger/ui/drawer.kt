@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,17 +59,22 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -112,6 +118,13 @@ import com.teamz.lab.debugger.utils.PermissionManager
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.string
+import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
+import com.revenuecat.purchases.ui.revenuecatui.PaywallDialog
+import com.revenuecat.purchases.ui.revenuecatui.PaywallDialogOptions
+import com.revenuecat.purchases.ui.revenuecatui.PaywallListener
+import com.revenuecat.purchases.ui.revenuecatui.Paywall
+import com.revenuecat.purchases.ui.revenuecatui.PaywallOptions
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -301,139 +314,206 @@ fun DrawerContent(
             .verticalScroll(rememberScrollState())
             .padding(top = 8.dp, bottom = 80.dp) // Extra bottom padding for system nav
     ) {
-        // Premium / Remove Ads - Prominent placement at top with attractive design
+        // Premium / Remove Ads - Compact, organized design
         val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
         val isPremium = RevenueCatManager.isPremium()
+        var productPrice by remember { mutableStateOf<String?>(null) }
+        
+        // Fetch price dynamically from RevenueCat
+        LaunchedEffect(Unit) {
+            if (!isPremium) {
+                RevenueCatManager.getLifetimeProductPrice(
+                    onSuccess = { price ->
+                        productPrice = price
+                    },
+                    onError = { error ->
+                        // Fallback to default if price fetch fails
+                        productPrice = "$2.99"
+                        android.util.Log.w("Drawer", "Failed to fetch price: $error, using fallback")
+                    }
+                )
+            }
+        }
         
         if (!isPremium) {
-            // Attractive gradient card with prominent pricing
+            // Enhanced animated premium card with multiple effects
+            val infiniteTransition = rememberInfiniteTransition(label = "premium_widget_animation")
+            
+            // Enhanced glow animation - more pronounced
+            val glowAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.5f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1500, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "widget_glow"
+            )
+            
+            // Enhanced scale pulse animation - more noticeable
+            val pulseScale by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 1.04f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1200, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "widget_pulse"
+            )
+            
+            // Star icon rotation - continuous with pause
+            val starRotation by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = keyframes {
+                        durationMillis = 3000
+                        0f at 0
+                        360f at 1500 // Rotate in 1.5 seconds
+                        360f at 3000 // Stay at 360 for 1.5 seconds (pause)
+                    },
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "star_rotation"
+            )
+            
+            // Additional shimmer/glow effect for the entire card
+            val shimmerAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 0.7f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "shimmer_alpha"
+            )
+            
+            // Enhanced animated card with multiple effects
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .scale(pulseScale) // Apply scale animation
+                    .clickable {
+                        // Show RevenueCat paywall designed in console
+                        AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads_widget"))
+                        AnalyticsUtils.logEvent(AnalyticsEvent.LifetimeSubscriptionClicked, mapOf(
+                            "source" to "drawer_remove_ads_widget",
+                            "price" to (productPrice ?: "2.99"),
+                            "type" to "lifetime"
+                        ))
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
+                        // Show RevenueCat paywall - will be handled by PaywallDialog in drawer
+                        showPremiumDialog = true
+                    },
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                border = BorderStroke(
+                    width = (2.dp * glowAlpha).coerceAtLeast(1.dp),
+                    color = DesignSystemColors.NeonGreen.copy(alpha = glowAlpha)
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = (6.dp * glowAlpha).coerceAtLeast(2.dp)
+                )
             ) {
-                Box(
+                // Main content with enhanced animations
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                                )
-                            )
-                        )
-                        .padding(20.dp)
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
+                    // Header row: Icon + Title + Price
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Star icon with animation hint
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        
-                        // Title
-                        Text(
-                            text = "Remove Ads Forever",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        
-                        // Price badge
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                text = "$2.99 Lifetime",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = DesignSystemColors.NeonGreen.copy(alpha = glowAlpha),
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .rotate(starRotation) // Rotate star with pause
+                                    .scale(1f + (glowAlpha - 0.5f) * 0.2f) // Subtle scale with glow
                             )
-                        }
-                        
-                        // Benefits list
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                "✅ No ads - ever",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                "✅ Faster app experience",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                "✅ Support development",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                "✅ One-time payment",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        // CTA Button
-                        Button(
-                            onClick = {
-                                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads_widget"))
-                                coroutineScope.launch {
-                                    drawerState.close()
-                                }
-                                // Directly show RevenueCat paywall - no intermediate dialog
-                                RevenueCatManager.showPaywall(
-                                    activity = activity,
-                                    onSuccess = {
-                                        Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                                    },
-                                    onError = { error ->
-                                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                                    },
-                                    onDismiss = {
-                                        // User cancelled - no action needed
-                                    }
+                            Column {
+                                Text(
+                                    text = "DeviceGPT Premium",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 14.sp
                                 )
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                "Remove Ads Now",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                                Text(
+                                    text = if (productPrice != null) {
+                                        "$productPrice • Lifetime Access"
+                                    } else {
+                                        "Lifetime Access"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
+                    }
+                    
+                    // Benefits row - DeviceGPT focused
+                    Text(
+                        text = "✓ No ads • Faster DeviceGPT • Support development",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                        fontSize = 10.sp,
+                        lineHeight = 14.sp
+                    )
+                    
+                    // CTA Button - Full width, compact with animation
+                    Button(
+                        onClick = {
+                            // Paywall is already triggered by card click, but keep for button click too
+                            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "remove_ads_widget_button"))
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                            RevenueCatManager.showPaywall(
+                                activity = activity,
+                                onSuccess = {
+                                    Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                },
+                                onDismiss = {}
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onPrimary,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            "Get DeviceGPT Premium",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
                     }
                 }
             }
@@ -442,7 +522,7 @@ fun DrawerContent(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
@@ -460,14 +540,15 @@ fun DrawerContent(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Premium Active - No Ads",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -676,77 +757,7 @@ fun DrawerContent(
         )
         */
 
-        // Premium Section - Dedicated section for subscription management
-        if (!isPremium) {
-            Column(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = "Premium",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
-                )
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Remove Ads",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Text(
-                            text = "• No ads - ever\n• Faster app experience\n• Support development\n• Cancel anytime",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Button(
-                            onClick = {
-                                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerItemClicked, mapOf("item" to "premium_section"))
-                                coroutineScope.launch {
-                                    drawerState.close()
-                                }
-                                showPremiumDialog = true
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            Text("Upgrade to Premium")
-                        }
-                    }
-                }
-            }
-            
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 6.dp),
-                color = MaterialTheme.colorScheme.outline
-            )
-        }
+        // Premium section removed - consolidated into top widget for better UX
         
         // Leaderboard Account Status - Better organized
         Column(
@@ -866,8 +877,81 @@ fun DrawerContent(
         }
     }
 
-    // Premium Purchase Dialog - Removed, using direct RevenueCat paywall instead
-    // showPremiumDialog is kept for backward compatibility but not used
+    // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
+    // Full screen composable approach (not dialog)
+    // RevenueCat handles all UI, loading, and error states automatically
+    // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls#android
+    val isPremiumForPaywall = RevenueCatManager.isPremium()
+    
+    // Fetch the specific offering to show the custom "device-gpt" paywall
+    var offering by remember { mutableStateOf<com.revenuecat.purchases.Offering?>(null) }
+    
+    LaunchedEffect(showPremiumDialog) {
+        if (showPremiumDialog && !isPremiumForPaywall && offering == null) {
+            com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
+                object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
+                    override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
+                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
+                        if (targetOffering != null) {
+                            offering = targetOffering
+                        } else {
+                            android.util.Log.e("RevenueCatPaywall", "Offering '${RevenueCatManager.OFFERING_ID}' not found. Available: ${offerings.all.keys}")
+                        }
+                    }
+                    
+                    override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
+                        android.util.Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
+                    }
+                }
+            )
+        }
+    }
+    
+    // Reset offering when dialog is dismissed
+    LaunchedEffect(showPremiumDialog) {
+        if (!showPremiumDialog) {
+            offering = null
+        }
+    }
+    
+    // Show Paywall as full screen composable with the specific offering
+    if (showPremiumDialog && !isPremiumForPaywall && offering != null) {
+        Paywall(
+            options = PaywallOptions.Builder(
+                dismissRequest = { showPremiumDialog = false }
+            )
+                .setOffering(offering!!) // Use the fetched "device-gpt-offering"
+                .setListener(
+                    object : PaywallListener {
+                        override fun onPurchaseCompleted(
+                            customerInfo: com.revenuecat.purchases.CustomerInfo,
+                            storeTransaction: com.revenuecat.purchases.models.StoreTransaction
+                        ) {
+                            RevenueCatManager.updatePremiumStatus(customerInfo)
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "purchase_success", "source" to "revenuecat_paywall_drawer")
+                            )
+                            showPremiumDialog = false
+                            Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                        }
+                        
+                        override fun onRestoreCompleted(customerInfo: com.revenuecat.purchases.CustomerInfo) {
+                            RevenueCatManager.updatePremiumStatus(customerInfo)
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "restore_purchases_success", "source" to "revenuecat_paywall_drawer")
+                            )
+                            if (RevenueCatManager.isPremium()) {
+                                showPremiumDialog = false
+                                Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                )
+                .build()
+        )
+    }
     
     NotificationPermissionDialog(
         showDialog = showNotificationDialog && !context.isDoNotAskMeAgain(),
@@ -1919,4 +2003,5 @@ private fun linkGmailAccountFromDrawer(
         ).show()
     }
 }
+
 

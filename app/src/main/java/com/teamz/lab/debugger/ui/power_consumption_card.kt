@@ -23,6 +23,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.DisposableEffect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.collect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -120,11 +124,16 @@ fun PowerConsumptionCard(
         }
     }
     
-    // Save scroll position to ViewModel when it changes
-    LaunchedEffect(mainScrollState.value) {
-        if (mainScrollState.value > 0) {
-            viewModel.saveMainScrollPosition(mainScrollState.value)
-        }
+    // Save scroll position to ViewModel when it changes (throttled to prevent ANR)
+    // Use snapshotFlow with debounce to prevent LaunchedEffect from restarting on every scroll event
+    LaunchedEffect(mainScrollState) {
+        snapshotFlow { mainScrollState.value }
+            .debounce(500) // Only process scroll changes every 500ms
+            .collect { scrollValue ->
+                if (scrollValue > 0) {
+                    viewModel.saveMainScrollPosition(scrollValue)
+                }
+            }
     }
     
     // Ad management
@@ -1914,15 +1923,18 @@ private fun CameraPowerTestSection(
         }
     }
     
-    // Save scroll position to ViewModel when it changes
-    LaunchedEffect(testResultsListState.firstVisibleItemIndex,
-        remember { derivedStateOf { testResultsListState.firstVisibleItemScrollOffset } }) {
-        if (testResultsListState.firstVisibleItemIndex > 0 || testResultsListState.firstVisibleItemScrollOffset > 0) {
-            viewModel.saveLazyListScrollPosition(
-                testResultsListState.firstVisibleItemIndex,
-                testResultsListState.firstVisibleItemScrollOffset
-            )
+    // Save scroll position to ViewModel when it changes (throttled to prevent ANR)
+    // Use snapshotFlow with debounce to prevent LaunchedEffect from restarting on every scroll event
+    LaunchedEffect(testResultsListState) {
+        snapshotFlow { 
+            testResultsListState.firstVisibleItemIndex to testResultsListState.firstVisibleItemScrollOffset 
         }
+            .debounce(500) // Only process scroll changes every 500ms
+            .collect { (index, offset) ->
+                if (index > 0 || offset > 0) {
+                    viewModel.saveLazyListScrollPosition(index, offset)
+                }
+            }
     }
     
     // Camera permission launcher
@@ -2046,9 +2058,41 @@ Total Tests: ${allResults.size}
                         DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
                     )
                 ) {
+                    var textureView by remember { mutableStateOf<TextureView?>(null) }
+                    
+                    // Properly clean up TextureView and Surface to prevent ANR
+                    DisposableEffect(Unit) {
+                        onDispose {
+                            // Clean up Surface asynchronously to prevent blocking hardware renderer destruction
+                            val surfaceToRelease = previewSurface
+                            previewSurface = null
+                            
+                            // Release Surface on background thread to prevent ANR
+                            coroutineScope.launch(Dispatchers.IO) {
+                                try {
+                                    surfaceToRelease?.release()
+                                } catch (e: Exception) {
+                                    // Surface may already be released, ignore
+                                }
+                            }
+                            
+                            // Clean up TextureView asynchronously
+                            textureView?.let { view ->
+                                coroutineScope.launch(Dispatchers.Main) {
+                                    try {
+                                        view.surfaceTextureListener = null
+                                    } catch (e: Exception) {
+                                        // Ignore cleanup errors
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     AndroidView(
                         factory = { ctx ->
                             TextureView(ctx).apply {
+                                textureView = this
                                 surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                                     override fun onSurfaceTextureAvailable(
                                         surface: SurfaceTexture,
@@ -2067,8 +2111,22 @@ Total Tests: ${allResults.size}
                                     }
 
                                     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+                                        // Return false to handle cleanup ourselves asynchronously
+                                        // This prevents blocking the hardware renderer destruction
+                                        val surfaceToRelease = previewSurface
                                         previewSurface = null
-                                        return true
+                                        
+                                        // Release Surface asynchronously to prevent ANR
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            try {
+                                                surfaceToRelease?.release()
+                                            } catch (e: Exception) {
+                                                // Surface may already be released, ignore
+                                            }
+                                        }
+                                        
+                                        // Return false so we handle cleanup ourselves
+                                        return false
                                     }
 
                                     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
@@ -2778,11 +2836,16 @@ fun PowerConsumptionSection(
         }
     }
     
-    // Save scroll position to ViewModel when it changes
-    LaunchedEffect(sectionScrollState.value) {
-        if (sectionScrollState.value > 0) {
-            viewModel.saveSectionScrollPosition(sectionScrollState.value)
-        }
+    // Save scroll position to ViewModel when it changes (throttled to prevent ANR)
+    // Use snapshotFlow with debounce to prevent LaunchedEffect from restarting on every scroll event
+    LaunchedEffect(sectionScrollState) {
+        snapshotFlow { sectionScrollState.value }
+            .debounce(500) // Only process scroll changes every 500ms
+            .collect { scrollValue ->
+                if (scrollValue > 0) {
+                    viewModel.saveSectionScrollPosition(scrollValue)
+                }
+            }
     }
     
     // Collect power data for sharing

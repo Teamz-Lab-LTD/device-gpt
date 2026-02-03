@@ -68,7 +68,21 @@ object ImprovedAdManager {
                     
                     override fun onAdFailedToLoad(error: LoadAdError) {
                         val errorCode = error.code
-                        val errorMessage = error.message
+                        val errorMessage = error.message ?: ""
+                        
+                        // Check for "Unable to obtain a JavascriptEngine" error first
+                        // This is a known issue when WebView is not available on the device
+                        val errorMessageLower = errorMessage.lowercase()
+                        val isJavascriptEngineError = errorMessageLower.contains("javascriptengine") || 
+                                                      errorMessageLower.contains("javascript engine") ||
+                                                      errorMessageLower.contains("unable to obtain")
+                        
+                        if (isJavascriptEngineError) {
+                            Log.w("ImprovedAdManager", "⚠️ WebView/JavascriptEngine not available (code: $errorCode) - this is expected on some devices. Skipping retry and analytics.")
+                            // Don't log analytics or retry for this known non-fatal issue
+                            onFailure(error)
+                            return
+                        }
                         
                         Log.w("ImprovedAdManager", "❌ Ad failed to load (attempt ${retryCount + 1}/$MAX_RETRIES): $errorMessage (code: $errorCode)")
                         
@@ -77,7 +91,7 @@ object ImprovedAdManager {
                             AnalyticsEvent.AdFailed,
                             mapOf(
                                 "error_code" to errorCode,
-                                "error_message" to (errorMessage ?: "unknown"),
+                                "error_message" to errorMessage,
                                 "retry_count" to retryCount,
                                 "ad_type" to "app_open"
                             )
@@ -153,15 +167,29 @@ object ImprovedAdManager {
                     
                     override fun onAdFailedToLoad(error: LoadAdError) {
                         val errorCode = error.code
-                        val errorMessage = error.message
+                        val errorMessage = error.message ?: ""
                         
-                        Log.w("ImprovedAdManager", "Interstitial ad failed (attempt ${retryCount + 1}/$MAX_RETRIES): $errorMessage")
+                        // Check for "Unable to obtain a JavascriptEngine" error first
+                        // This is a known issue when WebView is not available on the device
+                        val errorMessageLower = errorMessage.lowercase()
+                        val isJavascriptEngineError = errorMessageLower.contains("javascriptengine") || 
+                                                      errorMessageLower.contains("javascript engine") ||
+                                                      errorMessageLower.contains("unable to obtain")
+                        
+                        if (isJavascriptEngineError) {
+                            Log.w("ImprovedAdManager", "⚠️ WebView/JavascriptEngine not available (code: $errorCode) - this is expected on some devices. Skipping retry and analytics.")
+                            // Don't log analytics or retry for this known non-fatal issue
+                            onFailure(error)
+                            return
+                        }
+                        
+                        Log.w("ImprovedAdManager", "Interstitial ad failed (attempt ${retryCount + 1}/$MAX_RETRIES): $errorMessage (code: $errorCode)")
                         
                         AnalyticsUtils.logEvent(
                             AnalyticsEvent.AdFailed,
                             mapOf(
                                 "error_code" to errorCode,
-                                "error_message" to (errorMessage ?: "unknown"),
+                                "error_message" to errorMessage,
                                 "retry_count" to retryCount,
                                 "ad_type" to "interstitial"
                             )

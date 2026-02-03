@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +47,11 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
@@ -89,7 +94,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import com.teamz.lab.debugger.ui.AIAssistantDialog
 import com.teamz.lab.debugger.ui.ViralShareDialog
 import com.teamz.lab.debugger.utils.InterstitialAdManager
@@ -107,6 +115,12 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
+import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
+import com.revenuecat.purchases.ui.revenuecatui.Paywall
+import com.revenuecat.purchases.ui.revenuecatui.PaywallOptions
+import com.revenuecat.purchases.ui.revenuecatui.PaywallListener
+import androidx.compose.ui.window.DialogProperties
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
     
@@ -129,28 +143,28 @@ class MainActivity : ComponentActivity() {
             
             // Enable edge-to-edge display (modern API)
             // This must be called before setContent() for proper window insets handling
+            // Wrap in try-catch to prevent ANR if window operations block
+            try {
             WindowCompat.setDecorFitsSystemWindows(window, false)
             enableEdgeToEdge()
-            
-            // Analytics initialization - critical for business decisions
-            try {
-                AnalyticsUtils.init(this)
             } catch (e: Exception) {
-                // Analytics failure is not fatal - app can continue
-                ErrorHandler.handleError(e, context = "MainActivity.onCreate-Analytics")
+                // Window operation failure is not fatal - app can continue
+                // Log but don't crash - window will use default configuration
+                android.util.Log.w("MainActivity", "Window operation failed (non-fatal): ${e.message}", e)
             }
             
-            // Check for referral deep links
-            ReferralManager.checkReferral(this, intent)
+            // Prevent automatic Input Method Manager initialization to avoid ANR
+            // The Input Method Manager can block on Binder calls when window gains focus
+            // By setting soft input mode to hidden, we prevent automatic initialization
+            // Keyboard will still work when users tap text fields
+            try {
+                window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+            } catch (e: Exception) {
+                // Soft input mode setting failure is not fatal - app can continue
+                android.util.Log.w("MainActivity", "Failed to set soft input mode (non-fatal): ${e.message}", e)
+            }
             
-            // Initialize device sleep tracker state (in case app was closed)
-            // SystemMonitorService handles periodic tracking when app is running
-            // This catches missed events when app opens after being closed
-            DeviceSleepTracker.initializeState(this)
-            
-            checkForAppUpdate(this)
-            
-            // Initialize theme manager before setContent
+            // Initialize theme manager before setContent (required for proper display)
             try {
                 ThemeManager.initialize(this)
             } catch (e: Exception) {
@@ -161,6 +175,8 @@ class MainActivity : ComponentActivity() {
                 )
             }
             
+            // setContent must be called immediately for activity to display
+            // However, we ensure initial composition is lightweight to prevent triggering additional relayouts
             setContent {
                 // Provide theme manager to the composition
                 CompositionLocalProvider(LocalThemeManager provides ThemeManager) {
@@ -168,6 +184,28 @@ class MainActivity : ComponentActivity() {
                         DebuggerApp(this@MainActivity)
                     }
                 }
+            }
+            
+            // Defer non-critical initializations to prevent blocking during window relayout
+            // These operations don't need to happen before setContent()
+            window.decorView.post {
+                // Analytics initialization - critical for business decisions
+                try {
+                    AnalyticsUtils.init(this@MainActivity)
+                } catch (e: Exception) {
+                    // Analytics failure is not fatal - app can continue
+                    ErrorHandler.handleError(e, context = "MainActivity.onCreate-Analytics")
+                }
+                
+                // Check for referral deep links
+                ReferralManager.checkReferral(this@MainActivity, intent)
+                
+                // Initialize device sleep tracker state (in case app was closed)
+                // SystemMonitorService handles periodic tracking when app is running
+                // This catches missed events when app opens after being closed
+                DeviceSleepTracker.initializeState(this@MainActivity)
+                
+                checkForAppUpdate(this@MainActivity)
             }
         } catch (e: Exception) {
             // Critical activity initialization failure
@@ -187,6 +225,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        
+        // Clear focus before window gains focus to prevent Input Method Manager ANR
+        // The Input Method Manager can block on Binder calls when window gains focus
+        // By clearing focus early, we prevent automatic input method initialization
+        try {
+            val currentFocus = currentFocus
+            if (currentFocus != null) {
+                // Clear focus to prevent automatic input method initialization on window focus
+                // User can still tap text fields to show keyboard when needed
+                currentFocus.clearFocus()
+            }
+        } catch (e: Exception) {
+            // Focus clearing failure is not fatal - app can continue
+            android.util.Log.w("MainActivity", "Failed to clear focus in onResume (non-fatal): ${e.message}", e)
+        }
+        
         val appUpdateManager = AppUpdateManagerFactory.create(this)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
             if (info.installStatus() == InstallStatus.DOWNLOADED) {
@@ -227,6 +281,30 @@ class MainActivity : ComponentActivity() {
         val wasColdStart = isFirstLaunch
         isFirstLaunch = false // Reset after first check
         ReviewPromptManager.trackAppOpenAndMaybeShowReview(this, isColdStart = wasColdStart)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        // Prevent automatic input method initialization on window focus to avoid ANR
+        // The Input Method Manager can block on Binder calls when window gains focus
+        // By clearing focus before calling super, we prevent the system from automatically
+        // calling startInputOrWindowGainedFocus, which can block if Input Method Service is slow
+        if (hasFocus) {
+            try {
+                // Clear any focused views before window focus change completes
+                // This prevents Input Method Manager from being called automatically
+                val currentFocus = currentFocus
+                if (currentFocus != null) {
+                    // Clear focus to prevent automatic input method initialization
+                    // User can still tap text fields to show keyboard when needed
+                    currentFocus.clearFocus()
+                }
+            } catch (e: Exception) {
+                // Focus clearing failure is not fatal - app can continue
+                android.util.Log.w("MainActivity", "Failed to clear focus (non-fatal): ${e.message}", e)
+            }
+        }
+        
+        super.onWindowFocusChanged(hasFocus)
     }
 
     override fun onPause() {
@@ -290,6 +368,7 @@ fun DebuggerApp(activity: ComponentActivity) {
     var showViralShareDialog by remember { mutableStateOf(false) }
     var selectedItemForAI by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showItemAIDialog by remember { mutableStateOf(false) }
+    var showRevenueCatPaywall by remember { mutableStateOf(false) }
 
 
     // Simple state management without any derivedStateOf
@@ -432,95 +511,151 @@ fun DebuggerApp(activity: ComponentActivity) {
                 val premiumTooltipState = rememberTooltipState()
                 
                 // Check premium status
-                val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
                 val isPremium = RevenueCatManager.isPremium()
+                var productPrice by remember { mutableStateOf<String?>(null) }
                 
-                // Premium FAB animation - pulse effect for first 10 seconds
-                var showAnimation by remember { mutableStateOf(true) }
+                // Fetch price dynamically from RevenueCat
                 LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(10000) // Stop animation after 10 seconds
-                    showAnimation = false
+                    if (!isPremium) {
+                        RevenueCatManager.getLifetimeProductPrice(
+                            onSuccess = { price ->
+                                productPrice = price
+                            },
+                            onError = { error ->
+                                // Fallback to default if price fetch fails
+                                productPrice = "$2.99"
+                                android.util.Log.w("MainActivity", "Failed to fetch price: $error, using fallback")
+                            }
+                        )
+                    }
                 }
                 
+                // Premium FAB - More noticeable animation for better focus
+                // Create infinite transition with more pronounced pulse
                 val infiniteTransition = rememberInfiniteTransition(label = "premium_fab_animation")
                 val pulseScale by infiniteTransition.animateFloat(
                     initialValue = 1f,
-                    targetValue = if (showAnimation) 1.15f else 1f,
-                    animationSpec = if (showAnimation) {
-                        infiniteRepeatable(
-                            animation = tween(1000, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        )
-                    } else {
-                        tween(0)
-                    },
+                    targetValue = 1.12f, // More noticeable scale for better focus
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = FastOutSlowInEasing), // Faster, more noticeable
+                        repeatMode = RepeatMode.Reverse
+                    ),
                     label = "pulse_scale"
                 )
-                val pulseAlpha by infiniteTransition.animateFloat(
-                    initialValue = 1f,
-                    targetValue = if (showAnimation) 0.8f else 1f,
-                    animationSpec = if (showAnimation) {
-                        infiniteRepeatable(
-                            animation = tween(1000, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        )
-                    } else {
-                        tween(0)
-                    },
-                    label = "pulse_alpha"
+                val glowAlpha by infiniteTransition.animateFloat(
+                    initialValue = 0.85f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1200, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "glow_alpha"
                 )
                 
-                Row(modifier = Modifier.padding(16.dp)) {
+                // Star rotation animation - rotate, pause, then repeat
+                // Starts after 3 seconds delay, then rotates with pauses
+                var startRotation by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(3000) // Start rotation after 3 seconds
+                    startRotation = true
+                }
+                
+                // Separate infinite transition for star rotation with pause
+                val starRotationTransition = rememberInfiniteTransition(
+                    label = "star_rotation_transition"
+                )
+                val starRotation by starRotationTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = keyframes {
+                            durationMillis = 5500 // Total: 1.5s rotation + 4s pause
+                            0f at 0
+                            360f at 1500 // Rotate in 1.5 seconds
+                            360f at 5500 // Stay at 360 for 4 seconds (pause)
+                        },
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "star_rotation"
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                 // Premium FAB - Only show if user is not premium
                 if (!isPremium) {
                     TooltipBox(
                         state = premiumTooltipState,
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Remove Ads Forever - $2.99 Lifetime") } }
+                        tooltip = { 
+                            PlainTooltip { 
+                                Text(
+                                    if (productPrice != null) {
+                                        "⭐ Remove Ads - $productPrice Lifetime"
+                                    } else {
+                                        "⭐ Remove Ads - Lifetime"
+                                    }
+                                ) 
+                            } 
+                        }
                     ) {
+                        // Main FAB matching other FABs style with continuous subtle animation
                         FloatingActionButton(
                             onClick = {
                                 AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf("source" to "premium_fab"))
-                                // Directly show RevenueCat paywall
-                                RevenueCatManager.showPaywall(
-                                    activity = activity,
-                                    onSuccess = {
-                                        Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
-                                    },
-                                    onError = { error ->
-                                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                                    },
-                                    onDismiss = {
-                                        // User cancelled - no action needed
-                                    }
-                                )
+                                AnalyticsUtils.logEvent(AnalyticsEvent.LifetimeSubscriptionClicked, mapOf(
+                                    "source" to "premium_fab",
+                                    "price" to (productPrice ?: "2.99"),
+                                    "type" to "lifetime"
+                                ))
+                                // Show RevenueCat paywall designed in console
+                                showRevenueCatPaywall = true
                             },
                             modifier = Modifier
-                                .padding(end = 12.dp)
-                                .then(
-                                    if (showAnimation) {
-                                        Modifier
-                                            .scale(pulseScale)
-                                            .alpha(pulseAlpha)
+                                .padding(horizontal = 6.dp)
+                                .scale(pulseScale) // Continuous subtle pulse
+                                .semantics {
+                                    // Make it properly focusable and accessible
+                                    contentDescription = if (productPrice != null) {
+                                        "Remove Ads - Premium $productPrice Lifetime"
                                     } else {
-                                        Modifier
+                                        "Remove Ads - Premium Lifetime"
                                     }
-                                ),
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                    role = Role.Button
+                                },
+                            containerColor = DesignSystemColors.NeonGreen, // Match other FABs
+                            contentColor = DesignSystemColors.Dark, // Dark text on neon green
+                            elevation = FloatingActionButtonDefaults.elevation(
+                                defaultElevation = 8.dp, // Slightly higher for premium emphasis
+                                pressedElevation = 12.dp,
+                                hoveredElevation = 10.dp,
+                                focusedElevation = 10.dp
+                            )
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            // Premium icon with price - matching other FABs style
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Star,
-                                    contentDescription = "Remove Ads",
-                                    tint = MaterialTheme.colorScheme.onPrimary
+                                    contentDescription = null,
+                                    tint = DesignSystemColors.Dark.copy(alpha = glowAlpha), // Subtle glow effect
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .rotate(if (startRotation) starRotation else 0f) // Rotate star after delay with pause
                                 )
                                 Text(
-                                    text = "⭐",
+                                    text = productPrice ?: "$2.99",
                                     style = MaterialTheme.typography.labelSmall,
-                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 2.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    fontSize = 10.sp,
+                                    color = DesignSystemColors.Dark
                                 )
                             }
                         }
@@ -539,7 +674,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showPriceInputDialog = true
                             }
                         },
-                        modifier = Modifier.padding(end = 12.dp),
+                        modifier = Modifier.padding(horizontal = 6.dp),
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -582,7 +717,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showAIDialog = true
                             }
                         },
-                        modifier = Modifier.padding(end = 12.dp),
+                        modifier = Modifier.padding(horizontal = 6.dp),
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -611,6 +746,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                 }
                 // Share FAB (existing)
                 FloatingActionButton(
+                    modifier = Modifier.padding(horizontal = 6.dp),
                     onClick = {
                         if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) {
                             AnalyticsUtils.logEvent(AnalyticsEvent.FabShareClicked, mapOf(
@@ -1237,7 +1373,84 @@ https://play.google.com/store/apps/details?id=${context.packageName}
         )
     }
     
+    // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
+    // Full screen composable approach (not dialog)
+    // RevenueCat handles all UI, loading, and error states automatically
+    // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls#android
+    val isPremiumForPaywall = RevenueCatManager.isPremium()
+    
+    // Fetch the specific offering to show the custom "device-gpt" paywall
+    var offering by remember { mutableStateOf<com.revenuecat.purchases.Offering?>(null) }
+    
+    LaunchedEffect(showRevenueCatPaywall) {
+        if (showRevenueCatPaywall && !isPremiumForPaywall && offering == null) {
+            com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
+                object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
+                    override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
+                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
+                        if (targetOffering != null) {
+                            offering = targetOffering
+                        } else {
+                            Log.e("RevenueCatPaywall", "Offering '${RevenueCatManager.OFFERING_ID}' not found. Available: ${offerings.all.keys}")
+                        }
+                    }
+                    
+                    override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
+                        Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
+                    }
+                }
+            )
+        }
+    }
+    
+    // Reset offering when dialog is dismissed
+    LaunchedEffect(showRevenueCatPaywall) {
+        if (!showRevenueCatPaywall) {
+            offering = null
+        }
+    }
+    
+    // Show Paywall as full screen composable with the specific offering
+    if (showRevenueCatPaywall && !isPremiumForPaywall && offering != null) {
+        Paywall(
+            options = PaywallOptions.Builder(
+                dismissRequest = { showRevenueCatPaywall = false }
+            )
+                .setOffering(offering!!) // Use the fetched "device-gpt-offering"
+                .setListener(
+                    object : PaywallListener {
+                        override fun onPurchaseCompleted(
+                            customerInfo: com.revenuecat.purchases.CustomerInfo,
+                            storeTransaction: com.revenuecat.purchases.models.StoreTransaction
+                        ) {
+                            RevenueCatManager.updatePremiumStatus(customerInfo)
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "purchase_success", "source" to "revenuecat_paywall")
+                            )
+                            showRevenueCatPaywall = false
+                            Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                        }
+                        
+                        override fun onRestoreCompleted(customerInfo: com.revenuecat.purchases.CustomerInfo) {
+                            RevenueCatManager.updatePremiumStatus(customerInfo)
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.DrawerItemClicked,
+                                mapOf("item" to "restore_purchases_success", "source" to "revenuecat_paywall")
+                            )
+                            if (RevenueCatManager.isPremium()) {
+                                showRevenueCatPaywall = false
+                                Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                )
+                .build()
+        )
+    }
+    
 }
+
 
 @Composable
 private fun FabLoading() {
