@@ -33,7 +33,11 @@ object RemoteConfigUtils {
                 "leaderboard_ad_frequency" to 5L, // Native ad every 5 entries
                 "show_leaderboard_interstitial_ads" to true,
                 "leaderboard_data_retention_days" to -1L, // -1 = keep forever, 0+ = days before removal
-                "leaderboard_data_retention_reminder_days" to 5L // Days before removal to show reminder (only if retention > 0)
+                "leaderboard_data_retention_reminder_days" to 5L, // Days before removal to show reminder (only if retention > 0)
+                // Tab order configuration (IAP-optimized default)
+                // Format: comma-separated list like "leaderboard,health,power,device_info,network_info"
+                // Valid tab names: leaderboard, health, power, device_info, network_info
+                "tab_order" to "leaderboard,health,power,device_info,network_info"
             )
         )
         
@@ -169,5 +173,14 @@ object RemoteConfigUtils {
     fun getLeaderboardDataRetentionReminderDays(): Long {
         val days = remoteConfig.getLong("leaderboard_data_retention_reminder_days")
         return if (days == 0L) 5L else days // Default: 5 days before removal
+    }
+    
+    /**
+     * Get tab order configuration from RemoteConfig
+     * Returns comma-separated string of tab names
+     * Default: "leaderboard,health,power,device_info,network_info" (IAP-optimized)
+     */
+    fun getTabOrderConfig(): String {
+        return remoteConfig.getString("tab_order")
     }
 } 

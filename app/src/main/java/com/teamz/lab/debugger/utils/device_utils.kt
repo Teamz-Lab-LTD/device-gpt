@@ -101,25 +101,30 @@ fun clearRam(context: Context): Pair<Boolean, String> {
         activityManager.getMemoryInfo(memoryInfoBefore)
         val usedRamBefore = (memoryInfoBefore.totalMem - memoryInfoBefore.availMem) / (1024 * 1024)
         
-        // Get running app processes
+        // Get running app processes (limit to prevent UI blocking)
         val runningApps = activityManager.runningAppProcesses ?: emptyList()
         
         // Count processes that can be killed (not system, not our app)
         val ourPackageName = context.packageName
         var killedCount = 0
         
-        runningApps.forEach { processInfo ->
+        // Limit to first 30 processes to prevent UI blocking on devices with many apps
+        val processesToKill = runningApps
+            .filter { processInfo ->
             // Don't kill system processes or our own app
-            if (processInfo.importance > android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE &&
+                processInfo.importance > android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE &&
                 processInfo.importance < android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                !processInfo.pkgList.contains(ourPackageName)) {
+                !processInfo.pkgList.contains(ourPackageName)
+            }
+            .take(30) // Limit to prevent blocking
+        
+        processesToKill.forEach { processInfo ->
                 try {
                     // Try to kill background processes (Android will decide if it's safe)
                     android.os.Process.killProcess(processInfo.pid)
                     killedCount++
                 } catch (e: Exception) {
                     // Some processes can't be killed - that's normal
-                }
             }
         }
         

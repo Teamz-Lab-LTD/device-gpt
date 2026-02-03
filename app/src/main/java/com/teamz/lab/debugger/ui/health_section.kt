@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +34,8 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.ReviewPromptManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.utils.calculatePrivacyScore
 import com.teamz.lab.debugger.utils.getPrivacyThreatsToday
 import com.teamz.lab.debugger.utils.getRecentCameraMicUsageLog
@@ -124,9 +127,31 @@ fun HealthSection(
     // - Global time-based throttling
     // - Ad loading and showing
 
-    // Native ad state - reactive check that updates when premium is purchased
+    // Native ad state - stabilize to prevent scroll position jumps
+    // Cache the value to prevent recomposition during scroll
     val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
-    val nativeAds = remember { NativeAdManager.nativeAds }
+    
+    // Cache native ads - update only when scroll stops to prevent scroll jumps
+    // This ensures ads are ALWAYS displayed (revenue-safe) but prevents recomposition during scroll
+    var nativeAdsCache by remember { mutableStateOf(NativeAdManager.nativeAds.toList()) }
+    
+    // Update ads when scroll stops (very short delay - 50ms - to balance UX and revenue)
+    // Ads are still displayed via cached list, so no revenue loss
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            // Minimal delay - just enough to prevent scroll jumps, not enough to hurt revenue
+            kotlinx.coroutines.delay(50)
+            if (!listState.isScrollInProgress) {
+                // Update cache with fresh ads when scroll stops
+                nativeAdsCache = NativeAdManager.nativeAds.toList()
+            }
+        }
+    }
+    
+    // Always use cached ads - they're updated when scroll stops, but displayed immediately
+    // This prevents scroll jumps while ensuring ads are always visible (revenue-safe)
+    val nativeAds = nativeAdsCache
+    
     var currentNativeAd by remember {
         mutableStateOf<com.google.android.gms.ads.nativead.NativeAd?>(
             null
@@ -216,6 +241,22 @@ fun HealthSection(
     }
 
 
+    // Pre-compute TextStyle outside LazyColumn to prevent ANR from TextStyle.merge
+    // TextStyle.merge is expensive and can block if called repeatedly during recomposition
+    // This is computed once and reused for all items, preventing repeated merges
+    val materialTypography = MaterialTheme.typography
+    val cardTitleTextStyle = remember(materialTypography) {
+        materialTypography.titleMedium.copy(
+            fontWeight = FontWeight.Bold
+        )
+    }
+    val cardBodyTextStyle = remember(materialTypography) {
+        materialTypography.bodyMedium
+    }
+    val cardSmallTextStyle = remember(materialTypography) {
+        materialTypography.bodySmall
+    }
+    
     LazyColumn(
         state = listState,
         modifier = Modifier
@@ -352,12 +393,18 @@ fun HealthSection(
             var ramPercent by remember { mutableIntStateOf(0) }
             var isClearing by remember { mutableStateOf(false) }
             var lastClearResult by remember { mutableStateOf<String?>(null) }
+            var lastClearTime by remember { mutableStateOf(0L) } // Debounce rapid clicks
+            
+            // Pre-compile Regex outside LaunchedEffect to prevent ANR (Regex compilation blocks main thread)
+            val ramPercentRegex = remember { Regex("\\((\\d+)%\\)") }
             
             LaunchedEffect(Unit) {
-                val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                val ramInfo = withContext(Dispatchers.Default) {
+                    com.teamz.lab.debugger.utils.getRamUsage(context)
+                }
                 ramUsage = ramInfo
-                // Extract percentage
-                val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                // Extract percentage using pre-compiled regex
+                val percentMatch = ramPercentRegex.find(ramInfo)
                 ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
             }
             
@@ -367,9 +414,12 @@ fun HealthSection(
                     kotlinx.coroutines.delay(5000) // Update every 5 seconds
                     // Skip update if user is scrolling to prevent lag
                     if (!listState.isScrollInProgress) {
-                        val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
+                        // Run on background thread to prevent blocking
+                        val ramInfo = withContext(Dispatchers.Default) {
+                            com.teamz.lab.debugger.utils.getRamUsage(context)
+                        }
                         ramUsage = ramInfo
-                        val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
+                        val percentMatch = ramPercentRegex.find(ramInfo)
                         ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     }
                 }
@@ -381,6 +431,18 @@ fun HealthSection(
                 isClearing = isClearing,
                 lastClearResult = lastClearResult,
                 onClearRam = {
+                    // Debounce: Prevent rapid clicks (minimum 2 seconds between clicks)
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastClearTime < 2000) {
+                        return@RamOptimizationCard // Ignore rapid clicks
+                    }
+                    lastClearTime = currentTime
+                    
+                    // Prevent multiple simultaneous operations
+                    if (isClearing) {
+                        return@RamOptimizationCard
+                    }
+                    
                     // Set loading state immediately so user sees feedback right away
                     isClearing = true
                     
@@ -402,19 +464,33 @@ fun HealthSection(
                             actionName = "clear_ram"
                         ) {
                             // Action to execute after ad is dismissed (or if ad fails)
-                            coroutineScope.launch {
+                            // Run RAM clearing on background thread to prevent UI blocking
+                            coroutineScope.launch(kotlinx.coroutines.Dispatchers.Default) {
                                 try {
                                     val ramPercentBefore = ramPercent
-                                    val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
-                                    lastClearResult = message
-                                    isClearing = false
+                                    // Run clearRam on background thread
+                                    val (success, message) = withContext(kotlinx.coroutines.Dispatchers.Default) {
+                                        com.teamz.lab.debugger.utils.clearRam(context)
+                                    }
                                     
-                                    // Update RAM usage after clearing
+                                    // Update UI on main thread
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        lastClearResult = message
+                                        isClearing = false
+                                    }
+                                    
+                                    // Update RAM usage after clearing (on background thread)
                                     kotlinx.coroutines.delay(1000)
-                                    val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
-                                    ramUsage = ramInfo
-                                    val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
-                                    ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                    val ramInfo = withContext(kotlinx.coroutines.Dispatchers.Default) {
+                                        com.teamz.lab.debugger.utils.getRamUsage(context)
+                                    }
+                                    
+                                    // Update UI on main thread
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        ramUsage = ramInfo
+                                        val percentMatch = ramPercentRegex.find(ramInfo)
+                                        ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                    }
                                     
                                     // Log RAM clear completion analytics
                                     AnalyticsUtils.logEvent(
@@ -429,8 +505,10 @@ fun HealthSection(
                                         )
                                     )
                                 } catch (e: Exception) {
-                                    lastClearResult = "Error: ${e.message}"
-                                    isClearing = false
+                                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        lastClearResult = "Error: ${e.message}"
+                                        isClearing = false
+                                    }
                                     com.teamz.lab.debugger.utils.handleError(e)
                                     
                                     // Log error analytics
@@ -446,21 +524,32 @@ fun HealthSection(
                             }
                         }
                     } else {
-                        // Fallback if no activity context
+                        // Fallback if no activity context - run on background thread
                         isClearing = true
-                        coroutineScope.launch {
+                        coroutineScope.launch(kotlinx.coroutines.Dispatchers.Default) {
                             try {
                                 val ramPercentBefore = ramPercent
+                                // Run clearRam on background thread
                                 val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
-                                lastClearResult = message
-                                isClearing = false
+                                
+                                // Update UI on main thread
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    lastClearResult = message
+                                    isClearing = false
+                                }
                                 
                                 // Update RAM usage after clearing
                                 kotlinx.coroutines.delay(1000)
-                                val ramInfo = com.teamz.lab.debugger.utils.getRamUsage(context)
-                                ramUsage = ramInfo
-                                val percentMatch = Regex("\\((\\d+)%\\)").find(ramInfo)
-                                ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                val ramInfo = withContext(kotlinx.coroutines.Dispatchers.Default) {
+                                    com.teamz.lab.debugger.utils.getRamUsage(context)
+                                }
+                                
+                                // Update UI on main thread
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    ramUsage = ramInfo
+                                    val percentMatch = ramPercentRegex.find(ramInfo)
+                                    ramPercent = percentMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                                }
                                 
                                 // Log completion analytics
                                 AnalyticsUtils.logEvent(
@@ -474,8 +563,10 @@ fun HealthSection(
                                     )
                                 )
                             } catch (e: Exception) {
-                                lastClearResult = "Error: ${e.message}"
-                                isClearing = false
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    lastClearResult = "Error: ${e.message}"
+                                    isClearing = false
+                                }
                                 com.teamz.lab.debugger.utils.handleError(e)
                             }
                         }
@@ -527,9 +618,15 @@ Free RAM action optimizes background processes and clears memory to improve devi
                     kotlinx.coroutines.delay(10000) // Update every 10 seconds
                     // Skip update if user is scrolling to prevent lag
                     if (!listState.isScrollInProgress) {
-                        val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage()
+                        // Run on background thread to prevent blocking
+                        val storageInfo = withContext(Dispatchers.Default) {
+                            com.teamz.lab.debugger.utils.getAvailableStorage()
+                        }
+                        val storagePercentValue = withContext(Dispatchers.Default) {
+                            com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                        }
                         storageUsage = storageInfo
-                        storagePercent = com.teamz.lab.debugger.utils.getStorageUsagePercent(context)
+                        storagePercent = storagePercentValue
                     }
                 }
             }
@@ -828,8 +925,15 @@ Storage cleanup clears app caches and temporary files to free up space.
                     kotlinx.coroutines.delay(15000) // Update every 15 seconds
                     // Skip update if user is scrolling to prevent lag
                     if (!listState.isScrollInProgress) {
-                        batteryHealth = com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
-                        batteryInfo = com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                        // Run on background thread to prevent blocking
+                        val batteryHealthValue = withContext(Dispatchers.Default) {
+                            com.teamz.lab.debugger.utils.getBatteryHealthPercent(context)
+                        }
+                        val batteryInfoValue = withContext(Dispatchers.Default) {
+                            com.teamz.lab.debugger.utils.getBatteryChargingInfo(context)
+                        }
+                        batteryHealth = batteryHealthValue
+                        batteryInfo = batteryInfoValue
                     }
                 }
             }

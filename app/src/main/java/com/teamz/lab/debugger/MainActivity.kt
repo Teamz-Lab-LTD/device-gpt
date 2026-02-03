@@ -116,6 +116,8 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
+import com.teamz.lab.debugger.utils.TabOrderManager
+import com.teamz.lab.debugger.utils.TabType
 import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
 import com.teamz.lab.debugger.ui.RevenueCatPaywall
 import androidx.compose.ui.window.DialogProperties
@@ -374,24 +376,14 @@ fun DebuggerApp(activity: ComponentActivity) {
         val trackWidgetTap = intent?.getBooleanExtra("track_widget_tap", false) ?: false
         val widgetAction = intent?.getStringExtra("widget_action") ?: ""
         
-        // Calculate tab indices dynamically based on leaderboard configuration
-        val isLeaderboardEnabled = RemoteConfigUtils.isLeaderboardEnabled()
-        val leaderboardTabPosition = RemoteConfigUtils.getLeaderboardTabPosition()
-        val totalTabs = if (isLeaderboardEnabled) 5 else 4
-        
-        // Find health tab index dynamically
-        val healthTabIndex = when {
-            // Leaderboard at start (index 0)
-            isLeaderboardEnabled && leaderboardTabPosition == 0 -> 3
-            // Leaderboard at end (index -1 means last)
-            isLeaderboardEnabled && leaderboardTabPosition == -1 -> 2
-            // No leaderboard
-            else -> 2
-        }
-        
+        // Use TabOrderManager to get tab indices dynamically
         val targetTab = when {
             // New name-based navigation (preferred)
-            navigateToTab.equals("health", ignoreCase = true) -> healthTabIndex
+            navigateToTab.equals("health", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.HEALTH)
+            navigateToTab.equals("power", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.POWER)
+            navigateToTab.equals("device_info", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.DEVICE_INFO)
+            navigateToTab.equals("network_info", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.NETWORK_INFO)
+            navigateToTab.equals("leaderboard", ignoreCase = true) -> TabOrderManager.getLeaderboardIndex() ?: -1
             // Old index-based navigation (backward compatibility)
             navigateToSection >= 0 -> navigateToSection
             else -> -1
@@ -407,11 +399,14 @@ fun DebuggerApp(activity: ComponentActivity) {
                 ))
             }
             // Also log tab view for consistency
+            val tabName = TabOrderManager.getTabNameForAnalytics(targetTab)
             AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed, mapOf(
-                "source" to source
+                "source" to source,
+                "tab_name" to tabName
             ))
             targetTab
         } else {
+            // Default to first tab (usually Leaderboard if enabled)
             0
         }
     }
@@ -583,15 +578,8 @@ fun DebuggerApp(activity: ComponentActivity) {
             })
         }, floatingActionButton = {
             // Hide FABs when leaderboard tab is selected
-            val isLeaderboardEnabled = remember { RemoteConfigUtils.isLeaderboardEnabled() }
-            val leaderboardTabPosition = remember { RemoteConfigUtils.getLeaderboardTabPosition() }
-            val totalTabs = if (isLeaderboardEnabled) 5 else 4
-            val leaderboardTabIndex = if (leaderboardTabPosition == 0) {
-                0 // First tab
-            } else {
-                totalTabs - 1 // Last tab
-            }
-            val isLeaderboardTabSelected = selectedTab == leaderboardTabIndex && isLeaderboardEnabled
+            val leaderboardTabIndex = remember { TabOrderManager.getLeaderboardIndex() }
+            val isLeaderboardTabSelected = leaderboardTabIndex != null && selectedTab == leaderboardTabIndex
             
             if (!isLeaderboardTabSelected) {
                 val certTooltipState = rememberTooltipState()
@@ -675,7 +663,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp, horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.SpaceEvenly, // Even spacing between all FABs
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                 // Premium FAB - Only show if user is not premium
@@ -706,7 +694,6 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showRevenueCatPaywall = true
                             },
                             modifier = Modifier
-                                .padding(horizontal = 8.dp)
                                 .scale(pulseScale) // Continuous subtle pulse
                                 .semantics {
                                     // Make it properly focusable and accessible
@@ -764,7 +751,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showPriceInputDialog = true
                             }
                         },
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier, // Remove padding - spacing handled by Row
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -807,7 +794,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                 showAIDialog = true
                             }
                         },
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier, // Remove padding - spacing handled by Row
                         containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
                             DesignSystemColors.White.copy(
                             ),
@@ -836,18 +823,12 @@ fun DebuggerApp(activity: ComponentActivity) {
                 }
                 // Share FAB (existing)
                 FloatingActionButton(
-                    modifier = Modifier,
+                    modifier = Modifier, // No padding - spacing handled by Row
                     onClick = {
                         if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) {
                             AnalyticsUtils.logEvent(AnalyticsEvent.FabShareClicked, mapOf(
                                 "tab" to selectedTab,
-                                "tab_name" to when(selectedTab) {
-                                    0 -> "device_info"
-                                    1 -> "network_info"
-                                    2 -> "health"
-                                    3 -> "power"
-                                    else -> "unknown"
-                                }
+                                "tab_name" to TabOrderManager.getTabNameForAnalytics(selectedTab)
                             ))
                             InterstitialAdManager.showAdIfAvailable(activity) {
                                 val brandedFooter = """
@@ -861,13 +842,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
 💡 Protect, diagnose, and improve your Android with $appName.
 
 """.trimIndent()
-                                val fileName = when (selectedTab) {
-                                    0 -> "my_device_info.txt"
-                                    1 -> "my_network_info.txt"
-                                    2 -> "my_health_report.txt"
-                                    3 -> "my_power_report.txt"
-                                    else -> "my_device_info.txt"
-                                }
+                                val fileName = TabOrderManager.getShareFileName(selectedTab)
                                 val file = File(context.cacheDir, fileName)
                                 try {
                                     file.writeText(shareText + "\n" + brandedFooter)
@@ -932,15 +907,9 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Leaderboard configuration
-                    val isLeaderboardEnabled = remember { RemoteConfigUtils.isLeaderboardEnabled() }
-                    val leaderboardTabPosition = remember { RemoteConfigUtils.getLeaderboardTabPosition() }
-                    val totalTabs = if (isLeaderboardEnabled) 5 else 4
-                    val leaderboardTabIndex = if (leaderboardTabPosition == 0) {
-                        0 // First tab
-                    } else {
-                        totalTabs - 1 // Last tab
-                    }
+                    // Get tab order from TabOrderManager
+                    val tabOrder = remember { TabOrderManager.getTabOrder() }
+                    val leaderboardTabIndex = remember { TabOrderManager.getLeaderboardIndex() }
                     
                     // Tab Row - Scrollable for long text support
                     ScrollableTabRow(
@@ -948,93 +917,31 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         modifier = Modifier.fillMaxWidth(),
                         edgePadding = 0.dp
                     ) {
-                        // Add leaderboard tab at configured position
-                        if (isLeaderboardEnabled && leaderboardTabPosition == 0) {
+                        // Render tabs in configured order
+                        tabOrder.forEachIndexed { index, tabType ->
                             Tab(
-                                selected = selectedTab == leaderboardTabIndex,
+                                selected = selectedTab == index,
                                 onClick = {
-                                    AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
-                                    selectedTab = leaderboardTabIndex
+                                    // Log appropriate analytics event
+                                    when (tabType) {
+                                        TabType.LEADERBOARD -> AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
+                                        TabType.HEALTH -> AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed)
+                                        TabType.POWER -> AnalyticsUtils.logEvent(AnalyticsEvent.TabPowerViewed)
+                                        TabType.DEVICE_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabDeviceInfoViewed)
+                                        TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
+                                    }
+                                    selectedTab = index
                                     shareText = context.string(R.string.loading)
                                 },
                                 text = {
                                     Text(
-                                        "Leaderboard",
-                                        style = MaterialTheme.typography.labelLarge
-                                    )
-                                }
-                            )
-                        }
-                        
-                        Tab(
-                            selected = selectedTab == 0,
-                            onClick = {
-                                AnalyticsUtils.logEvent(AnalyticsEvent.TabDeviceInfoViewed)
-                                selectedTab = 0
-                                shareText = context.string(R.string.loading)
-                            },
-                            text = {
-                                Text(
-                                    context.string(R.string.device_info),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { 
-                                AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
-                                selectedTab = 1
-                                shareText = context.string(R.string.loading)
-                            },
-                            text = {
-                                Text(
-                                    context.string(R.string.network_info),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        )
-                        Tab(
-                            selected = selectedTab == 2,
-                            onClick = { 
-                                AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed)
-                                selectedTab = 2
-                                shareText = context.string(R.string.loading)
-                            },
-                            text = {
-                                Text(
-                                    "Health",
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        )
-                        Tab(
-                            selected = selectedTab == 3,
-                            onClick = { 
-                                AnalyticsUtils.logEvent(AnalyticsEvent.TabPowerViewed)
-                                selectedTab = 3
-                                shareText = context.string(R.string.loading)
-                            },
-                            text = {
-                                Text(
-                                    "Power",
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        )
-                        
-                        // Add leaderboard tab at end if configured
-                        if (isLeaderboardEnabled && leaderboardTabPosition == -1) {
-                            Tab(
-                                selected = selectedTab == leaderboardTabIndex,
-                                onClick = {
-                                    AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
-                                    selectedTab = leaderboardTabIndex
-                                    shareText = context.string(R.string.loading)
-                                },
-                                text = {
-                                    Text(
-                                        "Leaderboard",
+                                        when (tabType) {
+                                            TabType.LEADERBOARD -> "Leaderboard"
+                                            TabType.HEALTH -> "Health"
+                                            TabType.POWER -> "Power"
+                                            TabType.DEVICE_INFO -> context.string(R.string.device_info)
+                                            TabType.NETWORK_INFO -> context.string(R.string.network_info)
+                                        },
                                         style = MaterialTheme.typography.labelLarge
                                     )
                                 }
@@ -1042,97 +949,105 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         }
                     }
 
-                    // Content based on selected tab
-                    // Content based on selected tab
+                    // Content based on selected tab - use TabOrderManager to determine tab type
                     Crossfade(targetState = selectedTab, label = "tab") { tab ->
-                        when (tab) {
-                            leaderboardTabIndex -> if (isLeaderboardEnabled) {
+                        val tabType = TabOrderManager.getTabTypeAt(tab)
+                        when (tabType) {
+                            TabType.LEADERBOARD -> {
                                 LeaderboardSection(activity = activity)
-                            } else null
+                            }
                             
-                            0 -> DeviceInfoSection(
-                                activity = activity,
-                                onShareClick = { info -> shareText = info },
-                                onAIClick = {
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "device_info_section"
-                                    ) {
-                                        showAIDialog = true
+                            TabType.HEALTH -> {
+                                HealthSection(
+                                    onShareClick = { info -> shareText = info },
+                                    onAIClick = {
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "health_section"
+                                        ) {
+                                            showAIDialog = true
+                                        }
+                                    },
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "health_item",
+                                            itemTitle = title
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
                                     }
-                                },
-                                onItemAIClick = { title, content ->
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "device_info_item",
-                                        itemTitle = title
-                                    ) {
-                                        selectedItemForAI = Pair(title, content)
-                                        showItemAIDialog = true
+                                )
+                            }
+                            
+                            TabType.POWER -> {
+                                PowerConsumptionSection(
+                                    onShareClick = { info -> shareText = info },
+                                    onAIClick = {
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "power_section"
+                                        ) {
+                                            showAIDialog = true
+                                        }
+                                    },
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "power_item",
+                                            itemTitle = title
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
+                            
+                            TabType.DEVICE_INFO -> {
+                                DeviceInfoSection(
+                                    activity = activity,
+                                    onShareClick = { info -> shareText = info },
+                                    onAIClick = {
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "device_info_section"
+                                        ) {
+                                            showAIDialog = true
+                                        }
+                                    },
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "device_info_item",
+                                            itemTitle = title
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
+                                    }
+                                )
+                            }
 
-                            1 -> NetworkInfoSection(
-                                activity = activity, 
-                                onShareClick = { info -> shareText = info },
-                                onItemAIClick = { title, content ->
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "network_info_item",
-                                        itemTitle = title
-                                    ) {
-                                        selectedItemForAI = Pair(title, content)
-                                        showItemAIDialog = true
+                            TabType.NETWORK_INFO -> {
+                                NetworkInfoSection(
+                                    activity = activity, 
+                                    onShareClick = { info -> shareText = info },
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "network_info_item",
+                                            itemTitle = title
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
                                     }
-                                }
-                            )
-
-                            2 -> HealthSection(
-                                onShareClick = { info -> shareText = info },
-                                onAIClick = {
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "health_section"
-                                    ) {
-                                        showAIDialog = true
-                                    }
-                                },
-                                onItemAIClick = { title, content ->
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "health_item",
-                                        itemTitle = title
-                                    ) {
-                                        selectedItemForAI = Pair(title, content)
-                                        showItemAIDialog = true
-                                    }
-                                }
-                            )
+                                )
+                            }
                             
-                            3 -> PowerConsumptionSection(
-                                onShareClick = { info -> shareText = info },
-                                onAIClick = {
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "power_section"
-                                    ) {
-                                        showAIDialog = true
-                                    }
-                                },
-                                onItemAIClick = { title, content ->
-                                    com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
-                                        activity = activity,
-                                        source = "power_item",
-                                        itemTitle = title
-                                    ) {
-                                        selectedItemForAI = Pair(title, content)
-                                        showItemAIDialog = true
-                                    }
-                                }
-                            )
-                            
-                            else -> null
+                            null -> null
                         }
                     }
 
