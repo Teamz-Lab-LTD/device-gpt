@@ -33,8 +33,8 @@ android {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 10
-        versionName = "3.0.3"
+        versionCode = 11
+        versionName = "3.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -222,4 +222,77 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
 jacoco {
     toolVersion = "0.8.11"
+}
+
+// Task to prepare native debug symbols for Google Play Console upload
+// With AGP 8.1+, symbols are embedded in the AAB when debugSymbolLevel = "FULL"
+tasks.register("prepareNativeDebugSymbols") {
+    group = "build"
+    description = "Prepares native debug symbols for Google Play Console upload"
+    
+    dependsOn("bundleRelease", "extractReleaseNativeDebugMetadata")
+    
+    doLast {
+        val aabFile = file("${project.buildDir}/outputs/bundle/release/app-release.aab")
+        val nativeLibsDir = file("${project.buildDir}/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib")
+        
+        println("🔍 Native Debug Symbols Status")
+        println("==============================")
+        println("")
+        
+        // Check if AAB exists
+        if (aabFile.exists()) {
+            val aabSize = aabFile.length() / (1024 * 1024) // Size in MB
+            println("✅ AAB file found: ${aabFile.absolutePath}")
+            println("   Size: ${aabSize} MB")
+        } else {
+            println("❌ AAB file not found. Run: ./gradlew bundleRelease")
+            return@doLast
+        }
+        
+        // Check for native libraries
+        var hasNativeLibs = false
+        if (nativeLibsDir.exists()) {
+            val soFiles = fileTree(nativeLibsDir).matching { include("**/*.so") }.files
+            if (soFiles.isNotEmpty()) {
+                hasNativeLibs = true
+                println("✅ Native libraries detected: ${soFiles.size} .so files")
+                println("   Location: ${nativeLibsDir.absolutePath}")
+            }
+        }
+        
+        println("")
+        println("📦 Configuration Status:")
+        println("   ✅ debugSymbolLevel = 'FULL' (configured in build.gradle.kts)")
+        if (hasNativeLibs) {
+            println("   ✅ Native libraries found in build")
+            println("   ✅ Symbols should be embedded in AAB (AGP 8.1+ feature)")
+        } else {
+            println("   ⚠️  No native libraries detected (may be from dependencies)")
+        }
+        
+        println("")
+        println("📋 Upload Instructions:")
+        println("   1. Upload your AAB to Google Play Console:")
+        println("      → ${aabFile.absolutePath}")
+        println("")
+        println("   2. With AGP 8.1+ and debugSymbolLevel = 'FULL', native debug symbols")
+        println("      are automatically embedded in your AAB file.")
+        println("")
+        println("   3. After uploading, Google Play Console should automatically:")
+        println("      - Extract the symbols from your AAB")
+        println("      - Process them for crash analysis")
+        println("      - The warning should disappear within a few minutes")
+        println("")
+        println("   4. If the warning persists after 10-15 minutes:")
+        println("      a. Go to: Google Play Console → Your App → Release → Setup")
+        println("      b. Click: 'App integrity'")
+        println("      c. Scroll to: 'Native code debug files'")
+        println("      d. Check if symbols are listed there")
+        println("      e. If not, try re-uploading the AAB")
+        println("      f. Contact Google Play support if issue persists")
+        println("")
+        println("💡 Note: The warning may appear initially but should resolve")
+        println("   automatically once Google Play processes your AAB file.")
+    }
 }

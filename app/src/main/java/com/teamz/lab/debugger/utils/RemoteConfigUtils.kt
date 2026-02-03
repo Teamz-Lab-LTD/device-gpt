@@ -11,6 +11,16 @@ import com.teamz.lab.debugger.BuildConfig
 object RemoteConfigUtils {
     private val remoteConfig: FirebaseRemoteConfig
         get() = FirebaseRemoteConfig.getInstance()
+    
+    /**
+     * TEST FLAG: Automatically set to BuildConfig.DEBUG for safe testing
+     * - Debug builds: FORCE_SHOW_ADS_IN_DEBUG = true (ads enabled for testing)
+     * - Release builds: FORCE_SHOW_ADS_IN_DEBUG = false (ads follow RemoteConfig, safe for production)
+     * 
+     * This allows testing ads in debug mode while ensuring production safety.
+     * In release builds, ads are always controlled by RemoteConfig.
+     */
+    private val FORCE_SHOW_ADS_IN_DEBUG = BuildConfig.DEBUG
 
     fun init() {
         android.util.Log.d("RemoteConfigUtils", "init() - Initializing RemoteConfig...")
@@ -59,10 +69,16 @@ object RemoteConfigUtils {
             return false
         }
         
-        // Disable video ads (interstitial) in debug mode
-        if (BuildConfig.DEBUG) {
+        // In debug mode: Only show ads if FORCE_SHOW_ADS_IN_DEBUG is true (for testing)
+        // In release mode: FORCE_SHOW_ADS_IN_DEBUG is false, so this check is skipped (safe for production)
+        // Production safety: In release builds, BuildConfig.DEBUG is false, so this condition never blocks ads
+        if (BuildConfig.DEBUG && !FORCE_SHOW_ADS_IN_DEBUG) {
+            android.util.Log.d("RemoteConfigUtils", "shouldShowInterstitialAds() - Debug mode, ads disabled (FORCE_SHOW_ADS_IN_DEBUG=$FORCE_SHOW_ADS_IN_DEBUG)")
             return false
         }
+        
+        // Production safety: In release builds, ads are always controlled by RemoteConfig
+        // Debug builds: Ads are enabled for testing (FORCE_SHOW_ADS_IN_DEBUG = true)
         return remoteConfig.getBoolean("show_interstitial_ads")
     }
     

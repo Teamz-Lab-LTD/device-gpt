@@ -7,6 +7,9 @@ import androidx.core.content.edit
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -239,6 +242,9 @@ object LeaderboardManager {
     /**
      * Link Gmail account to anonymous user
      * Also links RevenueCat to Firebase UID for cross-device purchase restoration
+     * 
+     * Handles FirebaseAuthUserCollisionException: If the Google account is already
+     * associated with a different Firebase user, signs in with that account instead.
      */
     suspend fun linkGmailAccount(context: Context, idToken: String): Boolean {
         return try {
@@ -263,6 +269,39 @@ object LeaderboardManager {
                 true
             } else {
                 false
+            }
+        } catch (e: FirebaseAuthUserCollisionException) {
+            // Google account is already associated with a different Firebase user
+            // Sign in with the existing account instead of linking
+            Log.w(TAG, "Google account already exists, signing in with existing account", e)
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                val signInResult = auth.signInWithCredential(credential).await()
+                
+                if (signInResult.user != null) {
+                    val firebaseUserId = signInResult.user!!.uid
+                    saveUserId(context, firebaseUserId)
+                    saveEmailLinked(context, true)
+                    setAnalyticsUserId(firebaseUserId)
+                    Log.d(TAG, "Signed in with existing Google account: $firebaseUserId")
+                    
+                    // Link RevenueCat to Firebase UID for cross-device purchase restoration
+                    try {
+                        com.teamz.lab.debugger.utils.RevenueCatManager.setUserId(firebaseUserId)
+                        Log.d(TAG, "RevenueCat linked to Firebase UID: $firebaseUserId")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to link RevenueCat after sign-in", e)
+                        // Don't fail the sign-in if RevenueCat fails
+                    }
+                    
+                    return true
+                } else {
+                    Log.e(TAG, "Sign-in with existing account failed: user is null")
+                    return false
+                }
+            } catch (signInError: Exception) {
+                Log.e(TAG, "Failed to sign in with existing Google account", signInError)
+                return false
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to link Gmail account", e)
@@ -373,6 +412,28 @@ object LeaderboardManager {
     }
 
     /**
+     * Re-authenticate user with Google credential
+     * Returns true if re-authentication was successful
+     */
+    suspend fun reauthenticateWithGoogle(idToken: String): Boolean {
+        return try {
+            val currentUser = auth.currentUser
+            if (currentUser == null) {
+                Log.w(TAG, "No user to re-authenticate")
+                return false
+            }
+            
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            currentUser.reauthenticate(credential).await()
+            Log.d(TAG, "✅ User re-authenticated successfully")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to re-authenticate user", e)
+            false
+        }
+    }
+    
+    /**
      * Delete account and all associated data (GDPR compliance)
      * This permanently deletes:
      * - User data from user_data collection
@@ -380,17 +441,33 @@ object LeaderboardManager {
      * - User contributions from device_insights
      * - Daily stats
      * - Firebase Auth user
+     * 
+     * @param context The context
+     * @param reauthCredential Optional credential for re-authentication. If null and re-authentication is required,
+     *                        the function will return false and the caller should handle re-authentication.
+     * @return Pair<Boolean, Boolean> where first is success status, second indicates if re-authentication is needed
      */
-    suspend fun deleteAccount(context: Context): Boolean {
+    suspend fun deleteAccount(context: Context, reauthCredential: AuthCredential? = null): Pair<Boolean, Boolean> {
         return try {
             val currentUser = auth.currentUser
             if (currentUser == null) {
                 Log.w(TAG, "No user to delete")
-                return false
+                return Pair(false, false)
             }
 
             val userId = currentUser.uid
             Log.d(TAG, "🗑️ Starting account deletion for user: $userId")
+            
+            // Re-authenticate if credential is provided
+            if (reauthCredential != null) {
+                try {
+                    currentUser.reauthenticate(reauthCredential).await()
+                    Log.d(TAG, "✅ User re-authenticated before deletion")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Re-authentication failed", e)
+                    return Pair(false, false)
+                }
+            }
 
             // 1. Delete user_data/{userId}
             try {
@@ -505,9 +582,18 @@ object LeaderboardManager {
                 }
             }
 
-            // 6. Delete Firebase Auth user
-            currentUser.delete().await()
-            Log.d(TAG, "✅ Deleted Firebase Auth user")
+            // 6. Delete Firebase Auth user (requires recent authentication)
+            try {
+                currentUser.delete().await()
+                Log.d(TAG, "✅ Deleted Firebase Auth user")
+            } catch (e: FirebaseAuthRecentLoginRequiredException) {
+                Log.w(TAG, "⚠️ Re-authentication required for account deletion")
+                // Return false with re-authentication needed flag
+                return Pair(false, true)
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Failed to delete Firebase Auth user", e)
+                throw e // Re-throw to be caught by outer catch block
+            }
 
             // 7. Clear local preferences
             getPrefs(context).edit {
@@ -532,7 +618,11 @@ object LeaderboardManager {
             }
 
             Log.d(TAG, "✅✅✅ Account deletion completed successfully")
-            true
+            Pair(true, false)
+        } catch (e: FirebaseAuthRecentLoginRequiredException) {
+            Log.w(TAG, "⚠️ Re-authentication required for account deletion")
+            // Return false with re-authentication needed flag
+            Pair(false, true)
         } catch (e: Exception) {
             Log.e(TAG, "❌ Failed to delete account", e)
             // Try to ensure anonymous user exists even if deletion failed
@@ -541,7 +631,7 @@ object LeaderboardManager {
             } catch (e2: Exception) {
                 Log.e(TAG, "Failed to create anonymous user after deletion error", e2)
             }
-            false
+            Pair(false, false)
         }
     }
     

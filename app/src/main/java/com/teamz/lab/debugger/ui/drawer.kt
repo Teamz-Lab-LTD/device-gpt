@@ -98,6 +98,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.services.isDoNotAskMeAgain
 import com.teamz.lab.debugger.services.isSystemMonitorRunning
@@ -1767,7 +1768,75 @@ fun LeaderboardAccountStatus() {
     var userDisplayName by remember { mutableStateOf<String?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
+    var showReauthDialog by remember { mutableStateOf(false) }
+    var pendingDeleteAfterReauth by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    // Google Sign-In launcher for re-authentication (account deletion)
+    val reauthSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        scope.launch {
+            try {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+
+                if (idToken != null) {
+                    // Re-authenticate with the credential
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    val (success, needsReauth) = LeaderboardManager.deleteAccount(context, credential)
+                    
+                    showReauthDialog = false
+                    isDeleting = false
+                    pendingDeleteAfterReauth = false
+                    
+                    if (success) {
+                        // Reset state
+                        userId = LeaderboardManager.getCurrentUserId()
+                        isAnonymous = LeaderboardManager.isAnonymousUser()
+                        isEmailLinked = LeaderboardManager.isEmailLinked(context)
+                        userEmail = null
+                        userDisplayName = null
+                        android.widget.Toast.makeText(
+                            context,
+                            "Account deleted successfully",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    } else if (needsReauth) {
+                        // Still needs re-authentication (shouldn't happen, but handle it)
+                        android.widget.Toast.makeText(
+                            context,
+                            "Re-authentication required. Please try again.",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        android.widget.Toast.makeText(
+                            context,
+                            "Failed to delete account. Please try again.",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    isDeleting = false
+                    pendingDeleteAfterReauth = false
+                    android.widget.Toast.makeText(
+                        context,
+                        "Re-authentication failed. Please try again.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                isDeleting = false
+                pendingDeleteAfterReauth = false
+                android.widget.Toast.makeText(
+                    context,
+                    "Re-authentication failed. Please try again.",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
 
     // Google Sign-In launcher for linking account
     val googleSignInLauncher = rememberLauncherForActivityResult(
@@ -1797,6 +1866,12 @@ fun LeaderboardAccountStatus() {
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
+                } else {
+                    android.widget.Toast.makeText(
+                        context,
+                        "Sign-in failed. Please try again.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
                 android.widget.Toast.makeText(
@@ -2169,10 +2244,17 @@ fun LeaderboardAccountStatus() {
                                     onClick = {
                                         isDeleting = true
                                         scope.launch {
-                                            val success = LeaderboardManager.deleteAccount(context)
-                                            showDeleteDialog = false
-                                            isDeleting = false
-                                            if (success) {
+                                            val (success, needsReauth) = LeaderboardManager.deleteAccount(context)
+                                            
+                                            if (needsReauth) {
+                                                // Re-authentication required - show re-auth dialog
+                                                showDeleteDialog = false
+                                                showReauthDialog = true
+                                                pendingDeleteAfterReauth = true
+                                            } else if (success) {
+                                                // Account deleted successfully
+                                                showDeleteDialog = false
+                                                isDeleting = false
                                                 // Reset state
                                                 userId = LeaderboardManager.getCurrentUserId()
                                                 isAnonymous = LeaderboardManager.isAnonymousUser()
@@ -2185,6 +2267,9 @@ fun LeaderboardAccountStatus() {
                                                     android.widget.Toast.LENGTH_SHORT
                                                 ).show()
                                             } else {
+                                                // Deletion failed
+                                                showDeleteDialog = false
+                                                isDeleting = false
                                                 android.widget.Toast.makeText(
                                                     context,
                                                     "Failed to delete account. Please try again.",
@@ -2215,6 +2300,82 @@ fun LeaderboardAccountStatus() {
                             dismissButton = {
                                 TextButton(
                                     onClick = { showDeleteDialog = false },
+                                    enabled = !isDeleting
+                                ) {
+                                    Text(
+                                        "Cancel",
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    
+                    // Re-authentication Dialog (for account deletion)
+                    if (showReauthDialog) {
+                        AlertDialog(
+                            onDismissRequest = { 
+                                if (!isDeleting) {
+                                    showReauthDialog = false
+                                    pendingDeleteAfterReauth = false
+                                }
+                            },
+                            title = {
+                                Text(
+                                    text = "Re-authentication Required",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 14.sp
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "For security reasons, you need to sign in again to delete your account. This helps protect your account from unauthorized deletion.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 11.sp
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        if (activity != null) {
+                                            isDeleting = true
+                                            startGoogleSignInForReauth(activity, reauthSignInLauncher)
+                                        } else {
+                                            showReauthDialog = false
+                                            pendingDeleteAfterReauth = false
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Unable to start re-authentication. Please try again.",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    enabled = !isDeleting,
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    if (isDeleting) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(10.dp),
+                                            color = MaterialTheme.colorScheme.primary,
+                                            strokeWidth = 1.5.dp
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                    }
+                                    Text(
+                                        "Sign In",
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = { 
+                                        showReauthDialog = false
+                                        pendingDeleteAfterReauth = false
+                                        isDeleting = false
+                                    },
                                     enabled = !isDeleting
                                 ) {
                                     Text(
@@ -2301,6 +2462,35 @@ private fun linkGmailAccountFromDrawer(
         android.widget.Toast.makeText(
             activity,
             "Failed to start sign-in. Please try again.",
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+private fun startGoogleSignInForReauth(
+    activity: Activity,
+    launcher: androidx.activity.result.ActivityResultLauncher<android.content.Intent>
+) {
+    try {
+        var webClientId = AdConfig.getOAuthClientId()
+        if (webClientId.isEmpty()) {
+            // Fallback to strings.xml if AdConfig returns empty
+            webClientId = activity.getString(R.string.default_web_client_id)
+        }
+        if (webClientId.isNotEmpty() && webClientId != "YOUR_OAUTH_CLIENT_ID") {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(webClientId)
+                .requestEmail()
+                .build()
+
+            val googleSignInClient = GoogleSignIn.getClient(activity, gso)
+            val signInIntent = googleSignInClient.signInIntent
+            launcher.launch(signInIntent)
+        }
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(
+            activity,
+            "Failed to start re-authentication. Please try again.",
             android.widget.Toast.LENGTH_SHORT
         ).show()
     }

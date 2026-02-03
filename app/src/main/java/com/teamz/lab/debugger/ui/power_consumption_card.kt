@@ -2244,10 +2244,15 @@ Total Tests: ${allResults.size}
                                     android.util.Log.d("PowerStateDebug", "CameraPowerTestSection - ViewModel.startSingleTest() called")
                                 }
                                 
-                                android.util.Log.d("PowerStateDebug", "CameraPowerTestSection - Starting single test (no ad before test)")
+                                android.util.Log.d("PowerStateDebug", "CameraPowerTestSection - Showing ad before single test")
                                 AnalyticsUtils.logEvent(AnalyticsEvent.PowerTestSingleTestClicked)
-                                // Run test directly - ad will show after results dialog is dismissed
-                                actionToExecute()
+                                // Show ad before test (with throttling)
+                                InterstitialAdManager.showAdBeforeAction(
+                                    activity = activity,
+                                    actionName = "power_single_test"
+                                ) {
+                                    actionToExecute()
+                                }
                             } else {
                                 // Fallback if no activity - use ViewModel's startSingleTest
                                 viewModel.startSingleTest(
@@ -2352,8 +2357,13 @@ Total Tests: ${allResults.size}
                                 }
                                 
                                 AnalyticsUtils.logEvent(AnalyticsEvent.PowerTestMultipleTestsClicked)
-                                // Run test directly - ad will show after results dialog is dismissed
-                                actionToExecute()
+                                // Show ad before test (with throttling)
+                                InterstitialAdManager.showAdBeforeAction(
+                                    activity = activity,
+                                    actionName = "power_multiple_tests"
+                                ) {
+                                    actionToExecute()
+                                }
                             } else {
                                 // Fallback if no activity - use ViewModel's executeTestAction
                                 viewModel.executeTestAction(
@@ -2705,13 +2715,7 @@ Total Tests: ${allResults.size}
                 TextButton(
                     onClick = {
                         showResultDialog = false
-                        // Show ad after user dismisses the result dialog (AdMob compliant - after user action)
-                        val activity = context as? Activity
-                        if (activity != null) {
-                            InterstitialAdManager.showAdIfAvailable(activity) {
-                                // Ad dismissed, nothing to do
-                            }
-                        }
+                        // Ad already shown before test - no need to show again after result
                     }
                 ) {
                     Text(context.string(R.string.ok))
@@ -2761,13 +2765,7 @@ Total Tests: ${allResults.size}
                 TextButton(
                     onClick = {
                         showMultipleTestDialog = false
-                        // Show ad after user dismisses the result dialog (AdMob compliant - after user action)
-                        val activity = context as? Activity
-                        if (activity != null) {
-                            InterstitialAdManager.showAdIfAvailable(activity) {
-                                // Ad dismissed, nothing to do
-                            }
-                        }
+                        // Ad already shown before test - no need to show again after result
                     }
                 ) {
                     Text(context.string(R.string.ok))
@@ -2846,6 +2844,24 @@ fun PowerConsumptionSection(
                     viewModel.saveSectionScrollPosition(scrollValue)
                 }
             }
+    }
+    
+    // Show interstitial ad when Power tab is opened (using centralized throttling mechanism)
+    // InterstitialAdManager.showAdIfAvailable handles all checks internally:
+    // - Checks canShowAd() (60-second cooldown via RemoteConfig)
+    // - Checks RemoteConfigUtils.shouldShowInterstitialAds() (includes debug mode check)
+    // - Updates lastAdShownTime when ad is shown
+    // All checks are centralized - no manual BuildConfig.DEBUG check needed
+    LaunchedEffect(Unit) {
+        if (activity != null) {
+            // Use centralized throttling mechanism - will show ad if throttling allows
+            // shouldShowInterstitialAds() already checks debug mode internally
+            InterstitialAdManager.showAdIfAvailable(activity) {
+                // Ad shown and dismissed (or skipped due to throttling/debug mode)
+            }
+        }
+        // Log analytics for power tab view
+        AnalyticsUtils.logEvent(AnalyticsEvent.TabPowerViewed)
     }
     
     // Collect power data for sharing

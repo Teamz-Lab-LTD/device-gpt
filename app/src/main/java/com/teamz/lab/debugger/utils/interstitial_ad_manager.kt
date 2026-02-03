@@ -7,9 +7,6 @@ import android.os.Looper
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.teamz.lab.debugger.BuildConfig
-import com.teamz.lab.debugger.utils.ImprovedAdManager
-import com.teamz.lab.debugger.utils.AdRevenueOptimizer
 
 /**
  * Unified Interstitial Ad Manager
@@ -145,11 +142,15 @@ object InterstitialAdManager {
     /**
      * Show ad before executing an action (FullScreenVideoAdManager pattern)
      * 
+     * Global throttling: Enforces minimum interval between ads to prevent ad spam
+     * and improve user experience while maintaining revenue (AdMob policy compliance).
+     * 
      * Policy Compliance:
      * - Only shows ad if user explicitly initiated the action
      * - Ad is optional - action proceeds even if ad fails to load/show
      * - Proper error handling - never blocks user action
      * - Preloads next ad for better UX
+     * - Global cooldown prevents excessive ad frequency (AdMob policy compliance)
      * 
      * @param activity The activity context
      * @param actionName Optional name for analytics tracking
@@ -163,13 +164,67 @@ object InterstitialAdManager {
         android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - actionName: $actionName, adLoaded: ${interstitialAd != null}, isLoading: $isLoading")
         android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
         
-        // Preload next ad immediately for better revenue
-        if (interstitialAd == null && !isLoading) {
+        // REVENUE OPTIMIZATION: Always try to load ad if not loaded (even if throttled)
+        // This ensures ads are ready when throttling expires
+        if (interstitialAd == null && !isLoading && RemoteConfigUtils.shouldShowInterstitialAds()) {
             loadAd(activity)
         }
 
+        // Check global cooldown/throttling - prevent showing ads too frequently (AdMob policy compliance)
+        if (!canShowAd()) {
+            val timeSinceLastAd = System.currentTimeMillis() - lastAdShownTime
+            val minInterval = getMinAdIntervalMs()
+            val remainingSeconds = ((minInterval - timeSinceLastAd) / 1000).toInt()
+            android.util.Log.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown for action: $actionName")
+            // Silently skip ad (better UX than showing too frequently)
+            // But ad is loading in background for next opportunity
+            // Policy: Always proceed with action, ad is optional
+            Handler(Looper.getMainLooper()).post {
+                if (!activity.isFinishing && !activity.isDestroyed) {
+                    try {
+                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (throttled): $actionName")
+                        action()
+                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (throttled): $actionName")
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (throttled): ${e.message}", e)
+                        ErrorHandler.handleError(
+                            e,
+                            context = "InterstitialAdManager.showAdBeforeAction-$actionName"
+                        )
+                    }
+                } else {
+                    android.util.Log.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (throttled): $actionName")
+                }
+            }
+            return
+        }
+
+        // Check if ads are enabled (RemoteConfig kill switch)
+        if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
+            android.util.Log.d(TAG, "Ads disabled via RemoteConfig")
+            // Policy: Always proceed with action, ad is optional
+            Handler(Looper.getMainLooper()).post {
+                if (!activity.isFinishing && !activity.isDestroyed) {
+                    try {
+                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - EXECUTING ACTION (ads disabled): $actionName")
+                        action()
+                        android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (ads disabled): $actionName")
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (ads disabled): ${e.message}", e)
+                        ErrorHandler.handleError(
+                            e,
+                            context = "InterstitialAdManager.showAdBeforeAction-$actionName"
+                        )
+                    }
+                } else {
+                    android.util.Log.w(TAG, "InterstitialAdManager showAdBeforeAction - Activity finishing/destroyed, skipping action (ads disabled): $actionName")
+                }
+            }
+            return
+        }
+
         // Policy: Always proceed with action, ad is optional
-        if (interstitialAd != null && RemoteConfigUtils.shouldShowInterstitialAds()) {
+        if (interstitialAd != null) {
             val ad = interstitialAd // Store reference to avoid null issues
             // Store action to survive activity lifecycle changes
             pendingAction = action
@@ -209,7 +264,7 @@ object InterstitialAdManager {
                                 )
                             } catch (e: Exception) {
                                 android.util.Log.e(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Error executing action: ${e.message}", e)
-                                com.teamz.lab.debugger.utils.ErrorHandler.handleError(
+                                ErrorHandler.handleError(
                                     e,
                                     context = "InterstitialAdManager.onAdDismissedFullScreenContent-$actionName"
                                 )
@@ -229,6 +284,7 @@ object InterstitialAdManager {
                 }
 
                 override fun onAdShowedFullScreenContent() {
+                    updateLastAdShownTime() // Update cooldown timestamp when ad is shown (AdMob policy compliance)
                     android.util.Log.d(TAG, "InterstitialAdManager onAdShowedFullScreenContent - Ad shown for: $actionName")
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.AppFullScreenAdShown,
@@ -255,7 +311,7 @@ object InterstitialAdManager {
                                     "Error executing action after ad failure: ${e.message}",
                                     e
                                 )
-                                com.teamz.lab.debugger.utils.ErrorHandler.handleError(
+                                ErrorHandler.handleError(
                                     e,
                                     context = "InterstitialAdManager.onAdFailedToShowFullScreenContent-$actionName"
                                 )
@@ -285,7 +341,7 @@ object InterstitialAdManager {
                         android.util.Log.d(TAG, "InterstitialAdManager showAdBeforeAction - Action executed (no ad): $actionName")
                     } catch (e: Exception) {
                         android.util.Log.e(TAG, "InterstitialAdManager showAdBeforeAction - Error executing action (no ad): ${e.message}", e)
-                        com.teamz.lab.debugger.utils.ErrorHandler.handleError(
+                        ErrorHandler.handleError(
                             e,
                             context = "InterstitialAdManager.showAdBeforeAction-$actionName"
                         )

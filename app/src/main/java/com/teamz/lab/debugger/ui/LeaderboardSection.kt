@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.ui.rememberAdLoader
 import com.teamz.lab.debugger.utils.*
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
@@ -197,16 +198,9 @@ fun LeaderboardSection(activity: Activity) {
         }
     }
     
-    // Show interstitial ad on first view (if enabled and not debug mode)
-    // Using centralized ad showing function with global throttling
-    // Note: Global cooldown in InterstitialAdManager prevents excessive ads
+    // Log analytics for leaderboard tab view (no automatic ad - ads shown on user actions)
     LaunchedEffect(Unit) {
-        if (!BuildConfig.DEBUG && shouldShowInterstitial && viewCount == 0) {
-            // Show ad on first view only (throttling handled globally)
-            showFullScreenAdAfterAction()
-        }
         viewCount++
-        // Log analytics for leaderboard tab view
         AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed, mapOf(
             "view_count" to viewCount,
             "category" to selectedCategory.id
@@ -318,6 +312,10 @@ fun LeaderboardSection(activity: Activity) {
     
     // Centralized reactive premium check - automatically updates when premium status changes
     val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+    
+    // Initialize ad loader to ensure ads are loaded on first view (fixes fresh install issue)
+    // This ensures native ads are available immediately, not just after visiting other tabs
+    val adLoader = rememberAdLoader(activity)
     
     // Native Banner Ad at top (AdMob recommended placement) - stable across recompositions
     // AdMob Best Practice: Use different ad for top banner vs list ads to maximize revenue
@@ -586,12 +584,24 @@ fun LeaderboardSection(activity: Activity) {
                             leaderboardEntries.size
                         },
                         onViewInsights = { 
-                            selectedDeviceId = null // Will use current device
-                            showDeviceInsights = true
+                            // Show ad before opening Device Insights (user-initiated action)
+                            InterstitialAdManager.showAdBeforeAction(
+                                activity = activity,
+                                actionName = "view_device_insights"
+                            ) {
+                                selectedDeviceId = null // Will use current device
+                                showDeviceInsights = true
+                            }
                         },
                         onViewBestDevices = {
-                            // Trigger the Best Devices modal to show
-                            triggerBestDevices++
+                            // Show ad before opening Best Devices (user-initiated action)
+                            InterstitialAdManager.showAdBeforeAction(
+                                activity = activity,
+                                actionName = "view_best_devices"
+                            ) {
+                                // Trigger the Best Devices modal to show
+                                triggerBestDevices++
+                            }
                         }
                     )
                 }
@@ -975,15 +985,21 @@ fun LeaderboardSection(activity: Activity) {
                                             ))
                                             showPremiumPaywall = true
                                         } else {
-                                AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
-                                    "source" to "leaderboard_entry",
-                                    "category" to selectedCategory.id,
-                                    "rank" to originalRank, // Use original rank for analytics
-                                    "device_id" to entry.normalizedDeviceId
-                                ))
-                                // Set selected device and show insights
-                                selectedDeviceId = entry.normalizedDeviceId
-                                showDeviceInsights = true
+                                            // Show ad before opening Device Insights (HIGH ENGAGEMENT ACTION)
+                                            InterstitialAdManager.showAdBeforeAction(
+                                                activity = activity,
+                                                actionName = "view_leaderboard_entry_insights"
+                                            ) {
+                                                AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                                                    "source" to "leaderboard_entry",
+                                                    "category" to selectedCategory.id,
+                                                    "rank" to originalRank, // Use original rank for analytics
+                                                    "device_id" to entry.normalizedDeviceId
+                                                ))
+                                                // Set selected device and show insights
+                                                selectedDeviceId = entry.normalizedDeviceId
+                                                showDeviceInsights = true
+                                            }
                                         }
                                     }
                                 )

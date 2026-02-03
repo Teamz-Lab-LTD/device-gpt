@@ -25,6 +25,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.ui.rememberAdLoader
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.handleError
 import com.teamz.lab.debugger.utils.InterstitialAdManager
@@ -45,8 +46,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.snapshotFlow
 import android.os.Environment
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.debounce
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 @Composable
@@ -56,8 +60,51 @@ fun HealthSection(
     onItemAIClick: ((String, String) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val activity = context as? android.app.Activity
     val coroutineScope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
+    
+    // Use ViewModel to persist scroll state across activity recreation (survives ad show/close)
+    val viewModel: HealthSectionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    
+    // Preserve LazyColumn scroll state across activity recreation
+    // Get saved scroll position from ViewModel and restore it
+    val savedFirstVisibleItemIndex by viewModel.lazyListFirstVisibleItemIndex.collectAsState()
+    val savedFirstVisibleItemScrollOffset by viewModel.lazyListFirstVisibleItemScrollOffset.collectAsState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = savedFirstVisibleItemIndex,
+        initialFirstVisibleItemScrollOffset = savedFirstVisibleItemScrollOffset
+    )
+    
+    // Restore scroll position after activity recreation
+    LaunchedEffect(Unit) {
+        if (savedFirstVisibleItemIndex > 0 || savedFirstVisibleItemScrollOffset > 0) {
+            if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
+                // Only restore if we have a saved position and current position is 0 (activity was recreated)
+                kotlinx.coroutines.delay(100) // Wait for layout
+                try {
+                    listState.animateScrollToItem(savedFirstVisibleItemIndex, savedFirstVisibleItemScrollOffset)
+                } catch (e: Exception) {
+                    // Ignore scroll errors (item might not exist yet)
+                }
+            }
+        }
+    }
+    
+    // Save scroll position to ViewModel when it changes (throttled to prevent ANR)
+    // Use snapshotFlow with debounce to prevent LaunchedEffect from restarting on every scroll event
+    LaunchedEffect(listState) {
+        androidx.compose.runtime.snapshotFlow { 
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset 
+        }
+            .distinctUntilChanged()
+            .debounce(500) // Only process scroll changes every 500ms
+            .collect { (index, offset) ->
+                if (index > 0 || offset > 0) {
+                    viewModel.saveLazyListScrollPosition(index, offset)
+                }
+            }
+    }
+    
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Track pending actions that should execute after permission is granted
@@ -132,6 +179,10 @@ fun HealthSection(
     // Native ad state - stabilize to prevent scroll position jumps
     // Cache the value to prevent recomposition during scroll
     val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
+    
+    // Initialize ad loader to ensure ads are loaded on first view (fixes fresh install issue)
+    // This ensures native ads are available immediately, not just after visiting other tabs
+    val adLoader = activity?.let { rememberAdLoader(it) }
     
     // Cache native ads - update only when scroll stops to prevent scroll jumps
     // This ensures ads are ALWAYS displayed (revenue-safe) but prevents recomposition during scroll
