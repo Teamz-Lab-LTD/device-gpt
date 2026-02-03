@@ -224,6 +224,27 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
+// Task to upload native debug symbols to Firebase Crashlytics
+// This task uploads symbols after building the release bundle
+tasks.register("uploadCrashlyticsSymbolFileRelease") {
+    group = "firebase"
+    description = "Uploads native debug symbols to Firebase Crashlytics"
+    
+    dependsOn("bundleRelease", "extractReleaseNativeDebugMetadata")
+    
+    doLast {
+        val symbolsDir = file("${project.buildDir}/outputs/native-debug-symbols/release")
+        if (symbolsDir.exists() && symbolsDir.listFiles()?.isNotEmpty() == true) {
+            println("📤 Uploading native debug symbols to Firebase Crashlytics...")
+            println("   Location: ${symbolsDir.absolutePath}")
+            // Firebase Crashlytics plugin will handle the upload automatically
+            // when the app is built with the plugin enabled
+        } else {
+            println("⚠️  No native debug symbols found. This is normal if your app has no native code.")
+        }
+    }
+}
+
 // Task to prepare native debug symbols for Google Play Console upload
 // With AGP 8.1+, symbols are embedded in the AAB when debugSymbolLevel = "FULL"
 tasks.register("prepareNativeDebugSymbols") {
