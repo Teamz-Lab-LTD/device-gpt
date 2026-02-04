@@ -32,8 +32,8 @@ android {
     defaultConfig {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
-        targetSdk = 37
-        versionCode = 13
+        targetSdk = 36
+        versionCode = 14
         versionName = "3.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
