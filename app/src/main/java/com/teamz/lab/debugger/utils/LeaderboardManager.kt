@@ -764,6 +764,29 @@ object LeaderboardManager {
      * Update category leaderboards (optimized query structure)
      */
     private suspend fun updateCategoryLeaderboards(entry: LeaderboardEntry) {
+        // Verify authentication before proceeding
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Log.w(TAG, "updateCategoryLeaderboards() - No authenticated user, skipping")
+            return
+        }
+        
+        // Verify userId matches authenticated user (security check)
+        if (entry.userId != currentUser.uid) {
+            Log.w(TAG, "updateCategoryLeaderboards() - userId mismatch: entry.userId=${entry.userId}, currentUser.uid=${currentUser.uid}")
+            return
+        }
+        
+        // Add small delay to ensure auth token is ready
+        kotlinx.coroutines.delay(100)
+        
+        // Double-check authentication after delay
+        val verifiedUser = auth.currentUser
+        if (verifiedUser == null || verifiedUser.uid != entry.userId) {
+            Log.w(TAG, "updateCategoryLeaderboards() - Authentication verification failed after delay")
+            return
+        }
+        
         entry.scores.forEach { (category, score) ->
             try {
                 val categoryRef = db.collection("leaderboards")
@@ -771,7 +794,7 @@ object LeaderboardManager {
                     .collection("entries")
                     .document(entry.normalizedDeviceId)
                 
-                Log.d(TAG, "📤 Updating category leaderboard: $category for device: ${entry.displayName} (normalizedId: ${entry.normalizedDeviceId})")
+                Log.d(TAG, "📤 Updating category leaderboard: $category for device: ${entry.displayName} (normalizedId: ${entry.normalizedDeviceId}, userId: ${entry.userId})")
                 
                 // Use transaction to update aggregated data
                 db.runTransaction { transaction ->
@@ -797,8 +820,9 @@ object LeaderboardManager {
                             measurementCount = entry.measurementCount, // Track total measurements
                             dataFreshness = entry.timestamp // Most recent data timestamp
                         )
-                        // Convert to map and add userId for Firestore rules
+                        // Convert to map and add userId FIRST for Firestore rules (order matters for rule matching)
                         val entryMap = mapOf(
+                            "userId" to entry.userId, // MUST be first for Firestore rules to match
                             "normalizedDeviceId" to newEntry.normalizedDeviceId,
                             "normalizedBrand" to newEntry.normalizedBrand,
                             "normalizedModel" to newEntry.normalizedModel,
@@ -809,7 +833,6 @@ object LeaderboardManager {
                             "topScore" to newEntry.topScore,
                             "dataQuality" to newEntry.dataQuality,
                             "lastUpdated" to newEntry.lastUpdated,
-                            "userId" to entry.userId, // Add userId for Firestore rules
                             "userIds" to listOf(entry.userId), // Track unique user IDs
                             "measurementCount" to newEntry.measurementCount, // Track consistency
                             "dataFreshness" to newEntry.dataFreshness // Track freshness
@@ -861,14 +884,15 @@ object LeaderboardManager {
                         // Update data freshness (most recent timestamp)
                         val newDataFreshness = maxOf(currentData.dataFreshness ?: 0L, entry.timestamp)
                         
+                        // Update map with userId FIRST for Firestore rules (order matters)
                         transaction.update(categoryRef, mapOf(
+                            "userId" to entry.userId, // MUST be first for Firestore rules to match
                             "score" to score,
                             "userCount" to newUserCount,
                             "avgScore" to newAvgScore,
                             "topScore" to newTopScore,
                             "dataQuality" to newDataQuality,
                             "lastUpdated" to entry.timestamp,
-                            "userId" to entry.userId, // Keep userId updated for Firestore rules
                             "userIds" to existingUserIds.toList(), // Store unique user IDs
                             "measurementCount" to newMeasurementCount, // Track consistency
                             "dataFreshness" to newDataFreshness // Track freshness
@@ -877,6 +901,18 @@ object LeaderboardManager {
                     }
                 }.await()
                 Log.d(TAG, "  ✅✅ Category leaderboard updated successfully: $category")
+            } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+                // Handle PERMISSION_DENIED specifically
+                if (e.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                    Log.e(TAG, "❌ Failed to update category leaderboard: $category - PERMISSION_DENIED")
+                    Log.e(TAG, "  Error: ${e.message}")
+                    Log.e(TAG, "  UserId: ${entry.userId}, Authenticated: ${auth.currentUser?.uid}")
+                    Log.e(TAG, "  This may indicate a Firestore rules issue or authentication timing problem")
+                } else {
+                    Log.e(TAG, "❌ Failed to update category leaderboard: $category", e)
+                    Log.e(TAG, "  Error: ${e.message}")
+                    e.printStackTrace()
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Failed to update category leaderboard: $category", e)
                 Log.e(TAG, "  Error: ${e.message}")

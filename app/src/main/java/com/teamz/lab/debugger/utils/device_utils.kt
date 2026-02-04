@@ -2475,54 +2475,26 @@ fun clearAppCacheWithPermission(context: Context): Triple<Boolean, String, Boole
             // External cache might be in use
         }
         
-        // Check if we have "All files access" permission
-        val hasAllFilesAccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            false
-        }
-        
-        // Try to clear other apps' cache if we have permission
-        if (hasAllFilesAccess) {
-            try {
-                // Get apps with cache
-                val appsWithCache = getAppCacheSizes(context)
-                val appsToClear = appsWithCache.take(20) // More apps with permission
-                
-                appsToClear.forEach { appInfo ->
-                    try {
-                        val freed = clearAppCache(context, appInfo.packageName)
-                        if (freed > 0) {
-                            totalFreed += freed
-                            appsCleared++
-                        }
-                    } catch (e: Exception) {
-                        // Skip apps that can't be cleared
+        // Try to clear a few apps' cache (limited - most apps require system permissions)
+        // Note: We removed MANAGE_EXTERNAL_STORAGE permission to comply with Google Play policies
+        // Users can clear other apps' cache manually via system settings
+        try {
+            val appsWithCache = getAppCacheSizes(context)
+            val appsToClear = appsWithCache.take(5) // Limited - only works for some apps
+            
+            appsToClear.forEach { appInfo ->
+                try {
+                    val freed = clearAppCache(context, appInfo.packageName)
+                    if (freed > 0) {
+                        totalFreed += freed
+                        appsCleared++
                     }
+                } catch (e: Exception) {
+                    // Skip apps that can't be cleared (most apps require system permissions)
                 }
-            } catch (e: Exception) {
-                // Can't access app cache info
             }
-        } else {
-            // Without permission, try a few apps (might work for some)
-            try {
-                val appsWithCache = getAppCacheSizes(context)
-                val appsToClear = appsWithCache.take(5) // Limited without permission
-                
-                appsToClear.forEach { appInfo ->
-                    try {
-                        val freed = clearAppCache(context, appInfo.packageName)
-                        if (freed > 0) {
-                            totalFreed += freed
-                            appsCleared++
-                        }
-                    } catch (e: Exception) {
-                        // Skip apps that can't be cleared
-                    }
-                }
-            } catch (e: Exception) {
-                // Can't access app cache info
-            }
+        } catch (e: Exception) {
+            // Can't access app cache info - this is expected for most apps
         }
         
         // Force garbage collection
@@ -2531,21 +2503,15 @@ fun clearAppCacheWithPermission(context: Context): Triple<Boolean, String, Boole
         val freedMB = totalFreed / (1024 * 1024)
         
         if (freedMB > 0) {
-            val message = if (hasAllFilesAccess) {
-                "Freed ${freedMB} MB cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}."
-            } else if (appsCleared > 0) {
-                "Freed ${freedMB} MB cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}. Grant 'All files access' permission to clear more."
+            val message = if (appsCleared > 0) {
+                "Freed ${freedMB} MB cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}. Open storage settings to clear more app caches."
             } else {
-                "Freed ${freedMB} MB cache. Grant 'All files access' permission to clear more app caches."
+                "Freed ${freedMB} MB cache. Open storage settings to clear more app caches."
             }
             Triple(true, message, false)
         } else {
-            // No cache cleared - check if we need permission
-            if (!hasAllFilesAccess && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Triple(false, "Grant 'All files access' permission to clear app caches. Opening settings...", true)
-            } else {
-                Triple(false, "Need permission to clear app caches. Opening storage settings...", true)
-            }
+            // No cache cleared - open storage settings for user to clear manually
+            Triple(false, "Open storage settings to clear app caches manually.", true)
         }
     } catch (e: Exception) {
         handleError(e)
@@ -2591,67 +2557,25 @@ fun clearStorageCache(context: Context): Triple<Boolean, String, Boolean> {
             // External cache might be in use
         }
         
-        // Check if we have "All files access" permission (Android 11+)
-        val hasAllFilesAccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            false
-        }
-        
-        // If we have all files access, try to clear more cache
-        if (hasAllFilesAccess) {
-            // Try to clear cache from /data/data/*/cache directories
-            // Note: Even with all files access, we can't access other apps' private directories
-            // But we can try to clear accessible cache files
-            try {
-                val appsWithCache = getAppCacheSizes(context).take(20) // More apps with permission
-                
-                appsWithCache.forEach { appInfo ->
-                    try {
-                        val freed = clearAppCache(context, appInfo.packageName)
-                        if (freed > 0) {
-                            totalFreed += freed
-                            appsCleared++
-                        }
-                    } catch (e: Exception) {
-                        // Skip apps that can't be cleared
-                    }
-                }
-            } catch (e: Exception) {
-                // Can't access app cache info
-            }
+        // Try to clear a few apps' cache (limited - most apps require system permissions)
+        // Note: We removed MANAGE_EXTERNAL_STORAGE permission to comply with Google Play policies
+        // Users can clear other apps' cache manually via system settings
+        try {
+            val appsWithCache = getAppCacheSizes(context).take(5) // Limited - only works for some apps
             
-            // Try to clear system cache directories if accessible
-            try {
-                val systemCacheDir = File("/data/local/tmp")
-                if (systemCacheDir.exists() && systemCacheDir.canWrite()) {
-                    val cacheSize = systemCacheDir.walkTopDown().sumOf { it.length() }
-                    systemCacheDir.deleteRecursively()
-                    totalFreed += cacheSize
-                }
-            } catch (e: Exception) {
-                // System cache not accessible
-            }
-        } else {
-            // Without all files access, only clear our own cache
-            // Try to get and clear accessible app caches (limited)
-            try {
-                val appsWithCache = getAppCacheSizes(context).take(5) // Limited without permission
-                
-                appsWithCache.forEach { appInfo ->
-                    try {
-                        val freed = clearAppCache(context, appInfo.packageName)
-                        if (freed > 0) {
-                            totalFreed += freed
-                            appsCleared++
-                        }
-                    } catch (e: Exception) {
-                        // Skip apps that can't be cleared
+            appsWithCache.forEach { appInfo ->
+                try {
+                    val freed = clearAppCache(context, appInfo.packageName)
+                    if (freed > 0) {
+                        totalFreed += freed
+                        appsCleared++
                     }
+                } catch (e: Exception) {
+                    // Skip apps that can't be cleared (most apps require system permissions)
                 }
-            } catch (e: Exception) {
-                // Can't access app cache info
             }
+        } catch (e: Exception) {
+            // Can't access app cache info - this is expected for most apps
         }
         
         // Force garbage collection
@@ -2661,21 +2585,15 @@ fun clearStorageCache(context: Context): Triple<Boolean, String, Boolean> {
         
         // If we freed some space, return success
         if (freedMB > 0) {
-            val message = if (hasAllFilesAccess) {
-                "Freed ${freedMB} MB storage. Cleared cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}."
+            val message = if (appsCleared > 0) {
+                "Freed ${freedMB} MB storage. Cleared cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}. Open storage settings to clear more."
             } else {
-                "Freed ${freedMB} MB storage. Grant 'All files access' permission to clear more cache."
+                "Freed ${freedMB} MB storage. Open storage settings to clear more app caches."
             }
             Triple(true, message, false)
         } else {
-            // No cache cleared - check if we need permission
-            if (!hasAllFilesAccess && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Request all files access permission
-                Triple(false, "Grant 'All files access' permission to clear app caches. Opening settings...", true)
-            } else {
-                // No permission available or already have it but still can't clear
-                Triple(false, "Need system permission to clear all app caches. Opening storage settings...", true)
-            }
+            // No cache cleared - open storage settings for user to clear manually
+            Triple(false, "Open storage settings to clear app caches manually.", true)
         }
     } catch (e: Exception) {
         handleError(e)
@@ -2689,22 +2607,6 @@ fun clearStorageCache(context: Context): Triple<Boolean, String, Boolean> {
  */
 fun openStorageSettings(context: Context): Boolean {
     return try {
-        // Priority: Try Android 11+ "All files access" permission screen first
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Check if we already have the permission
-            val hasPermission = Environment.isExternalStorageManager()
-            
-            if (!hasPermission) {
-                // Request "All files access" permission
-                val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = android.net.Uri.parse("package:${context.packageName}")
-                if (intent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(intent)
-                    return true
-                }
-            }
-        }
-        
         // Try storage settings (Android 7.0+)
         val intent = Intent(android.provider.Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
         if (intent.resolveActivity(context.packageManager) != null) {

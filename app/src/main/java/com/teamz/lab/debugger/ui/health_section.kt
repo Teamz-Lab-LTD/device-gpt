@@ -47,7 +47,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.snapshotFlow
-import android.os.Environment
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.debounce
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -122,15 +121,11 @@ fun HealthSection(
                     
                     // Check storage permission and execute pending action
                     pendingStorageAction?.let { action ->
-                        val hasAllFilesAccess = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                            Environment.isExternalStorageManager()
-                        } else {
-                            false
-                        }
-                        if (hasAllFilesAccess) {
-                            pendingStorageAction = null
-                            action() // Execute the pending storage cleanup
-                        }
+                        // Execute the pending storage cleanup
+                        // Note: We removed MANAGE_EXTERNAL_STORAGE permission check
+                        // The app will clear its own cache and open settings for other apps
+                        pendingStorageAction = null
+                        action() // Execute the pending storage cleanup
                     }
                     
                     // Check battery optimization and execute pending action
@@ -141,15 +136,11 @@ fun HealthSection(
                     
                     // Check cache permission and execute pending action
                     pendingCacheAction?.let { action ->
-                        val hasAllFilesAccess = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                            Environment.isExternalStorageManager()
-                        } else {
-                            false
-                        }
-                        if (hasAllFilesAccess) {
-                            pendingCacheAction = null
-                            action() // Execute the pending cache cleanup
-                        }
+                        // Execute the pending cache cleanup
+                        // Note: We removed MANAGE_EXTERNAL_STORAGE permission check
+                        // The app will clear its own cache and open settings for other apps
+                        pendingCacheAction = null
+                        action() // Execute the pending cache cleanup
                     }
                 }
             }

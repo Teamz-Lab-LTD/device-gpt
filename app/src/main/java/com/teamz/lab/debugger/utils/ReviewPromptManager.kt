@@ -384,9 +384,24 @@ object ReviewPromptManager {
      * This ensures if user reviewed on Device A, Device B will know about it
      */
     private suspend fun syncReviewStatusFromFirebase(context: Context) {
-        val currentUser = auth.currentUser ?: return
+        // Explicitly check if user is authenticated
+        var currentUser = auth.currentUser
+        if (currentUser == null) {
+            Log.d(TAG, "syncReviewStatusFromFirebase() - No authenticated user, skipping")
+            return
+        }
         
         try {
+            // Add small delay to ensure auth token is ready
+            kotlinx.coroutines.delay(100)
+            
+            // Double-check authentication after delay
+            currentUser = auth.currentUser
+            if (currentUser == null) {
+                Log.d(TAG, "syncReviewStatusFromFirebase() - User not authenticated after delay, skipping")
+                return
+            }
+            
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val lastSyncTime = prefs.getLong(KEY_LAST_SYNC_TIME, 0L)
             val timeSinceSync = System.currentTimeMillis() - lastSyncTime
@@ -400,9 +415,10 @@ object ReviewPromptManager {
             
             Log.d(TAG, "syncReviewStatusFromFirebase() - Syncing review status for user: ${currentUser.uid}")
             
+            // Use Source.SERVER to ensure fresh data and bypass cache issues
             val reviewDoc = db.collection(FIRESTORE_COLLECTION)
                 .document(currentUser.uid)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .await()
             
             if (reviewDoc.exists()) {
@@ -430,6 +446,14 @@ object ReviewPromptManager {
                     putLong(KEY_LAST_SYNC_TIME, System.currentTimeMillis())
                 }
             }
+        } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+            // Handle PERMISSION_DENIED specifically
+            if (e.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                Log.w(TAG, "syncReviewStatusFromFirebase() - ⚠️ Permission denied (user may not be authenticated or rules may not allow read)")
+            } else {
+                Log.e(TAG, "syncReviewStatusFromFirebase() - ❌ Error syncing review status", e)
+            }
+            // Don't throw - this is a background sync, shouldn't block app
         } catch (e: Exception) {
             Log.e(TAG, "syncReviewStatusFromFirebase() - ❌ Error syncing review status", e)
             // Don't throw - this is a background sync, shouldn't block app
@@ -442,7 +466,12 @@ object ReviewPromptManager {
      * Can be called from external code (e.g., when user manually reviews)
      */
     suspend fun saveReviewStatusToFirebase(context: Context, hasReviewed: Boolean) {
-        val currentUser = auth.currentUser ?: return
+        // Explicitly check if user is authenticated
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Log.d(TAG, "saveReviewStatusToFirebase() - No authenticated user, skipping")
+            return
+        }
         
         try {
             Log.d(TAG, "saveReviewStatusToFirebase() - Saving review status: $hasReviewed for user: ${currentUser.uid}")
@@ -460,6 +489,14 @@ object ReviewPromptManager {
                 .await()
             
             Log.d(TAG, "saveReviewStatusToFirebase() - ✅ Review status saved to Firebase")
+        } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+            // Handle PERMISSION_DENIED specifically
+            if (e.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                Log.w(TAG, "saveReviewStatusToFirebase() - ⚠️ Permission denied (user may not be authenticated or rules may not allow write)")
+            } else {
+                Log.e(TAG, "saveReviewStatusToFirebase() - ❌ Error saving review status", e)
+            }
+            // Don't throw - this is a background operation
         } catch (e: Exception) {
             Log.e(TAG, "saveReviewStatusToFirebase() - ❌ Error saving review status", e)
             // Don't throw - this is a background operation
