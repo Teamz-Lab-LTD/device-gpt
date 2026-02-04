@@ -288,7 +288,11 @@ data class AppPowerLeaderboardEntry(
     val lastUpdated: Long = 0L,
     val userId: String = "",
     val userIds: List<String> = emptyList(), // Track unique user IDs
-    val measurementCount: Int = 0 // Total measurements
+    val measurementCount: Int = 0, // Total measurements
+    val androidVersion: String = "", // Most common OS version for this app
+    val androidVersions: Map<String, Int> = emptyMap(), // Version -> user count distribution
+    val osPowerConsumption: Map<String, Double> = emptyMap(), // OS version -> average power consumption (watts)
+    val osBatteryImpact: Map<String, Double> = emptyMap() // OS version -> average battery impact (%/hour)
 )
 
 /**

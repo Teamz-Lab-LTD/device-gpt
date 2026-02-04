@@ -54,6 +54,9 @@ fun DeviceInsightsScreen(
     ) {
         when {
             isLoading -> {
+                // Filter out APP_POWER_MONITORING from shimmer loading too
+                val deviceCategoriesCount = LeaderboardCategory.entries.filter { it != LeaderboardCategory.APP_POWER_MONITORING }.size
+                
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -82,7 +85,7 @@ fun DeviceInsightsScreen(
                             )
                         )
                     }
-                    items(LeaderboardCategory.entries.size) {
+                    items(deviceCategoriesCount) {
                         ShimmerCategoryScoreCard()
                     }
                 }
@@ -131,6 +134,9 @@ fun DeviceInsightsScreen(
                 val insight = deviceInsight!!
                 val trustBadge = calculateTrustBadge(insight.userCount, insight.dataQuality)
                 
+                // Filter out APP_POWER_MONITORING - it's for app rankings, not device insights
+                val deviceCategories = LeaderboardCategory.entries.filter { it != LeaderboardCategory.APP_POWER_MONITORING }
+                
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -163,8 +169,8 @@ fun DeviceInsightsScreen(
                         )
                     }
                     
-                    items(LeaderboardCategory.entries.size) { index ->
-                        val category = LeaderboardCategory.entries[index]
+                    items(deviceCategories.size) { index ->
+                        val category = deviceCategories[index]
                         val score = if (category == LeaderboardCategory.BEST_DEVICE) {
                             // Calculate composite score for BEST_DEVICE category
                             BestDeviceCalculator.calculateCompositeScoreFromScores(

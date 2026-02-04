@@ -1,53 +1,101 @@
 package com.teamz.lab.debugger.ui
 
 import android.app.Activity
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.background
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.border
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.teamz.lab.debugger.ui.theme.DesignSystemColors
-import com.teamz.lab.debugger.ui.rememberAdLoader
-import com.teamz.lab.debugger.utils.*
-import com.teamz.lab.debugger.utils.InterstitialAdManager
-import com.teamz.lab.debugger.utils.RevenueCatManager
-import kotlinx.coroutines.launch
-import android.util.Log
-import com.teamz.lab.debugger.BuildConfig
 import com.google.android.gms.ads.nativead.NativeAd
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.utils.AnalyticsEvent
+import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.AppPowerLeaderboardEntry
+import com.teamz.lab.debugger.utils.BestDevicesAggregator
+import com.teamz.lab.debugger.utils.CategoryLeaderboardEntry
+import com.teamz.lab.debugger.utils.DeviceNameNormalizer
+import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.LeaderboardCategory
+import com.teamz.lab.debugger.utils.LeaderboardManager
+import com.teamz.lab.debugger.utils.RemoteConfigUtils
+import com.teamz.lab.debugger.utils.RevenueCatManager
+import com.teamz.lab.debugger.utils.TrustBadge
+import kotlinx.coroutines.launch
 
 /**
  * Leaderboard Section - Child-friendly UI
@@ -383,6 +431,7 @@ fun LeaderboardSection(activity: Activity) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
             
+            
             // Category selector - set loading state immediately when category changes
             CategorySelector(
                 selectedCategory = selectedCategory,
@@ -593,19 +642,11 @@ fun LeaderboardSection(activity: Activity) {
                                 showDeviceInsights = true
                             }
                         },
-                        onViewBestDevices = {
-                            // Show ad before opening Best Devices (user-initiated action)
-                            InterstitialAdManager.showAdBeforeAction(
-                                activity = activity,
-                                actionName = "view_best_devices"
-                            ) {
-                                // Trigger the Best Devices modal to show
-                                triggerBestDevices++
-                            }
-                        }
+                        onViewBestDevices = null // Removed - Best Devices is available via tabs
                     )
                 }
             }
+            
             
             // User rank display with premium gate for non-premium users
             if (!isPremium && userRank > 0 && selectedCategory != LeaderboardCategory.APP_POWER_MONITORING && selectedCategory != LeaderboardCategory.BEST_DEVICE) {
@@ -1499,6 +1540,66 @@ fun LeaderboardEntryCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 
+                // OS version info with scores per OS - only show if data is available
+                if (entry.androidVersion.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Text(
+                            text = "🤖",
+                            fontSize = 14.sp
+                        )
+                        // Show OS version(s) with scores per OS
+                        if (entry.osScores.isNotEmpty() && entry.osScores.size > 1) {
+                            // Multiple versions: Show scores per OS
+                            // Format: "Android 13 (85/100), Android 14 (88/100)"
+                            val osScoresText = entry.osScores.entries
+                                .sortedByDescending { it.value } // Sort by score (descending)
+                                .joinToString(", ") { 
+                                    val scoreInt = it.value.toInt()
+                                    "Android ${it.key} ($scoreInt/100)"
+                                }
+                            Text(
+                                text = osScoresText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        } else if (entry.osScores.isNotEmpty()) {
+                            // Single version: Show "Android 13 (85/100)"
+                            val score = entry.osScores[entry.androidVersion] ?: entry.avgScore
+                            Text(
+                                text = "Android ${entry.androidVersion} (${score.toInt()}/100)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        } else {
+                            // Fallback: Show OS version without score data
+                            if (entry.androidVersions.isNotEmpty() && entry.androidVersions.size > 1) {
+                                val versionCounts = entry.androidVersions.entries
+                                    .sortedByDescending { it.value }
+                                    .joinToString(", ") { "Android ${it.key} (${it.value})" }
+                                Text(
+                                    text = versionCounts,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 12.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Android ${entry.androidVersion}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+                
                 // Score with explanation - show "No data" for zero scores
                 val scoreText = if (entry.avgScore == 0.0) {
                     "Score: No data"
@@ -1907,6 +2008,172 @@ fun UserRankCardPremiumGate(
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Normal
                     )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * "Should You Update?" Card - Premium Feature
+ * Shows OS update recommendation if newer OS version has better performance
+ */
+@Composable
+fun ShouldYouUpdateCard(
+    activity: Activity,
+    normalizedDeviceId: String,
+    isPremium: Boolean,
+    onUnlockClick: () -> Unit,
+    onViewOSComparison: () -> Unit = {}
+) {
+    val scope = rememberCoroutineScope()
+    var osRecommendation by remember { mutableStateOf<Pair<String?, Double>?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    val currentOS = android.os.Build.VERSION.RELEASE
+    
+    LaunchedEffect(normalizedDeviceId, currentOS) {
+        isLoading = true
+        osRecommendation = null
+        scope.launch {
+            try {
+                osRecommendation = LeaderboardManager.getRecommendedOSVersion(
+                    normalizedDeviceId = normalizedDeviceId,
+                    currentOS = currentOS
+                )
+            } catch (e: Exception) {
+                // Handle error silently
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+    
+    // Always show the card, but with different content based on state
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = DesignSystemColors.NeonGreen.copy(alpha = 0.2f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🚀",
+                    fontSize = 32.sp,
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    when {
+                        isLoading -> {
+                            Text(
+                                text = "Checking OS updates...",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Analyzing your device performance",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        osRecommendation != null -> {
+                            val (recommendedOS, improvement) = osRecommendation!!
+                            Text(
+                                text = if (isPremium) {
+                                    "Update to Android $recommendedOS"
+                                } else {
+                                    "Should you update?"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (isPremium) {
+                                Text(
+                                    text = "Could improve performance by ${improvement.toInt()}%",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = "See if updating OS will improve your device",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        else -> {
+                            // No recommendation available (no data or no better version)
+                            Text(
+                                text = if (isPremium) {
+                                    "OS Comparison Available"
+                                } else {
+                                    "Should you update?"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (isPremium) {
+                                    "Compare your device across different Android versions"
+                                } else {
+                                    "See if updating OS will improve your device"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            if (isPremium) {
+                // Premium users can view OS comparison
+                Button(
+                    onClick = onViewOSComparison,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DesignSystemColors.NeonGreen,
+                        contentColor = DesignSystemColors.Dark
+                    )
+                ) {
+                    Text(
+                        "View OS Comparison",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                // Free users see unlock button
+                Button(
+                    onClick = onUnlockClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DesignSystemColors.NeonGreen,
+                        contentColor = DesignSystemColors.Dark
+                    )
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Text(
+                            "Unlock OS Comparison",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "See detailed comparison [Premium]",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
                 }
             }
         }
@@ -2391,6 +2658,66 @@ fun AppPowerLeaderboardEntryCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
+                }
+                
+                // OS version info with power/battery per OS - only show if data is available
+                if (entry.androidVersion.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Text(
+                            text = "🤖",
+                            fontSize = 14.sp
+                        )
+                        // Show OS version(s) with power consumption per OS
+                        if (entry.osPowerConsumption.isNotEmpty() && entry.osPowerConsumption.size > 1) {
+                            // Multiple versions: Show power per OS
+                            // Format: "Android 13 (2.5W), Android 14 (2.3W)"
+                            val osPowerText = entry.osPowerConsumption.entries
+                                .sortedByDescending { it.value } // Sort by power consumption (descending)
+                                .joinToString(", ") { 
+                                    val power = "%.2f".format(it.value)
+                                    "Android ${it.key} ($power W)"
+                                }
+                            Text(
+                                text = osPowerText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        } else if (entry.osPowerConsumption.isNotEmpty()) {
+                            // Single version: Show "Android 13 (2.5W)"
+                            val power = entry.osPowerConsumption[entry.androidVersion] ?: entry.avgPowerConsumption
+                            Text(
+                                text = "Android ${entry.androidVersion} (${"%.2f".format(power)} W)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        } else {
+                            // Fallback: Show OS version without power data
+                            if (entry.androidVersions.isNotEmpty() && entry.androidVersions.size > 1) {
+                                val versionCounts = entry.androidVersions.entries
+                                    .sortedByDescending { it.value }
+                                    .joinToString(", ") { "Android ${it.key} (${it.value})" }
+                                Text(
+                                    text = versionCounts,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 12.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Android ${entry.androidVersion}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
                 }
                 
                 // Trust indicators

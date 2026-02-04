@@ -3,6 +3,7 @@ package com.teamz.lab.debugger.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.teamz.lab.debugger.utils.AppLog
 import androidx.core.content.edit
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -694,67 +695,132 @@ object LeaderboardManager {
             context: Context,
             entry: LeaderboardEntry
         ): Boolean {
+            AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.d(TAG, "🚀 START: uploadLeaderboardEntry()")
+            AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+            
             return try {
+                // Step 1: Get and validate user ID
                 val userId = getCurrentUserId()
+                AppLog.d(TAG, "📋 Step 1: User ID check")
+                AppLog.d(TAG, "  - Retrieved userId: ${if (userId.isNotEmpty()) userId else "EMPTY"}")
+                
                 if (userId.isEmpty()) {
-                    Log.e(TAG, "❌ No user ID available - cannot upload")
+                    AppLog.e(TAG, "❌ Step 1 FAILED: No user ID available - cannot upload")
+                    AppLog.e(TAG, "  - Auth currentUser: ${auth.currentUser?.uid ?: "null"}")
                     return false
                 }
+                AppLog.d(TAG, "✅ Step 1 PASSED: User ID available")
                 
-                // Update entry with user ID
+                // Step 2: Verify authentication
+                val currentUser = auth.currentUser
+                AppLog.d(TAG, "📋 Step 2: Authentication verification")
+                AppLog.d(TAG, "  - Firebase Auth currentUser: ${currentUser?.uid ?: "null"}")
+                AppLog.d(TAG, "  - userId matches auth: ${currentUser?.uid == userId}")
+                
+                if (currentUser == null) {
+                    AppLog.w(TAG, "⚠️ Step 2 WARNING: No authenticated user, but userId exists")
+                } else {
+                    AppLog.d(TAG, "✅ Step 2 PASSED: User authenticated")
+                }
+                
+                // Step 3: Prepare entry with user ID
                 val entryWithUserId = entry.copy(userId = userId)
+                AppLog.d(TAG, "📋 Step 3: Entry preparation")
+                AppLog.d(TAG, "  - Device Name: ${entryWithUserId.displayName}")
+                AppLog.d(TAG, "  - Normalized Device ID: ${entryWithUserId.normalizedDeviceId}")
+                AppLog.d(TAG, "  - Brand: ${entryWithUserId.normalizedBrand}")
+                AppLog.d(TAG, "  - Model: ${entryWithUserId.normalizedModel}")
+                AppLog.d(TAG, "  - Data Quality: ${entryWithUserId.dataQuality}/5")
+                AppLog.d(TAG, "  - Timestamp: ${entryWithUserId.timestamp} (${java.util.Date(entryWithUserId.timestamp)})")
+                AppLog.d(TAG, "  - Measurement Count: ${entryWithUserId.measurementCount}")
                 
-                // Debug logging for scores
+                // Step 4: Log all scores
                 val nonZeroScores = entryWithUserId.scores.values.count { it > 0.0 }
-                Log.d(TAG, "📊 Uploading leaderboard entry:")
-                Log.d(TAG, "  - User ID: $userId")
-                Log.d(TAG, "  - Device: ${entryWithUserId.displayName}")
-                Log.d(TAG, "  - Data Quality: ${entryWithUserId.dataQuality}/5")
-                Log.d(TAG, "  - Non-zero scores: $nonZeroScores/${entryWithUserId.scores.size}")
+                AppLog.d(TAG, "📋 Step 4: Score validation")
+                AppLog.d(TAG, "  - Total categories: ${entryWithUserId.scores.size}")
+                AppLog.d(TAG, "  - Non-zero scores: $nonZeroScores")
+                AppLog.d(TAG, "  - Zero scores: ${entryWithUserId.scores.size - nonZeroScores}")
+                
                 entryWithUserId.scores.forEach { (category, score) ->
                     if (score > 0.0) {
-                        Log.d(TAG, "  ✅ $category: $score/100")
+                        AppLog.d(TAG, "  ✅ $category: $score/100")
                     } else {
-                        Log.d(TAG, "  ⚠️ $category: $score/100 (zero)")
+                        AppLog.w(TAG, "  ⚠️ $category: $score/100 (ZERO - will not appear in leaderboard)")
                     }
                 }
                 
                 // Check specifically for thermal_efficiency
                 val thermalScore = entryWithUserId.scores["thermal_efficiency"] ?: 0.0
                 if (thermalScore <= 0) {
-                    Log.w(TAG, "⚠️ WARNING: thermal_efficiency score is $thermalScore! This will show as 0 in leaderboard.")
-                    Log.w(TAG, "⚠️ Check if battery temperature is being collected correctly.")
+                    AppLog.w(TAG, "⚠️ WARNING: thermal_efficiency score is $thermalScore! This will show as 0 in leaderboard.")
+                    AppLog.w(TAG, "⚠️ Check if battery temperature is being collected correctly.")
                 }
                 
-                // Upload to user_data/latest (only latest entry, not snapshots)
+                // Step 5: Upload to user_data/latest/current
+                val userDataPath = "user_data/$userId/latest/current"
                 val userDataRef = db.collection("user_data")
                     .document(userId)
                     .collection("latest")
                     .document("current")
                 
-                Log.d(TAG, "📤 Uploading to Firestore: user_data/$userId/latest/current")
+                AppLog.d(TAG, "📋 Step 5: Uploading to user_data collection")
+                AppLog.d(TAG, "  - Firestore Path: $userDataPath")
+                AppLog.d(TAG, "  - Document ID: current")
+                AppLog.d(TAG, "  - Starting Firestore set() operation...")
+                
+                val uploadStartTime = System.currentTimeMillis()
                 userDataRef.set(entryWithUserId).await()
-                Log.d(TAG, "✅ User data uploaded successfully")
+                val uploadDuration = System.currentTimeMillis() - uploadStartTime
                 
-                // Update aggregated leaderboard entries for each category
-                Log.d(TAG, "📤 Updating category leaderboards...")
+                AppLog.d(TAG, "✅ Step 5 PASSED: User data uploaded successfully")
+                AppLog.d(TAG, "  - Upload duration: ${uploadDuration}ms")
+                AppLog.d(TAG, "  - Firestore Path: $userDataPath")
+                
+                // Step 6: Update category leaderboards
+                AppLog.d(TAG, "📋 Step 6: Updating category leaderboards")
+                AppLog.d(TAG, "  - Categories to update: ${entryWithUserId.scores.keys.joinToString(", ")}")
+                val categoryUpdateStartTime = System.currentTimeMillis()
                 updateCategoryLeaderboards(entryWithUserId)
-                Log.d(TAG, "✅ Category leaderboards updated")
+                val categoryUpdateDuration = System.currentTimeMillis() - categoryUpdateStartTime
+                AppLog.d(TAG, "✅ Step 6 PASSED: Category leaderboards updated")
+                AppLog.d(TAG, "  - Update duration: ${categoryUpdateDuration}ms")
                 
-                // Update device insights
-                Log.d(TAG, "📤 Updating device insights...")
+                // Step 7: Update device insights
+                AppLog.d(TAG, "📋 Step 7: Updating device insights")
+                AppLog.d(TAG, "  - Device ID: ${entryWithUserId.normalizedDeviceId}")
+                val insightsUpdateStartTime = System.currentTimeMillis()
                 updateDeviceInsights(entryWithUserId)
-                Log.d(TAG, "✅ Device insights updated")
+                val insightsUpdateDuration = System.currentTimeMillis() - insightsUpdateStartTime
+                AppLog.d(TAG, "✅ Step 7 PASSED: Device insights updated")
+                AppLog.d(TAG, "  - Update duration: ${insightsUpdateDuration}ms")
                 
-                // Save last upload time
+                // Step 8: Save last upload time
+                AppLog.d(TAG, "📋 Step 8: Saving last upload timestamp")
                 saveLastUpload(context)
+                AppLog.d(TAG, "✅ Step 8 PASSED: Last upload time saved")
                 
-                Log.d(TAG, "✅✅✅ Leaderboard entry uploaded successfully for device: ${entryWithUserId.displayName}")
+                val totalDuration = System.currentTimeMillis() - uploadStartTime
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.d(TAG, "✅✅✅ SUCCESS: Leaderboard entry uploaded completely")
+                AppLog.d(TAG, "  - Device: ${entryWithUserId.displayName}")
+                AppLog.d(TAG, "  - Total duration: ${totalDuration}ms")
+                AppLog.d(TAG, "  - Categories updated: ${entryWithUserId.scores.size}")
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
                 true
             } catch (e: Exception) {
-                Log.e(TAG, "❌❌❌ Failed to upload leaderboard entry", e)
-                Log.e(TAG, "  Error type: ${e.javaClass.simpleName}")
-                Log.e(TAG, "  Error message: ${e.message}")
+                AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.e(TAG, "❌❌❌ FAILED: uploadLeaderboardEntry()")
+                AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.e(TAG, "  - Error type: ${e.javaClass.simpleName}")
+                AppLog.e(TAG, "  - Error message: ${e.message}")
+                AppLog.e(TAG, "  - Stack trace:", e)
+                
+                // Log additional context
+                AppLog.e(TAG, "  - User ID: ${getCurrentUserId()}")
+                AppLog.e(TAG, "  - Auth currentUser: ${auth.currentUser?.uid ?: "null"}")
+                AppLog.e(TAG, "  - Device: ${entry.displayName}")
+                
                 e.printStackTrace()
                 false
             }
@@ -797,13 +863,19 @@ object LeaderboardManager {
                 Log.d(TAG, "📤 Updating category leaderboard: $category for device: ${entry.displayName} (normalizedId: ${entry.normalizedDeviceId}, userId: ${entry.userId})")
                 
                 // Use transaction to update aggregated data
+                AppLog.d(TAG, "  │  - Starting Firestore transaction...")
+                val transactionStartTime = System.currentTimeMillis()
+                
                 db.runTransaction { transaction ->
                     val snapshot = transaction.get(categoryRef)
                     val currentData = snapshot.toObject(CategoryLeaderboardEntry::class.java)
                     
+                    AppLog.d(TAG, "  │  - Transaction: Document exists: ${snapshot.exists()}")
+                    
                     if (currentData == null) {
                         // First entry for this device
-                        Log.d(TAG, "  ✅ Creating NEW entry for device: ${entry.displayName} in category: $category")
+                        AppLog.d(TAG, "  │  - Action: Creating NEW entry")
+                        AppLog.d(TAG, "  │  - Reason: No existing data for this device in category")
                         val newEntry = CategoryLeaderboardEntry(
                             normalizedDeviceId = entry.normalizedDeviceId,
                             normalizedBrand = entry.normalizedBrand,
@@ -818,7 +890,10 @@ object LeaderboardManager {
                             userId = entry.userId,
                             userIds = listOf(entry.userId),
                             measurementCount = entry.measurementCount, // Track total measurements
-                            dataFreshness = entry.timestamp // Most recent data timestamp
+                            dataFreshness = entry.timestamp, // Most recent data timestamp
+                            androidVersion = entry.androidVersion, // Store OS version
+                            androidVersions = mapOf(entry.androidVersion to 1), // Track version distribution
+                            osScores = if (entry.androidVersion.isNotEmpty()) mapOf(entry.androidVersion to score) else emptyMap() // Track scores per OS
                         )
                         // Convert to map and add userId FIRST for Firestore rules (order matters for rule matching)
                         val entryMap = mapOf(
@@ -835,15 +910,34 @@ object LeaderboardManager {
                             "lastUpdated" to newEntry.lastUpdated,
                             "userIds" to listOf(entry.userId), // Track unique user IDs
                             "measurementCount" to newEntry.measurementCount, // Track consistency
-                            "dataFreshness" to newEntry.dataFreshness // Track freshness
+                            "dataFreshness" to newEntry.dataFreshness, // Track freshness
+                            "androidVersion" to newEntry.androidVersion, // Store OS version
+                            "androidVersions" to newEntry.androidVersions, // Track version distribution
+                            "osScores" to newEntry.osScores // Track scores per OS
                         )
                         transaction.set(categoryRef, entryMap)
-                        Log.d(TAG, "  ✅ New entry created: userCount=1, score=$score, quality=${entry.dataQuality}")
+                        AppLog.d(TAG, "  │  - Transaction: set() called with userId first")
+                        AppLog.d(TAG, "  │  - New entry data:")
+                        AppLog.d(TAG, "  │    * userId: ${entry.userId}")
+                        AppLog.d(TAG, "  │    * userCount: 1")
+                        AppLog.d(TAG, "  │    * score: $score")
+                        AppLog.d(TAG, "  │    * avgScore: $score")
+                        AppLog.d(TAG, "  │    * dataQuality: ${entry.dataQuality}")
+                        AppLog.d(TAG, "  │    * measurementCount: ${entry.measurementCount}")
                     } else {
                         // Check if this is a new user or same user updating
+                        AppLog.d(TAG, "  │  - Action: Updating EXISTING entry")
+                        AppLog.d(TAG, "  │  - Current data:")
+                        AppLog.d(TAG, "  │    * userCount: ${currentData.userCount}")
+                        AppLog.d(TAG, "  │    * avgScore: ${currentData.avgScore}")
+                        AppLog.d(TAG, "  │    * topScore: ${currentData.topScore}")
+                        AppLog.d(TAG, "  │    * dataQuality: ${currentData.dataQuality}")
+                        
                         // Get existing userIds list (if exists) or create new one
                         val existingUserIds = (snapshot.get("userIds") as? List<*>)?.mapNotNull { it as? String }?.toMutableSet() 
                             ?: mutableSetOf<String>()
+                        
+                        AppLog.d(TAG, "  │  - Existing userIds: ${existingUserIds.size} users")
                         
                         // Only increment userCount if this is a new unique user
                         val isNewUser = !existingUserIds.contains(entry.userId)
@@ -855,10 +949,11 @@ object LeaderboardManager {
                         }
                         
                         if (isNewUser) {
-                            Log.d(TAG, "  ✅ NEW USER added to existing device: ${entry.displayName}")
-                            Log.d(TAG, "  📊 User count: ${currentData.userCount} → $newUserCount")
+                            AppLog.d(TAG, "  │  - User status: NEW USER (adding to device)")
+                            AppLog.d(TAG, "  │  - User count: ${currentData.userCount} → $newUserCount")
                         } else {
-                            Log.d(TAG, "  🔄 Same user updating data for device: ${entry.displayName}")
+                            AppLog.d(TAG, "  │  - User status: SAME USER (updating data)")
+                            AppLog.d(TAG, "  │  - User count: $newUserCount (unchanged)")
                         }
                         
                         // Update average score (weighted by user count)
@@ -884,6 +979,58 @@ object LeaderboardManager {
                         // Update data freshness (most recent timestamp)
                         val newDataFreshness = maxOf(currentData.dataFreshness ?: 0L, entry.timestamp)
                         
+                        // Track Android version distribution
+                        val existingAndroidVersions = (snapshot.get("androidVersions") as? Map<*, *>)
+                            ?.mapKeys { it.key as? String ?: "" }
+                            ?.mapValues { (it.value as? Number)?.toInt() ?: 0 }
+                            ?.toMutableMap()
+                            ?: mutableMapOf<String, Int>()
+                        
+                        // Update version count for current entry's androidVersion
+                        if (entry.androidVersion.isNotEmpty()) {
+                            existingAndroidVersions[entry.androidVersion] = 
+                                (existingAndroidVersions[entry.androidVersion] ?: 0) + 1
+                        }
+                        
+                        // Find most common Android version
+                        val mostCommonVersion = existingAndroidVersions.maxByOrNull { it.value }?.key 
+                            ?: entry.androidVersion
+                        
+                        // Track scores per OS version
+                        val existingOSScores = (snapshot.get("osScores") as? Map<*, *>)
+                            ?.mapKeys { it.key as? String ?: "" }
+                            ?.mapValues { (it.value as? Number)?.toDouble() ?: 0.0 }
+                            ?.toMutableMap()
+                            ?: mutableMapOf<String, Double>()
+                        
+                        // Track user count per OS version for weighted averages
+                        val osUserCounts = mutableMapOf<String, Int>()
+                        existingAndroidVersions.forEach { (os, count) ->
+                            osUserCounts[os] = count
+                        }
+                        
+                        // Update score per OS version (weighted average)
+                        if (entry.androidVersion.isNotEmpty()) {
+                            val currentOSScore = existingOSScores[entry.androidVersion] ?: 0.0
+                            val currentOSUserCount = osUserCounts[entry.androidVersion] ?: 0
+                            val newOSUserCount = currentOSUserCount + (if (isNewUser) 1 else 0)
+                            
+                            if (newOSUserCount > 0) {
+                                val newOSScore = if (isNewUser && currentOSUserCount > 0) {
+                                    // Weighted average for new user
+                                    ((currentOSScore * currentOSUserCount) + score) / newOSUserCount
+                                } else if (currentOSUserCount > 0) {
+                                    // Update existing user's contribution
+                                    ((currentOSScore * currentOSUserCount) - (currentOSScore * (currentOSUserCount - 1)) + score) / currentOSUserCount
+                                } else {
+                                    score
+                                }
+                                existingOSScores[entry.androidVersion] = newOSScore
+                            } else {
+                                existingOSScores[entry.androidVersion] = score
+                            }
+                        }
+                        
                         // Update map with userId FIRST for Firestore rules (order matters)
                         transaction.update(categoryRef, mapOf(
                             "userId" to entry.userId, // MUST be first for Firestore rules to match
@@ -895,46 +1042,77 @@ object LeaderboardManager {
                             "lastUpdated" to entry.timestamp,
                             "userIds" to existingUserIds.toList(), // Store unique user IDs
                             "measurementCount" to newMeasurementCount, // Track consistency
-                            "dataFreshness" to newDataFreshness // Track freshness
+                            "dataFreshness" to newDataFreshness, // Track freshness
+                            "androidVersion" to mostCommonVersion, // Store most common OS version
+                            "androidVersions" to existingAndroidVersions, // Track version distribution
+                            "osScores" to existingOSScores // Track scores per OS
                         ))
-                        Log.d(TAG, "  ✅ Entry updated: userCount=$newUserCount, avgScore=$newAvgScore, quality=$newDataQuality")
+                        AppLog.d(TAG, "  │  - Transaction: update() called with userId first")
+                        AppLog.d(TAG, "  │  - Updated data:")
+                        AppLog.d(TAG, "  │    * userId: ${entry.userId}")
+                        AppLog.d(TAG, "  │    * userCount: $newUserCount")
+                        AppLog.d(TAG, "  │    * avgScore: $newAvgScore")
+                        AppLog.d(TAG, "  │    * topScore: $newTopScore")
+                        AppLog.d(TAG, "  │    * dataQuality: $newDataQuality")
+                        AppLog.d(TAG, "  │    * measurementCount: $newMeasurementCount")
+                        AppLog.d(TAG, "  │    * dataFreshness: $newDataFreshness")
                     }
                 }.await()
-                Log.d(TAG, "  ✅✅ Category leaderboard updated successfully: $category")
+                val transactionDuration = System.currentTimeMillis() - transactionStartTime
+                AppLog.d(TAG, "  │  - Transaction completed: ${transactionDuration}ms")
+                AppLog.d(TAG, "  └─ ✅ Category leaderboard updated: $category")
             } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
                 // Handle PERMISSION_DENIED specifically
                 if (e.code == com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                    Log.e(TAG, "❌ Failed to update category leaderboard: $category - PERMISSION_DENIED")
-                    Log.e(TAG, "  Error: ${e.message}")
-                    Log.e(TAG, "  UserId: ${entry.userId}, Authenticated: ${auth.currentUser?.uid}")
-                    Log.e(TAG, "  This may indicate a Firestore rules issue or authentication timing problem")
+                    AppLog.e(TAG, "  └─ ❌ FAILED: Category leaderboard update - PERMISSION_DENIED")
+                    AppLog.e(TAG, "     - Category: $category")
+                    AppLog.e(TAG, "     - Error: ${e.message}")
+                    AppLog.e(TAG, "     - UserId: ${entry.userId}")
+                    AppLog.e(TAG, "     - Authenticated: ${auth.currentUser?.uid ?: "null"}")
+                    AppLog.e(TAG, "     - Firestore Path: leaderboards/$category/entries/${entry.normalizedDeviceId}")
+                    AppLog.e(TAG, "     - This may indicate a Firestore rules issue or authentication timing problem")
                 } else {
-                    Log.e(TAG, "❌ Failed to update category leaderboard: $category", e)
-                    Log.e(TAG, "  Error: ${e.message}")
-                    e.printStackTrace()
+                    AppLog.e(TAG, "  └─ ❌ FAILED: Category leaderboard update", e)
+                    AppLog.e(TAG, "     - Category: $category")
+                    AppLog.e(TAG, "     - Error code: ${e.code}")
+                    AppLog.e(TAG, "     - Error message: ${e.message}")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Failed to update category leaderboard: $category", e)
-                Log.e(TAG, "  Error: ${e.message}")
-                e.printStackTrace()
+                AppLog.e(TAG, "  └─ ❌ FAILED: Category leaderboard update", e)
+                AppLog.e(TAG, "     - Category: $category")
+                AppLog.e(TAG, "     - Error type: ${e.javaClass.simpleName}")
+                AppLog.e(TAG, "     - Error message: ${e.message}")
             }
         }
+        AppLog.d(TAG, "  └─ updateCategoryLeaderboards() COMPLETE")
     }
     
     /**
      * Update device insights (aggregated by device)
      */
     private suspend fun updateDeviceInsights(entry: LeaderboardEntry) {
+        AppLog.d(TAG, "  ┌─ updateDeviceInsights() START")
+        AppLog.d(TAG, "  │ Device: ${entry.displayName}")
+        AppLog.d(TAG, "  │ Device ID: ${entry.normalizedDeviceId}")
+        
         try {
+            val devicePath = "device_insights/${entry.normalizedDeviceId}"
             val deviceRef = db.collection("device_insights")
                 .document(entry.normalizedDeviceId)
+            
+            AppLog.d(TAG, "  │ Firestore Path: $devicePath")
+            AppLog.d(TAG, "  │ Starting Firestore transaction...")
+            val transactionStartTime = System.currentTimeMillis()
             
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(deviceRef)
                 val currentData = snapshot.toObject(DeviceInsight::class.java)
                 
+                AppLog.d(TAG, "  │ Transaction: Document exists: ${snapshot.exists()}")
+                
                 if (currentData == null) {
                     // First entry for this device
+                    AppLog.d(TAG, "  │ Action: Creating NEW device insight")
                     transaction.set(deviceRef, mapOf(
                         "normalizedDeviceId" to entry.normalizedDeviceId,
                         "displayName" to entry.displayName,
@@ -946,8 +1124,14 @@ object LeaderboardManager {
                         "lastUpdated" to entry.timestamp,
                         "userIds" to listOf(entry.userId) // Track unique user IDs
                     ))
+                    AppLog.d(TAG, "  │ Transaction: set() called for new device")
+                    AppLog.d(TAG, "  │ - userCount: 1")
+                    AppLog.d(TAG, "  │ - trustLevel: ${calculateTrustLevel(1, entry.dataQuality)}")
                 } else {
                     // Update aggregated data
+                    AppLog.d(TAG, "  │ Action: Updating EXISTING device insight")
+                    AppLog.d(TAG, "  │ Current: userCount=${currentData.userCount}, trustLevel=${currentData.trustLevel}")
+                    
                     // Check if this is a new user or same user updating
                     val existingUserIds = (snapshot.get("userIds") as? List<*>)?.mapNotNull { it as? String }?.toMutableSet() 
                         ?: mutableSetOf<String>()
@@ -959,6 +1143,9 @@ object LeaderboardManager {
                     } else {
                         currentData.userCount // Keep same count for existing user
                     }
+                    
+                    AppLog.d(TAG, "  │ User status: ${if (isNewUser) "NEW USER" else "SAME USER"}")
+                    AppLog.d(TAG, "  │ User count: ${currentData.userCount} → $newUserCount")
                     
                     val newScores = if (isNewUser) {
                         entry.scores.mapValues { (category, newScore) ->
@@ -979,10 +1166,18 @@ object LeaderboardManager {
                         "lastUpdated" to entry.timestamp,
                         "userIds" to existingUserIds.toList() // Store unique user IDs
                     ))
+                    AppLog.d(TAG, "  │ Transaction: update() called")
+                    AppLog.d(TAG, "  │ - Updated: userCount=$newUserCount, trustLevel=${calculateTrustLevel(newUserCount, newDataQuality)}")
                 }
             }.await()
+            val transactionDuration = System.currentTimeMillis() - transactionStartTime
+            AppLog.d(TAG, "  │ Transaction completed: ${transactionDuration}ms")
+            AppLog.d(TAG, "  └─ ✅ Device insights updated successfully")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to update device insights", e)
+            AppLog.e(TAG, "  └─ ❌ FAILED: Device insights update", e)
+            AppLog.e(TAG, "     - Error type: ${e.javaClass.simpleName}")
+            AppLog.e(TAG, "     - Error message: ${e.message}")
+            AppLog.e(TAG, "     - Device ID: ${entry.normalizedDeviceId}")
         }
     }
     
@@ -995,49 +1190,80 @@ object LeaderboardManager {
         category: String,
         limit: Int = 100
     ): List<CategoryLeaderboardEntry> {
+        AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+        AppLog.d(TAG, "📥 START: getLeaderboardEntries()")
+        AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+        AppLog.d(TAG, "  - Category: $category")
+        AppLog.d(TAG, "  - Limit: $limit")
+        
         return try {
             // Ensure user is authenticated first
+            AppLog.d(TAG, "  Step 1: Authentication check")
             if (auth.currentUser == null) {
+                AppLog.w(TAG, "  - No authenticated user, ensuring anonymous user...")
                 ensureAnonymousUser(android.app.Application().applicationContext)
                 // Wait a bit for auth to complete
                 kotlinx.coroutines.delay(500)
+                AppLog.d(TAG, "  - Anonymous user ensured")
+            } else {
+                AppLog.d(TAG, "  - User authenticated: ${auth.currentUser?.uid}")
             }
             
             // DATA PURITY: Filter out very stale data (older than 180 days) - very lenient
-            // This ensures users see relevant data while not being too restrictive
             val staleDataThreshold = System.currentTimeMillis() - (180L * 24 * 60 * 60 * 1000) // 180 days
+            AppLog.d(TAG, "  Step 2: Query preparation")
+            AppLog.d(TAG, "  - Stale data threshold: ${java.util.Date(staleDataThreshold)} (180 days ago)")
+            AppLog.d(TAG, "  - Firestore Path: leaderboards/$category/entries")
             
             // COST OPTIMIZATION: Use efficient query with proper limit
-            // Query only entries with non-zero scores to reduce reads
+            val queryStartTime = System.currentTimeMillis()
             val allEntries = try {
-                db.collection("leaderboards")
+                AppLog.d(TAG, "  Step 3: Executing Firestore query (with whereGreaterThan)")
+                val query = db.collection("leaderboards")
                     .document(category)
                     .collection("entries")
                     .whereGreaterThan("avgScore", 0.0) // Filter at query level (cost-efficient)
                     .orderBy("avgScore", Query.Direction.DESCENDING)
                     .limit((limit * 2).toLong()) // Get 2x limit to account for filtering
-                    .get()
-                    .await()
-                    .toObjects(CategoryLeaderboardEntry::class.java)
+                
+                AppLog.d(TAG, "  - Query: whereGreaterThan(avgScore, 0.0)")
+                AppLog.d(TAG, "  - Order: avgScore DESC")
+                AppLog.d(TAG, "  - Limit: ${limit * 2}")
+                
+                val result = query.get().await()
+                val entries = result.toObjects(CategoryLeaderboardEntry::class.java)
+                val queryDuration = System.currentTimeMillis() - queryStartTime
+                
+                AppLog.d(TAG, "  ✅ Query successful: ${entries.size} entries fetched in ${queryDuration}ms")
+                entries
             } catch (e: Exception) {
                 // If whereGreaterThan fails (no index), fallback to simple query
-                Log.w(TAG, "Query with whereGreaterThan failed, using fallback: ${e.message}")
-                db.collection("leaderboards")
+                AppLog.w(TAG, "  ⚠️ Query with whereGreaterThan failed, using fallback")
+                AppLog.w(TAG, "  - Error: ${e.message}")
+                AppLog.d(TAG, "  - Fallback: Simple query without whereGreaterThan")
+                
+                val query = db.collection("leaderboards")
                     .document(category)
                     .collection("entries")
                     .orderBy("avgScore", Query.Direction.DESCENDING)
                     .limit((limit * 2).toLong())
-                    .get()
-                    .await()
-                    .toObjects(CategoryLeaderboardEntry::class.java)
+                
+                val result = query.get().await()
+                val entries = result.toObjects(CategoryLeaderboardEntry::class.java)
                     .filter { it.avgScore > 0.0 } // Filter in memory as fallback
+                val queryDuration = System.currentTimeMillis() - queryStartTime
+                
+                AppLog.d(TAG, "  ✅ Fallback query successful: ${entries.size} entries fetched in ${queryDuration}ms")
+                entries
             }
             
-            // Filter out stale data and ensure minimum data quality - very lenient filters
+            // Filter out stale data and ensure minimum data quality
+            AppLog.d(TAG, "  Step 4: Filtering entries")
+            AppLog.d(TAG, "  - Total entries before filter: ${allEntries.size}")
+            
             val freshEntries = allEntries
                 .filter { entry ->
                     // Filter 1: Data must be fresh (updated within last 180 days) OR if lastUpdated is 0, allow it
-                    // This handles cases where lastUpdated might not be set
                     val isFresh = entry.lastUpdated == 0L || entry.lastUpdated > staleDataThreshold
                     
                     // Filter 2: Minimum data quality (at least 1/5) - very lenient
@@ -1069,6 +1295,20 @@ object LeaderboardManager {
                     .sortedWith(compareByDescending<CategoryLeaderboardEntry> { it.avgScore > 0.0 }
                         .thenByDescending { it.avgScore })
                     .take(limit)
+                
+                AppLog.d(TAG, "  - Entries after filter: ${sortedEntries.size}")
+                AppLog.d(TAG, "  - Filtered out: ${freshEntries.size - sortedEntries.size}")
+                
+                if (sortedEntries.isNotEmpty()) {
+                    AppLog.d(TAG, "  Step 5: Top entries summary")
+                    sortedEntries.take(5).forEachIndexed { index, entry ->
+                        AppLog.d(TAG, "    ${index + 1}. ${entry.displayName}: ${entry.avgScore}/100 (${entry.userCount} users, quality: ${entry.dataQuality})")
+                    }
+                }
+                
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.d(TAG, "✅ COMPLETE: getLeaderboardEntries() - ${sortedEntries.size} entries")
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
                 
                 return sortedEntries
             }
@@ -1115,7 +1355,9 @@ object LeaderboardManager {
                             userId = "",
                             userIds = emptyList(),
                             measurementCount = 0,
-                            dataFreshness = insight.lastUpdated
+                            dataFreshness = insight.lastUpdated,
+                            androidVersion = "", // Not available in device_insights fallback
+                            androidVersions = emptyMap()
                         )
                     }
                     .filter { entry ->
@@ -1130,25 +1372,53 @@ object LeaderboardManager {
                     .take(limit)
                     .toList() // Convert to list only at the end (minimal memory footprint)
                 
+                AppLog.d(TAG, "  - Fallback: Using device_insights collection")
+                AppLog.d(TAG, "  - Converted entries: ${convertedEntries.size}")
+                
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.d(TAG, "✅ COMPLETE: getLeaderboardEntries() - ${convertedEntries.size} entries (from device_insights fallback)")
+                AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+                
                 convertedEntries
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to get fallback data from device_insights", e)
+                AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.e(TAG, "❌ FAILED: getLeaderboardEntries() - Fallback also failed")
+                AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+                AppLog.e(TAG, "  - Category: $category")
+                AppLog.e(TAG, "  - Error type: ${e.javaClass.simpleName}")
+                AppLog.e(TAG, "  - Error message: ${e.message}")
+                AppLog.e(TAG, "  - Returning empty list", e)
                 emptyList() // Return empty list if fallback also fails
             }
         } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "❌ FAILED: getLeaderboardEntries() - FirestoreException")
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "  - Category: $category")
+            AppLog.e(TAG, "  - Error code: ${e.code}")
+            AppLog.e(TAG, "  - Error message: ${e.message}")
+            
             when (e.code) {
                 com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
-                    Log.w(TAG, "Permission denied - user may need to authenticate", e)
-                    // Return empty list - UI will show appropriate message
-                    emptyList()
+                    AppLog.w(TAG, "  - Issue: PERMISSION_DENIED")
+                    AppLog.w(TAG, "  - User may need to authenticate")
+                    AppLog.w(TAG, "  - Auth currentUser: ${auth.currentUser?.uid ?: "null"}")
+                    AppLog.w(TAG, "  - Returning empty list - UI will show appropriate message")
                 }
                 else -> {
-                    Log.e(TAG, "Failed to get leaderboard entries", e)
-                    emptyList()
+                    AppLog.e(TAG, "  - Issue: ${e.code}")
+                    AppLog.e(TAG, "  - Returning empty list", e)
                 }
             }
+            emptyList()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get leaderboard entries", e)
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "❌ FAILED: getLeaderboardEntries() - General Exception")
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "  - Category: $category")
+            AppLog.e(TAG, "  - Error type: ${e.javaClass.simpleName}")
+            AppLog.e(TAG, "  - Error message: ${e.message}")
+            AppLog.e(TAG, "  - Returning empty list", e)
             emptyList()
         }
     }
@@ -1450,6 +1720,9 @@ object LeaderboardManager {
                 return false
             }
             
+            // Get Android version from device
+            val androidVersion = android.os.Build.VERSION.RELEASE
+            
             Log.d(TAG, "📤 Uploading app power entry: ${appPowerData.appName} (${appPowerData.packageName})")
             
             // Upload to app_power_leaderboard collection
@@ -1475,7 +1748,11 @@ object LeaderboardManager {
                         lastUpdated = appPowerData.timestamp,
                         userId = userId,
                         userIds = listOf(userId),
-                        measurementCount = 1
+                        measurementCount = 1,
+                        androidVersion = androidVersion,
+                        androidVersions = mapOf(androidVersion to 1),
+                        osPowerConsumption = if (androidVersion.isNotEmpty()) mapOf(androidVersion to appPowerData.powerConsumption) else emptyMap(),
+                        osBatteryImpact = if (androidVersion.isNotEmpty()) mapOf(androidVersion to appPowerData.batteryImpact) else emptyMap()
                     )
                     transaction.set(appPowerRef, newEntry)
                     Log.d(TAG, "  ✅ Created new app power entry: ${appPowerData.appName}")
@@ -1510,6 +1787,87 @@ object LeaderboardManager {
                     val newTotalUsageTime = currentData.totalUsageTime + appPowerData.totalUsageTime
                     val newMeasurementCount = currentData.measurementCount + 1
                     
+                    // Track Android version distribution
+                    val existingAndroidVersions = (snapshot.get("androidVersions") as? Map<*, *>)
+                        ?.mapKeys { it.key as? String ?: "" }
+                        ?.mapValues { (it.value as? Number)?.toInt() ?: 0 }
+                        ?.toMutableMap()
+                        ?: mutableMapOf<String, Int>()
+                    
+                    // Update version count for current entry's androidVersion
+                    if (androidVersion.isNotEmpty()) {
+                        existingAndroidVersions[androidVersion] = 
+                            (existingAndroidVersions[androidVersion] ?: 0) + 1
+                    }
+                    
+                    // Find most common Android version
+                    val mostCommonVersion = existingAndroidVersions.maxByOrNull { it.value }?.key 
+                        ?: androidVersion
+                    
+                    // Track power consumption per OS version
+                    val existingOSPower = (snapshot.get("osPowerConsumption") as? Map<*, *>)
+                        ?.mapKeys { it.key as? String ?: "" }
+                        ?.mapValues { (it.value as? Number)?.toDouble() ?: 0.0 }
+                        ?.toMutableMap()
+                        ?: mutableMapOf<String, Double>()
+                    
+                    // Track battery impact per OS version
+                    val existingOSBattery = (snapshot.get("osBatteryImpact") as? Map<*, *>)
+                        ?.mapKeys { it.key as? String ?: "" }
+                        ?.mapValues { (it.value as? Number)?.toDouble() ?: 0.0 }
+                        ?.toMutableMap()
+                        ?: mutableMapOf<String, Double>()
+                    
+                    // Track user count per OS version for weighted averages
+                    val osUserCounts = mutableMapOf<String, Int>()
+                    existingAndroidVersions.forEach { (os, count) ->
+                        osUserCounts[os] = count
+                    }
+                    
+                    // Update power consumption per OS version (weighted average)
+                    if (androidVersion.isNotEmpty()) {
+                        val currentOSPower = existingOSPower[androidVersion] ?: 0.0
+                        val currentOSUserCount = osUserCounts[androidVersion] ?: 0
+                        val newOSUserCount = currentOSUserCount + (if (isNewUser) 1 else 0)
+                        
+                        if (newOSUserCount > 0) {
+                            val newOSPower = if (isNewUser && currentOSUserCount > 0) {
+                                // Weighted average for new user
+                                ((currentOSPower * currentOSUserCount) + appPowerData.powerConsumption) / newOSUserCount
+                            } else if (currentOSUserCount > 0) {
+                                // Update existing user's contribution
+                                ((currentOSPower * currentOSUserCount) - (currentOSPower * (currentOSUserCount - 1)) + appPowerData.powerConsumption) / currentOSUserCount
+                            } else {
+                                appPowerData.powerConsumption
+                            }
+                            existingOSPower[androidVersion] = newOSPower
+                        } else {
+                            existingOSPower[androidVersion] = appPowerData.powerConsumption
+                        }
+                    }
+                    
+                    // Update battery impact per OS version (weighted average)
+                    if (androidVersion.isNotEmpty()) {
+                        val currentOSBattery = existingOSBattery[androidVersion] ?: 0.0
+                        val currentOSUserCount = osUserCounts[androidVersion] ?: 0
+                        val newOSUserCount = currentOSUserCount + (if (isNewUser) 1 else 0)
+                        
+                        if (newOSUserCount > 0) {
+                            val newOSBattery = if (isNewUser && currentOSUserCount > 0) {
+                                // Weighted average for new user
+                                ((currentOSBattery * currentOSUserCount) + appPowerData.batteryImpact) / newOSUserCount
+                            } else if (currentOSUserCount > 0) {
+                                // Update existing user's contribution
+                                ((currentOSBattery * currentOSUserCount) - (currentOSBattery * (currentOSUserCount - 1)) + appPowerData.batteryImpact) / currentOSUserCount
+                            } else {
+                                appPowerData.batteryImpact
+                            }
+                            existingOSBattery[androidVersion] = newOSBattery
+                        } else {
+                            existingOSBattery[androidVersion] = appPowerData.batteryImpact
+                        }
+                    }
+                    
                     transaction.update(appPowerRef, mapOf(
                         "avgPowerConsumption" to newAvgPower,
                         "peakPowerConsumption" to newPeakPower,
@@ -1519,7 +1877,11 @@ object LeaderboardManager {
                         "lastUpdated" to appPowerData.timestamp,
                         "userId" to userId,
                         "userIds" to existingUserIds.toList(),
-                        "measurementCount" to newMeasurementCount
+                        "measurementCount" to newMeasurementCount,
+                        "androidVersion" to mostCommonVersion,
+                        "androidVersions" to existingAndroidVersions,
+                        "osPowerConsumption" to existingOSPower,
+                        "osBatteryImpact" to existingOSBattery
                     ))
                     Log.d(TAG, "  ✅ Updated app power entry: ${appPowerData.appName}, userCount=$newUserCount, avgPower=$newAvgPower W")
                 }
@@ -1539,11 +1901,21 @@ object LeaderboardManager {
     suspend fun getAppPowerLeaderboardEntries(
         limit: Int = 100
     ): List<AppPowerLeaderboardEntry> {
+        AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+        AppLog.d(TAG, "📥 START: getAppPowerLeaderboardEntries()")
+        AppLog.d(TAG, "═══════════════════════════════════════════════════════")
+        AppLog.d(TAG, "  - Limit: $limit")
+        
         return try {
             // Ensure user is authenticated first
+            AppLog.d(TAG, "  Step 1: Authentication check")
             if (auth.currentUser == null) {
+                AppLog.w(TAG, "  - No authenticated user, ensuring anonymous user...")
                 ensureAnonymousUser(android.app.Application().applicationContext)
                 kotlinx.coroutines.delay(500)
+                AppLog.d(TAG, "  - Anonymous user ensured")
+            } else {
+                AppLog.d(TAG, "  - User authenticated: ${auth.currentUser?.uid}")
             }
             
             // Filter out stale data (older than 180 days)
@@ -1581,18 +1953,166 @@ object LeaderboardManager {
             
             freshEntries
         } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "❌ FAILED: getAppPowerLeaderboardEntries() - FirestoreException")
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "  - Error code: ${e.code}")
+            AppLog.e(TAG, "  - Error message: ${e.message}")
+            
             when (e.code) {
                 com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
-                    Log.w(TAG, "Permission denied - user may need to authenticate", e)
-                    emptyList()
+                    AppLog.w(TAG, "  - Issue: PERMISSION_DENIED")
+                    AppLog.w(TAG, "  - User may need to authenticate")
+                    AppLog.w(TAG, "  - Auth currentUser: ${auth.currentUser?.uid ?: "null"}")
+                    AppLog.w(TAG, "  - Returning empty list", e)
                 }
                 else -> {
-                    Log.e(TAG, "Failed to get app power leaderboard entries", e)
-                    emptyList()
+                    AppLog.e(TAG, "  - Issue: ${e.code}")
+                    AppLog.e(TAG, "  - Returning empty list", e)
                 }
             }
+            emptyList()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get app power leaderboard entries", e)
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "❌ FAILED: getAppPowerLeaderboardEntries() - General Exception")
+            AppLog.e(TAG, "═══════════════════════════════════════════════════════")
+            AppLog.e(TAG, "  - Error type: ${e.javaClass.simpleName}")
+            AppLog.e(TAG, "  - Error message: ${e.message}")
+            AppLog.e(TAG, "  - Returning empty list", e)
+            emptyList()
+        }
+    }
+    
+    /**
+     * Get OS version comparison for a device
+     * Returns: OS version -> category -> average score
+     * Phase 1: Premium feature - uses existing user_data collection
+     */
+    suspend fun getOSVersionComparison(
+        normalizedDeviceId: String
+    ): Map<String, Map<String, Double>> {
+        return try {
+            Log.d(TAG, "📊 Getting OS version comparison for device: $normalizedDeviceId")
+            
+            // Query all user_data documents to find entries with this normalizedDeviceId
+            // Note: We need to query all user_data documents and filter by normalizedDeviceId
+            // This is less efficient but necessary since we can't query by normalizedDeviceId directly
+            val allUserData = db.collectionGroup("latest")
+                .whereEqualTo("normalizedDeviceId", normalizedDeviceId)
+                .get()
+                .await()
+            
+            Log.d(TAG, "  - Found ${allUserData.size()} user data entries")
+            
+            // Group by androidVersion and calculate average scores per category
+            val osVersionData = mutableMapOf<String, MutableMap<String, MutableList<Double>>>()
+            
+            allUserData.documents.forEach { doc ->
+                val data = doc.data ?: emptyMap<String, Any>()
+                val androidVersion = (data["androidVersion"] as? String) ?: "Unknown"
+                val scores = (data["scores"] as? Map<String, Any>) ?: emptyMap<String, Any>()
+                
+                if (androidVersion != "Unknown" && scores.isNotEmpty()) {
+                    if (!osVersionData.containsKey(androidVersion)) {
+                        osVersionData[androidVersion] = mutableMapOf()
+                    }
+                    
+                    scores.forEach { (category, score) ->
+                        val categoryStr = category
+                        val scoreValue = (score as? Number)?.toDouble() ?: 0.0
+                        
+                        if (scoreValue > 0.0) {
+                            if (!osVersionData[androidVersion]!!.containsKey(categoryStr)) {
+                                osVersionData[androidVersion]!![categoryStr] = mutableListOf()
+                            }
+                            osVersionData[androidVersion]!![categoryStr]!!.add(scoreValue)
+                        }
+                    }
+                }
+            }
+            
+            // Calculate averages
+            val result = osVersionData.mapValues { (_, categoryScores) ->
+                categoryScores.mapValues { (_, scores) ->
+                    scores.average()
+                }
+            }
+            
+            Log.d(TAG, "  ✅ OS version comparison calculated: ${result.keys.size} OS versions")
+            result
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to get OS version comparison", e)
+            emptyMap()
+        }
+    }
+    
+    /**
+     * Get recommended OS version for a device
+     * Returns: (recommended OS version, improvement percentage) or null
+     * Phase 1: Premium feature helper
+     */
+    suspend fun getRecommendedOSVersion(
+        normalizedDeviceId: String,
+        currentOS: String
+    ): Pair<String?, Double>? {
+        return try {
+            val osComparison = getOSVersionComparison(normalizedDeviceId)
+            
+            if (osComparison.isEmpty()) {
+                Log.d(TAG, "  - No OS comparison data available")
+                return null
+            }
+            
+            // Calculate average score per OS version (across all categories)
+            val osAverageScores = osComparison.mapValues { (_, categoryScores) ->
+                categoryScores.values.average()
+            }
+            
+            // Find best performing OS version
+            val bestOS = osAverageScores.maxByOrNull { it.value }?.key
+            val currentScore = osAverageScores[currentOS] ?: 0.0
+            val bestScore = bestOS?.let { osAverageScores[it] } ?: 0.0
+            
+            if (bestOS == null || bestOS == currentOS || bestScore <= currentScore) {
+                Log.d(TAG, "  - No better OS version found (current: $currentOS, best: $bestOS)")
+                return null
+            }
+            
+            val improvement = ((bestScore - currentScore) / currentScore) * 100.0
+            
+            // Only recommend if improvement is significant (>5%)
+            if (improvement < 5.0) {
+                Log.d(TAG, "  - Improvement too small: $improvement%")
+                return null
+            }
+            
+            Log.d(TAG, "  ✅ Recommended OS: $bestOS (improvement: ${improvement.toInt()}%)")
+            Pair(bestOS, improvement)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to get recommended OS version", e)
+            null
+        }
+    }
+    
+    /**
+     * Get leaderboard entries filtered by Android version
+     * Phase 2: Free feature - requires aggregated data with androidVersion field
+     */
+    suspend fun getLeaderboardEntriesByOS(
+        category: String,
+        androidVersion: String,
+        limit: Int = 100
+    ): List<CategoryLeaderboardEntry> {
+        return try {
+            // Get all entries first
+            val allEntries = getLeaderboardEntries(category, limit * 2)
+            
+            // Filter by androidVersion
+            allEntries.filter { entry ->
+                entry.androidVersion == androidVersion
+            }.take(limit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get leaderboard entries by OS", e)
             emptyList()
         }
     }
@@ -1616,6 +2136,9 @@ data class CategoryLeaderboardEntry(
     val userId: String = "",
     val userIds: List<String> = emptyList(), // Track unique users
     val measurementCount: Int = 0, // Total measurements (consistency tracking)
-    val dataFreshness: Long = 0L // Most recent data timestamp (staleness filtering)
+    val dataFreshness: Long = 0L, // Most recent data timestamp (staleness filtering)
+    val androidVersion: String = "", // Most common OS version for this device
+    val androidVersions: Map<String, Int> = emptyMap(), // Version -> user count distribution
+    val osScores: Map<String, Double> = emptyMap() // OS version -> average score
 )
 

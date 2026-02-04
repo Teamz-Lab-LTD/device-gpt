@@ -567,20 +567,22 @@ fun DrawerContent(
             if (showPremiumInfoDialog) {
                 AlertDialog(
                     onDismissRequest = { showPremiumInfoDialog = false },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Verified,
-                            contentDescription = null,
-                            tint = DesignSystemColors.NeonGreen,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    },
                     title = {
-                        Text(
-                            text = "DeviceGPT Premium",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "✅",
+                                fontSize = 48.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = "DeviceGPT Premium",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     },
                     text = {
                         Column(
