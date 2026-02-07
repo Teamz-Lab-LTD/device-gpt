@@ -115,6 +115,9 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.LeaderboardManager
 import com.teamz.lab.debugger.utils.LocaleManager
+import com.teamz.lab.debugger.utils.PasskeyAuthManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.utils.PermissionManager
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
@@ -134,7 +137,9 @@ fun DrawerContent(
     activity: Activity,
     drawerState: DrawerState,
     onPermissionChanged: ((permission: String, granted: Boolean) -> Unit)? = null,
-    onShareClick: (() -> Unit)? = null
+    onShareClick: (() -> Unit)? = null,
+    onGenerateVerifiedReport: (() -> Unit)? = null,
+    onVerifyReport: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val permissions = mutableListOf(
@@ -1112,6 +1117,30 @@ fun DrawerContent(
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerReviewClicked)
             activity.showInAppReview()
+        }
+
+        IconTextButton(
+            icon = Icons.Default.Verified,
+            label = "Generate Verified Report"
+        ) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DrawerItemClicked,
+                mapOf("item" to "generate_verified_report")
+            )
+            coroutineScope.launch { drawerState.close() }
+            onGenerateVerifiedReport?.invoke()
+        }
+
+        IconTextButton(
+            icon = Icons.Default.Info,
+            label = "Verify a Report"
+        ) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DrawerItemClicked,
+                mapOf("item" to "verify_report")
+            )
+            coroutineScope.launch { drawerState.close() }
+            onVerifyReport?.invoke()
         }
 
         IconTextButton(
@@ -2391,11 +2420,36 @@ fun LeaderboardAccountStatus() {
                 }
             } else if (userId.isNotEmpty() && activity != null) {
                 Spacer(modifier = Modifier.height(10.dp))
-                // Compact Link Gmail button
+                // Compact Link Gmail button (Credential Manager / Passkeys)
                 Button(
                     onClick = {
-                        isLinking = true
-                        linkGmailAccountFromDrawer(activity, googleSignInLauncher)
+                        scope.launch {
+                            isLinking = true
+                            val outcome = PasskeyAuthManager.signInWithGoogle(context)
+                            when (outcome) {
+                                is PasskeyAuthManager.AuthOutcome.Success -> {
+                                    isEmailLinked = LeaderboardManager.isEmailLinked(context)
+                                    userEmail = LeaderboardManager.getUserEmail()
+                                    userDisplayName = LeaderboardManager.getUserDisplayName()
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Account linked successfully!",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                is PasskeyAuthManager.AuthOutcome.Cancelled -> {
+                                    // User cancelled; no toast needed
+                                }
+                                is PasskeyAuthManager.AuthOutcome.Error -> {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        outcome.message,
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                            isLinking = false
+                        }
                     },
                     enabled = !isLinking,
                     modifier = Modifier.fillMaxWidth(),

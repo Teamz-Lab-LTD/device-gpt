@@ -308,6 +308,15 @@ fun NetworkInfoSection(
     ExpandableInfoList(
         infoList = networkInfo, 
         activity = activity,
-        onItemAIClick = if (isFullyLoaded) onItemAIClick else null
+        onItemAIClick = if (isFullyLoaded) onItemAIClick else null,
+        headerContent = {
+            NetworkPrivacyReportCard(
+                onShareClick = { /* Sharing handled internally via ViralShareDialog */ },
+                onAIClick = onItemAIClick
+            )
+            NetworkReachabilityCard(
+                onAIClick = onItemAIClick
+            )
+        }
     )
 }

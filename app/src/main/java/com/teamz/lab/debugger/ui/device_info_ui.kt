@@ -297,9 +297,9 @@ fun DeviceInfoSection(
         }
     }
 
-    // Device info list - pass AI callbacks to show AI icons
+    // Device info list - pass AI callbacks to show AI icons; Zero Trust Dashboard as header
     ExpandableInfoList(
-        infoList = deviceInfo, 
+        infoList = deviceInfo,
         activity = activity,
         onAIClick = if (state.isFullyLoaded && onAIClick != null) {
             {
@@ -310,7 +310,10 @@ fun DeviceInfoSection(
                 ))
             }
         } else null,
-        onItemAIClick = if (state.isFullyLoaded) onItemAIClick else null
+        onItemAIClick = if (state.isFullyLoaded) onItemAIClick else null,
+        headerContent = {
+            ZeroTrustDashboard(onAIClick = onItemAIClick)
+        }
     )
 }
 

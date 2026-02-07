@@ -75,7 +75,8 @@ fun ExpandableInfoList(
     infoList: List<Pair<String, String>>, 
     activity: Activity,
     onAIClick: (() -> Unit)? = null,
-    onItemAIClick: ((String, String) -> Unit)? = null
+    onItemAIClick: ((String, String) -> Unit)? = null,
+    headerContent: @Composable (() -> Unit)? = null
 ) {
 
     val adLoader = rememberAdLoader(activity)
@@ -174,6 +175,13 @@ fun ExpandableInfoList(
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 140.dp)
     ) {
+        // Optional header content (e.g., Network Privacy Report Card)
+        if (headerContent != null) {
+            item(key = "header_content") {
+                headerContent()
+            }
+        }
+
         // Search bar at top with optional AI button
         item(key = "search_bar") {
             Row(

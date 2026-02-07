@@ -289,4 +289,34 @@ enum class AnalyticsEvent(val eventName: String) {
     PremiumDrawerCardClicked("premium_drawer_card_clicked"),
     PremiumBadgeClicked("premium_badge_clicked"),
     PremiumUserRankCardViewed("premium_user_rank_card_viewed"),
+    // Network Privacy Report Card events
+    PrivacyReportViewed("privacy_report_viewed"),
+    PrivacyReportShared("privacy_report_shared"),
+    PrivacyReportAIClicked("privacy_report_ai_clicked"),
+    PrivacyReportGrade("privacy_report_grade"),
+    // Network Reachability events
+    ReachabilityTestStarted("reachability_test_started"),
+    ReachabilityTestCompleted("reachability_test_completed"),
+    ReachabilityResultShared("reachability_result_shared"),
+    ReachabilityAIClicked("reachability_ai_clicked"),
+    // Zero Trust Dashboard events
+    ZeroTrustScanStarted("zero_trust_scan_started"),
+    ZeroTrustScanCompleted("zero_trust_scan_completed"),
+    ZeroTrustSectionExpanded("zero_trust_section_expanded"),
+    ZeroTrustShared("zero_trust_shared"),
+    ZeroTrustAIClicked("zero_trust_ai_clicked"),
+    // Passkey auth events
+    PasskeySignInAttempted("passkey_sign_in_attempted"),
+    PasskeySignInSuccess("passkey_sign_in_success"),
+    PasskeySignInFailed("passkey_sign_in_failed"),
+    PasskeySignOut("passkey_sign_out"),
+    PasskeyAccountLinked("passkey_account_linked"),
+    PasskeyAccountDeleted("passkey_account_deleted"),
+    // Verified Report events
+    VerifiedReportGenerated("verified_report_generated"),
+    VerifiedReportShared("verified_report_shared"),
+    VerifiedReportUploaded("verified_report_uploaded"),
+    ReportVerificationAttempted("report_verification_attempted"),
+    ReportVerificationSuccess("report_verification_success"),
+    ReportVerificationFailed("report_verification_failed"),
 }

@@ -101,7 +101,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
 import com.teamz.lab.debugger.ui.AIAssistantDialog
 import com.teamz.lab.debugger.ui.ViralShareDialog
+import com.teamz.lab.debugger.ui.GenerateReportDialog
+import com.teamz.lab.debugger.ui.ReportReadyDialog
+import com.teamz.lab.debugger.ui.VerifyReportDialog
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.VerifiedReport
 import com.teamz.lab.debugger.ui.HealthSection
 import com.teamz.lab.debugger.ui.theme.QuickThemeSwitcher
 import com.teamz.lab.debugger.ui.theme.ThemeManager
@@ -452,6 +456,10 @@ fun DebuggerApp(activity: ComponentActivity) {
     var selectedItemForAI by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showItemAIDialog by remember { mutableStateOf(false) }
     var showRevenueCatPaywall by remember { mutableStateOf(false) }
+    var showGenerateReportDialog by remember { mutableStateOf(false) }
+    var showReportReadyDialog by remember { mutableStateOf(false) }
+    var showVerifyReportDialog by remember { mutableStateOf(false) }
+    var generatedReport by remember { mutableStateOf<VerifiedReport?>(null) }
 
 
     // Simple state management without any derivedStateOf
@@ -481,13 +489,19 @@ fun DebuggerApp(activity: ComponentActivity) {
     // Wrap the Scaffold in a ModalNavigationDrawer
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
         DrawerContent(
-            activity = activity, 
-            drawerState = drawerState, 
+            activity = activity,
+            drawerState = drawerState,
             onPermissionChanged = { _, _ ->
                 refreshTrigger++
             },
             onShareClick = {
                 showViralShareDialog = true
+            },
+            onGenerateVerifiedReport = {
+                showGenerateReportDialog = true
+            },
+            onVerifyReport = {
+                showVerifyReportDialog = true
             }
         )
     }) {
@@ -1150,6 +1164,9 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                     "storage" -> "storage_info"
                     "security" -> "security_info"
                     "privacy" -> "privacy_info"
+                    "privacy_report" -> "privacy_report"
+                    "reachability" -> "reachability_report"
+                    "zero_trust" -> "zero_trust_report"
                     else -> "device_info"
                 }
                 val fileName = "${prefix}_$cleanTitle.txt"
@@ -1365,7 +1382,38 @@ https://play.google.com/store/apps/details?id=${context.packageName}
             aggregatedStats = if (selectedTab == 3) aggregatedPowerStats else null
         )
     }
-    
+
+    // Generate Verified Report dialog
+    if (showGenerateReportDialog) {
+        GenerateReportDialog(
+            onDismiss = { showGenerateReportDialog = false },
+            onReportReady = { report ->
+                showGenerateReportDialog = false
+                generatedReport = report
+                showReportReadyDialog = true
+            }
+        )
+    }
+
+    // Report Ready dialog (after generation)
+    if (showReportReadyDialog && generatedReport != null) {
+        ReportReadyDialog(
+            report = generatedReport!!,
+            onDismiss = {
+                showReportReadyDialog = false
+                generatedReport = null
+            }
+        )
+    }
+
+    // Verify a Report dialog
+    if (showVerifyReportDialog) {
+        VerifyReportDialog(
+            onDismiss = { showVerifyReportDialog = false },
+            initialCode = ""
+        )
+    }
+
     // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
     // Full screen composable approach (not dialog)
     // Using reusable composable component
