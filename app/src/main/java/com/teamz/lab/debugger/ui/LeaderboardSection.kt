@@ -825,7 +825,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = "#$originalRank",
+                                                    text = "• $originalRank",
                                                     style = MaterialTheme.typography.headlineLarge,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.primary
@@ -1524,7 +1524,7 @@ fun LeaderboardEntryCard(
         ) {
             // Rank badge
             Text(
-                text = "#$rank",
+                text = "•$rank",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -1824,10 +1824,10 @@ fun TrustPoint(
 @Composable
 fun TrustBadgeIcon(badge: TrustBadge) {
     val (icon, color, text) = when(badge) {
-        TrustBadge.VERIFIED -> Triple("✅", DesignSystemColors.NeonGreen, "Verified")
-        TrustBadge.HIGH -> Triple("⭐", MaterialTheme.colorScheme.onSurfaceVariant, "High Trust")
-        TrustBadge.MEDIUM -> Triple("📊", MaterialTheme.colorScheme.onSurfaceVariant, "Medium Trust")
-        TrustBadge.LOW -> Triple("📝", MaterialTheme.colorScheme.onSurfaceVariant, "Low Trust")
+        TrustBadge.VERIFIED -> Triple("", DesignSystemColors.NeonGreen, "Verified")
+        TrustBadge.HIGH -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "High Trust")
+        TrustBadge.MEDIUM -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "Medium Trust")
+        TrustBadge.LOW -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "Low Trust")
     }
     
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2259,7 +2259,7 @@ fun PremiumUserRankCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "#$rank",
+                        text = "•$rank",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -2617,7 +2617,7 @@ fun AppPowerLeaderboardEntryCard(
         ) {
             // Rank badge
             Text(
-                text = "#$rank",
+                text = "•$rank",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface

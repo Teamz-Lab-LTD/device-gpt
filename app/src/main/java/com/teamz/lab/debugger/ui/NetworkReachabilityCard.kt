@@ -34,6 +34,9 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.NetworkReachabilityTester
 import com.teamz.lab.debugger.utils.ReachabilityReport
 import com.teamz.lab.debugger.utils.ReachabilityStatus
+import com.teamz.lab.debugger.ui.theme.AppTheme
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.ui.theme.useThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,6 +47,7 @@ fun NetworkReachabilityCard(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val isDark = useThemeManager().getEffectiveTheme() == AppTheme.DESIGN_SYSTEM_DARK
 
     var report by remember { mutableStateOf<ReachabilityReport?>(null) }
     var isLoading by remember { mutableStateOf(false) }
@@ -103,12 +107,15 @@ fun NetworkReachabilityCard(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Design system: neon green in dark mode, theme green in light
+                val goodReachScore = (report?.opennessScore ?: 0) >= 80
                 Surface(
                     modifier = Modifier.size(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     color = when {
                         !hasRun -> MaterialTheme.colorScheme.surfaceVariant
-                        (report?.opennessScore ?: 0) >= 80 -> Color(0xFF4CAF50).copy(alpha = 0.12f)
+                        goodReachScore && isDark -> DesignSystemColors.NeonGreen.copy(alpha = 0.12f)
+                        goodReachScore -> Color(0xFF4CAF50).copy(alpha = 0.12f)
                         (report?.opennessScore ?: 0) >= 50 -> Color(0xFFFF9800).copy(alpha = 0.12f)
                         else -> Color(0xFFF44336).copy(alpha = 0.12f)
                     }
@@ -120,7 +127,8 @@ fun NetworkReachabilityCard(
                             modifier = Modifier.size(24.dp),
                             tint = when {
                                 !hasRun -> MaterialTheme.colorScheme.onSurfaceVariant
-                                (report?.opennessScore ?: 0) >= 80 -> Color(0xFF4CAF50)
+                                goodReachScore && isDark -> DesignSystemColors.NeonGreen
+                                goodReachScore -> Color(0xFF4CAF50)
                                 (report?.opennessScore ?: 0) >= 50 -> Color(0xFFFF9800)
                                 else -> Color(0xFFF44336)
                             }
@@ -150,22 +158,30 @@ fun NetworkReachabilityCard(
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
                 } else if (hasRun && report != null) {
-                    // Score badge
+                    // Score badge — design system: neon + dark text in dark mode; theme + dark text in light
+                    val goodScore = report!!.opennessScore >= 80
+                    val badgeBg = when {
+                        goodScore && isDark -> DesignSystemColors.NeonGreen
+                        goodScore -> MaterialTheme.colorScheme.primaryContainer
+                        report!!.opennessScore >= 50 -> Color(0xFFFF9800)
+                        else -> Color(0xFFF44336)
+                    }
+                    val badgeText = when {
+                        goodScore && isDark -> DesignSystemColors.Dark
+                        goodScore -> MaterialTheme.colorScheme.onPrimaryContainer
+                        else -> Color.White
+                    }
                     Surface(
                         modifier = Modifier.size(36.dp),
                         shape = RoundedCornerShape(10.dp),
-                        color = when {
-                            report!!.opennessScore >= 80 -> Color(0xFF4CAF50)
-                            report!!.opennessScore >= 50 -> Color(0xFFFF9800)
-                            else -> Color(0xFFF44336)
-                        }
+                        color = badgeBg
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 text = "${report!!.opennessScore}",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = badgeText,
                                 fontSize = 12.sp
                             )
                         }
@@ -239,7 +255,7 @@ fun NetworkReachabilityCard(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Buttons
+                        // Buttons (design system: no neon in light mode)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -252,7 +268,11 @@ fun NetworkReachabilityCard(
                                 },
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp)
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
+                                colors = if (isDark) ButtonDefaults.buttonColors(
+                                    containerColor = DesignSystemColors.NeonGreen,
+                                    contentColor = DesignSystemColors.Dark
+                                ) else ButtonDefaults.buttonColors()
                             ) {
                                 Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))

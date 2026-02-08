@@ -241,7 +241,7 @@ fun BestDeviceCardFromEntry(
                 1 -> "🥇"
                 2 -> "🥈"
                 3 -> "🥉"
-                else -> "#$rank"
+                else -> "• $rank"
             }
             Box(
                 modifier = Modifier
@@ -362,7 +362,7 @@ fun BestDeviceCard(
                 1 -> "🥇"
                 2 -> "🥈"
                 3 -> "🥉"
-                else -> "#$rank"
+                else -> "• $rank"
             }
             Box(
                 modifier = Modifier

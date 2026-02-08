@@ -1,22 +1,47 @@
 package com.teamz.lab.debugger.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -26,11 +51,14 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.window.DialogProperties
+import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.theme.AppTheme
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.ui.theme.useThemeManager
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.ReferralManager
-import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.string
 
 /**
@@ -49,13 +77,17 @@ fun ViralShareDialog(
     val referralCode = remember { ReferralManager.getOrCreateReferralCode(context) }
     val referralLink = remember { ReferralManager.getShortReferralLink(context) }
     val referralCount = remember { ReferralManager.getReferralCount(context) }
-    
-    Dialog(onDismissRequest = onDismiss) {
+    val isDark = useThemeManager().getEffectiveTheme() == AppTheme.DESIGN_SYSTEM_DARK
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            shape = RoundedCornerShape(28.dp),
+                .padding(horizontal = 12.dp, vertical = 24.dp),
+            shape = RoundedCornerShape(24.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -67,38 +99,37 @@ fun ViralShareDialog(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header with gradient background
+                // Header — design system: neon green accent in dark mode
+                val headerBg = if (isDark) DesignSystemColors.NeonGreen.copy(alpha = 0.12f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                val headerIconBg = if (isDark) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.primaryContainer
+                val headerIconTint = if (isDark) DesignSystemColors.Dark else MaterialTheme.colorScheme.onPrimaryContainer
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
                             brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                                    MaterialTheme.colorScheme.surface
-                                )
+                                colors = listOf(headerBg, MaterialTheme.colorScheme.surface)
                             )
                         )
-                        .padding(top = 32.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                        .padding(top = 28.dp, bottom = 20.dp, start = 20.dp, end = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Icon with background circle
                         Surface(
-                            modifier = Modifier.size(64.dp),
-                            shape = RoundedCornerShape(20.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(56.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            color = headerIconBg,
                             shadowElevation = 4.dp
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     Icons.Default.Share,
                                     contentDescription = "Share",
-                                    modifier = Modifier.size(36.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    modifier = Modifier.size(32.dp),
+                                    tint = headerIconTint
                                 )
                             }
                         }
@@ -121,17 +152,17 @@ fun ViralShareDialog(
                     }
                 }
                 
-                // Referral stats
+                // Referral stats — design system: neon in dark mode
                 if (showReferralCode && referralCount > 0) {
                     Spacer(modifier = Modifier.height(8.dp))
+                    val statsBg = if (isDark) DesignSystemColors.NeonGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primaryContainer
+                    val statsText = if (isDark) DesignSystemColors.Dark else MaterialTheme.colorScheme.onPrimaryContainer
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        ),
-                        shape = RoundedCornerShape(16.dp)
+                            .padding(horizontal = 20.dp),
+                        colors = CardDefaults.cardColors(containerColor = statsBg),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -145,27 +176,27 @@ fun ViralShareDialog(
                                     "$referralCount",
                                     style = MaterialTheme.typography.displaySmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = statsText
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     "Friends Referred",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                                    color = statsText.copy(alpha = 0.85f),
                                     fontWeight = FontWeight.Medium
                                 )
                             }
                             Surface(
-                                modifier = Modifier.size(48.dp),
+                                modifier = Modifier.size(44.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                color = if (isDark) DesignSystemColors.NeonGreen.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         Icons.Default.People,
                                         contentDescription = "Referrals",
-                                        modifier = Modifier.size(28.dp),
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                        modifier = Modifier.size(26.dp),
+                                        tint = statsText
                                     )
                                 }
                             }
@@ -179,7 +210,7 @@ fun ViralShareDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
+                        .padding(horizontal = 20.dp)
                 ) {
                     Text(
                         "Share via",
@@ -275,27 +306,26 @@ fun ViralShareDialog(
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                // Referral code display
+                // Referral code display — design system + copy button + what you get
                 if (showReferralCode) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                            .padding(horizontal = 20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val codeBoxBg = if (isDark) DesignSystemColors.NeonGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primaryContainer
+                        val codeBoxText = if (isDark) DesignSystemColors.White else MaterialTheme.colorScheme.onPrimaryContainer
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(14.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                            )
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(20.dp),
+                                    .padding(16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
@@ -304,26 +334,49 @@ fun ViralShareDialog(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Surface(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MaterialTheme.colorScheme.primaryContainer)
-                                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Text(
-                                        referralCode,
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        letterSpacing = TextUnit(2f, TextUnitType.Sp)
-                                    )
+                                    Surface(
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = codeBoxBg
+                                    ) {
+                                        Text(
+                                            referralCode,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = codeBoxText,
+                                            letterSpacing = TextUnit(1.5f, TextUnitType.Sp),
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            clipboard.setPrimaryClip(ClipData.newPlainText("Referral Code", referralCode))
+                                            Toast.makeText(context, "Code copied!", Toast.LENGTH_SHORT).show()
+                                            AnalyticsUtils.logEvent(AnalyticsEvent.ReferralShared, mapOf("method" to "copy"))
+                                        },
+                                        modifier = Modifier.height(48.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (isDark) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.primary,
+                                            contentColor = if (isDark) DesignSystemColors.Dark else MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    ) {
+                                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(20.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Copy", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                                    }
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    "Track how many friends you've helped!",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    "When friends install with your code, your referral count goes up. We're adding rewards for top referrers!",
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
                                 )
@@ -334,13 +387,16 @@ fun ViralShareDialog(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Close button
+                // Close button — design system: neon outline in dark mode
+                val closeBorder = if (isDark) BorderStroke(1.5.dp, DesignSystemColors.NeonGreen.copy(alpha = 0.6f)) else null
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(12.dp)
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = closeBorder,
+                    colors = if (isDark) ButtonDefaults.outlinedButtonColors(contentColor = DesignSystemColors.NeonGreen) else ButtonDefaults.outlinedButtonColors()
                 ) {
                     Text(
                         LocalContext.current.string(R.string.close),

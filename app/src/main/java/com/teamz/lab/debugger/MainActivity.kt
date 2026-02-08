@@ -498,10 +498,20 @@ fun DebuggerApp(activity: ComponentActivity) {
                 showViralShareDialog = true
             },
             onGenerateVerifiedReport = {
-                showGenerateReportDialog = true
+                InterstitialAdManager.showAdBeforeAction(
+                    activity = activity,
+                    actionName = "generate_verified_report"
+                ) {
+                    showGenerateReportDialog = true
+                }
             },
             onVerifyReport = {
-                showVerifyReportDialog = true
+                InterstitialAdManager.showAdBeforeAction(
+                    activity = activity,
+                    actionName = "verify_report"
+                ) {
+                    showVerifyReportDialog = true
+                }
             }
         )
     }) {
@@ -1395,13 +1405,16 @@ https://play.google.com/store/apps/details?id=${context.packageName}
         )
     }
 
-    // Report Ready dialog (after generation)
+    // Report Ready dialog (after generation) — show ad on dismiss for revenue
     if (showReportReadyDialog && generatedReport != null) {
         ReportReadyDialog(
             report = generatedReport!!,
             onDismiss = {
                 showReportReadyDialog = false
                 generatedReport = null
+                InterstitialAdManager.showAdIfAvailable(activity) {
+                    // Ad shown and dismissed
+                }
             }
         )
     }

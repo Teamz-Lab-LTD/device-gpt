@@ -103,6 +103,17 @@ object AppOpenAdManager {
                         return@loadAdWithRetry
                     }
                     
+                    // Expected/recoverable ad failures: log only, do not report to Crashlytics
+                    val isExpectedAdFailure = errorMessage.contains("Network error", ignoreCase = true) ||
+                        errorMessage.contains("No fill", ignoreCase = true) ||
+                        errorMessage.contains("internal error", ignoreCase = true) ||
+                        errorMessage.contains("no ad was returned", ignoreCase = true) ||
+                        errorMessage.contains("timeout", ignoreCase = true)
+                    if (isExpectedAdFailure) {
+                        android.util.Log.w(TAG, "loadAd() - ⚠️ Ad failed (expected): $errorMessage, code: ${error.code}")
+                        return@loadAdWithRetry
+                    }
+                    
                     android.util.Log.e(TAG, "loadAd() - ❌ Ad failed to load: $errorMessage, code: ${error.code}")
                     handleError(Exception(error.message))
                 }
@@ -202,11 +213,19 @@ object AppOpenAdManager {
                 pendingActivityRef = null // Clear pending activity on failure
                 loadAd(activity) // Preload next ad
                 
-                // Handle "Unable to obtain a JavascriptEngine" error gracefully
+                // Handle expected/recoverable errors: log only, do not report to Crashlytics
                 val errorMessage = p0.message ?: ""
-                if (errorMessage.contains("JavascriptEngine", ignoreCase = true) || 
-                    errorMessage.contains("Unable to obtain", ignoreCase = true)) {
+                val isJavascriptEngine = errorMessage.contains("JavascriptEngine", ignoreCase = true) ||
+                    errorMessage.contains("Unable to obtain", ignoreCase = true)
+                val isExpectedAdFailure = errorMessage.contains("Network error", ignoreCase = true) ||
+                    errorMessage.contains("No fill", ignoreCase = true) ||
+                    errorMessage.contains("internal error", ignoreCase = true)
+                if (isJavascriptEngine) {
                     android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ WebView/JavascriptEngine not available - this is expected on some devices. Skipping error logging.")
+                    return
+                }
+                if (isExpectedAdFailure) {
+                    android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ Ad failed to show (expected): $errorMessage")
                     return
                 }
                 
@@ -221,11 +240,19 @@ object AppOpenAdManager {
         } catch (e: Exception) {
             android.util.Log.e(TAG, "showAdIfAvailable() - ❌ Exception showing ad: ${e.message}", e)
             
-            // Handle "Unable to obtain a JavascriptEngine" error gracefully
+            // Handle expected/recoverable errors: log only, do not report to Crashlytics
             val errorMessage = e.message ?: ""
-            if (errorMessage.contains("JavascriptEngine", ignoreCase = true) || 
-                errorMessage.contains("Unable to obtain", ignoreCase = true)) {
+            val isJavascriptEngine = errorMessage.contains("JavascriptEngine", ignoreCase = true) ||
+                errorMessage.contains("Unable to obtain", ignoreCase = true)
+            val isExpectedAdFailure = errorMessage.contains("Network error", ignoreCase = true) ||
+                errorMessage.contains("No fill", ignoreCase = true) ||
+                errorMessage.contains("internal error", ignoreCase = true)
+            if (isJavascriptEngine) {
                 android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ WebView/JavascriptEngine not available - this is expected on some devices. Skipping error logging.")
+                return
+            }
+            if (isExpectedAdFailure) {
+                android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ Exception (expected): $errorMessage")
                 return
             }
             

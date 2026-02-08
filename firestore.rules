@@ -109,5 +109,22 @@ service cloud.firestore {
                       request.resource.data.userId != null &&
                       request.resource.data.userId == request.auth.uid;
     }
+    
+    // Verified device reports - tamper-evident reports with verification code
+    // Write: authenticated users (including anonymous) can create reports
+    // Read: public so anyone can verify a report by code (no auth required)
+    match /verified_reports/{reportId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Reports are immutable once created
+    }
+    
+    // Verification code index - maps code (e.g. DG-XXXXXXXX) to reportId
+    // Write: authenticated users can create; Read: public for verification
+    match /verification_codes/{code} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
   }
 }

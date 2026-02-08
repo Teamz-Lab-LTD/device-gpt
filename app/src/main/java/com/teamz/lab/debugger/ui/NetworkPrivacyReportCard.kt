@@ -41,6 +41,9 @@ import com.teamz.lab.debugger.utils.PrivacyCheckResult
 import com.teamz.lab.debugger.utils.PrivacyCheckStatus
 import com.teamz.lab.debugger.utils.PrivacyReport
 import com.teamz.lab.debugger.utils.ReferralManager
+import com.teamz.lab.debugger.ui.theme.AppTheme
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import com.teamz.lab.debugger.ui.theme.useThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,6 +60,7 @@ fun NetworkPrivacyReportCard(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val isDark = useThemeManager().getEffectiveTheme() == AppTheme.DESIGN_SYSTEM_DARK
 
     var report by remember { mutableStateOf<PrivacyReport?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -112,13 +116,15 @@ fun NetworkPrivacyReportCard(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Shield icon
+                // Shield icon (design system: neon green in dark mode, theme green in light)
+                val goodScore = (report?.score ?: 0) >= 80
                 Surface(
                     modifier = Modifier.size(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     color = when {
                         isLoading -> MaterialTheme.colorScheme.surfaceVariant
-                        (report?.score ?: 0) >= 80 -> Color(0xFF4CAF50).copy(alpha = 0.12f)
+                        goodScore && isDark -> DesignSystemColors.NeonGreen.copy(alpha = 0.12f)
+                        goodScore -> Color(0xFF4CAF50).copy(alpha = 0.12f)
                         (report?.score ?: 0) >= 50 -> Color(0xFFFF9800).copy(alpha = 0.12f)
                         else -> Color(0xFFF44336).copy(alpha = 0.12f)
                     }
@@ -130,7 +136,8 @@ fun NetworkPrivacyReportCard(
                             modifier = Modifier.size(24.dp),
                             tint = when {
                                 isLoading -> MaterialTheme.colorScheme.onSurfaceVariant
-                                (report?.score ?: 0) >= 80 -> Color(0xFF4CAF50)
+                                goodScore && isDark -> DesignSystemColors.NeonGreen
+                                goodScore -> Color(0xFF4CAF50)
                                 (report?.score ?: 0) >= 50 -> Color(0xFFFF9800)
                                 else -> Color(0xFFF44336)
                             }
@@ -161,9 +168,9 @@ fun NetworkPrivacyReportCard(
                     }
                 }
 
-                // Grade badge (when loaded)
+                // Grade badge (when loaded) — design system: neon + dark text in dark mode, theme + dark text in light
                 if (!isLoading && report != null) {
-                    GradeBadge(grade = report!!.grade, score = report!!.score)
+                    GradeBadge(grade = report!!.grade, score = report!!.score, isDark = isDark)
                 } else if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(28.dp),
@@ -193,8 +200,8 @@ fun NetworkPrivacyReportCard(
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
                     ) {
-                        // Score arc
-                        PrivacyScoreArc(score = privacyReport.score)
+                        // Score arc (design system: neon in dark mode, theme green in light)
+                        PrivacyScoreArc(score = privacyReport.score, isDark = isDark)
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -268,7 +275,7 @@ fun NetworkPrivacyReportCard(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "Share Report",
+                                    "Share",
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -317,19 +324,25 @@ fun NetworkPrivacyReportCard(
     }
 }
 
-// --- Grade badge ---
+// --- Grade badge --- (design system: neon green + dark text in dark mode; theme green + dark text in light)
 
 @Composable
-private fun GradeBadge(grade: String, score: Int) {
+private fun GradeBadge(grade: String, score: Int, isDark: Boolean = false) {
+    val goodScore = score >= 80
     val bgColor = when {
-        score >= 80 -> Color(0xFF4CAF50)
+        goodScore && isDark -> DesignSystemColors.NeonGreen
+        goodScore -> MaterialTheme.colorScheme.primaryContainer
         score >= 50 -> Color(0xFFFF9800)
         else -> Color(0xFFF44336)
     }
+    val textColor = when {
+        goodScore && isDark -> DesignSystemColors.Dark
+        goodScore -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> Color.White
+    }
 
     Surface(
-        modifier = Modifier
-            .size(36.dp),
+        modifier = Modifier.size(36.dp),
         shape = RoundedCornerShape(10.dp),
         color = bgColor
     ) {
@@ -338,27 +351,33 @@ private fun GradeBadge(grade: String, score: Int) {
                 text = grade,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = textColor,
                 fontSize = if (grade.length > 1) 12.sp else 16.sp
             )
         }
     }
 }
 
-// --- Score arc visualization ---
+// --- Score arc visualization --- (design system: neon in dark mode, theme green in light; score number readable)
 
 @Composable
-private fun PrivacyScoreArc(score: Int) {
+private fun PrivacyScoreArc(score: Int, isDark: Boolean = false) {
     val animatedProgress by animateFloatAsState(
         targetValue = score / 100f,
         animationSpec = tween(durationMillis = 1000),
         label = "score_progress"
     )
 
+    val goodScore = score >= 80
     val arcColor = when {
-        score >= 80 -> Color(0xFF4CAF50)
+        goodScore && isDark -> DesignSystemColors.NeonGreen
+        goodScore -> Color(0xFF4CAF50)
         score >= 50 -> Color(0xFFFF9800)
         else -> Color(0xFFF44336)
+    }
+    val scoreTextColor = when {
+        goodScore && isDark -> DesignSystemColors.NeonGreen
+        else -> arcColor
     }
 
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -403,13 +422,13 @@ private fun PrivacyScoreArc(score: Int) {
             )
         }
 
-        // Center text
+        // Center text (neon in dark mode so number is readable on dark background)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "$score",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = arcColor
+                color = scoreTextColor
             )
             Text(
                 text = "/ 100",

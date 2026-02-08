@@ -21,6 +21,12 @@ import java.util.UUID
 data class ReportData(
     val deviceModel: String,
     val androidVersion: String,
+    val apiLevel: Int,
+    val securityPatchLevel: String,
+    val rootStatus: String,
+    val cpuModel: String,
+    val screenResolution: String,
+    val playCertified: String,
     val healthScore: Int,
     val privacyGrade: String,
     val downloadSpeed: String,
@@ -222,6 +228,18 @@ object VerifiedReportManager {
         val batteryInfo = try { getBatteryChargingInfo(context) } catch (_: Exception) { "N/A" }
         val storageInfo = try { getMemoryAndStorageInfo(context) } catch (_: Exception) { "N/A" }
         val ramInfo = try { getRamUsage(context) } catch (_: Exception) { "N/A" }
+        val rootStatus = try {
+            if (isDeviceRooted() == "Yes") "Rooted" else "Not rooted"
+        } catch (_: Exception) { "N/A" }
+        val screenResolution = try {
+            getDisplayInfo(context)["📺 Screen Resolution"] ?: "N/A"
+        } catch (_: Exception) { "N/A" }
+        val cpuModel = if (Build.VERSION.SDK_INT >= 31) {
+            listOfNotNull(Build.SOC_MANUFACTURER, Build.SOC_MODEL).joinToString(" ").take(50).ifEmpty { Build.HARDWARE.take(50) }
+        } else {
+            Build.HARDWARE.take(50)
+        }
+        val playCertified = try { isPlayStoreCertified(context) } catch (_: Exception) { "N/A" }
 
         val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
         isoFormat.timeZone = TimeZone.getTimeZone("UTC")
@@ -229,6 +247,12 @@ object VerifiedReportManager {
         return ReportData(
             deviceModel = "${Build.MANUFACTURER} ${Build.MODEL}",
             androidVersion = Build.VERSION.RELEASE,
+            apiLevel = Build.VERSION.SDK_INT,
+            securityPatchLevel = Build.VERSION.SECURITY_PATCH,
+            rootStatus = rootStatus,
+            cpuModel = cpuModel,
+            screenResolution = screenResolution,
+            playCertified = playCertified,
             healthScore = healthScore,
             privacyGrade = privacyReport?.grade ?: "N/A",
             downloadSpeed = downloadSpeed.take(30),
@@ -251,8 +275,12 @@ object VerifiedReportManager {
         // Use sorted keys for deterministic serialization
         val json = JSONObject()
         json.put("androidVersion", data.androidVersion)
+        json.put("apiLevel", data.apiLevel)
         json.put("batteryHealth", data.batteryHealth)
+        json.put("cpuModel", data.cpuModel)
         json.put("deviceModel", data.deviceModel)
+        json.put("playCertified", data.playCertified)
+        json.put("screenResolution", data.screenResolution)
         json.put("downloadSpeed", data.downloadSpeed)
         json.put("healthScore", data.healthScore)
         json.put("jitter", data.jitter)
@@ -261,6 +289,8 @@ object VerifiedReportManager {
         json.put("privacyGrade", data.privacyGrade)
         json.put("ramInfo", data.ramInfo)
         json.put("reportId", data.reportId)
+        json.put("rootStatus", data.rootStatus)
+        json.put("securityPatchLevel", data.securityPatchLevel)
         json.put("storageInfo", data.storageInfo)
         json.put("timestamp", data.timestamp)
         json.put("uploadSpeed", data.uploadSpeed)
@@ -276,6 +306,12 @@ object VerifiedReportManager {
             ReportData(
                 deviceModel = obj.optString("deviceModel", "Unknown"),
                 androidVersion = obj.optString("androidVersion", ""),
+                apiLevel = obj.optInt("apiLevel", 0),
+                securityPatchLevel = obj.optString("securityPatchLevel", "N/A"),
+                rootStatus = obj.optString("rootStatus", "N/A"),
+                cpuModel = obj.optString("cpuModel", "N/A"),
+                screenResolution = obj.optString("screenResolution", "N/A"),
+                playCertified = obj.optString("playCertified", "N/A"),
                 healthScore = obj.optInt("healthScore", 0),
                 privacyGrade = obj.optString("privacyGrade", "N/A"),
                 downloadSpeed = obj.optString("downloadSpeed", "N/A"),
