@@ -1127,8 +1127,10 @@ fun LeaderboardSection(activity: Activity) {
                                                     tint = MaterialTheme.colorScheme.onSurface,
                                                     modifier = Modifier.size(20.dp)
                                                 )
+                                                // Get score to tease without revealing the device name
+                                                val score = entry.scores[selectedCategory.id]?.toInt()
                                                 Text(
-                                                    text = entry.displayName.ifEmpty { "${entry.normalizedBrand} ${entry.normalizedModel}" },
+                                                    text = if (score != null) "#$originalRank Device — Score: $score/100" else "#$originalRank Device",
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.onSurface,
@@ -1136,11 +1138,10 @@ fun LeaderboardSection(activity: Activity) {
                                                 )
                                             }
                                             Spacer(modifier = Modifier.height(4.dp))
-                                            // Teaser: show what's behind the blur to trigger curiosity
+                                            // Curiosity hook: tease the score, hide the device name
                                             val totalDevices = filteredLeaderboardEntriesWithRank.size
-                                            val topPercent = if (totalDevices > 0) ((originalRank.toFloat() / totalDevices) * 100).toInt().coerceAtLeast(1) else 1
                                             Text(
-                                                text = "This device outperforms ${100 - topPercent}% of all devices. See what makes it #$originalRank.",
+                                                text = "Which device ranks #$originalRank out of $totalDevices? Unlock to find out.",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                             )
