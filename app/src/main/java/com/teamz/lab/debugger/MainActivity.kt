@@ -1144,6 +1144,14 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                                 showGenerateReportDialog = true
                                             }
                                         }
+                                    },
+                                    onVerifyReportClick = {
+                                        InterstitialAdManager.showAdBeforeAction(
+                                            activity = activity,
+                                            actionName = "verify_report"
+                                        ) {
+                                            showVerifyReportDialog = true
+                                        }
                                     }
                                 )
                             }

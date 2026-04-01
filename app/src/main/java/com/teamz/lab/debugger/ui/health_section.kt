@@ -58,7 +58,8 @@ fun HealthSection(
     onAIClick: (() -> Unit)? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
     onScanComplete: (() -> Unit)? = null,
-    onGenerateReportClick: (() -> Unit)? = null
+    onGenerateReportClick: (() -> Unit)? = null,
+    onVerifyReportClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
@@ -430,6 +431,50 @@ fun HealthSection(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = null,
                             tint = com.teamz.lab.debugger.ui.theme.DesignSystemColors.NeonGreen
+                        )
+                    }
+                }
+            }
+        }
+
+        // Verify a Report card - always visible (free feature, drives viral growth)
+        if (onVerifyReportClick != null) {
+            item(key = "verify_report_teaser") {
+                androidx.compose.material3.OutlinedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable { onVerifyReportClick() },
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🔍",
+                            fontSize = 28.sp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Verify a Report",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Check if a device certificate is authentic",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
