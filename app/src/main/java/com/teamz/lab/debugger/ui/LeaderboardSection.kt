@@ -855,15 +855,17 @@ fun LeaderboardSection(activity: Activity) {
                                                         modifier = Modifier.size(20.dp)
                                                     )
                                                     Text(
-                                                        text = "Premium Required",
+                                                        text = "#$originalRank App",
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onSurface
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        maxLines = 1
                                                     )
                                                 }
                                                 Spacer(modifier = Modifier.height(4.dp))
+                                                val totalApps = filteredAppPowerEntriesWithRank.size
                                                 Text(
-                                                    text = "See all app data & unlock full leaderboard access forever",
+                                                    text = "Which app ranks #$originalRank out of $totalApps for power usage? Unlock to find out.",
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                                 )
