@@ -347,8 +347,14 @@ fun ExpandableInfoList(
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "⭐ Unlock Full Report",
+                                    "Unlock Full Report",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold
                                 )
