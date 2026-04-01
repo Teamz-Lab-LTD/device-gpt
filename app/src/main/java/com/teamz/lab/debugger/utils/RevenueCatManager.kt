@@ -263,11 +263,11 @@ object RevenueCatManager {
     }
     
     /**
-     * DEBUG ONLY: Force non-premium mode for testing paywall flows.
-     * Set to true to simulate a free user even if you have premium.
-     * ⚠️ MUST be false before release!
+     * Force non-premium mode for testing paywall flows.
+     * Automatically ON in debug builds, OFF in release builds.
+     * No manual toggle needed — BuildConfig.DEBUG handles it.
      */
-    var DEBUG_FORCE_FREE_USER = false
+    var DEBUG_FORCE_FREE_USER = com.teamz.lab.debugger.BuildConfig.DEBUG
 
     /**
      * Check if user has premium (ads-free) status
