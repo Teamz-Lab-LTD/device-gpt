@@ -147,13 +147,14 @@ fun HealthScoreCard(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
                     .clickable(onClick = onScoreClick),
                 color = DesignSystemColors.NeonGreen,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
