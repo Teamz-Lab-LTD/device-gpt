@@ -871,7 +871,11 @@ fun DebuggerApp(activity: ComponentActivity) {
                         onClick = {
                             com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                 activity = activity,
-                                source = "fab_ai"
+                                source = "fab_ai",
+                                onPaywallRequest = {
+                                    paywallAnalyticsSource = "ai_soft_gate"
+                                    showRevenueCatPaywall = true
+                                }
                             ) {
                                 showAIDialog = true
                             }
@@ -1045,7 +1049,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     onAIClick = {
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
-                                            source = "health_section"
+                                            source = "health_section",
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             showAIDialog = true
                                         }
@@ -1054,7 +1062,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
                                             source = "health_item",
-                                            itemTitle = title
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true
@@ -1083,7 +1095,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     onAIClick = {
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
-                                            source = "power_section"
+                                            source = "power_section",
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             showAIDialog = true
                                         }
@@ -1092,7 +1108,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
                                             source = "power_item",
-                                            itemTitle = title
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true
@@ -1108,7 +1128,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     onAIClick = {
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
-                                            source = "device_info_section"
+                                            source = "device_info_section",
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             showAIDialog = true
                                         }
@@ -1117,7 +1141,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
                                             source = "device_info_item",
-                                            itemTitle = title
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true
@@ -1134,7 +1162,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
                                             source = "network_info_item",
-                                            itemTitle = title
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
                                         ) {
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true

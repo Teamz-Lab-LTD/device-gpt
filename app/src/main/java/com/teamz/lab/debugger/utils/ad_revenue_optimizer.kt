@@ -84,7 +84,7 @@ object AdRevenueOptimizer {
                     currency = adValue.currencyCode
                 )
                 
-                // Track in analytics
+                // Track in analytics (custom event for internal tracking)
                 val eCPM = calculateECPM(context)
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.AdPaid,
@@ -97,7 +97,15 @@ object AdRevenueOptimizer {
                         "daily_count" to (dailyCount + 1)
                     )
                 )
-                
+
+                // Log GA4 standard ad_impression event so revenue shows in GA4 reports
+                AnalyticsUtils.logAdRevenue(
+                    adType = adType,
+                    adUnitId = adUnitId,
+                    revenueMicros = adValue.valueMicros,
+                    currencyCode = adValue.currencyCode
+                )
+
                 Log.d("AdRevenueOptimizer", "Ad revenue tracked: ${adValue.valueMicros} micros, eCPM: $eCPM")
                 
             } catch (e: Exception) {

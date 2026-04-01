@@ -108,6 +108,43 @@ object AnalyticsUtils {
     }
 
     /**
+     * Log ad revenue using GA4 standard "ad_impression" event.
+     * This is the ONLY format GA4 recognizes for ad revenue in reports.
+     * Uses FirebaseAnalytics.Event.AD_IMPRESSION with VALUE + CURRENCY params.
+     *
+     * Without this, ad revenue shows as $0 in GA4 because custom events
+     * like "ad_paid" are not counted in the Revenue reports.
+     */
+    fun logAdRevenue(
+        adType: String,
+        adUnitId: String,
+        revenueMicros: Long,
+        currencyCode: String
+    ) {
+        val revenueValue = revenueMicros / 1_000_000.0
+
+        Log.d("AnalyticsUtils", "Ad revenue: $revenueValue $currencyCode (type=$adType, unit=$adUnitId)")
+
+        if (BuildConfig.DEBUG) {
+            Log.d("AnalyticsUtils", "Ad revenue NOT sent to Firebase (DEBUG mode)")
+            return
+        }
+
+        val context = appContext
+        if (context != null && !isDeviceInRestrictedMode(context)) {
+            val bundle = Bundle().apply {
+                putString(FirebaseAnalytics.Param.AD_PLATFORM, "admob")
+                putString(FirebaseAnalytics.Param.AD_FORMAT, adType)
+                putString(FirebaseAnalytics.Param.AD_UNIT_NAME, adUnitId)
+                putString(FirebaseAnalytics.Param.CURRENCY, currencyCode)
+                putDouble(FirebaseAnalytics.Param.VALUE, revenueValue)
+            }
+            firebaseAnalytics?.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION, bundle)
+            Log.d("AnalyticsUtils", "Ad revenue sent to Firebase: $revenueValue $currencyCode")
+        }
+    }
+
+    /**
      * Set user ID - Only sets if:
      * - NOT in debug mode (BuildConfig.DEBUG = false)
      * - Device is NOT in restricted mode
