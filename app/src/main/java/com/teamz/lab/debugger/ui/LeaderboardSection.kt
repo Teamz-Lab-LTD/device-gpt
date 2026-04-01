@@ -653,6 +653,7 @@ fun LeaderboardSection(activity: Activity) {
                 item {
                     UserRankCardPremiumGate(
                         category = selectedCategory,
+                        userRank = userRank,
                         totalEntries = leaderboardEntries.size,
                         onUnlockClick = {
                             AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
@@ -1123,19 +1124,23 @@ fun LeaderboardSection(activity: Activity) {
                                                 Icon(
                                                     imageVector = Icons.Default.Star,
                                                     contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurface, // Use text color in both modes
+                                                    tint = MaterialTheme.colorScheme.onSurface,
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                                 Text(
-                                                    text = "Premium Required",
+                                                    text = entry.displayName.ifEmpty { "${entry.normalizedBrand} ${entry.normalizedModel}" },
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    maxLines = 1
                                                 )
                                             }
                                             Spacer(modifier = Modifier.height(4.dp))
+                                            // Teaser: show what's behind the blur to trigger curiosity
+                                            val totalDevices = filteredLeaderboardEntriesWithRank.size
+                                            val topPercent = if (totalDevices > 0) ((originalRank.toFloat() / totalDevices) * 100).toInt().coerceAtLeast(1) else 1
                                             Text(
-                                                text = "See all device data & unlock full leaderboard access forever",
+                                                text = "This device outperforms ${100 - topPercent}% of all devices. See what makes it #$originalRank.",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                             )
@@ -1935,6 +1940,7 @@ fun UserRankCard(
 @Composable
 fun UserRankCardPremiumGate(
     category: LeaderboardCategory,
+    userRank: Int = 0,
     totalEntries: Int = 0,
     onUnlockClick: () -> Unit
 ) {
@@ -1946,7 +1952,12 @@ fun UserRankCardPremiumGate(
             onError = { /* Keep default $2.99 */ }
         )
     }
-    
+
+    // Calculate percentile (show real data to hook the user)
+    val topPercent = if (totalEntries > 0 && userRank > 0) {
+        ((userRank.toFloat() / totalEntries) * 100).toInt().coerceIn(1, 100)
+    } else 0
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1967,21 +1978,34 @@ fun UserRankCardPremiumGate(
                     modifier = Modifier.padding(end = 16.dp)
                 )
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Your rank: ---",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "You're in the top --% for ${category.displayName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (userRank > 0) {
+                        Text(
+                            text = "Your device: #$userRank out of $totalEntries",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Top $topPercent% for ${category.displayName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "Your rank: ---",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "You're in the top --% for ${category.displayName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "See details please",
+                text = if (userRank > 0) "See what the #1 device has that yours doesn't" else "Unlock to see your full ranking details",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp)
