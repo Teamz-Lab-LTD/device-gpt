@@ -50,20 +50,17 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.unit.dp
 
 /**
- * Show first 3 lines of content for free, then premium teaser.
- * Users get real value (the headline/score) but need premium for full details.
+ * Show first line of content for free (the headline/score), then premium teaser.
+ * ALWAYS gates regardless of content length — these are premium security sections.
  * Note: Analytics is NOT logged here (called inside remember = would spam on recomposition).
  * Analytics is logged in the UI when user expands the section.
  */
 private fun truncateWithTeaser(content: String, premiumDetail: String): String {
     if (content.isBlank()) return content
     val lines = content.lines()
-    val freeLines = lines.take(3).joinToString("\n")
-    return if (lines.size <= 3) {
-        content
-    } else {
-        "$freeLines\n\n... ${lines.size - 3} more lines\n\n⭐ Unlock Premium to see $premiumDetail"
-    }
+    // Always show just the first line (score/headline) — the rest is premium
+    val freeLine = lines.first()
+    return "$freeLine\n\n⭐ Unlock Premium to see $premiumDetail"
 }
 
 /** Check if content was truncated by our teaser */
