@@ -26,18 +26,10 @@ fun SearchBar(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        label = {
-            Text(
-                text = "Search",
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
         placeholder = {
             Text(
                 text = placeholderText,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -55,15 +47,12 @@ fun SearchBar(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             cursorColor = MaterialTheme.colorScheme.primary,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
             focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
         ),
-        textStyle = MaterialTheme.typography.bodySmall,
+        textStyle = MaterialTheme.typography.bodyMedium,
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .height(56.dp),
+            .padding(vertical = 8.dp),
         singleLine = true
     )
 }
