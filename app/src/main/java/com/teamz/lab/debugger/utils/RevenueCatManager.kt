@@ -50,7 +50,17 @@ object RevenueCatManager {
 
     // State flow for reactive premium status updates
     private val _premiumStatusFlow = MutableStateFlow<PremiumStatus>(PremiumStatus.Unknown)
-    val premiumStatusFlow: StateFlow<PremiumStatus> = _premiumStatusFlow.asStateFlow()
+
+    /**
+     * Premium status flow that respects DEBUG_FORCE_FREE_USER flag.
+     * All Compose UI should use this (not _premiumStatusFlow directly).
+     */
+    val premiumStatusFlow: StateFlow<PremiumStatus>
+        get() = if (DEBUG_FORCE_FREE_USER) {
+            MutableStateFlow(PremiumStatus.NotPremium)
+        } else {
+            _premiumStatusFlow.asStateFlow()
+        }
     
     private var isInitialized = false
     private var customerInfo: CustomerInfo? = null
