@@ -274,9 +274,14 @@ object RevenueCatManager {
      *
      * @return true if user has active premium subscription, false otherwise
      */
+    private var debugFreeUserLoggedOnce = false
+
     fun isPremium(): Boolean {
         if (DEBUG_FORCE_FREE_USER) {
-            Log.w(TAG, "⚠️ DEBUG_FORCE_FREE_USER is ON — treating user as non-premium for testing")
+            if (!debugFreeUserLoggedOnce) {
+                Log.w(TAG, "DEBUG_FORCE_FREE_USER is ON — all isPremium() calls return false")
+                debugFreeUserLoggedOnce = true
+            }
             return false
         }
         return when (val status = _premiumStatusFlow.value) {
