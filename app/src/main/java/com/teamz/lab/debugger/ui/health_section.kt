@@ -56,7 +56,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun HealthSection(
     onShareClick: (String) -> Unit = {},
     onAIClick: (() -> Unit)? = null,
-    onItemAIClick: ((String, String) -> Unit)? = null
+    onItemAIClick: ((String, String) -> Unit)? = null,
+    onScanComplete: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
@@ -246,7 +247,10 @@ fun HealthSection(
                     if (context is android.app.Activity) {
                         ReviewPromptManager.trackMeaningfulInteraction(context, "health_scan_completed")
                     }
-                    
+
+                    // Trigger paywall after scan (user has seen value)
+                    onScanComplete?.invoke()
+
                     // Upload to leaderboard after scan
                     com.teamz.lab.debugger.utils.LeaderboardDataUpload.uploadAfterHealthScan(context)
                     

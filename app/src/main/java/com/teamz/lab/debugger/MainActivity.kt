@@ -456,6 +456,7 @@ fun DebuggerApp(activity: ComponentActivity) {
     var selectedItemForAI by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showItemAIDialog by remember { mutableStateOf(false) }
     var showRevenueCatPaywall by remember { mutableStateOf(false) }
+    var paywallAnalyticsSource by remember { mutableStateOf("revenuecat_paywall") }
     var showGenerateReportDialog by remember { mutableStateOf(false) }
     var showReportReadyDialog by remember { mutableStateOf(false) }
     var showVerifyReportDialog by remember { mutableStateOf(false) }
@@ -486,6 +487,62 @@ fun DebuggerApp(activity: ComponentActivity) {
     var inputCurrency by remember { mutableStateOf("USD") }
 
     HandleSystemMonitorAutoStart()
+
+    // === "Review First, Paywall After" strategy ===
+    // Flow: App Open → Review prompt (3rd session) → Paywall (chained after review)
+    // Users subconsciously rate 5 stars before seeing pricing.
+    // Ref: https://x.com/WasimShips/status/2034291252561104922
+
+    // Track whether paywall was already triggered this session (avoid double-trigger)
+    var paywallTriggeredThisSession by remember { mutableStateOf(false) }
+
+    // Chain 1: Paywall shows AFTER review flow completes
+    LaunchedEffect(Unit) {
+        ReviewPromptManager.reviewFlowCompleted.collect {
+            if (!RevenueCatManager.isPremium() && !paywallTriggeredThisSession &&
+                RemoteConfigUtils.isReviewFirstStrategyEnabled()) {
+                val delayMs = RemoteConfigUtils.getPaywallDelayAfterReviewMs()
+                kotlinx.coroutines.delay(delayMs) // Configurable via RemoteConfig
+                val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
+                paywallTriggeredThisSession = true
+                paywallAnalyticsSource = "after_review_chain"
+                showRevenueCatPaywall = true
+            }
+        }
+    }
+
+    // Chain 2: Fallback paywall for sessions where review doesn't show
+    // (e.g., user already reviewed, 30-day cooldown, Google quota reached)
+    // Uses longer delay to give the review chain priority
+    LaunchedEffect(Unit) {
+        if (RevenueCatManager.isPremium()) return@LaunchedEffect
+
+        val paywallPrefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
+        val sessionCount = paywallPrefs.getInt("paywall_session_count", 0) + 1
+        paywallPrefs.edit().putInt("paywall_session_count", sessionCount).apply()
+
+        val lastPaywallTime = paywallPrefs.getLong("last_paywall_shown_time", 0L)
+        val daysSinceLastPaywall = if (lastPaywallTime > 0L)
+            (System.currentTimeMillis() - lastPaywallTime) / (24 * 60 * 60 * 1000)
+        else Long.MAX_VALUE
+
+        // Show from FIRST session, then repeat based on RemoteConfig interval
+        val repeatDays = RemoteConfigUtils.getPaywallRepeatIntervalDays()
+        val shouldShow = lastPaywallTime == 0L || daysSinceLastPaywall >= repeatDays
+        if (shouldShow) {
+            // Configurable fallback delay - should be longer than review delay + interaction time
+            val fallbackDelay = RemoteConfigUtils.getPaywallFallbackDelayMs()
+            kotlinx.coroutines.delay(fallbackDelay)
+            if (!RevenueCatManager.isPremium() && !paywallTriggeredThisSession) {
+                paywallPrefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
+                paywallTriggeredThisSession = true
+                paywallAnalyticsSource = "smart_session_trigger"
+                showRevenueCatPaywall = true
+            }
+        }
+    }
+
     // Wrap the Scaffold in a ModalNavigationDrawer
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
         DrawerContent(
@@ -715,6 +772,7 @@ fun DebuggerApp(activity: ComponentActivity) {
                                     "type" to "lifetime"
                                 ))
                                 // Show RevenueCat paywall designed in console
+                                paywallAnalyticsSource = "premium_fab"
                                 showRevenueCatPaywall = true
                             },
                             modifier = Modifier
@@ -1000,6 +1058,20 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         ) {
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true
+                                        }
+                                    },
+                                    onScanComplete = {
+                                        // Show paywall after health scan if user is not premium
+                                        // and hasn't seen paywall in the last 3 days
+                                        if (!RevenueCatManager.isPremium()) {
+                                            val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
+                                            val lastShown = prefs.getLong("last_paywall_shown_time", 0L)
+                                            val daysSince = (System.currentTimeMillis() - lastShown) / (24 * 60 * 60 * 1000)
+                                            if (lastShown == 0L || daysSince >= 3) {
+                                                prefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
+                                                paywallAnalyticsSource = "health_scan_complete"
+                                                showRevenueCatPaywall = true
+                                            }
                                         }
                                     }
                                 )
@@ -1432,8 +1504,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
     // Using reusable composable component
     RevenueCatPaywall(
         showPaywall = showRevenueCatPaywall,
-        onDismiss = { showRevenueCatPaywall = false },
-        analyticsSource = "revenuecat_paywall"
+        onDismiss = {
+            showRevenueCatPaywall = false
+            paywallAnalyticsSource = "revenuecat_paywall" // Reset source
+        },
+        analyticsSource = paywallAnalyticsSource
     )
     
 }

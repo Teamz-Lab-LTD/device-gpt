@@ -48,7 +48,16 @@ object RemoteConfigUtils {
                 // Tab order configuration (IAP-optimized default)
                 // Format: comma-separated list like "leaderboard,health,power,device_info,network_info"
                 // Valid tab names: leaderboard, health, power, device_info, network_info
-                "tab_order" to "leaderboard,health,power,device_info,network_info"
+                "tab_order" to "leaderboard,health,power,device_info,network_info",
+                // Review & Paywall timing configuration ("Review First, Paywall After" strategy)
+                // First launch: 15s lets user see app load, dismiss notification dialog, and browse the UI
+                // before review appears during the "honeymoon phase" (impressed but before finding issues)
+                "review_delay_first_launch_ms" to 15000L,   // Delay before showing review on first launch (ms)
+                "review_delay_returning_ms" to 3000L,       // Delay before showing review on returning sessions (ms)
+                "paywall_delay_after_review_ms" to 1500L,   // Delay between review completing and paywall showing (ms)
+                "paywall_fallback_delay_ms" to 20000L,      // Fallback delay if review doesn't show (ms)
+                "paywall_repeat_interval_days" to 7L,       // Days between paywall re-shows for non-premium users
+                "enable_review_first_strategy" to true       // Master toggle for review-first-then-paywall flow
             )
         )
         
@@ -199,5 +208,42 @@ object RemoteConfigUtils {
      */
     fun getTabOrderConfig(): String {
         return remoteConfig.getString("tab_order")
+    }
+
+    // === Review & Paywall timing (configurable via Firebase console) ===
+
+    /** Delay before showing review prompt on first launch (ms). Default: 15000 */
+    fun getReviewDelayFirstLaunchMs(): Long {
+        val value = remoteConfig.getLong("review_delay_first_launch_ms")
+        return if (value == 0L) 15000L else value
+    }
+
+    /** Delay before showing review prompt on returning sessions (ms). Default: 3000 */
+    fun getReviewDelayReturningMs(): Long {
+        val value = remoteConfig.getLong("review_delay_returning_ms")
+        return if (value == 0L) 3000L else value
+    }
+
+    /** Delay between review completing and paywall showing (ms). Default: 1500 */
+    fun getPaywallDelayAfterReviewMs(): Long {
+        val value = remoteConfig.getLong("paywall_delay_after_review_ms")
+        return if (value == 0L) 1500L else value
+    }
+
+    /** Fallback delay for paywall if review doesn't show (ms). Default: 20000 */
+    fun getPaywallFallbackDelayMs(): Long {
+        val value = remoteConfig.getLong("paywall_fallback_delay_ms")
+        return if (value == 0L) 20000L else value
+    }
+
+    /** Days between paywall re-shows for non-premium users. Default: 7 */
+    fun getPaywallRepeatIntervalDays(): Long {
+        val value = remoteConfig.getLong("paywall_repeat_interval_days")
+        return if (value == 0L) 7L else value
+    }
+
+    /** Master toggle for the review-first-then-paywall strategy. Default: true */
+    fun isReviewFirstStrategyEnabled(): Boolean {
+        return remoteConfig.getBoolean("enable_review_first_strategy")
     }
 } 

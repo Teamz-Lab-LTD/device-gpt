@@ -16,6 +16,8 @@ import com.teamz.lab.debugger.utils.LeaderboardManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
@@ -39,14 +41,21 @@ object ReviewPromptManager {
     private const val FIRESTORE_FIELD_HAS_REVIEWED = "has_reviewed"
     private const val FIRESTORE_FIELD_REVIEWED_DATE = "reviewed_date"
     
-    // Configuration
-    private const val MIN_APP_OPENS_BEFORE_PROMPT = 3 // Show after 3 app opens
-    private const val MIN_MEANINGFUL_INTERACTIONS = 2 // Show after 2 meaningful interactions (scan, AI usage, etc.)
+    // Configuration - "Review First, Paywall After" strategy
+    // Show review on FIRST session, then paywall chains after it
+    // Users subconsciously rate 5 stars before seeing pricing
+    private const val MIN_APP_OPENS_BEFORE_PROMPT = 1 // Show from first session
+    private const val MIN_MEANINGFUL_INTERACTIONS = 1 // OR 1 meaningful interaction
     private const val MIN_DAYS_BETWEEN_PROMPTS = 30 // Don't show more than once per month
-    private const val DELAY_BEFORE_SHOWING_MS = 2000L // Wait 2 seconds after app opens
+    private const val DELAY_BEFORE_SHOWING_MS = 3000L // Fallback: 3s after app opens (overridden by RemoteConfig)
     private const val DELAY_AFTER_INTERACTION_MS = 3000L // Wait 3 seconds after positive interaction
-    private const val DELAY_FIRST_LAUNCH_MS = 10000L // Wait 10 seconds on first launch (give user time to explore)
-    private const val ENABLE_FIRST_LAUNCH_REVIEW = true // Enable review prompt on first launch
+    private const val DELAY_FIRST_LAUNCH_MS = 15000L // Fallback: 15s on first launch (overridden by RemoteConfig)
+    private const val ENABLE_FIRST_LAUNCH_REVIEW = true // Show review on first session
+
+    // Signal for chaining paywall after review flow completes
+    // Strategy: Review first → Paywall after (users rate positively before seeing pricing)
+    private val _reviewFlowCompleted = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val reviewFlowCompleted: SharedFlow<Unit> = _reviewFlowCompleted
     
     // Preference keys
     private const val KEY_APP_OPEN_COUNT = "app_open_count"
@@ -95,11 +104,12 @@ object ReviewPromptManager {
             }
             Log.d(TAG, "trackAppOpenAndMaybeShowReview() - First launch detected")
             
-            // Show review on first launch if enabled (with longer delay to let user explore)
+            // Show review on first launch if enabled (with configurable delay to let user see the app)
             if (ENABLE_FIRST_LAUNCH_REVIEW && !context.userHasAlreadyReviewed()) {
-                Log.d(TAG, "trackAppOpenAndMaybeShowReview() - Will show review on first launch after delay")
+                val firstLaunchDelay = RemoteConfigUtils.getReviewDelayFirstLaunchMs()
+                Log.d(TAG, "trackAppOpenAndMaybeShowReview() - Will show review on first launch after ${firstLaunchDelay}ms")
                 CoroutineScope(Dispatchers.Main).launch {
-                    delay(DELAY_FIRST_LAUNCH_MS) // Longer delay on first launch
+                    delay(firstLaunchDelay) // Configurable via RemoteConfig: review_delay_first_launch_ms
                     
                     // Double-check user hasn't reviewed in the meantime
                     try {
@@ -138,9 +148,10 @@ object ReviewPromptManager {
         
         // Check if we should show review prompt
         if (shouldShowReviewPrompt(context)) {
-            // Show review after a delay (so it doesn't interrupt app opening)
+            // Show review after a configurable delay (so it doesn't interrupt app opening)
+            val returningDelay = RemoteConfigUtils.getReviewDelayReturningMs()
             CoroutineScope(Dispatchers.Main).launch {
-                delay(DELAY_BEFORE_SHOWING_MS)
+                delay(returningDelay) // Configurable via RemoteConfig: review_delay_returning_ms
                 
                 // Double-check conditions before showing (user might have reviewed in the meantime)
                 // Quick sync before showing (with timeout to avoid blocking too long)
@@ -252,15 +263,15 @@ object ReviewPromptManager {
         // Check app open count OR meaningful interactions
         val appOpenCount = prefs.getInt(KEY_APP_OPEN_COUNT, 0)
         val interactionCount = prefs.getInt(KEY_MEANINGFUL_INTERACTIONS, 0)
-        
+
         val hasEnoughAppOpens = appOpenCount >= MIN_APP_OPENS_BEFORE_PROMPT
         val hasEnoughInteractions = interactionCount >= MIN_MEANINGFUL_INTERACTIONS
-        
+
         if (!hasEnoughAppOpens && !hasEnoughInteractions) {
             Log.d(TAG, "shouldShowReviewPrompt() - App opens ($appOpenCount) < $MIN_APP_OPENS_BEFORE_PROMPT AND interactions ($interactionCount) < $MIN_MEANINGFUL_INTERACTIONS")
             return false
         }
-        
+
         Log.d(TAG, "shouldShowReviewPrompt() - ✅ All conditions met, should show review (opens: $appOpenCount, interactions: $interactionCount)")
         return true
     }
@@ -323,6 +334,9 @@ object ReviewPromptManager {
                         // 1. User might dismiss without rating
                         // 2. Google Play API handles frequency limits automatically
                         // 3. We'll sync from Firebase if user reviewed on another device
+
+                        // Signal paywall chain: review done → now show paywall
+                        _reviewFlowCompleted.tryEmit(Unit)
                     }
                 } else {
                     // Review flow not available
@@ -360,6 +374,9 @@ object ReviewPromptManager {
                             Log.e(TAG, "Failed to open Play Store", e)
                         }
                     }
+
+                    // Signal paywall chain even on failure: review attempted → now show paywall
+                    _reviewFlowCompleted.tryEmit(Unit)
                 }
             }
         } catch (e: Exception) {
