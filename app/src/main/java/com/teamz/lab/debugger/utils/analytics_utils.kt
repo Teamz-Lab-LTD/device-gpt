@@ -178,7 +178,8 @@ enum class AnalyticsEvent(val eventName: String) {
     AppOpenAdDismissed("app_open_ad_dismissed"),
     AppFullScreenAdShown("full_screen_ad_shown"),
     AppFullScreenAdClicked("full_screen_ad_clicked"),
-    AppFullScreenAdDismissed("full_screen_ad_clicked"),
+    AppFullScreenAdDismissed("full_screen_ad_dismissed"),
+    AdPaid("ad_paid"),
     // Viral growth events
     ReferralShared("referral_shared"),
     ReferralLinkClicked("referral_link_clicked"),

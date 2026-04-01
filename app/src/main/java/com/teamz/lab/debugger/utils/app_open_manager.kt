@@ -108,7 +108,10 @@ object AppOpenAdManager {
                         errorMessage.contains("No fill", ignoreCase = true) ||
                         errorMessage.contains("internal error", ignoreCase = true) ||
                         errorMessage.contains("no ad was returned", ignoreCase = true) ||
-                        errorMessage.contains("timeout", ignoreCase = true)
+                        errorMessage.contains("timeout", ignoreCase = true) ||
+                        errorMessage.contains("Unable to resolve host", ignoreCase = true) ||
+                        errorMessage.contains("No address associated", ignoreCase = true) ||
+                        errorMessage.contains("connecting to ad server", ignoreCase = true)
                     if (isExpectedAdFailure) {
                         android.util.Log.w(TAG, "loadAd() - ⚠️ Ad failed (expected): $errorMessage, code: ${error.code}")
                         return@loadAdWithRetry

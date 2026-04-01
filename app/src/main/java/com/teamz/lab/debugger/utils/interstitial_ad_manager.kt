@@ -260,8 +260,8 @@ object InterstitialAdManager {
                                 
                                 // Log analytics
                                 AnalyticsUtils.logEvent(
-                                    AnalyticsEvent.AppOpenAdDismissed,
-                                    mapOf("action_name" to actionName)
+                                    AnalyticsEvent.AppFullScreenAdDismissed,
+                                    mapOf("action_name" to actionName, "ad_type" to "interstitial")
                                 )
                             } catch (e: Exception) {
                                 AppLog.e(TAG, "InterstitialAdManager onAdDismissedFullScreenContent - Error executing action: ${e.message}", e)
@@ -409,7 +409,10 @@ object InterstitialAdManager {
                     interstitialAd = null
                     loadAd(activity)
                     onAdClosed()
-                    AnalyticsUtils.logEvent(AnalyticsEvent.AppOpenAdDismissed)
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.AppFullScreenAdDismissed,
+                        mapOf("ad_type" to "interstitial")
+                    )
                 }
 
                 override fun onAdClicked() {

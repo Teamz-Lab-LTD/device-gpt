@@ -110,7 +110,7 @@ object RemoteConfigUtils {
         }
         return remoteConfig.getBoolean("show_native_ads")
     }
-    
+
     /**
      * Reactive composable to check if native ads should be shown
      * This automatically updates when premium status changes
@@ -119,7 +119,7 @@ object RemoteConfigUtils {
     @Composable
     fun shouldShowNativeAdsReactive(): Boolean {
         val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
-        val isPremium = premiumStatus is RevenueCatManager.PremiumStatus.Premium && 
+        val isPremium = premiumStatus is RevenueCatManager.PremiumStatus.Premium &&
             (premiumStatus as? RevenueCatManager.PremiumStatus.Premium)?.isActive == true
         // Premium users never see ads
         if (isPremium) {

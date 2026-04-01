@@ -244,8 +244,7 @@ fun ExpandableInfoList(
                     // AdMob Best Practice: Use different ad for expanded view vs list ads
                     // Use key to prevent unnecessary LaunchedEffect restarts
                     // Reactive check for ads - updates when premium is purchased
-                    val shouldShowAdsInline = RemoteConfigUtils.shouldShowNativeAdsReactive()
-                    
+                    val shouldShowAdsInline = RemoteConfigUtils.shouldShowNativeAdsReactive() 
                     LaunchedEffect(key1 = expanded, key2 = actualIndex, key3 = shouldShowAdsInline) {
                         if (expanded && inlineAd == null && shouldShowAdsInline) {
                             // Use position-specific ad to ensure different ad in expanded view
@@ -574,6 +573,10 @@ fun rememberAdLoader(activity: Activity): AdLoader {
         
         // Mark as initialized (only first time), but continue loading if we don't have enough ads
         val isFirstInit = NativeAdManager.tryMarkInitialized()
+        if (!NativeAdManager.tryStartLoadPipeline()) {
+            Log.d(TAG, "⏳ Native load pipeline already active, skipping duplicate LaunchedEffect pipeline")
+            return@LaunchedEffect
+        }
         
         // Continue loading if we don't have enough ads, even if already initialized
         // Note: Allow continuation even if loading flag is set (it will be reset by individual requests)
@@ -581,6 +584,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
         if (currentCount < targetAdCount && NativeAdManager.canMakeRequest()) {
             if (isFirstInit && NativeAdManager.isCurrentlyLoading()) {
                 Log.d(TAG, "⏳ Already loading ads (first init), skipping duplicate...")
+                NativeAdManager.endLoadPipeline()
                 return@LaunchedEffect
             }
             
@@ -599,10 +603,11 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 // Stagger by 10+ seconds to respect throttling (MIN_REQUEST_INTERVAL_MS = 10000)
                 delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
                 // Re-check premium status before each ad load (user might have purchased premium)
-                if (!activity.isDestroyed && 
-                    RemoteConfigUtils.shouldShowNativeAds() &&
+                val shouldLoadAd = RemoteConfigUtils.shouldShowNativeAds()
+                if (!activity.isDestroyed &&
+                    shouldLoadAd &&
                     NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
-                    
+
                     // Check if we can make request, if not, wait and retry
                     if (NativeAdManager.canMakeRequest()) {
                         Log.d(TAG, "📤 Requesting ad ${index + 1}/$adsToLoad...")
@@ -612,19 +617,20 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
                         // Wait for throttle period and retry
                         delay(10000L) // Wait for throttle period
+                        val shouldLoadAdRetry = RemoteConfigUtils.shouldShowNativeAds()
                         // Re-check premium status before retry
-                        if (NativeAdManager.canMakeRequest() && 
+                        if (NativeAdManager.canMakeRequest() &&
                             !activity.isDestroyed &&
-                            RemoteConfigUtils.shouldShowNativeAds() &&
+                            shouldLoadAdRetry &&
                             NativeAdManager.nativeAds.filterNotNull().size < targetAdCount) {
                             Log.d(TAG, "📤 Retrying ad ${index + 1}/$adsToLoad...")
                             NativeAdManager.recordRequest()
                             adLoader.loadAd(AdRequest.Builder().build())
-                        } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
+                        } else if (!shouldLoadAdRetry) {
                             Log.d(TAG, "🚫 Premium user detected - cancelling ad load")
                         }
                     }
-                } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
+                } else if (!shouldLoadAd) {
                     Log.d(TAG, "🚫 Premium user detected - skipping ad load ${index + 1}/$adsToLoad")
                 }
             }
@@ -672,6 +678,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 } else {
                     Log.i(TAG, "✅ Successfully loaded all $finalCount ads!")
                 }
+                NativeAdManager.endLoadPipeline()
             }
         } else {
             if (currentCount >= targetAdCount) {
@@ -681,6 +688,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             } else {
                 Log.d(TAG, "⏸️ Cannot make request (throttled)")
             }
+            NativeAdManager.endLoadPipeline()
         }
     }
 

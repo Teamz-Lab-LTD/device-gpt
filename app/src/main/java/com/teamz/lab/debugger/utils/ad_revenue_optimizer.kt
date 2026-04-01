@@ -87,9 +87,10 @@ object AdRevenueOptimizer {
                 // Track in analytics
                 val eCPM = calculateECPM(context)
                 AnalyticsUtils.logEvent(
-                    AnalyticsEvent.AdShownInline,
+                    AnalyticsEvent.AdPaid,
                     mapOf(
                         "ad_type" to adType,
+                        "ad_unit_id" to adUnitId,
                         "revenue_micros" to adValue.valueMicros,
                         "currency" to adValue.currencyCode,
                         "ecpm" to eCPM,

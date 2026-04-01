@@ -37,9 +37,9 @@ object ImprovedAdManager {
     ) {
         Log.d("ImprovedAdManager", "loadAdWithRetry() - ENTERED - retryCount: $retryCount, adUnitId: $adUnitId")
         
-        if (retryCount >= MAX_RETRIES) {
-            Log.w("ImprovedAdManager", "❌ Max retries reached for ad: $adUnitId")
-            // Can't create LoadAdError directly, just return - the actual error handling is in the callback
+        // Allow initial attempt plus MAX_RETRIES follow-up attempts.
+        if (retryCount > MAX_RETRIES) {
+            Log.w("ImprovedAdManager", "❌ Retry budget exhausted for ad: $adUnitId")
             return
         }
         
@@ -106,6 +106,12 @@ object ImprovedAdManager {
                             return
                         }
                         
+                        if (retryCount >= MAX_RETRIES) {
+                            Log.w("ImprovedAdManager", "❌ Max retries reached for ad: $adUnitId, forwarding terminal failure")
+                            onFailure(error)
+                            return
+                        }
+
                         // Calculate exponential backoff delay
                         val delayMs = minOf(
                             INITIAL_RETRY_DELAY_MS * (1 shl retryCount),
@@ -141,8 +147,8 @@ object ImprovedAdManager {
         onFailure: (LoadAdError) -> Unit,
         retryCount: Int = 0
     ) {
-        if (retryCount >= MAX_RETRIES) {
-            Log.w("ImprovedAdManager", "Max retries reached for interstitial ad: $adUnitId")
+        if (retryCount > MAX_RETRIES) {
+            Log.w("ImprovedAdManager", "Retry budget exhausted for interstitial ad: $adUnitId")
             return
         }
         
@@ -203,6 +209,12 @@ object ImprovedAdManager {
                             return
                         }
                         
+                        if (retryCount >= MAX_RETRIES) {
+                            Log.w("ImprovedAdManager", "Max retries reached for interstitial ad: $adUnitId, forwarding terminal failure")
+                            onFailure(error)
+                            return
+                        }
+
                         // Exponential backoff
                         val delayMs = minOf(
                             INITIAL_RETRY_DELAY_MS * (1 shl retryCount),
