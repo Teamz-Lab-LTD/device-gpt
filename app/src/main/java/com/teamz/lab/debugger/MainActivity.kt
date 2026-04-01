@@ -1128,10 +1128,26 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                                 ))
                                             }
                                         }
+                                    },
+                                    onGenerateReportClick = {
+                                        if (!RevenueCatManager.isPremium()) {
+                                            paywallAnalyticsSource = "health_tab_report_teaser"
+                                            AnalyticsUtils.logEvent(AnalyticsEvent.PaywallVerifiedReportGated, mapOf(
+                                                "source" to "health_tab"
+                                            ))
+                                            showRevenueCatPaywall = true
+                                        } else {
+                                            InterstitialAdManager.showAdBeforeAction(
+                                                activity = activity,
+                                                actionName = "generate_verified_report"
+                                            ) {
+                                                showGenerateReportDialog = true
+                                            }
+                                        }
                                     }
                                 )
                             }
-                            
+
                             TabType.POWER -> {
                                 PowerConsumptionSection(
                                     onShareClick = { info -> shareText = info },

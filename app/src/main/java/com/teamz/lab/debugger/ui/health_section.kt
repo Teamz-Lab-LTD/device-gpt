@@ -57,7 +57,8 @@ fun HealthSection(
     onShareClick: (String) -> Unit = {},
     onAIClick: (() -> Unit)? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
-    onScanComplete: (() -> Unit)? = null
+    onScanComplete: (() -> Unit)? = null,
+    onGenerateReportClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val activity = context as? android.app.Activity
@@ -385,6 +386,54 @@ fun HealthSection(
                 onScoreClick = onScoreClickCallback,
                 onAIClick = onAIClick
             )
+        }
+
+        // Verified Report teaser - shown after scan completes
+        if (currentHealthScore > 0 && onGenerateReportClick != null) {
+            item(key = "verified_report_teaser") {
+                androidx.compose.material3.OutlinedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clickable { onGenerateReportClick() },
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        com.teamz.lab.debugger.ui.theme.DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "📋",
+                            fontSize = 28.sp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Get Verified Device Certificate",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Cryptographically signed proof of your device's health",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = com.teamz.lab.debugger.ui.theme.DesignSystemColors.NeonGreen
+                        )
+                    }
+                }
+            }
         }
 
         // Native Ad (just above Smart Recommendations for better revenue)
