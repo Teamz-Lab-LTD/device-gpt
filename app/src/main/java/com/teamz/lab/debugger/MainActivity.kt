@@ -555,11 +555,17 @@ fun DebuggerApp(activity: ComponentActivity) {
                 showViralShareDialog = true
             },
             onGenerateVerifiedReport = {
-                InterstitialAdManager.showAdBeforeAction(
-                    activity = activity,
-                    actionName = "generate_verified_report"
-                ) {
-                    showGenerateReportDialog = true
+                if (!RevenueCatManager.isPremium()) {
+                    // Show paywall for non-premium users (verified reports are premium feature)
+                    paywallAnalyticsSource = "verified_report_gate"
+                    showRevenueCatPaywall = true
+                } else {
+                    InterstitialAdManager.showAdBeforeAction(
+                        activity = activity,
+                        actionName = "generate_verified_report"
+                    ) {
+                        showGenerateReportDialog = true
+                    }
                 }
             },
             onVerifyReport = {

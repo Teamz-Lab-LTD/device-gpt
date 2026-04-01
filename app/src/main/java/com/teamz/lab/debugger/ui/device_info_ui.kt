@@ -49,6 +49,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.unit.dp
 
+/**
+ * Show first 3 lines of content for free, then premium teaser.
+ * Users get real value (the headline/score) but need premium for full details.
+ */
+private fun truncateWithTeaser(content: String, premiumDetail: String): String {
+    if (content.isBlank()) return content
+    val lines = content.lines()
+    val freeLines = lines.take(3).joinToString("\n")
+    return if (lines.size <= 3) {
+        // Content is short enough — show it all (no point gating 2 lines)
+        content
+    } else {
+        "$freeLines\n\n... ${lines.size - 3} more lines\n\n⭐ Unlock Premium to see $premiumDetail"
+    }
+}
+
 @Composable
 fun DeviceInfoSection(
     activity: Activity,
@@ -237,7 +253,9 @@ fun DeviceInfoSection(
         // android.util.Log.d("DeviceInfoSection", "🔄 Recomputing deviceInfo - isFullyLoaded: ${state.isFullyLoaded}, items with data: ${listOf(state.deviceDetails, state.cpuDetails, state.gpuDetails).count { it.isNotEmpty() }}") // Disabled: Too verbose
         listOf(
             "Device Specifications" to (if (showLoading && state.deviceDetails.isEmpty()) loadingText else state.deviceDetails),
-            "Device Spyware & Tracking Test" to (if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText else state.isDeviceBeingMonitored),
+            "Device Spyware & Tracking Test" to (if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.isDeviceBeingMonitored, "full spyware scan results & protection steps")
+                else state.isDeviceBeingMonitored),
             "Processor & Performance" to (if (showLoading && state.cpuDetails.isEmpty()) loadingText else state.cpuDetails),
             "Graphics & GPU Information" to (if (showLoading && state.gpuDetails.isEmpty()) loadingText else state.gpuDetails),
             "Battery & Charging Info" to (if (showLoading && state.batteryInfo.isEmpty()) loadingText else state.batteryInfo),
@@ -260,12 +278,25 @@ fun DeviceInfoSection(
             "Developer Options & USB Debugging" to (if (showLoading && state.usbDebugging.isEmpty()) loadingText else state.usbDebugging),
             "AI Inference & Neural Acceleration Support" to (if (showLoading && state.aiInferenceSupport.isEmpty()) loadingText else state.aiInferenceSupport),
             "Heat Check: CPU, Battery, GPU Temps" to (if (showLoading && state.thermalZoneInfo.isEmpty()) loadingText else state.thermalZoneInfo),
-            "Sensor Spoofing Detection" to (if (showLoading && state.spoofingStatus.isEmpty()) loadingText else state.spoofingStatus),
-            "Hidden Apps & Services Check" to (if (showLoading && state.hiddenAppsStatus.isEmpty()) loadingText else state.hiddenAppsStatus),
-            "AI Voice Clone Risk Check" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText else state.voiceCloneRisk),
-            "How Hackable Is My Phone?" to (if (showLoading && state.hackability.isEmpty()) loadingText else state.hackability),
-            "Face Unlock Security Trust Level" to (if (showLoading && state.faceUnlockTrust.isEmpty()) loadingText else state.faceUnlockTrust),
-            "Ad Tracking SDK Exposure" to (if (showLoading && state.adTracking.isEmpty()) loadingText else state.adTracking),
+            // Premium security sections: show first 3 lines free (real value), gate the rest
+            "Sensor Spoofing Detection" to (if (showLoading && state.spoofingStatus.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.spoofingStatus, "full spoofing detection details & how to fix")
+                else state.spoofingStatus),
+            "Hidden Apps & Services Check" to (if (showLoading && state.hiddenAppsStatus.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hiddenAppsStatus, "full hidden apps list & removal guide")
+                else state.hiddenAppsStatus),
+            "AI Voice Clone Risk Check" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.voiceCloneRisk, "full voice clone vulnerability analysis")
+                else state.voiceCloneRisk),
+            "How Hackable Is My Phone?" to (if (showLoading && state.hackability.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hackability, "full hackability report & security fixes")
+                else state.hackability),
+            "Face Unlock Security Trust Level" to (if (showLoading && state.faceUnlockTrust.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.faceUnlockTrust, "full face unlock security analysis")
+                else state.faceUnlockTrust),
+            "Ad Tracking SDK Exposure" to (if (showLoading && state.adTracking.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.adTracking, "full list of SDKs tracking you & how to stop them")
+                else state.adTracking),
         )
     }
 
