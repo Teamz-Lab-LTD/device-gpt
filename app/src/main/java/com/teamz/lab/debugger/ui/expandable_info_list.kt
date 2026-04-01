@@ -72,11 +72,12 @@ fun generateItemPrompt(itemTitle: String, itemContent: String, appName: String, 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExpandableInfoList(
-    infoList: List<Pair<String, String>>, 
+    infoList: List<Pair<String, String>>,
     activity: Activity,
     onAIClick: (() -> Unit)? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
-    headerContent: @Composable (() -> Unit)? = null
+    headerContent: @Composable (() -> Unit)? = null,
+    onPremiumGateClick: ((String) -> Unit)? = null
 ) {
 
     val adLoader = rememberAdLoader(activity)
@@ -316,32 +317,71 @@ fun ExpandableInfoList(
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = value,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = if (expanded) Int.MAX_VALUE else 1,
-                            overflow = if (value.length > 50) TextOverflow.Ellipsis else TextOverflow.Clip,
-                            modifier = Modifier
-                                .combinedClickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                    onClick = {
-                                        expandedItems[actualIndex] = !expanded
-                                        AnalyticsUtils.logEvent(
-                                            if (!expanded) AnalyticsEvent.InfoExpanded else AnalyticsEvent.InfoCollapsed,
-                                            mapOf("title" to key)
-                                        )
-                                    },
-                                    onLongClick = {
-                                        copyToClipboard(
-                                            context = activity,
-                                            title = key,
-                                            body = value
-                                        )
-                                    }
+
+                        // Check if this is a premium-gated section (contains teaser marker)
+                        val isPremiumGated = value.contains("⭐ Unlock Premium to see")
+
+                        if (expanded && isPremiumGated && onPremiumGateClick != null) {
+                            // Show free lines + unlock button (not just plain text)
+                            val parts = value.split("\n\n⭐")
+                            val freeContent = parts.firstOrNull() ?: value
+                            Text(
+                                text = freeContent,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            // Log analytics when user sees gated content
+                            LaunchedEffect(key) {
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.PremiumSectionTeased,
+                                    mapOf("section" to key)
                                 )
-                        )
+                            }
+                            Button(
+                                onClick = { onPremiumGateClick(key) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = com.teamz.lab.debugger.ui.theme.DesignSystemColors.NeonGreen,
+                                    contentColor = com.teamz.lab.debugger.ui.theme.DesignSystemColors.Dark
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    "⭐ Unlock Full Report",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            // Normal content (free or premium user)
+                            Text(
+                                text = value,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = if (expanded) Int.MAX_VALUE else 1,
+                                overflow = if (value.length > 50) TextOverflow.Ellipsis else TextOverflow.Clip,
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = {
+                                            expandedItems[actualIndex] = !expanded
+                                            AnalyticsUtils.logEvent(
+                                                if (!expanded) AnalyticsEvent.InfoExpanded else AnalyticsEvent.InfoCollapsed,
+                                                mapOf("title" to key)
+                                            )
+                                        },
+                                        onLongClick = {
+                                            copyToClipboard(
+                                                context = activity,
+                                                title = key,
+                                                body = value
+                                            )
+                                        }
+                                    )
+                            )
+                        }
                         // Centralized reactive premium check - automatically hides when premium is purchased
                         val shouldShowAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
                         if (showExpandedAd && shouldShowAds) {

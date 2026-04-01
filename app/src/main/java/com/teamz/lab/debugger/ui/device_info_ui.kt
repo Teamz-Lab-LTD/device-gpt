@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.dp
 /**
  * Show first 3 lines of content for free, then premium teaser.
  * Users get real value (the headline/score) but need premium for full details.
+ * Note: Analytics is NOT logged here (called inside remember = would spam on recomposition).
+ * Analytics is logged in the UI when user expands the section.
  */
 private fun truncateWithTeaser(content: String, premiumDetail: String): String {
     if (content.isBlank()) return content
@@ -60,13 +62,13 @@ private fun truncateWithTeaser(content: String, premiumDetail: String): String {
     return if (lines.size <= 3) {
         content
     } else {
-        // Log to Firebase so you can see how many users hit gated sections
-        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
-            com.teamz.lab.debugger.utils.AnalyticsEvent.PremiumSectionTeased,
-            mapOf("section" to premiumDetail, "hidden_lines" to (lines.size - 3))
-        )
         "$freeLines\n\n... ${lines.size - 3} more lines\n\n⭐ Unlock Premium to see $premiumDetail"
     }
+}
+
+/** Check if content was truncated by our teaser */
+private fun isTeasedContent(content: String): Boolean {
+    return content.contains("⭐ Unlock Premium to see")
 }
 
 @Composable
@@ -74,7 +76,8 @@ fun DeviceInfoSection(
     activity: Activity,
     onShareClick: (String) -> Unit,
     onAIClick: (() -> Unit)? = null,
-    onItemAIClick: ((String, String) -> Unit)? = null
+    onItemAIClick: ((String, String) -> Unit)? = null,
+    onPremiumGateClick: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val loadingText = context.string(R.string.loading)
@@ -348,7 +351,8 @@ fun DeviceInfoSection(
         onItemAIClick = if (state.isFullyLoaded) onItemAIClick else null,
         headerContent = {
             ZeroTrustDashboard(onAIClick = onItemAIClick)
-        }
+        },
+        onPremiumGateClick = onPremiumGateClick
     )
 }
 

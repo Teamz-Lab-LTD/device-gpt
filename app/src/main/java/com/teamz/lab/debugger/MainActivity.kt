@@ -1193,6 +1193,14 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             selectedItemForAI = Pair(title, content)
                                             showItemAIDialog = true
                                         }
+                                    },
+                                    onPremiumGateClick = { sectionName ->
+                                        paywallAnalyticsSource = "device_info_premium_section"
+                                        AnalyticsUtils.logEvent(AnalyticsEvent.PremiumGateClicked, mapOf(
+                                            "source" to "device_info_section",
+                                            "section" to sectionName
+                                        ))
+                                        showRevenueCatPaywall = true
                                     }
                                 )
                             }
