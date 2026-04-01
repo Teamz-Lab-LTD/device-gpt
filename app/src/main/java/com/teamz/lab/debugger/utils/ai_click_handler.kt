@@ -72,12 +72,13 @@ object AIClickHandler {
                 "source" to "ai_soft_gate",
                 "ai_use_count" to useCount
             ))
-            // Show paywall — but still open AI right after
+            // Show paywall only — skip the ad to avoid stacking full-screen overlays
+            // AI will open when user taps AI again (paywall shown, next tap goes through)
             onPaywallRequest()
-            // Don't return! Fall through to open AI below
+            return
         }
 
-        // ALWAYS open AI — show ad first if available, then execute
+        // Normal flow: show ad first if available, then open AI
         InterstitialAdManager.showAdIfAvailable(activity) {
             onAIClick()
         }
