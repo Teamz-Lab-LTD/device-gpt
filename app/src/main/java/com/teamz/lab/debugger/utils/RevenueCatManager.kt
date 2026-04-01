@@ -253,11 +253,22 @@ object RevenueCatManager {
     }
     
     /**
+     * DEBUG ONLY: Force non-premium mode for testing paywall flows.
+     * Set to true to simulate a free user even if you have premium.
+     * ⚠️ MUST be false before release!
+     */
+    var DEBUG_FORCE_FREE_USER = false
+
+    /**
      * Check if user has premium (ads-free) status
-     * 
+     *
      * @return true if user has active premium subscription, false otherwise
      */
     fun isPremium(): Boolean {
+        if (DEBUG_FORCE_FREE_USER) {
+            Log.w(TAG, "⚠️ DEBUG_FORCE_FREE_USER is ON — treating user as non-premium for testing")
+            return false
+        }
         return when (val status = _premiumStatusFlow.value) {
             is PremiumStatus.Premium -> status.isActive
             else -> false

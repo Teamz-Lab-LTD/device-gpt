@@ -58,7 +58,18 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 // RevenueCat API key should be in local_config.properties as REVENUECAT_API_KEY
                 // If not found, RevenueCatManager will handle gracefully
                 RevenueCatManager.initialize(this)
-                AppLog.d("MyApplication", "onCreate() - RevenueCat initialized")
+                // ⚠️ DEBUG TESTING: Force free user to test paywall flows
+                // Set to true to test as non-premium user, false for normal behavior
+                // MUST be false before release!
+                RevenueCatManager.DEBUG_FORCE_FREE_USER = true
+                if (RevenueCatManager.DEBUG_FORCE_FREE_USER) {
+                    // Reset all paywall/review prefs for fresh testing each run
+                    getSharedPreferences("paywall_trigger_prefs", 0).edit().clear().apply()
+                    getSharedPreferences("review_prompt_prefs", 0).edit().clear().apply()
+                    getSharedPreferences("ai_usage_prefs", 0).edit().clear().apply()
+                    AppLog.w("MyApplication", "⚠️ DEBUG_FORCE_FREE_USER=true: Reset paywall/review/AI prefs for testing")
+                }
+                AppLog.d("MyApplication", "onCreate() - RevenueCat initialized (DEBUG_FORCE_FREE_USER=${RevenueCatManager.DEBUG_FORCE_FREE_USER})")
             } catch (e: Exception) {
                 // RevenueCat initialization failure is not fatal - app can continue with ads
                 AppLog.w("MyApplication", "RevenueCat initialization failed - ads will be shown", e)
