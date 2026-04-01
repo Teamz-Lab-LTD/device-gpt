@@ -303,13 +303,12 @@ fun NetworkReachabilityCard(
 
                             OutlinedButton(
                                 onClick = { runTest() },
-                                modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp)
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                             ) {
                                 Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Retest", style = MaterialTheme.typography.labelMedium)
+                                Text("Retest", style = MaterialTheme.typography.labelMedium, maxLines = 1)
                             }
                         }
                     }
