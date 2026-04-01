@@ -86,26 +86,12 @@ fun HealthScoreCard(
                     }
                 }
                 if (hasScannedToday && !isScanning && !scanCompleted) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                            text = "Scanned",
-                        style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 11.sp,
-                            maxLines = 1
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Scanned today",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
                     )
-                    }
                 } else if (isScanning) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
