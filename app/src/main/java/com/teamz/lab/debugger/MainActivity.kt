@@ -499,15 +499,32 @@ fun DebuggerApp(activity: ComponentActivity) {
     // Chain 1: Paywall shows AFTER review flow completes
     LaunchedEffect(Unit) {
         ReviewPromptManager.reviewFlowCompleted.collect {
+            AnalyticsUtils.logEvent(AnalyticsEvent.PaywallChainReviewCompleted, mapOf(
+                "is_premium" to RevenueCatManager.isPremium(),
+                "already_triggered" to paywallTriggeredThisSession,
+                "strategy_enabled" to RemoteConfigUtils.isReviewFirstStrategyEnabled()
+            ))
             if (!RevenueCatManager.isPremium() && !paywallTriggeredThisSession &&
                 RemoteConfigUtils.isReviewFirstStrategyEnabled()) {
                 val delayMs = RemoteConfigUtils.getPaywallDelayAfterReviewMs()
-                kotlinx.coroutines.delay(delayMs) // Configurable via RemoteConfig
+                kotlinx.coroutines.delay(delayMs)
                 val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
                 prefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
                 paywallTriggeredThisSession = true
                 paywallAnalyticsSource = "after_review_chain"
+                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallChainTriggered, mapOf(
+                    "delay_ms" to delayMs,
+                    "source" to "after_review_chain"
+                ))
                 showRevenueCatPaywall = true
+            } else {
+                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallChainSkipped, mapOf(
+                    "reason" to when {
+                        RevenueCatManager.isPremium() -> "user_is_premium"
+                        paywallTriggeredThisSession -> "already_triggered_this_session"
+                        else -> "strategy_disabled"
+                    }
+                ))
             }
         }
     }
@@ -527,19 +544,33 @@ fun DebuggerApp(activity: ComponentActivity) {
             (System.currentTimeMillis() - lastPaywallTime) / (24 * 60 * 60 * 1000)
         else Long.MAX_VALUE
 
-        // Show from FIRST session, then repeat based on RemoteConfig interval
         val repeatDays = RemoteConfigUtils.getPaywallRepeatIntervalDays()
         val shouldShow = lastPaywallTime == 0L || daysSinceLastPaywall >= repeatDays
         if (shouldShow) {
-            // Configurable fallback delay - should be longer than review delay + interaction time
             val fallbackDelay = RemoteConfigUtils.getPaywallFallbackDelayMs()
             kotlinx.coroutines.delay(fallbackDelay)
             if (!RevenueCatManager.isPremium() && !paywallTriggeredThisSession) {
                 paywallPrefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
                 paywallTriggeredThisSession = true
                 paywallAnalyticsSource = "smart_session_trigger"
+                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallFallbackTriggered, mapOf(
+                    "session_count" to sessionCount,
+                    "days_since_last" to daysSinceLastPaywall,
+                    "fallback_delay_ms" to fallbackDelay
+                ))
                 showRevenueCatPaywall = true
+            } else {
+                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallFallbackSkipped, mapOf(
+                    "reason" to if (RevenueCatManager.isPremium()) "user_is_premium" else "already_triggered",
+                    "session_count" to sessionCount
+                ))
             }
+        } else {
+            AnalyticsUtils.logEvent(AnalyticsEvent.PaywallFallbackSkipped, mapOf(
+                "reason" to "cooldown_not_expired",
+                "days_since_last" to daysSinceLastPaywall,
+                "repeat_days" to repeatDays
+            ))
         }
     }
 
@@ -556,8 +587,8 @@ fun DebuggerApp(activity: ComponentActivity) {
             },
             onGenerateVerifiedReport = {
                 if (!RevenueCatManager.isPremium()) {
-                    // Show paywall for non-premium users (verified reports are premium feature)
                     paywallAnalyticsSource = "verified_report_gate"
+                    AnalyticsUtils.logEvent(AnalyticsEvent.PaywallVerifiedReportGated)
                     showRevenueCatPaywall = true
                 } else {
                     InterstitialAdManager.showAdBeforeAction(
@@ -1079,8 +1110,6 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         }
                                     },
                                     onScanComplete = {
-                                        // Show paywall after health scan if user is not premium
-                                        // and hasn't seen paywall in the last 3 days
                                         if (!RevenueCatManager.isPremium()) {
                                             val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
                                             val lastShown = prefs.getLong("last_paywall_shown_time", 0L)
@@ -1088,7 +1117,15 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             if (lastShown == 0L || daysSince >= 3) {
                                                 prefs.edit().putLong("last_paywall_shown_time", System.currentTimeMillis()).apply()
                                                 paywallAnalyticsSource = "health_scan_complete"
+                                                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallHealthScanTriggered, mapOf(
+                                                    "days_since_last" to daysSince
+                                                ))
                                                 showRevenueCatPaywall = true
+                                            } else {
+                                                AnalyticsUtils.logEvent(AnalyticsEvent.PaywallHealthScanSkipped, mapOf(
+                                                    "reason" to "cooldown_not_expired",
+                                                    "days_since_last" to daysSince
+                                                ))
                                             }
                                         }
                                     }

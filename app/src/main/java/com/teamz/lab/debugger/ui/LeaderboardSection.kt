@@ -1128,7 +1128,7 @@ fun LeaderboardSection(activity: Activity) {
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                                 // Get score to tease without revealing the device name
-                                                val score = entry.scores[selectedCategory.id]?.toInt()
+                                                val score = entry.score.toInt().takeIf { it > 0 }
                                                 Text(
                                                     text = if (score != null) "#$originalRank Device — Score: $score/100" else "#$originalRank Device",
                                                     style = MaterialTheme.typography.titleMedium,

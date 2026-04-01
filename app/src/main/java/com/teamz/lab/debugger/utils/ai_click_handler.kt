@@ -2,6 +2,7 @@ package com.teamz.lab.debugger.utils
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 
@@ -18,6 +19,7 @@ import com.teamz.lab.debugger.utils.AnalyticsEvent
  */
 object AIClickHandler {
 
+    private const val TAG = "AIClickHandler"
     private const val PREFS_NAME = "ai_usage_prefs"
     private const val KEY_AI_USE_COUNT = "ai_use_count"
     private const val KEY_PAYWALL_SHOWN_SESSION = "paywall_shown_this_session"
@@ -42,6 +44,9 @@ object AIClickHandler {
         onPaywallRequest: (() -> Unit)? = null,
         onAIClick: () -> Unit
     ) {
+        val isPremium = RevenueCatManager.isPremium()
+        Log.d(TAG, "handleAIClick() - source=$source, itemTitle=$itemTitle, isPremium=$isPremium, paywallShownThisSession=$paywallShownThisSession")
+
         // Log analytics
         val analyticsParams = if (itemTitle != null) {
             mapOf<String, Any?>(
@@ -59,27 +64,38 @@ object AIClickHandler {
         val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val useCount = prefs.getInt(KEY_AI_USE_COUNT, 0) + 1
         prefs.edit().putInt(KEY_AI_USE_COUNT, useCount).apply()
+        Log.d(TAG, "handleAIClick() - AI use count: $useCount (limit: $FREE_AI_USES_LIMIT)")
 
         // Soft gate: show paywall ONCE per session after free limit
         // Then ALWAYS proceed to open AI — never block
-        if (!RevenueCatManager.isPremium() &&
+        if (!isPremium &&
             useCount > FREE_AI_USES_LIMIT &&
             !paywallShownThisSession &&
             onPaywallRequest != null
         ) {
             paywallShownThisSession = true
-            AnalyticsUtils.logEvent(AnalyticsEvent.PremiumPaywallShown, mapOf<String, Any?>(
-                "source" to "ai_soft_gate",
-                "ai_use_count" to useCount
+            Log.d(TAG, "handleAIClick() - SOFT GATE TRIGGERED: showing paywall (use #$useCount)")
+            AnalyticsUtils.logEvent(AnalyticsEvent.AiSoftGateTriggered, mapOf<String, Any?>(
+                "source" to source,
+                "ai_use_count" to useCount,
+                "is_premium" to false
             ))
-            // Show paywall only — skip the ad to avoid stacking full-screen overlays
-            // AI will open when user taps AI again (paywall shown, next tap goes through)
             onPaywallRequest()
             return
         }
 
+        // Log why gate was skipped (visible in Firebase Analytics)
+        if (!isPremium && useCount > FREE_AI_USES_LIMIT) {
+            AnalyticsUtils.logEvent(AnalyticsEvent.AiSoftGateSkipped, mapOf<String, Any?>(
+                "reason" to "already_shown_this_session",
+                "source" to source,
+                "ai_use_count" to useCount
+            ))
+        }
+
         // Normal flow: show ad first if available, then open AI
         InterstitialAdManager.showAdIfAvailable(activity) {
+            Log.d(TAG, "handleAIClick() - ✅ Opening AI dialog (source=$source)")
             onAIClick()
         }
     }

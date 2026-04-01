@@ -357,4 +357,16 @@ enum class AnalyticsEvent(val eventName: String) {
     ReportVerificationAttempted("report_verification_attempted"),
     ReportVerificationSuccess("report_verification_success"),
     ReportVerificationFailed("report_verification_failed"),
+    // Monetization funnel tracking (visible in Firebase Analytics after release)
+    PaywallChainReviewCompleted("paywall_chain_review_completed"),
+    PaywallChainTriggered("paywall_chain_triggered"),
+    PaywallChainSkipped("paywall_chain_skipped"),
+    PaywallFallbackTriggered("paywall_fallback_triggered"),
+    PaywallFallbackSkipped("paywall_fallback_skipped"),
+    PaywallHealthScanTriggered("paywall_health_scan_triggered"),
+    PaywallHealthScanSkipped("paywall_health_scan_skipped"),
+    PaywallVerifiedReportGated("paywall_verified_report_gated"),
+    AiSoftGateTriggered("ai_soft_gate_triggered"),
+    AiSoftGateSkipped("ai_soft_gate_skipped"),
+    PremiumSectionTeased("premium_section_teased"),
 }

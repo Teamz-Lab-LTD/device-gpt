@@ -58,9 +58,13 @@ private fun truncateWithTeaser(content: String, premiumDetail: String): String {
     val lines = content.lines()
     val freeLines = lines.take(3).joinToString("\n")
     return if (lines.size <= 3) {
-        // Content is short enough — show it all (no point gating 2 lines)
         content
     } else {
+        // Log to Firebase so you can see how many users hit gated sections
+        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+            com.teamz.lab.debugger.utils.AnalyticsEvent.PremiumSectionTeased,
+            mapOf("section" to premiumDetail, "hidden_lines" to (lines.size - 3))
+        )
         "$freeLines\n\n... ${lines.size - 3} more lines\n\n⭐ Unlock Premium to see $premiumDetail"
     }
 }
