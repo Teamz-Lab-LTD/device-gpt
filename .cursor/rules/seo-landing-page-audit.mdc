@@ -1,0 +1,23 @@
+---
+description: When user asks for SEO/landing page audit of the app, run the full audit using the reusable prompt
+alwaysApply: false
+---
+
+# SEO & Landing Page Audit
+
+When the user asks for any of the following (or similar), run a **full SEO and landing page audit** of the mobile app codebase:
+
+- "audit for SEO and landing page"
+- "extract every user-facing feature and string"
+- "SEO audit" / "landing page content audit"
+- "marketable elements" / "keyword seeds for SEO"
+- "run the SEO audit prompt" / "use the audit prompt"
+
+**What to do:**
+
+1. Read and follow the instructions in **`docs/prompts/SEO_LANDING_PAGE_AUDIT_PROMPT.md`** (the full scope and output format are defined there).
+2. Systematically extract: strings/copy, screens & flows, features & capabilities, settings & options, technical differentiators, and raw keyword seeds.
+3. Do not skip or summarize away detail; include every screen, major string group, and feature. If in doubt, include it.
+4. Output in the copy-paste friendly format specified in that prompt (Strings/copy, Screens & flows, Features & capabilities, Settings & options, Technical differentiators, Raw keyword seeds).
+
+The user can also **copy-paste the prompt** from `docs/prompts/SEO_LANDING_PAGE_AUDIT_PROMPT.md` into any chat to run the same audit again.
