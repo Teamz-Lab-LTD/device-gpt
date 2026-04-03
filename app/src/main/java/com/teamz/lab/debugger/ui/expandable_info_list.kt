@@ -483,7 +483,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
                         coroutineScope.launch {
                             // Wait for throttle period before next request
-                            delay(11000) // 10s throttle + 1s buffer
+                            delay(RemoteConfigUtils.getNativeAdRequestIntervalMs() + 1000L)
                             // Re-check premium status before loading (user might have purchased premium)
                             if (!activity.isDestroyed && 
                                 RemoteConfigUtils.shouldShowNativeAds() &&
@@ -562,7 +562,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         val canRetry = NativeAdManager.recordRetryAttempt()
                         if (canRetry) {
                             retryCount++
-                            val retryDelay = 10000L // 10 seconds (increased from 5s)
+                            val retryDelay = RemoteConfigUtils.getNativeAdRequestIntervalMs()
                             
                             Log.d(TAG, "🔄 Scheduling retry #$retryCount in ${retryDelay/1000} seconds...")
                             
@@ -643,12 +643,12 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             
             NativeAdManager.setLoading(true)
             val adsToLoad = targetAdCount - currentCount
-            
-            Log.i(TAG, "📥 Loading $adsToLoad more ads (staggered by 10+ seconds each to respect throttling)...")
-            
+            val staggerMs = RemoteConfigUtils.getNativeAdRequestIntervalMs() + 1000L // interval + 1s buffer
+
+            Log.i(TAG, "📥 Loading $adsToLoad more ads (staggered by ${staggerMs/1000}s each to respect throttling)...")
+
             repeat(adsToLoad) { index ->
-                // Stagger by 10+ seconds to respect throttling (MIN_REQUEST_INTERVAL_MS = 10000)
-                delay(index * 11000L) // 11 seconds between requests (10s throttle + 1s buffer)
+                delay(index * staggerMs)
                 // Re-check premium status before each ad load (user might have purchased premium)
                 val shouldLoadAd = RemoteConfigUtils.shouldShowNativeAds()
                 if (!activity.isDestroyed &&
@@ -662,10 +662,8 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         adLoader.loadAd(AdRequest.Builder().build())
                     } else {
                         Log.d(TAG, "⏸️ Request ${index + 1}/$adsToLoad throttled, waiting...")
-                        // Wait for throttle period and retry
-                        delay(10000L) // Wait for throttle period
+                        delay(RemoteConfigUtils.getNativeAdRequestIntervalMs())
                         val shouldLoadAdRetry = RemoteConfigUtils.shouldShowNativeAds()
-                        // Re-check premium status before retry
                         if (NativeAdManager.canMakeRequest() &&
                             !activity.isDestroyed &&
                             shouldLoadAdRetry &&
@@ -681,14 +679,11 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     Log.d(TAG, "🚫 Premium user detected - skipping ad load ${index + 1}/$adsToLoad")
                 }
             }
-            
+
             // Reset loading flag after a delay to allow for async loading
-            // Note: Individual ad loads will also reset loading flag, but this is a safety net
-            // Reduced timeout to allow faster continuation
             coroutineScope.launch {
-                // Calculate timeout: (adsToLoad * 11s stagger) + 12s for last response
                 val timeout = if (adsToLoad > 0) {
-                    (adsToLoad - 1) * 11000L + 12000L
+                    (adsToLoad - 1) * staggerMs + 12000L
                 } else {
                     12000L
                 }
@@ -698,23 +693,21 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 Log.i(TAG, "📊 Load attempt completed - Current ads: $finalCount/$targetAdCount")
                 if (finalCount < targetAdCount) {
                     NativeAdManager.logStats()
-                    // If still need more ads and can make request, continue loading
                     if (NativeAdManager.canMakeRequest() && !activity.isDestroyed) {
                         Log.d(TAG, "🔄 Continuing to load remaining ads...")
                         val remainingAds = targetAdCount - finalCount
                         repeat(remainingAds) { index ->
-                            delay(index * 11000L + 1000L) // Stagger by 11s to respect throttling
-                            if (!activity.isDestroyed && 
+                            delay(index * staggerMs + 1000L)
+                            if (!activity.isDestroyed &&
                                 NativeAdManager.nativeAds.filterNotNull().size < targetAdCount &&
                                 NativeAdManager.canMakeRequest()) {
                                 Log.d(TAG, "📤 Requesting additional ad ${index + 1}/$remainingAds...")
                                 NativeAdManager.setLoading(true)
                                 NativeAdManager.recordRequest()
                                 adLoader.loadAd(AdRequest.Builder().build())
-                                
-                                // Reset loading after delay
+
                                 launch {
-                                    delay(12000) // Wait for response
+                                    delay(12000)
                                     NativeAdManager.setLoading(false)
                                 }
                             }

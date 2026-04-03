@@ -57,7 +57,12 @@ object RemoteConfigUtils {
                 "paywall_delay_after_review_ms" to 1500L,   // Delay between review completing and paywall showing (ms)
                 "paywall_fallback_delay_ms" to 20000L,      // Fallback delay if review doesn't show (ms)
                 "paywall_repeat_interval_days" to 7L,       // Days between paywall re-shows for non-premium users
-                "enable_review_first_strategy" to true       // Master toggle for review-first-then-paywall flow
+                "enable_review_first_strategy" to true,      // Master toggle for review-first-then-paywall flow
+                // Native ad loading configuration
+                "native_ad_target_count" to 3L,              // How many native ads to load per session (lower = fewer wasted requests)
+                "native_ad_max_retries" to 1L,               // Max retry attempts on ad load failure
+                "native_ad_request_interval_ms" to 10000L,   // Minimum ms between ad requests (throttling)
+                "native_ad_max_requests_per_session" to 20L  // Total ad request budget per session
             )
         )
         
@@ -245,5 +250,31 @@ object RemoteConfigUtils {
     /** Master toggle for the review-first-then-paywall strategy. Default: true */
     fun isReviewFirstStrategyEnabled(): Boolean {
         return remoteConfig.getBoolean("enable_review_first_strategy")
+    }
+
+    // === Native ad loading configuration (tunable without app update) ===
+
+    /** How many native ads to load per session. Default: 3 */
+    fun getNativeAdTargetCount(): Int {
+        val value = remoteConfig.getLong("native_ad_target_count")
+        return if (value == 0L) 3 else value.toInt()
+    }
+
+    /** Max retry attempts when a native ad fails to load. Default: 1 */
+    fun getNativeAdMaxRetries(): Int {
+        val value = remoteConfig.getLong("native_ad_max_retries")
+        return if (value == 0L) 1 else value.toInt()
+    }
+
+    /** Minimum ms between native ad requests (throttling). Default: 10000 */
+    fun getNativeAdRequestIntervalMs(): Long {
+        val value = remoteConfig.getLong("native_ad_request_interval_ms")
+        return if (value == 0L) 10000L else value
+    }
+
+    /** Total native ad request budget per session. Default: 20 */
+    fun getNativeAdMaxRequestsPerSession(): Int {
+        val value = remoteConfig.getLong("native_ad_max_requests_per_session")
+        return if (value == 0L) 20 else value.toInt()
     }
 } 

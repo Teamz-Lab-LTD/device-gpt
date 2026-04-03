@@ -203,19 +203,16 @@ object NativeAdManager {
     @Volatile private var isLoading = false
     @Volatile private var hasInitialized = false
     private var lastRequestTime = 0L
-    private const val MIN_REQUEST_INTERVAL_MS = 10000L // 10 seconds between requests (increased from 5s)
-    private const val MAX_REQUESTS_PER_SESSION = 40
     private var currentRotationIndex = 0 // For ad rotation
     private val initializationLock = Any() // Lock for thread-safe initialization
     private val pipelineLock = Any()
     @Volatile private var loadPipelineActive = false
-    
+
     // Tracking counters for monitoring
     @Volatile private var totalRequests = 0
     @Volatile private var successfulLoads = 0
     @Volatile private var failedLoads = 0
     @Volatile private var retryAttempts = 0
-    private const val MAX_RETRIES = 3 // Limit retries to prevent infinite loops
     private val positionUsageMap = mutableMapOf<String, Int>() // Track which ad is used where
     private val positionAdCache = mutableMapOf<String, NativeAd?>() // Cache ad assignments to reduce redundant calls
     private val loggedPositions = mutableSetOf<String>() // Track which positions we've logged to reduce spam
@@ -370,12 +367,14 @@ object NativeAdManager {
      * Check if we can make a new ad request (throttling)
      */
     fun canMakeRequest(): Boolean {
-        if (totalRequests >= MAX_REQUESTS_PER_SESSION) {
-            android.util.Log.w(TAG, "⛔ Native ad request budget reached ($totalRequests/$MAX_REQUESTS_PER_SESSION)")
+        val maxRequests = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdMaxRequestsPerSession()
+        if (totalRequests >= maxRequests) {
+            android.util.Log.w(TAG, "⛔ Native ad request budget reached ($totalRequests/$maxRequests)")
             return false
         }
         val now = System.currentTimeMillis()
-        return (now - lastRequestTime) >= MIN_REQUEST_INTERVAL_MS
+        val minInterval = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdRequestIntervalMs()
+        return (now - lastRequestTime) >= minInterval
     }
     
     fun recordRequest() {
@@ -410,13 +409,15 @@ object NativeAdManager {
     
     fun recordRetryAttempt(): Boolean {
         retryAttempts++
-        val canRetry = retryAttempts < MAX_RETRIES
-        android.util.Log.d(TAG, "🔄 Retry attempt #$retryAttempts (max: $MAX_RETRIES, canRetry: $canRetry)")
+        val maxRetries = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdMaxRetries()
+        val canRetry = retryAttempts < maxRetries
+        android.util.Log.d(TAG, "🔄 Retry attempt #$retryAttempts (max: $maxRetries, canRetry: $canRetry)")
         return canRetry
     }
-    
+
     fun canRetry(): Boolean {
-        return retryAttempts < MAX_RETRIES
+        val maxRetries = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdMaxRetries()
+        return retryAttempts < maxRetries
     }
     
     fun resetRetryCount() {
@@ -466,7 +467,7 @@ object NativeAdManager {
      * - Up to 10-20 list ads (every 5 entries = 2-4 ads visible)
      * - Total: 5-6 ads for good diversity
      */
-    fun getTargetAdCount(): Int = 6 // Increased for better ad diversity
+    fun getTargetAdCount(): Int = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdTargetCount()
 }
 
 
