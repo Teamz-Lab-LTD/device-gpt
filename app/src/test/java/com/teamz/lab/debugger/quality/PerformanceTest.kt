@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.junit.Assert.*
+import kotlinx.coroutines.runBlocking
 import kotlin.system.measureTimeMillis
 
 /**
@@ -44,7 +45,7 @@ class PerformanceTest {
         val time = measureTimeMillis {
             repeat(10) {
                 try {
-                    HealthScoreUtils.calculateDailyHealthScore(context)
+                    runBlocking { HealthScoreUtils.calculateDailyHealthScore(context) }
                 } catch (e: Exception) {
                     // Handle errors gracefully in test environment
                 }

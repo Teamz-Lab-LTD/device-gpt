@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.junit.Assert.*
+import kotlinx.coroutines.runBlocking
 
 /**
  * Regression tests
@@ -53,7 +54,7 @@ class RegressionTest {
     fun testHealthScoreRange() {
         // Regression: Ensure health score is always in valid range
         val score = try {
-            HealthScoreUtils.calculateDailyHealthScore(context)
+            runBlocking { HealthScoreUtils.calculateDailyHealthScore(context) }
         } catch (e: Exception) {
             50 // Fallback score
         }

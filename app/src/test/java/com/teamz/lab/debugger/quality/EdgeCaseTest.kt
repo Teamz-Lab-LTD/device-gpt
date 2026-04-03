@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.junit.Assert.*
+import kotlinx.coroutines.runBlocking
 
 /**
  * Tests for edge cases and boundary conditions
@@ -49,7 +50,7 @@ class EdgeCaseTest {
     fun testHealthScoreBoundaries() {
         // Test minimum score
         val minScore = try {
-            HealthScoreUtils.calculateDailyHealthScore(context)
+            runBlocking { HealthScoreUtils.calculateDailyHealthScore(context) }
         } catch (e: Exception) {
             50 // Fallback score
         }

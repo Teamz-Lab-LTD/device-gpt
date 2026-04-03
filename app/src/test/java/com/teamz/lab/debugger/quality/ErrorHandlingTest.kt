@@ -11,6 +11,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.junit.Assert.*
+import kotlinx.coroutines.runBlocking
 
 /**
  * Tests for error handling
@@ -44,7 +45,7 @@ class ErrorHandlingTest {
     fun testHealthScoreHandlesInvalidData() {
         // Test health score calculation with edge cases
         try {
-            val score = HealthScoreUtils.calculateDailyHealthScore(context)
+            val score = runBlocking { HealthScoreUtils.calculateDailyHealthScore(context) }
             assertTrue("Score should be between 0 and 100", score in 0..100)
         } catch (e: Exception) {
             assertTrue("Should handle errors gracefully", true)
