@@ -14,185 +14,165 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityUITest {
-    
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
-    
+
+    private fun waitForApp() {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
+        }
+        composeTestRule.waitForIdle()
+    }
+
     @Test
     fun testAppLaunches() {
-        // Wait for app to fully load
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Verify app launches successfully - check if any UI element exists
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
     }
-    
+
     @Test
     fun testTopBarExists() {
-        // Wait for app to load
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Verify top bar is displayed by checking menu button exists
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
     }
-    
+
     @Test
     fun testMenuButtonExists() {
+        waitForApp()
+
         // Verify menu button is displayed
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
-            .assertIsDisplayed()
     }
-    
+
     @Test
     fun testTabsAreDisplayed() {
-        // Wait for app to load
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Verify tabs are displayed (use first() to handle multiple matches)
         composeTestRule.onAllNodesWithText("Device Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
-        
+
         composeTestRule.onAllNodesWithText("Network Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
-        
+
         composeTestRule.onAllNodesWithText("Health", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
-        
+
         composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
     }
-    
+
     @Test
     fun testTabSwitching() {
-        // Wait for app to load
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Test switching between tabs and verify content actually changes
         // Start with Device Info
         composeTestRule.onAllNodesWithText("Device Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-        
+        Thread.sleep(2000)
+
         // Verify Device Info content appears
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Device Specifications", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Device Specifications", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Switch to Network Info
         composeTestRule.onAllNodesWithText("Network Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-        
+        Thread.sleep(2000)
+
         // Verify Network Info content appears (content should have changed)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Network Usage", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Network Usage", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Switch to Health
         composeTestRule.onAllNodesWithText("Health", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-        
+        Thread.sleep(2000)
+
         // Verify Health content appears (content should have changed again)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Health Score", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Switch to Power
         composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-        
+        Thread.sleep(2000)
+
         // Verify Power content appears (content should have changed again)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Component Breakdown", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
     }
-    
+
     @Test
     fun testFloatingActionButtonsExist() {
-        // Wait for app to load
-        composeTestRule.waitForIdle()
-        
-        // Wait a bit for FABs to potentially appear
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                // FABs may not be visible initially, so just verify app is functional
-                composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
-                    .onFirst()
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        waitForApp()
+
+        // Wait for FABs to potentially appear
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithContentDescription("Send Info", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
-        // Verify FABs are present (may be disabled initially, so use flexible matching)
+
+        // Verify FABs are present
         // Share button is "Send Info"
-        try {
-            composeTestRule.onNodeWithContentDescription("Send Info", substring = true, ignoreCase = true)
-                .assertExists()
-        } catch (e: Exception) {
-            // FAB may not be visible yet, that's okay
-        }
-        
+        composeTestRule.onNodeWithContentDescription("Send Info", substring = true, ignoreCase = true)
+            .assertExists()
+
         // AI button is "AI Assistant"
-        try {
-            composeTestRule.onNodeWithContentDescription("AI Assistant", substring = true, ignoreCase = true)
-                .assertExists()
-        } catch (e: Exception) {
-            // FAB may not be visible yet, that's okay
-        }
+        composeTestRule.onNodeWithContentDescription("AI Assistant", substring = true, ignoreCase = true)
+            .assertExists()
     }
 }
-

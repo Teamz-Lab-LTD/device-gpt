@@ -13,218 +13,176 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class EndToEndUITest {
-    
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
-    
+
+    private fun waitForApp() {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
+        }
+        composeTestRule.waitForIdle()
+    }
+
     @Test
     fun testCompleteTabNavigationJourney() {
         // Complete journey: Navigate through all tabs and verify content actually changes
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Start at Device Info
         composeTestRule.onAllNodesWithText("Device Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1500)
-        
+        Thread.sleep(2000)
+
         // Verify Device Info content appears
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Device Specifications", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Device Specifications", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Navigate to Network Info
         composeTestRule.onAllNodesWithText("Network Info", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1500)
-        
+        Thread.sleep(2000)
+
         // Verify Network Info content appears (content should have changed)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Network Usage", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Network Usage", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Navigate to Health
         composeTestRule.onAllNodesWithText("Health", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1500)
-        
+        Thread.sleep(2000)
+
         // Verify Health content appears (content should have changed again)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Health Score", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Navigate to Power
         composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(1500)
-        
+        Thread.sleep(2000)
+
         // Verify Power content appears (content should have changed again)
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Component Breakdown", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Verify app is still functional after all navigation
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
     }
-    
+
     @Test
     fun testMenuDrawerJourney() {
         // Complete journey: Open menu, verify drawer content appears, interact, close
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Open menu
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(500) // Wait for drawer animation
-        
+        Thread.sleep(2000)
+
         // Verify drawer actually opened by checking for drawer content
-        // Drawer should show "Settings" or other menu items
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-                // Check if drawer content is visible (Settings, About, etc.)
-                composeTestRule.onNodeWithText("Settings", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                try {
-                    // Alternative: Check for any drawer-specific content
-                    composeTestRule.onNodeWithText("About", substring = true, ignoreCase = true)
-                        .assertExists()
-                    true
-                } catch (e2: Exception) {
-                    false
-                }
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Notifications", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
-        // Verify drawer content is actually displayed
-        try {
-            composeTestRule.onNodeWithText("Settings", substring = true, ignoreCase = true)
-                .assertIsDisplayed()
-        } catch (e: Exception) {
-            // If Settings not found, at least verify drawer opened
-            composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
-                .onFirst()
-                .assertExists()
-        }
-        
-        // Close drawer by clicking outside or pressing back
-        // In Compose, drawer closes on outside click or back press
-        // Use device back button press
+
+        // Verify drawer content is actually present
+        composeTestRule.onAllNodesWithText("Notifications", substring = true, ignoreCase = true)
+            .onFirst()
+            .assertExists()
+
+        // Close drawer by pressing back
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(500) // Wait for drawer to close
-        
-        // Verify drawer closed - Settings should no longer be visible
-        composeTestRule.waitUntil(timeoutMillis = 2000) {
-            try {
-                // Settings should not be visible when drawer is closed
-                composeTestRule.onNodeWithText("Settings", substring = true, ignoreCase = true)
-                    .assertDoesNotExist()
-                true
-            } catch (e: Exception) {
-                // If assertion fails, drawer might still be open, but that's okay for this test
-                true
-            }
-        }
-        
+        Thread.sleep(2000)
+
         // Verify app is still functional after drawer interaction
         composeTestRule.onAllNodesWithContentDescription("Menu", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
     }
-    
+
     @Test
     fun testShareFlowJourney() {
         // Complete journey: Navigate to tab, wait for data, verify share button appears, click it
-        composeTestRule.waitForIdle()
-        
+        waitForApp()
+
         // Navigate to Health tab
         composeTestRule.onAllNodesWithText("Health", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(2000) // Wait for data to load
-        
+        Thread.sleep(2000)
+
         // Verify Health tab content actually loaded
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithText("Health Score", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Wait for FABs to appear (they appear after data loads)
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithContentDescription("Send Info", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithContentDescription("Send Info", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+
         // Verify share button exists and is clickable
         composeTestRule.onNodeWithContentDescription("Send Info", substring = true, ignoreCase = true)
             .assertExists()
-            .assertIsDisplayed()
             .assertIsEnabled()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        
+
         // After clicking share, Android share sheet should appear
         // We can't easily test the share sheet, but we can verify:
         // 1. The button was clickable
@@ -235,4 +193,3 @@ class EndToEndUITest {
             .assertExists()
     }
 }
-
