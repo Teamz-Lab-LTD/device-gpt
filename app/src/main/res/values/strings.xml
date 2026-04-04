@@ -15,6 +15,7 @@
     <string name="continue_text">Continue</string>
     <string name="ok">OK</string>
     <string name="got_it">Got it!</string>
+    <string name="premium_unavailable_try_later">Premium options aren\'t available right now. Please try again later.</string>
     <string name="send">Send</string>
     <string name="share">Share</string>
     <string name="menu">Menu</string>

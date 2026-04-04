@@ -28,13 +28,15 @@ val localConfigProperties = Properties().apply {
 android {
     namespace = "com.teamz.lab.debugger"
     compileSdk = 36
+    // Pin NDK so native strip / symbol tasks use a consistent toolchain (Play + Crashlytics).
+    ndkVersion = "26.3.11579264"
 
     defaultConfig {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 14
-        versionName = "3.1.0"
+        versionCode = 16
+        versionName = "3.1.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -95,10 +97,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Enable native debug symbols for crash analysis
-            // This generates symbol files for native libraries in dependencies
+            // Emit native debug metadata for any unstripped .so we ship. Play embeds it in the AAB when
+            // extraction succeeds. Note: Maven AARs (e.g. androidx.graphics:graphics-path, datastore JNI)
+            // ship pre-stripped .so, so AGP often cannot extract symbols — Play may still show a
+            // recommendation; that is expected until library vendors publish debug info.
             ndk {
                 debugSymbolLevel = "FULL"
+            }
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled = true
             }
         }
         getByName("debug") {
@@ -124,6 +131,11 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
+        jniLibs {
+            // Avoid stripping already-minimal JNI from dependencies further; helps symbol extraction when
+            // unstripped artifacts are present.
+            keepDebugSymbols += "**/*.so"
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }

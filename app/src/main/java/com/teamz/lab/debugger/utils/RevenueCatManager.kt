@@ -64,6 +64,9 @@ object RevenueCatManager {
     
     private var isInitialized = false
     private var customerInfo: CustomerInfo? = null
+
+    /** True when Purchases.configure() succeeded (API key present). Safe to call Purchases.sharedInstance. */
+    fun isSdkConfigured(): Boolean = isInitialized
     
     /**
      * Premium status states

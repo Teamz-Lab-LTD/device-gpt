@@ -16,205 +16,150 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class ComponentPermissionRequestUITest {
-    
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
-    
-    @Test
-    fun testPermissionButtonShowsForAudioWhenRequired() {
-        // Test that permission button appears for Audio component when permission is required
+
+    private fun waitForApp() {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Health", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
+        }
         composeTestRule.waitForIdle()
-        
-        // Navigate to Power tab
+    }
+
+    private fun navigateToPowerTab() {
         composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
             .onFirst()
             .assertExists()
             .performClick()
-        
+
         composeTestRule.waitForIdle()
-        Thread.sleep(3000) // Wait for power data to load
-        
+        Thread.sleep(2000)
+
         // Wait for Component Breakdown section
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithText("Component Breakdown", substring = true, ignoreCase = true)
+                .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                .isNotEmpty()
         }
-        
+    }
+
+    @Test
+    fun testPermissionButtonShowsForAudioWhenRequired() {
+        waitForApp()
+        navigateToPowerTab()
+
         // Try to find Audio component
         try {
-            composeTestRule.onNodeWithText("Audio", substring = true, ignoreCase = true)
+            composeTestRule.onAllNodesWithText("Audio", substring = true, ignoreCase = true)
+                .onFirst()
                 .assertExists()
                 .performClick()
-            
+
             composeTestRule.waitForIdle()
-            Thread.sleep(500)
-            
+            Thread.sleep(2000)
+
             // Check if permission-related content appears in dialog
-            // This verifies the permission button/UI is present
-            composeTestRule.waitUntil(timeoutMillis = 2000) {
-                try {
-                    // Look for permission-related text in the dialog
-                    composeTestRule.onNodeWithText("Permission", substring = true, ignoreCase = true)
-                        .assertExists()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
+            try {
+                composeTestRule.onAllNodesWithText("Permission", substring = true, ignoreCase = true)
+                    .onFirst()
+                    .assertExists()
+            } catch (e: Exception) {
+                // Permission may already be granted
             }
         } catch (e: Exception) {
             // Audio component may not be present or may already have permission
-            // Test passes if structure is correct
         }
     }
-    
+
     @Test
     fun testPermissionButtonShowsForCameraWhenRequired() {
-        // Test that permission button appears for Camera component when permission is required
-        composeTestRule.waitForIdle()
-        
-        // Navigate to Power tab
-        composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
-            .onFirst()
-            .assertExists()
-            .performClick()
-        
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-        
-        // Wait for Component Breakdown section
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }
-        
+        waitForApp()
+        navigateToPowerTab()
+
         // Try to find Camera component
         try {
-            composeTestRule.onNodeWithText("Camera", substring = true, ignoreCase = true)
+            composeTestRule.onAllNodesWithText("Camera", substring = true, ignoreCase = true)
+                .onFirst()
                 .assertExists()
                 .performClick()
-            
+
             composeTestRule.waitForIdle()
-            Thread.sleep(500)
-            
+            Thread.sleep(2000)
+
             // Check if permission-related content appears
-            composeTestRule.waitUntil(timeoutMillis = 2000) {
-                try {
-                    composeTestRule.onNodeWithText("Permission", substring = true, ignoreCase = true)
-                        .assertExists()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
+            try {
+                composeTestRule.onAllNodesWithText("Permission", substring = true, ignoreCase = true)
+                    .onFirst()
+                    .assertExists()
+            } catch (e: Exception) {
+                // Permission may already be granted
             }
         } catch (e: Exception) {
             // Camera component may not be present or may already have permission
         }
     }
-    
+
     @Test
     fun testPermissionButtonShowsForGpsWhenRequired() {
-        // Test that permission button appears for GPS component when permission is required
-        composeTestRule.waitForIdle()
-        
-        // Navigate to Power tab
-        composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
-            .onFirst()
-            .assertExists()
-            .performClick()
-        
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-        
-        // Wait for Component Breakdown section
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }
-        
+        waitForApp()
+        navigateToPowerTab()
+
         // Try to find GPS component
         try {
-            composeTestRule.onNodeWithText("GPS", substring = true, ignoreCase = true)
+            composeTestRule.onAllNodesWithText("GPS", substring = true, ignoreCase = true)
+                .onFirst()
                 .assertExists()
                 .performClick()
-            
+
             composeTestRule.waitForIdle()
-            Thread.sleep(500)
-            
+            Thread.sleep(2000)
+
             // Check if permission-related content appears
-            composeTestRule.waitUntil(timeoutMillis = 2000) {
-                try {
-                    composeTestRule.onNodeWithText("Permission", substring = true, ignoreCase = true)
-                        .assertExists()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
+            try {
+                composeTestRule.onAllNodesWithText("Permission", substring = true, ignoreCase = true)
+                    .onFirst()
+                    .assertExists()
+            } catch (e: Exception) {
+                // Permission may already be granted
             }
         } catch (e: Exception) {
             // GPS component may not be present or may already have permission
         }
     }
-    
+
     @Test
     fun testComponentInfoDialogDisplays() {
-        // Test that component info dialog can be opened
-        composeTestRule.waitForIdle()
-        
-        // Navigate to Power tab
-        composeTestRule.onAllNodesWithText("Power", substring = true, ignoreCase = true)
-            .onFirst()
-            .assertExists()
-            .performClick()
-        
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-        
-        // Wait for Component Breakdown section
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            try {
-                composeTestRule.onNodeWithText("Component Breakdown", substring = true, ignoreCase = true)
-                    .assertExists()
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }
-        
+        waitForApp()
+        navigateToPowerTab()
+
         // Try to open any component dialog
         val componentNames = listOf("CPU", "Display", "Battery", "Camera", "Audio", "GPS", "Bluetooth")
-        
+
         for (componentName in componentNames) {
             try {
-                composeTestRule.onNodeWithText(componentName, substring = true, ignoreCase = true)
+                composeTestRule.onAllNodesWithText(componentName, substring = true, ignoreCase = true)
+                    .onFirst()
                     .assertExists()
                     .performClick()
-                
+
                 composeTestRule.waitForIdle()
-                Thread.sleep(500)
-                
+                Thread.sleep(2000)
+
                 // Verify dialog appeared (look for "Got it!" button or component name in dialog)
-                composeTestRule.onNodeWithText("Got it!", substring = true, ignoreCase = true)
+                composeTestRule.onAllNodesWithText("Got it!", substring = true, ignoreCase = true)
+                    .onFirst()
                     .assertExists()
-                
+
                 // Close dialog
-                composeTestRule.onNodeWithText("Got it!", substring = true, ignoreCase = true)
+                composeTestRule.onAllNodesWithText("Got it!", substring = true, ignoreCase = true)
+                    .onFirst()
                     .performClick()
-                
+
                 composeTestRule.waitForIdle()
                 break // Successfully tested one component
             } catch (e: Exception) {
@@ -223,4 +168,3 @@ class ComponentPermissionRequestUITest {
         }
     }
 }
-

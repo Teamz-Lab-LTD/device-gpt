@@ -16,6 +16,7 @@ import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.AppOpenAdManager
 import com.teamz.lab.debugger.ui.NativeAdManager
 import androidx.compose.runtime.LaunchedEffect
+import com.teamz.lab.debugger.R
 
 /**
  * Reusable RevenueCat Paywall composable
@@ -67,17 +68,36 @@ fun RevenueCatPaywall(
     // Fetch offering when paywall should be shown
     LaunchedEffect(showPaywall) {
         if (showPaywall && !isPremium && offering == null) {
+            if (!RevenueCatManager.isSdkConfigured()) {
+                Log.w("RevenueCatPaywall", "RevenueCat not configured — closing paywall request")
+                onDismiss()
+                return@LaunchedEffect
+            }
             com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
                 object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
                     override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
                         val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
+                            ?: offerings.current
                         if (targetOffering != null) {
                             offering = targetOffering
                         } else {
-                            Log.e("RevenueCatPaywall", "Offering '${RevenueCatManager.OFFERING_ID}' not found. Available: ${offerings.all.keys}")
+                            Log.e("RevenueCatPaywall", "No offering available. IDs: ${offerings.all.keys}")
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.PremiumPaywallDismissed,
+                                mapOf(
+                                    "source" to analyticsSource,
+                                    "reason" to "no_offering_available"
+                                )
+                            )
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.premium_unavailable_try_later),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            onDismiss()
                         }
                     }
-                    
+
                     override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
                         Log.e("RevenueCatPaywall", "Failed to fetch offerings: ${purchasesError.message}")
                         AnalyticsUtils.logEvent(
@@ -88,6 +108,12 @@ fun RevenueCatPaywall(
                                 "error" to purchasesError.message
                             )
                         )
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.premium_unavailable_try_later),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onDismiss()
                     }
                 }
             )
