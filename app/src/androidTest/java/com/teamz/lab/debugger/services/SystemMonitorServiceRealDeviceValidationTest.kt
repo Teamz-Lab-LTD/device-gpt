@@ -273,11 +273,11 @@ class SystemMonitorServiceRealDeviceValidationTest {
         val powerData = PowerConsumptionUtils.getPowerConsumptionData(context)
         powerData.components.forEach { component ->
             // Camera component legitimately returns "Estimated" on non-rooted devices - skip it
-            if (!component.name.contains("Camera", ignoreCase = true)) {
-                assertFalse("Component '${component.name}' status should not contain 'estimated'",
+            if (!component.component.contains("Camera", ignoreCase = true)) {
+                assertFalse("Component '${component.component}' status should not contain 'estimated'",
                     component.status.contains("estimated", ignoreCase = true))
             }
-            assertFalse("Component '${component.name}' status should not contain 'simulated'",
+            assertFalse("Component '${component.component}' status should not contain 'simulated'",
                 component.status.contains("simulated", ignoreCase = true))
         }
     }

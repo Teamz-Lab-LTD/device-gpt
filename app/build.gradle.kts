@@ -180,6 +180,7 @@ dependencies {
     implementation(libs.purchases)
     // RevenueCat Paywall UI SDK for displaying paywalls designed in RevenueCat console
     implementation(libs.purchases.ui)
+    implementation(libs.install.referrer)
     implementation(libs.androidx.uiautomator)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.13")

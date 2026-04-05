@@ -202,8 +202,12 @@ class MainActivity : ComponentActivity() {
                     ErrorHandler.handleError(e, context = "MainActivity.onCreate-Analytics")
                 }
                 
-                // Check for referral deep links
+                // Check for referral deep links (intent-based)
                 ReferralManager.checkReferral(this@MainActivity, intent)
+                // Check Install Referrer API (deferred deep linking — survives install)
+                ReferralManager.checkInstallReferrer(this@MainActivity)
+                // Initialize referral ad-free cache for RemoteConfigUtils
+                ReferralManager.isAdFreeFromReferrals(this@MainActivity)
                 
                 // Initialize device sleep tracker state (in case app was closed)
                 // SystemMonitorService handles periodic tracking when app is running
@@ -262,10 +266,11 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         android.util.Log.d("MainActivity", "onStart() - MainActivity onStart called, wasAdShowing: $wasAdShowing, isFirstLaunch: $isFirstLaunch")
         
-        // Check premium status before showing app open ad
+        // Check premium status OR referral ad-free reward before showing app open ad
         val isPremium = RevenueCatManager.isPremium()
-        if (isPremium) {
-            android.util.Log.d("MainActivity", "onStart() - ⚠️ User has premium, skipping app open ad")
+        val isReferralAdFree = ReferralManager.isAdFreeFromReferrals(this)
+        if (isPremium || isReferralAdFree) {
+            android.util.Log.d("MainActivity", "onStart() - ⚠️ User has premium or referral ad-free, skipping app open ad")
             // Clear any loaded ads
             AppOpenAdManager.clearAd()
         } else {

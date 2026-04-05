@@ -29,6 +29,7 @@ playServicesMeasurementApi = "22.4.0"
 lifecycleProcess = "2.9.0"
 uiautomator = "2.3.0"
 workRuntimeKtx = "2.11.1"
+installReferrer = "2.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -64,6 +65,7 @@ play-services-measurement-api = { group = "com.google.android.gms", name = "play
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
 purchases = { module = "com.revenuecat.purchases:purchases", version.ref = "purchases" }
 purchases-ui = { module = "com.revenuecat.purchases:purchases-ui", version.ref = "purchasesUi" }
+install-referrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installReferrer" }
 review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 

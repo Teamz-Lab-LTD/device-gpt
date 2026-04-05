@@ -12,6 +12,7 @@ import com.onesignal.OneSignal
 import com.onesignal.debug.LogLevel
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
+import com.teamz.lab.debugger.utils.ReferralManager
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.utils.ErrorHandler
 import com.teamz.lab.debugger.utils.RevenueCatManager
@@ -41,6 +42,10 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             
             registerActivityLifecycleCallbacks(this)
             
+            // Initialize referral ad-free cache BEFORE ads load
+            // This must happen early so RemoteConfigUtils.isUserAdFree() works
+            ReferralManager.isAdFreeFromReferrals(this)
+
             // Initialize Mobile Ads SDK
             AppLog.d("MyApplication", "onCreate() - Initializing MobileAds SDK...")
             MobileAds.initialize(this) {
