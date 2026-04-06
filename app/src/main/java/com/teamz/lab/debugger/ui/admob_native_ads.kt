@@ -6,12 +6,16 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardColors
@@ -55,10 +59,39 @@ fun AdMobNativeAdCard(nativeAd: NativeAd, bottomPadding: Int = 16) {
                 contentColor = DesignSystemColors.NeonGreen,
             )
         ) {
-            Text(
-                "Sponsored", style = MaterialTheme.typography.bodySmall,
-                color = DesignSystemColors.Dark,
-            )
+            // Prominent "Ad" badge — required by Google Play Deceptive Ads policy
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = DesignSystemColors.Dark,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = DesignSystemColors.Dark,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        "Ad",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = DesignSystemColors.White,
+                    )
+                }
+                Text(
+                    "Sponsored",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = DesignSystemColors.Dark.copy(alpha = 0.7f),
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
