@@ -627,22 +627,12 @@ fun DrawerContent(
         // Add space before promotional section
         Spacer(modifier = Modifier.height(8.dp))
         
-        // Third-party service promotion - clearly labeled (compact, no border)
+        // Third-party service promotion - clearly labeled as Ad
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         ) {
-            // Small "Promotional" label
-            Text(
-                text = "Promotional",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 1.dp),
-                fontSize = 10.sp
-            )
-                    Spacer(modifier = Modifier.height(4.dp))
-
-            // Animated promotional button with pulsing bulb icon
+            AdBadge()
+            Spacer(modifier = Modifier.height(4.dp))
             AnimatedPromotionalButton(
                 containerColor = DesignSystemColors.NeonGreen,
                 contentColor = DesignSystemColors.Dark,
@@ -1085,20 +1075,15 @@ fun DrawerContent(
             color = MaterialTheme.colorScheme.outline
         )
 
-        // Link to our other apps - clearly labeled with promotional badge (main issue in Google Play review)
-        Column {
-            // Small "Promotional" label (required by Google Play)
-            Text(
-                text = "Promotional",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-                fontSize = 10.sp
-            )
+        // Link to our other apps - clearly labeled as Ad
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+        ) {
+            AdBadge()
+            Spacer(modifier = Modifier.height(4.dp))
             IconTextButton(
                 icon = Icons.Default.AutoAwesome,
-                label = context.string(R.string.want_more_magic),
+                label = "More Apps by Teamz Lab",
             ) {
                 AnalyticsUtils.logEvent(AnalyticsEvent.DrawerMoreAppsClicked)
                 val urlIntent = Intent(
@@ -2550,4 +2535,25 @@ private fun startGoogleSignInForReauth(
     }
 }
 
-
+/**
+ * Prominent "Ad" badge for drawer promotional items.
+ * Required by Google Play Deceptive Ads policy — ads must be clearly labeled.
+ */
+@Composable
+private fun AdBadge() {
+    Box(
+        modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.error,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+    ) {
+        Text(
+            text = "Ad",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onError,
+        )
+    }
+}
