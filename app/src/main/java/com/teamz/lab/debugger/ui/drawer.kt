@@ -628,24 +628,21 @@ fun DrawerContent(
         Spacer(modifier = Modifier.height(8.dp))
         
         // Third-party service promotion - clearly labeled as Ad
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-        ) {
+        Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
             AdBadge()
-            Spacer(modifier = Modifier.height(4.dp))
-            AnimatedPromotionalButton(
-                containerColor = DesignSystemColors.NeonGreen,
-                contentColor = DesignSystemColors.Dark,
-                colorText = DesignSystemColors.Dark,
-                label = "Want to launch your own app or web?"
-            ) {
-                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerUpworkClicked)
-                val urlIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    "https://www.upwork.com/agencies/1904602719490921565/".toUri()
-                )
-                context.startActivity(urlIntent)
-            }
+        }
+        AnimatedPromotionalButton(
+            containerColor = DesignSystemColors.NeonGreen,
+            contentColor = DesignSystemColors.Dark,
+            colorText = DesignSystemColors.Dark,
+            label = "Want to launch your own app or web?"
+        ) {
+            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerUpworkClicked)
+            val urlIntent = Intent(
+                Intent.ACTION_VIEW,
+                "https://www.upwork.com/agencies/1904602719490921565/".toUri()
+            )
+            context.startActivity(urlIntent)
         }
         // 🔄 Real-time toggle - Card with proper padding for full text visibility
         Card(
@@ -1076,22 +1073,19 @@ fun DrawerContent(
         )
 
         // Link to our other apps - clearly labeled as Ad
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-        ) {
+        Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
             AdBadge()
-            Spacer(modifier = Modifier.height(4.dp))
-            IconTextButton(
-                icon = Icons.Default.AutoAwesome,
-                label = "More Apps by Teamz Lab",
-            ) {
-                AnalyticsUtils.logEvent(AnalyticsEvent.DrawerMoreAppsClicked)
-                val urlIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    "https://play.google.com/store/apps/dev?id=7194763656319643086".toUri()
-                )
-                context.startActivity(urlIntent)
-            }
+        }
+        IconTextButton(
+            icon = Icons.Default.AutoAwesome,
+            label = "More Apps by Teamz Lab",
+        ) {
+            AnalyticsUtils.logEvent(AnalyticsEvent.DrawerMoreAppsClicked)
+            val urlIntent = Intent(
+                Intent.ACTION_VIEW,
+                "https://play.google.com/store/apps/dev?id=7194763656319643086".toUri()
+            )
+            context.startActivity(urlIntent)
         }
 
         IconTextButton(
