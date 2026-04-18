@@ -1,71 +1,104 @@
-# Fastlane — DeviceGPT (Android)
+fastlane documentation
+----
 
-Automates Play Store builds, metadata, and AI-enhanced screenshots.
+# Installation
 
-## One-time setup
+Make sure you have the latest version of the Xcode command line tools installed:
 
-The Play Store service account JSON and Gemini API key are already configured system-wide at `~/.config/teamzlab/`. No extra work needed for those.
-
-1. **Install fastlane** (already installed via Homebrew if you see `fastlane --version`). Otherwise:
-   ```bash
-   bundle install
-   ```
-2. **Validate credentials**:
-   ```bash
-   fastlane validate
-   ```
-
-## Build + upload lanes
-
-| Command | What it does |
-|---|---|
-| `fastlane build` | Clean + build release AAB locally |
-| `fastlane internal` | Build + upload to **Internal testing** (draft) |
-| `fastlane beta` | Build + upload to **Closed beta** (draft) |
-| `fastlane promote_to_beta` | Promote current internal → beta (no rebuild) |
-| `fastlane production` | Build + upload to **Production** (draft, 10% rollout) |
-| `fastlane validate` | Check Play Store credentials |
-
-## Store listing + screenshot workflow
-
-The flow is three explicit steps: **fetch → enhance → push**.
-
-### Step 1 — Pull current store listing
-```bash
-fastlane fetch_store
-```
-Downloads text metadata + screenshots from Play Console into `fastlane/metadata/android/`.
-
-### Step 2 — Enhance screenshots with Gemini Nano Banana (free tier)
-```bash
-fastlane enhance_screenshots                              # defaults: locale=en-US, kinds=phone
-fastlane enhance_screenshots locale:en-US kinds:all       # phone + tablet7 + tablet10
-fastlane enhance_screenshots locale:de-DE prompt:"..."    # custom prompt
+```sh
+xcode-select --install
 ```
 
-Reads raw screenshots from `fastlane/metadata/android/{locale}/images/{kind}/`, runs them through `teamz-company-automation/py/aso/aso-gemini-edit.py`, and writes polished versions to `automation_data/play-screenshots/enhanced/{locale}/{kind}/`.
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
 
-**Review the enhanced outputs** before pushing. The default prompt frames screenshots in a Pixel 8 Pro frame on a solid background with a short headline — edit in `fastlane/Fastfile` → `DEFAULT_ENHANCE_PROMPT` if you want a different look.
+# Available Actions
 
-### Step 3 — Push enhanced screenshots to Play Console
-```bash
-fastlane push_screenshots                        # en-US
-fastlane push_screenshots locale:en-US dry_run:true   # stage but don't upload
-fastlane push_screenshots locale:de-DE
+## Android
+
+### android build
+
+```sh
+[bundle exec] fastlane android build
 ```
 
-Copies enhanced PNGs from `automation_data/play-screenshots/enhanced/{locale}/` into the Fastlane supply structure and uploads. No AAB, no metadata touched.
+Build release AAB
 
-### Push text metadata only
-```bash
-fastlane push_metadata
+### android internal
+
+```sh
+[bundle exec] fastlane android internal
 ```
-Pushes `title.txt`, `short_description.txt`, `full_description.txt` — no images, no AAB.
 
-## Notes
+Upload AAB to internal testing track (draft)
 
-- All production uploads are **draft + 10% staged rollout** by default. Roll out manually in Play Console.
-- Native debug symbols are auto-embedded in the AAB via `debugSymbolLevel = "FULL"` in `app/build.gradle.kts`.
-- Credentials live at `~/.config/teamzlab/play-console-service-account.json` (shared across all Teamz Lab projects).
-- Gemini Nano Banana runs on the free tier — no per-screenshot cost. Key at `~/.config/teamzlab/gemini-api-key.txt`.
-- The `.teamz-automation.env` file at project root holds the package name and data dir paths consumed by submodule scripts.
+### android beta
+
+```sh
+[bundle exec] fastlane android beta
+```
+
+Upload AAB to closed beta track (draft)
+
+### android promote_to_beta
+
+```sh
+[bundle exec] fastlane android promote_to_beta
+```
+
+Promote internal build to beta (no rebuild)
+
+### android production
+
+```sh
+[bundle exec] fastlane android production
+```
+
+Upload AAB to production (draft, 10% rollout)
+
+### android validate
+
+```sh
+[bundle exec] fastlane android validate
+```
+
+Validate Play Store credentials
+
+### android fetch_store
+
+```sh
+[bundle exec] fastlane android fetch_store
+```
+
+Download current store listing + screenshots from Play Console
+
+### android enhance_screenshots
+
+```sh
+[bundle exec] fastlane android enhance_screenshots
+```
+
+Enhance raw Play screenshots via Gemini Nano Banana (free tier). Usage: fastlane enhance_screenshots locale:en-US
+
+### android push_screenshots
+
+```sh
+[bundle exec] fastlane android push_screenshots
+```
+
+Copy enhanced screenshots into Fastlane structure and upload to Play Console
+
+### android push_metadata
+
+```sh
+[bundle exec] fastlane android push_metadata
+```
+
+Upload text metadata only (title, short/long description) — no screenshots, no AAB
+
+----
+
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
+
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
+
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).

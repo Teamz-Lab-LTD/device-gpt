@@ -1,0 +1,52 @@
+AI sprawdzanie zdrowia telefonu na Androidzie — zrozumiałe wyniki bez technicznego żargonu.
+DeviceGPT skanuje baterię, wydajność, prywatność i sieć, tworzy czytelny raport i pozwala go udostępnić aplikacji asystenta AI, aby uzyskać proste wyjaśnienie i kolejne kroki.
+Śledź wynik zdrowia i porównuj się w globalnym rankingu telefonów.
+
+🤖 Analiza AI (klucz)
+
+Jedno dotknięcie: podsumowanie do udostępnienia
+
+Tryb prosty lub szczegółowy
+
+Sugestie dopasowane do skanu
+
+📱 Phone diagnostic AI + wydajność
+
+CPU, RAM, presja pamięci, temperatura i stabilność
+
+Wskazówki FPS/płynności (zależnie od urządzenia)
+
+Informacje o sprzęcie i stanie bezpieczeństwa, bez roota
+
+🔐 Privacy scanner Android
+
+Historia dostępu do mikrofonu/kamery i przegląd uprawnień
+
+Status roota, opcje programistyczne, debugowanie USB
+
+Sygnały anomalii GPS/czujników (zależnie od urządzenia)
+
+🌐 Diagnostyka sieci
+
+Realny test prędkości i stabilność połączenia
+
+Sygnały DNS i jakości połączenia
+
+⚡ Power consumption monitor
+
+Trendy zużycia energii i największe źródła
+
+Historia + eksport CSV (jeśli dostępne)
+
+🏆 System rankingu urządzeń
+Porównuj efektywność termiczną, płynność, energooszczędność i zdrowie telefonu globalnie.
+
+🔏 Prywatność
+
+Możliwa praca anonimowa
+
+Ty decydujesz o udostępnianiu/eksporcie
+
+Wiele funkcji offline (zależnie od urządzenia)
+
+✅ Zrób skan i popraw zdrowie telefonu już dziś.

@@ -1,0 +1,52 @@
+Android için AI phone health checker — telefonunuzu anlaşılır şekilde değerlendirin.
+DeviceGPT pil, performans, gizlilik ve ağ durumunu tarar, net bir rapor oluşturur ve isterseniz bir AI asistan uygulamasına paylaşarak kolay açıklama ve uygulanabilir adımlar almanızı sağlar.
+Sağlık skorunuzu takip edin ve global phone leaderboard içinde sıralamanızı görün.
+
+🤖 AI destekli açıklama (ana özellik)
+
+Tek dokunuşla özet üretip paylaşma
+
+Basit veya ayrıntılı mod
+
+Tarama sonuçlarına göre öneriler
+
+📱 Phone diagnostic AI + performans
+
+CPU, RAM, depolama baskısı, sıcaklık ve stabilite göstergeleri
+
+FPS/akıcı kullanım içgörüleri (cihaza bağlı)
+
+Donanım bilgileri ve güvenlik durumu, root gerekmez
+
+🔐 Privacy scanner Android + güvenlik
+
+Mikrofon/kamera erişim geçmişi ve izin kontrolü
+
+Root durumu, geliştirici seçenekleri, USB hata ayıklama
+
+GPS/sensör anomali sinyalleri (cihaza bağlı)
+
+🌐 Ağ teşhisi
+
+Gerçek hız testi ve bağlantı kararlılığı
+
+DNS ve bağlantı kalitesi sinyalleri
+
+⚡ Power consumption monitor
+
+Güç tüketimi trendleri ve en çok tüketenler
+
+Geçmiş + CSV dışa aktarma (varsa)
+
+🏆 Device ranking system
+Isı verimliliği, akıcılık, enerji verimliliği ve genel sağlıkta küresel karşılaştırma.
+
+🔏 Gizlilik
+
+Anonim kullanım mümkün
+
+Paylaşım/dışa aktarma sizin kontrolünüzde
+
+Birçok özellik çevrimdışı çalışır (cihaza bağlı)
+
+✅ Tarama yapın ve telefon sağlığınızı bugün iyileştirin.

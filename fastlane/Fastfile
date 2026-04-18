@@ -75,7 +75,10 @@ platform :android do
 
   desc "Download current store listing + screenshots from Play Console"
   lane :fetch_store do
-    sh("bundle exec fastlane supply init --package_name #{ENV['TEAMZ_PLAY_PACKAGE_NAME'] || 'com.teamz.lab.debugger'}")
+    # supply init must run from project root, otherwise it nests under fastlane/fastlane/
+    Dir.chdir("..") do
+      sh("bundle exec fastlane supply init --package_name #{ENV['TEAMZ_PLAY_PACKAGE_NAME'] || 'com.teamz.lab.debugger'}")
+    end
     UI.success("Store listing downloaded to fastlane/metadata/android/")
     UI.message("Raw phone screenshots: fastlane/metadata/android/*/images/phoneScreenshots/")
   end

@@ -1,0 +1,52 @@
+AI phone health checker para Android — entiende tu móvil sin tecnicismos.
+DeviceGPT analiza batería, rendimiento, privacidad y red, genera un informe claro y permite compartirlo con una app de asistente de IA para una explicación sencilla y acciones recomendadas.
+Controla tu puntuación de salud y compite en el global phone leaderboard.
+
+🤖 Explicación con IA (principal)
+
+Un toque para crear un resumen y compartirlo
+
+Modo sencillo o detallado
+
+Recomendaciones basadas en tu escaneo
+
+📱 Phone diagnostic AI + rendimiento
+
+Indicadores de CPU, RAM, presión de almacenamiento, temperatura y estabilidad
+
+Insights de FPS y fluidez (según el dispositivo)
+
+Info del hardware y estado de seguridad, sin root
+
+🔐 Privacy scanner Android + seguridad
+
+Historial de acceso a micrófono/cámara y revisión de permisos
+
+Estado de root, opciones de desarrollador y depuración USB
+
+Señales de anomalías de GPS/sensores (según el dispositivo)
+
+🌐 Diagnóstico de red
+
+Speed test real y estabilidad de conexión
+
+Señales de DNS y calidad de conexión
+
+⚡ Power consumption monitor
+
+Tendencias de consumo y principales responsables
+
+Historial + exportación CSV (si está disponible)
+
+🏆 Device ranking system
+Compara eficiencia térmica, fluidez, eficiencia energética y salud del dispositivo a nivel global.
+
+🔏 Privacidad
+
+Uso anónimo posible
+
+Tú controlas qué compartes o exportas
+
+Muchas funciones offline (según el dispositivo)
+
+✅ Haz un escaneo y mejora la salud de tu móvil hoy

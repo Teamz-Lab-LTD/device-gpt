@@ -1,0 +1,52 @@
+AI phone health checker cho Android — hiểu điện thoại của bạn theo cách dễ đọc.
+DeviceGPT quét pin, hiệu năng, quyền riêng tư và mạng, tạo báo cáo rõ ràng và cho phép bạn chia sẻ sang ứng dụng trợ lý AI để nhận giải thích đơn giản cùng bước cải thiện.
+Theo dõi điểm sức khỏe và xem vị trí trên global phone leaderboard.
+
+🤖 Giải thích bằng AI (tính năng chính)
+
+Một chạm tạo bản tóm tắt để chia sẻ
+
+Chế độ đơn giản hoặc chi tiết
+
+Gợi ý dựa trên kết quả quét
+
+📱 Phone diagnostic AI + hiệu năng
+
+Chỉ số CPU, RAM, áp lực bộ nhớ, nhiệt độ và độ ổn định
+
+Gợi ý FPS/độ mượt (tùy thiết bị)
+
+Thông tin phần cứng và trạng thái bảo mật, không cần root
+
+🔐 Privacy scanner Android + bảo mật
+
+Lịch sử truy cập mic/camera và kiểm tra quyền
+
+Trạng thái root, tùy chọn nhà phát triển, USB debugging
+
+Tín hiệu bất thường GPS/cảm biến (tùy thiết bị)
+
+🌐 Chẩn đoán mạng
+
+Speed test thực và kiểm tra độ ổn định kết nối
+
+Tín hiệu DNS và chất lượng kết nối
+
+⚡ Power consumption monitor
+
+Xu hướng tiêu thụ điện và nguồn tiêu thụ lớn
+
+Lịch sử + xuất CSV (nếu có)
+
+🏆 Device ranking system
+So sánh toàn cầu về hiệu quả nhiệt, độ mượt, hiệu quả năng lượng và sức khỏe tổng thể.
+
+🔏 Quyền riêng tư
+
+Có thể dùng ẩn danh
+
+Bạn tự quyết định chia sẻ/xuất dữ liệu
+
+Nhiều tính năng chạy offline (tùy thiết bị)
+
+✅ Quét ngay để cải thiện sức khỏe điện thoại của bạn.

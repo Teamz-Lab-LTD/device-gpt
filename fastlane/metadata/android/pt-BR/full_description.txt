@@ -1,0 +1,52 @@
+Verificador de saúde do celular com IA para Android — entenda seu aparelho sem complicação.
+O DeviceGPT analisa bateria, desempenho, privacidade e rede, gera um relatório claro e permite compartilhar com um app de assistente de IA para receber explicações fáceis e próximos passos.
+Acompanhe seu score de saúde e compare no ranking global de celulares.
+
+🤖 Explicação por IA (principal)
+
+Um toque para gerar resumo e compartilhar
+
+Modo simples ou detalhado
+
+Recomendações baseadas no seu scan
+
+📱 Phone diagnostic AI + desempenho
+
+CPU, RAM, pressão de armazenamento, temperatura e estabilidade
+
+Insights de FPS/fluidez (depende do dispositivo)
+
+Informações do hardware e status de segurança, sem root
+
+🔐 Privacy scanner Android + segurança
+
+Histórico de acesso de microfone/câmera e revisão de permissões
+
+Status de root, opções do desenvolvedor e depuração USB
+
+Sinais de anomalia em GPS/sensores (depende do dispositivo)
+
+🌐 Diagnóstico de rede
+
+Teste real de velocidade e estabilidade
+
+Sinais de DNS e qualidade de conexão
+
+⚡ Power consumption monitor
+
+Tendências de consumo e principais responsáveis
+
+Histórico + exportação CSV (se disponível)
+
+🏆 Sistema de ranking do dispositivo
+Compare eficiência térmica, fluidez, eficiência de energia e saúde do aparelho no mundo.
+
+🔏 Privacidade
+
+Uso anônimo possível
+
+Você controla o que compartilha/exporta
+
+Muitas funções offline (varia por dispositivo)
+
+✅ Faça um scan e melhore a saúde do seu celular hoje.

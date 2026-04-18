@@ -1,0 +1,31 @@
+DeviceGPT: AI Phone Health ist eine Android Handy-Diagnose und ein Datenschutz-Scan, der Akku, Leistung, Speicher, Temperatur, Sicherheits-Signale und Netzwerkqualität prüft — und daraus einen klaren Bericht erstellt, den Sie bei Bedarf an eine KI-App teilen können, um eine leicht verständliche Erklärung zu bekommen.
+
+Was Sie prüfen können
+
+Akku & Temperatur: Hitze-Warnungen, Ladeverhalten, Akku-Drain-Hinweise
+
+Leistung & Speicher: Engpässe bei RAM/Speicher, Ursachen für Langsamkeit
+
+Datenschutz: Mikrofon-/Kamera-Nutzung und Berechtigungen prüfen
+
+Sicherheits-Signale: Root-Status, Entwicklermodus, USB-Debugging
+
+Netzwerk-Diagnose: Speed, Stabilität, DNS und Verbindungsqualität
+
+On-Device-AI: Kompatibilitätsindikatoren (geräteabhängig)
+
+Bewegung bei gesperrtem Bildschirm: Aktivität erkennen (falls unterstützt)
+
+KI fragen (optional)
+Nach dem Scan → „KI fragen“ → KI-App über Teilen auswählen. DeviceGPT erstellt automatisch einen verständlichen Text aus Ihren Befunden.
+
+Datenschutz
+
+Kein Konto erforderlich
+
+Keine automatische Datenübertragung — Sie entscheiden, was geteilt wird
+
+Viele Checks funktionieren lokal/offline (geräteabhängig)
+
+Hinweis
+Die App liefert Diagnose-Hinweise, ersetzt aber keine professionelle Reparatur/Serviceprüfung.

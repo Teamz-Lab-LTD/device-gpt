@@ -1,0 +1,52 @@
+Pengecek kesehatan ponsel AI untuk Android — pahami kondisi ponsel dengan bahasa sederhana.
+DeviceGPT memindai baterai, performa, privasi, dan jaringan, lalu membuat laporan jelas yang bisa Anda bagikan ke aplikasi asisten AI untuk penjelasan yang mudah dan langkah perbaikan.
+Pantau skor kesehatan dan lihat peringkat di global phone leaderboard.
+
+🤖 Analisis berbasis AI (fitur utama)
+
+Buat ringkasan sekali tap dan bagikan ke aplikasi AI melalui Share
+
+Mode ringkas atau detail
+
+Saran sesuai hasil pemindaian
+
+📱 Phone diagnostic AI + performa
+
+Indikator CPU, RAM, tekanan penyimpanan, suhu, dan stabilitas
+
+Insight FPS/kelancaran (tergantung perangkat)
+
+Info perangkat + status keamanan, tanpa root
+
+🔐 Privacy scanner Android
+
+Riwayat akses mikrofon/kamera dan review izin
+
+Status root, opsi pengembang, USB debugging
+
+Sinyal anomali GPS/sensor (tergantung perangkat)
+
+🌐 Diagnostik jaringan
+
+Uji kecepatan nyata dan stabilitas koneksi
+
+Sinyal DNS/kualitas koneksi
+
+⚡ Power consumption monitor
+
+Tren konsumsi daya dan pemakaian tertinggi
+
+Riwayat + ekspor CSV (jika tersedia)
+
+🏆 Sistem peringkat perangkat
+Bandingkan ponsel Anda secara global untuk efisiensi panas, kelancaran, dan kesehatan.
+
+🔏 Privasi
+
+Bisa digunakan anonim
+
+Anda yang mengontrol berbagi/ekspor
+
+Banyak fitur bisa offline (tergantung perangkat)
+
+✅ Jalankan scan dan tingkatkan kesehatan ponsel Anda hari ini.

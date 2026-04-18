@@ -1,0 +1,68 @@
+🔍 Vérificateur de santé téléphone IA pour Android — comprenez votre appareil en langage simple.
+Scannez la batterie, la confidentialité, les performances et le réseau, puis générez un rapport clair que vous pouvez partager à une app d’assistant IA pour obtenir une explication facile et des actions concrètes.
+Suivez votre score de santé et comparez-vous via un classement mondial des téléphones.
+
+DeviceGPT: AI Phone Health est un moniteur d’appareil IA Android et un outil de diagnostic téléphone IA conçu pour les utilisateurs qui veulent des réponses, pas des graphiques compliqués. Si votre téléphone est lent, chauffe, se décharge vite, manque de stockage, ou si vous suspectez une activité inhabituelle, DeviceGPT regroupe les signaux clés et les transforme en résumé compréhensible.
+
+🤖 Analyse IA (fonction principale)
+
+Résumé “Ask the AI” en un tap, partageable vers ChatGPT, Gemini, Claude ou toute app IA via Partager
+
+Mode explication simple ou détaillée
+
+Recommandations adaptées à vos résultats de scan
+
+📱 Diagnostic téléphone IA + performance
+
+Indicateurs CPU, RAM, pression de stockage, température et stabilité
+
+Infos de fluidité/FPS et constance des performances (selon l’appareil)
+
+Fiche matériel + statut sécurité, sans root
+
+🔐 Privacy scanner Android + sécurité
+
+Historique d’accès micro/caméra et vérification des autorisations
+
+Statut root, options développeur et débogage USB
+
+Signaux d’usurpation GPS/capteurs (selon l’appareil)
+
+🌐 Diagnostic réseau + signaux de confidentialité ISP
+
+Test de vitesse réel (download/upload) et stabilité de connexion
+
+Signaux DNS/qualité de connexion pour aider à repérer des soucis de routage ou d’opérateur
+
+⚡ Power consumption monitor (suivi consommation)
+Tendances de consommation et identification des gros consommateurs
+
+Tendances par composant (écran, caméra, CPU, réseau — selon l’appareil)
+
+Historique et export CSV
+
+🏆 Classement mondial des téléphones + système de classement
+Voyez où se situe votre appareil sur des catégories comme l’efficacité thermique, la fluidité, l’efficacité énergétique et la santé globale. Améliorez vos réglages et suivez l’évolution de votre rang.
+
+📜 Certificat d’appareil IA (optionnel)
+Générez un rapport partageable pour la revente ou l’archivage, avec un résumé IA et des indicateurs de santé.
+
+Idéal pour
+
+Comprendre une batterie qui se vide vite avec un battery health monitor IA
+
+Utiliser un privacy detector / privacy scanner Android plus lisible
+
+Parents qui veulent vérifier l’état d’un téléphone
+
+Utilisateurs qui aiment comparer et optimiser via le classement
+
+Confidentialité d’abord
+
+Utilisation anonyme possible (connexion optionnelle pour sync/classement)
+
+Aucun envoi automatique : vous contrôlez le partage/export
+
+Beaucoup de contrôles fonctionnent hors ligne (selon l’appareil)
+
+✅ Lancez un scan, partagez le résumé à votre assistant IA, et améliorez la santé de votre téléphone dès maintenant.
