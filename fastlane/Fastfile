@@ -3,57 +3,56 @@ default_platform(:android)
 AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
 MAPPING_PATH = "app/build/outputs/mapping/release/mapping.txt"
 
+SUBMODULE_ROOT = "teamz-company-automation"
+GEMINI_SCRIPT = "#{SUBMODULE_ROOT}/py/aso/aso-gemini-edit.py"
+ENHANCED_DIR = "automation_data/play-screenshots/enhanced"
+DEFAULT_ENHANCE_PROMPT = <<~PROMPT.strip.gsub("\n", " ")
+  Enhance this Google Play Store screenshot of DeviceGPT (an Android device diagnostic app).
+  Keep all UI content pixel-perfect — do not redraw the phone UI.
+  Place the raw phone screen inside a photorealistic Google Pixel 8 Pro device frame, centered on a
+  solid teal-to-dark background (no gradients, no radial glows, no sparkles).
+  Add a bold headline above the device in clean sans-serif, high-contrast text that complements
+  the background (WCAG AA+). Keep the headline short (max 5 words).
+  ABSOLUTELY NO emoji, NO chart icons, NO sparkles, NO fake app store badges.
+  Output 1080x1920 portrait.
+PROMPT
+
 platform :android do
+  # --- Build + upload lanes --------------------------------------------------
+
   desc "Build release AAB"
   lane :build do
     gradle(task: "clean")
-    gradle(
-      task: "bundle",
-      build_type: "Release"
-    )
+    gradle(task: "bundle", build_type: "Release")
   end
 
-  desc "Upload AAB to internal testing track"
+  desc "Upload AAB to internal testing track (draft)"
   lane :internal do
     build
     upload_to_play_store(
-      track: "internal",
-      aab: AAB_PATH,
-      mapping: MAPPING_PATH,
+      track: "internal", aab: AAB_PATH, mapping: MAPPING_PATH,
       release_status: "draft",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      skip_upload_changelogs: false
+      skip_upload_metadata: true, skip_upload_images: true, skip_upload_screenshots: true
     )
   end
 
-  desc "Upload AAB to closed beta track"
+  desc "Upload AAB to closed beta track (draft)"
   lane :beta do
     build
     upload_to_play_store(
-      track: "beta",
-      aab: AAB_PATH,
-      mapping: MAPPING_PATH,
+      track: "beta", aab: AAB_PATH, mapping: MAPPING_PATH,
       release_status: "draft",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      skip_upload_changelogs: false
+      skip_upload_metadata: true, skip_upload_images: true, skip_upload_screenshots: true
     )
   end
 
-  desc "Promote internal build to beta"
+  desc "Promote internal build to beta (no rebuild)"
   lane :promote_to_beta do
     upload_to_play_store(
-      track: "internal",
-      track_promote_to: "beta",
-      skip_upload_apk: true,
-      skip_upload_aab: true,
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      skip_upload_changelogs: true
+      track: "internal", track_promote_to: "beta",
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_metadata: true, skip_upload_images: true,
+      skip_upload_screenshots: true, skip_upload_changelogs: true
     )
   end
 
@@ -61,34 +60,105 @@ platform :android do
   lane :production do
     build
     upload_to_play_store(
-      track: "production",
-      aab: AAB_PATH,
-      mapping: MAPPING_PATH,
-      release_status: "draft",
-      rollout: "0.1",
-      skip_upload_metadata: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      skip_upload_changelogs: false
+      track: "production", aab: AAB_PATH, mapping: MAPPING_PATH,
+      release_status: "draft", rollout: "0.1",
+      skip_upload_metadata: true, skip_upload_images: true, skip_upload_screenshots: true
     )
-  end
-
-  desc "Upload store listing metadata only (no AAB)"
-  lane :metadata do
-    upload_to_play_store(
-      skip_upload_apk: true,
-      skip_upload_aab: true,
-      skip_upload_changelogs: true
-    )
-  end
-
-  desc "Download current store listing metadata from Play Console"
-  lane :fetch_metadata do
-    sh("bundle exec fastlane supply init --package_name com.teamz.lab.debugger")
   end
 
   desc "Validate Play Store credentials"
   lane :validate do
     validate_play_store_json_key
+  end
+
+  # --- Metadata + screenshots ------------------------------------------------
+
+  desc "Download current store listing + screenshots from Play Console"
+  lane :fetch_store do
+    sh("bundle exec fastlane supply init --package_name #{ENV['TEAMZ_PLAY_PACKAGE_NAME'] || 'com.teamz.lab.debugger'}")
+    UI.success("Store listing downloaded to fastlane/metadata/android/")
+    UI.message("Raw phone screenshots: fastlane/metadata/android/*/images/phoneScreenshots/")
+  end
+
+  desc "Enhance raw Play screenshots via Gemini Nano Banana (free tier). Usage: fastlane enhance_screenshots locale:en-US"
+  lane :enhance_screenshots do |options|
+    locale = options[:locale] || "en-US"
+    prompt = options[:prompt] || DEFAULT_ENHANCE_PROMPT
+    kinds = options[:kinds] || "phone"  # phone | tablet7 | tablet10 | all
+
+    kind_map = {
+      "phone"    => "phoneScreenshots",
+      "tablet7"  => "sevenInchScreenshots",
+      "tablet10" => "tenInchScreenshots"
+    }
+    targets = (kinds == "all") ? kind_map.values : [kind_map[kinds]].compact
+    UI.user_error!("Unknown kinds: #{kinds}") if targets.empty?
+
+    unless File.exist?(GEMINI_SCRIPT)
+      UI.user_error!("Missing #{GEMINI_SCRIPT}. Did you initialize the submodule?")
+    end
+
+    targets.each do |kind|
+      src_dir = "fastlane/metadata/android/#{locale}/images/#{kind}"
+      out_dir = "#{ENHANCED_DIR}/#{locale}/#{kind}"
+      unless Dir.exist?(src_dir)
+        UI.important("Skipping #{kind}: no raw screenshots at #{src_dir}. Run `fastlane fetch_store` first.")
+        next
+      end
+      FileUtils.mkdir_p(out_dir)
+      images = Dir.glob("#{src_dir}/*.{png,jpg,jpeg}").sort
+      if images.empty?
+        UI.important("No images found in #{src_dir}")
+        next
+      end
+      UI.success("Enhancing #{images.size} #{kind} screenshots → #{out_dir}")
+      images.each do |src|
+        basename = File.basename(src, ".*") + ".png"
+        out = "#{out_dir}/#{basename}"
+        sh "python3 '#{GEMINI_SCRIPT}' --prompt #{prompt.shellescape} --image '#{src}' --output '#{out}'"
+      end
+    end
+
+    UI.success("Done. Review outputs in #{ENHANCED_DIR}/#{locale}/")
+    UI.message("To push: `fastlane push_screenshots locale:#{locale}`")
+  end
+
+  desc "Copy enhanced screenshots into Fastlane structure and upload to Play Console"
+  lane :push_screenshots do |options|
+    locale = options[:locale] || "en-US"
+    dry_run = options[:dry_run] == "true"
+
+    Dir.glob("#{ENHANCED_DIR}/#{locale}/*").each do |kind_dir|
+      kind = File.basename(kind_dir)
+      dest = "fastlane/metadata/android/#{locale}/images/#{kind}"
+      FileUtils.mkdir_p(dest)
+      # Wipe stale enhanced files (preserve anything still in source dir)
+      Dir.glob("#{dest}/*").each { |f| File.delete(f) if File.file?(f) }
+      Dir.glob("#{kind_dir}/*.{png,jpg,jpeg}").each do |src|
+        FileUtils.cp(src, "#{dest}/#{File.basename(src)}")
+      end
+      UI.success("Staged #{kind} for upload from #{kind_dir}")
+    end
+
+    if dry_run
+      UI.important("Dry run — skipping upload_to_play_store")
+      next
+    end
+
+    upload_to_play_store(
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_metadata: true, skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Upload text metadata only (title, short/long description) — no screenshots, no AAB"
+  lane :push_metadata do
+    upload_to_play_store(
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true, skip_upload_screenshots: true
+    )
   end
 end

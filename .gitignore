@@ -33,7 +33,12 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
-fastlane/metadata/android/*/images/
 Gemfile.lock
 .bundle/
 vendor/bundle/
+
+# Automation env (contains paths, not secrets, but project-local)
+.teamz-automation.env
+
+# Automation raw data
+automation_data/
