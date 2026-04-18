@@ -1,0 +1,94 @@
+default_platform(:android)
+
+AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
+MAPPING_PATH = "app/build/outputs/mapping/release/mapping.txt"
+
+platform :android do
+  desc "Build release AAB"
+  lane :build do
+    gradle(task: "clean")
+    gradle(
+      task: "bundle",
+      build_type: "Release"
+    )
+  end
+
+  desc "Upload AAB to internal testing track"
+  lane :internal do
+    build
+    upload_to_play_store(
+      track: "internal",
+      aab: AAB_PATH,
+      mapping: MAPPING_PATH,
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Upload AAB to closed beta track"
+  lane :beta do
+    build
+    upload_to_play_store(
+      track: "beta",
+      aab: AAB_PATH,
+      mapping: MAPPING_PATH,
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Promote internal build to beta"
+  lane :promote_to_beta do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "beta",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
+  desc "Upload AAB to production (draft, 10% rollout)"
+  lane :production do
+    build
+    upload_to_play_store(
+      track: "production",
+      aab: AAB_PATH,
+      mapping: MAPPING_PATH,
+      release_status: "draft",
+      rollout: "0.1",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Upload store listing metadata only (no AAB)"
+  lane :metadata do
+    upload_to_play_store(
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true
+    )
+  end
+
+  desc "Download current store listing metadata from Play Console"
+  lane :fetch_metadata do
+    sh("bundle exec fastlane supply init --package_name com.teamz.lab.debugger")
+  end
+
+  desc "Validate Play Store credentials"
+  lane :validate do
+    validate_play_store_json_key
+  end
+end

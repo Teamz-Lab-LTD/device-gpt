@@ -25,3 +25,15 @@ release-key.jks
 *.jks
 *.keystore
 local_config.properties
+
+# Fastlane
+fastlane/play-store-key.json
+fastlane/.env
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/metadata/android/*/images/
+Gemfile.lock
+.bundle/
+vendor/bundle/
