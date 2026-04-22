@@ -54,6 +54,10 @@ object ThemeManager {
             .edit {
                 putString(KEY_SELECTED_THEME, theme.name)
             }
+        com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+            context,
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid,
+        )
     }
     
     fun setDarkMode(isDark: Boolean, context: Context) {
@@ -62,6 +66,10 @@ object ThemeManager {
             .edit()
             .putBoolean(KEY_IS_DARK_MODE, isDark)
             .apply()
+        com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+            context,
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid,
+        )
     }
     
     fun toggleDarkMode(context: Context) {

@@ -64,6 +64,7 @@ object RevenueCatManager {
     
     private var isInitialized = false
     private var customerInfo: CustomerInfo? = null
+    private var applicationContextRef: Context? = null
 
     /** True when Purchases.configure() succeeded (API key present). Safe to call Purchases.sharedInstance. */
     fun isSdkConfigured(): Boolean = isInitialized
@@ -121,6 +122,7 @@ object RevenueCatManager {
                 .build()
             
             Purchases.configure(configuration)
+            applicationContextRef = context.applicationContext
             
             // Set up listener for subscription status updates
             Purchases.sharedInstance.updatedCustomerInfoListener = object : UpdatedCustomerInfoListener {
@@ -503,6 +505,12 @@ object RevenueCatManager {
                         })
                     } else {
                         Log.d(TAG, "✅ Premium already active after user ID link")
+                    }
+                    applicationContextRef?.let { appCtx ->
+                        com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+                            appCtx,
+                            userId,
+                        )
                     }
                 }
                 

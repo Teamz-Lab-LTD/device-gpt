@@ -266,7 +266,10 @@ object LeaderboardManager {
                         // Don't fail the Gmail linking if RevenueCat fails
                     }
                 }
-                
+                com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+                    context.applicationContext,
+                    result.user?.uid,
+                )
                 true
             } else {
                 false
@@ -294,7 +297,10 @@ object LeaderboardManager {
                         Log.e(TAG, "Failed to link RevenueCat after sign-in", e)
                         // Don't fail the sign-in if RevenueCat fails
                     }
-                    
+                    com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+                        context.applicationContext,
+                        firebaseUserId,
+                    )
                     return true
                 } else {
                     Log.e(TAG, "Sign-in with existing account failed: user is null")
@@ -1651,6 +1657,14 @@ object LeaderboardManager {
         getPrefs(context).edit {
             putString(KEY_USER_ID, userId)
         }
+    }
+
+    /**
+     * Persists Firebase UID to leaderboard prefs after device migration (backup / Restore Credentials).
+     */
+    fun persistUserIdFromRestore(context: Context, userId: String) {
+        saveUserId(context, userId)
+        setAnalyticsUserId(userId)
     }
     
     private fun saveLastUpload(context: Context) {

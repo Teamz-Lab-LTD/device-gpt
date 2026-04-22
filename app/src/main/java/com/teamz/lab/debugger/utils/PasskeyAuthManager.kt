@@ -14,6 +14,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.teamz.lab.debugger.BuildConfig
+import com.teamz.lab.debugger.restore.RestoreCredentialManager
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -65,7 +66,14 @@ object PasskeyAuthManager {
                 context = context
             )
 
-            handleSignInResponse(response)
+            val outcome = handleSignInResponse(response)
+            if (outcome is AuthOutcome.Success) {
+                RestoreCredentialManager.scheduleSaveAfterStateChange(
+                    context,
+                    outcome.result.user?.uid,
+                )
+            }
+            outcome
         } catch (e: GetCredentialCancellationException) {
             Log.d(TAG, "Sign-in cancelled by user")
             AuthOutcome.Cancelled()

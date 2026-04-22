@@ -107,6 +107,17 @@ object LocaleManager {
             putString(KEY_SELECTED_LANGUAGE, language.code)
         }
         updateLocale(context, language.code)
+        com.teamz.lab.debugger.restore.RestoreCredentialManager.scheduleSaveAfterStateChange(
+            context,
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid,
+        )
+    }
+
+    /** Used after cross-device restore when only a language code string is available. */
+    fun setLanguageFromCodeIfSupported(context: Context, code: String?) {
+        if (code.isNullOrEmpty()) return
+        val lang = AppLanguage.fromCode(code) ?: return
+        setLanguage(context, lang)
     }
     
     /**

@@ -134,6 +134,29 @@ After each scan, simply tap **"Ask AI"**. We prefill a smart prompt for ChatGPT,
 
 **Implementation**: `device_info_ui.kt`, `device_utils.kt`, `SystemMonitorService.kt`, `LockScreenMonitorWidget.kt`
 
+### 🔁 Cross-device restore (Android 14+)
+
+After you finish first-run setup on your old phone, DeviceGPT stores an encrypted snapshot (language, theme, monitor toggle, leaderboard user id, optional short-lived Google ID token) and registers a **Restore Credential** via Jetpack Credential Manager. On a new device (backup or device-to-device transfer), `MainActivity` restores that snapshot on a background coroutine when Firebase Auth has not yet resumed, then links RevenueCat to the saved Firebase UID. Android 13 and below skip this path entirely.
+
+**Implementation**: `restore/RestoreCredentialManager.kt`, `backup_rules.xml`, `data_extraction_rules.xml`, hooks in `PasskeyAuthManager`, `LeaderboardManager`, `LocaleManager`, `ThemeManager`, `RevenueCatManager`, `system_monitor_service.kt`.
+
+### 🖥️ Large screens, freeform windows, and external displays
+
+**For users:**
+- **Phone portrait (compact width):** same familiar top tabs + scrolling panels.
+- **Medium width** (e.g. phone landscape, small tablet): **two panes** — left column picks scan area (Battery / Network / Hardware / Privacy / AI), right pane shows the selected scan.
+- **Expanded width** (large tablet, DeX, desktop-style window): **three panes** — category list, main scan + charts, and an **AI & actions** column (search in results, open AI assistant, export CSV).
+
+**For developers:**
+- `AdaptiveDeviceGptLayout` uses Jetpack **Material 3 Adaptive** [`currentWindowAdaptiveInfo()`](https://developer.android.com/develop/ui/compose/layouts/adaptive) (`WindowWidthSizeClass` from `androidx.window`) and maps **COMPACT / MEDIUM / EXPANDED** to [DeviceGptChromeMode](app/src/main/java/com/teamz/lab/debugger/ui/adaptive/AdaptiveModels.kt).
+- `AndroidManifest.xml` sets `resizeableActivity`, `supportsPictureInPicture="false"`, `configChanges` for display/size/density, and `<meta-data android:name="android.max_aspect" android:value="2.4" />` under `<application>` for ultra-wide layouts.
+
+**Implementation**: `MainActivity.kt` (`AdaptiveDeviceGptLayout` → `DeviceGptNavExperience`), `ui/adaptive/AdaptiveLayout.kt`, `AndroidManifest.xml` (`android.max_aspect` meta-data, resizable activity + `configChanges`).
+
+**Keyboard (expanded / desktop-width window only):** `R` re-runs data refresh, `E` exports the current tab’s share text as a CSV, `1`–`5` jump to Battery / Network / Hardware / Privacy / AI scan categories, `Ctrl+F` focuses in-pane search for filtering the scan preview.
+
+**Secondary display:** `MainActivity` overrides `onConfigurationChanged` and posts `invalidate()` so the window redraws when the activity moves to another display or density changes (works with `ActivityOptions.setLaunchDisplayId(...)` when you start the activity on a chosen display from your own launcher code).
+
 ### 🔐 Privacy & Security Scanner
 
 **For Users:**
@@ -641,7 +664,7 @@ Analytics are automatically disabled in restricted device modes (see above). For
 ## 🛠️ Tech Stack
 
 - **Language**: Kotlin 2.1.0
-- **UI Framework**: Jetpack Compose (Material 3)
+- **UI Framework**: Jetpack Compose (Material 3) with Material 3 **Adaptive** (`androidx.compose.material3.adaptive:adaptive`, `adaptive-layout`, `adaptive-navigation` 1.1.0) and `currentWindowAdaptiveInfo()` for width buckets (compact / medium / expanded)
 - **Architecture**: MVVM with ViewModel
 - **Dependency Injection**: Manual (can be migrated to Hilt/Koin)
 - **Backend**: 

@@ -806,10 +806,13 @@ fun Context.isUserFirstTime(): Boolean {
 }
 
 fun Context.setUserFirstTime(isFirstTime: Boolean) {
-    return getSharedPreferences("monitor_service", Context.MODE_PRIVATE)
+    getSharedPreferences("monitor_service", Context.MODE_PRIVATE)
         .edit()
         .putBoolean("is_user_first_time", isFirstTime)
         .apply()
+    if (!isFirstTime) {
+        com.teamz.lab.debugger.restore.RestoreCredentialManager.markFirstRunCompleted(this)
+    }
 }
 
 

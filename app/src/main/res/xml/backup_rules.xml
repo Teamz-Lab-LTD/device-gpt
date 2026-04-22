@@ -6,6 +6,8 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
+    <!-- Restore / migration payload (encrypted) + first-run flags for Restore Credentials + Auto Backup -->
+    <include domain="sharedpref" path="devicegpt_app_restore.xml" />
     <!--
    <include domain="sharedpref" path="."/>
    <exclude domain="sharedpref" path="device.xml"/>
