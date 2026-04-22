@@ -82,3 +82,19 @@
     public static *** d(...);
     public static *** v(...);
 }
+
+# ---------------- AppFunctions (Jetpack) ----------------
+# Required so KSP-generated schema classes and @AppFunction entrypoints survive R8.
+-keep class androidx.appfunctions.** { *; }
+-dontwarn androidx.appfunctions.**
+-keepattributes RuntimeVisibleAnnotations,RuntimeInvisibleAnnotations
+-keep @androidx.appfunctions.AppFunction class * { *; }
+-keep @androidx.appfunctions.AppFunctionSerializable class * { *; }
+-keepclassmembers class * {
+    @androidx.appfunctions.AppFunction <methods>;
+}
+-keep class com.teamz.lab.debugger.appfunctions.** { *; }
+
+# ---------------- ML Kit GenAI (on-device Gemini Nano) ----------------
+-keep class com.google.mlkit.genai.** { *; }
+-dontwarn com.google.mlkit.genai.**

@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp)
     id("jacoco")
 }
 
@@ -117,11 +118,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -146,6 +147,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -170,8 +174,9 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation("com.google.firebase:firebase-auth-ktx")
     // Credential Manager API (latest Google Sign-In approach)
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    // 1.5.0+ required for Restore Credentials (CreateRestoreCredentialRequest); 1.3.0 lacked those APIs.
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     // WorkManager for reliable background notification scheduling
@@ -182,6 +187,22 @@ dependencies {
     implementation(libs.purchases.ui)
     implementation(libs.install.referrer)
     implementation(libs.androidx.uiautomator)
+
+    // AppFunctions — expose DeviceGPT actions to Gemini agent (requires Android 16+ at runtime).
+    // Gated behind @RequiresApi on every call site; app minSdk stays at 24.
+    implementation(libs.androidx.appfunctions)
+    implementation(libs.androidx.appfunctions.service)
+    ksp(libs.androidx.appfunctions.compiler)
+
+    // ML Kit GenAI — on-device Gemini Nano text summarisation / rewriting for post-scan explainer.
+    // Runtime feature-detect; falls back to cloud AI chooser on unsupported devices.
+    implementation(libs.mlkit.genai.summarization)
+    implementation(libs.mlkit.genai.rewriting)
+
+    // Adaptive layout for Desktop Mode / freeform windowing (Android 16 QPR3 / Android 17).
+    implementation(libs.androidx.compose.material3.adaptive)
+    implementation(libs.androidx.compose.material3.adaptive.layout)
+
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.13")
     testImplementation("androidx.test:core:1.5.0")
