@@ -147,9 +147,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
     implementation(libs.androidx.material3)
-    implementation("androidx.compose.material3.adaptive:adaptive:1.1.0")
-    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0")
-    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -202,6 +199,7 @@ dependencies {
     // Adaptive layout for Desktop Mode / freeform windowing (Android 16 QPR3 / Android 17).
     implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.adaptive.layout)
+    implementation(libs.androidx.compose.material3.adaptive.navigation)
 
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.13")
