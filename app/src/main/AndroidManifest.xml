@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- ML Kit GenAI Summarization + Rewriting declare minSdk 26; app stays at 24.
+         Runtime calls are gated by OnDeviceAiAvailability which requires Android 14 (API 34) anyway,
+         so devices on API 24-25 never invoke the GenAI code paths. Override keeps merge successful. -->
+    <uses-sdk tools:overrideLibrary="com.google.mlkit.genai.summarization,com.google.mlkit.genai.rewriting,com.google.mlkit.genai.common" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -98,6 +102,9 @@
         android:theme="@style/Theme.Debugger"
         tools:targetApi="31">
         <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
+        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${admobAppId}" />
         <meta-data
@@ -108,7 +115,10 @@
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Debugger"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

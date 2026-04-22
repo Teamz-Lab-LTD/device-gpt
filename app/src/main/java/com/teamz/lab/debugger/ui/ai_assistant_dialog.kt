@@ -16,7 +16,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.InstallMobile
+import androidx.compose.material.icons.filled.Lock
 import com.teamz.lab.debugger.utils.AIIcon
+import com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability
+import com.teamz.lab.debugger.ai.ondevice.PrivateAiExplainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +29,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,9 +51,23 @@ fun AIAssistantDialog(
     context: Context,
     title: String = "AI, Is My Phone OK?",
     subtitle: String = "Get simple, friendly answers about your phone’s health—no tech skills needed.",
-    showExplanationModeToggle: Boolean = true
+    showExplanationModeToggle: Boolean = true,
+    // Optional: if non-null, tapping the "Private AI (on-device)" row invokes this
+    // instead of onShareWithApp. Callers typically launch a coroutine that calls
+    // PrivateAiExplainer.explain(...) and shows the result in a small follow-up dialog.
+    // If null, the synthetic AIApp with packageName == PrivateAiExplainer.SYNTHETIC_PACKAGE
+    // is passed through onShareWithApp so callers can branch there.
+    onPrivateAiSelected: ((PromptMode) -> Unit)? = null,
 ) {
     var promptMode by remember { mutableStateOf(PromptMode.Simple) }
+
+    // Probe on-device AI availability once when this dialog opens. Cached across opens.
+    var onDeviceStatus by remember { mutableStateOf(OnDeviceAiAvailability.lastKnownStatus()) }
+    LaunchedEffect(Unit) {
+        onDeviceStatus = OnDeviceAiAvailability.refreshStatus(context)
+    }
+    val onDeviceAvailable = onDeviceStatus == OnDeviceAiAvailability.Status.READY ||
+        onDeviceStatus == OnDeviceAiAvailability.Status.DOWNLOADABLE
 
     val aiApps = remember {
         listOf(
@@ -220,6 +238,51 @@ fun AIAssistantDialog(
 
             } else {
                 LazyColumn {
+                    if (onDeviceAvailable) {
+                        item {
+                            val onDeviceAiApp = AIApp(
+                                name = PrivateAiExplainer.DISPLAY_NAME,
+                                packageName = PrivateAiExplainer.SYNTHETIC_PACKAGE,
+                                playStoreUrl = "",
+                            )
+                            val subtitle = when (onDeviceStatus) {
+                                OnDeviceAiAvailability.Status.READY ->
+                                    PrivateAiExplainer.TAGLINE
+                                OnDeviceAiAvailability.Status.DOWNLOADABLE ->
+                                    "One-time ~300MB download · then fully offline"
+                                else -> PrivateAiExplainer.TAGLINE
+                            }
+                            ListItem(
+                                headlineContent = {
+                                    Text(
+                                        onDeviceAiApp.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                supportingContent = {
+                                    Text(
+                                        subtitle,
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        Icons.Default.Lock,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    val handler = onPrivateAiSelected
+                                    if (handler != null) {
+                                        handler(promptMode)
+                                    } else {
+                                        onShareWithApp(onDeviceAiApp, promptMode)
+                                    }
+                                },
+                            )
+                        }
+                    }
                     items(installedApps) { app ->
                         ListItem(headlineContent = {
                             Text(

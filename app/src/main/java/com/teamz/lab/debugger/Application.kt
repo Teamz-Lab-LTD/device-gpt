@@ -156,6 +156,18 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             // Initialize automatic background notification scheduling for retention
             // OneSignal handles promotional notifications from backend
             RetentionNotificationManager.initializeRetentionNotifications(this)
+
+            // Warm up on-device AI availability so the first AI chooser open already
+            // knows whether to surface the Private AI row. Non-blocking — any failure
+            // is recorded and the chooser falls back silently to the cloud-AI flow.
+            CoroutineScope(Dispatchers.IO).launch {
+                runCatching {
+                    com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability
+                        .refreshStatus(this@MyApplication)
+                }.onFailure {
+                    AppLog.w("MyApplication", "On-device AI probe failed", it)
+                }
+            }
         } catch (e: Exception) {
             // Critical initialization failure - app cannot continue
             ErrorHandler.handleFatalError(
