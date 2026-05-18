@@ -1,67 +1,63 @@
-🔍 DeviceGPT is the AI-powered phone health check app for Android. One scan turns battery health, phone diagnostics, hardware test, mic/camera privacy, spyware detection, and network speed into a plain-English AI report — with optional Ask AI via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms.
+🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
 
-No confusing graphs. No root. Scan → AI explains → you fix.
+After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
 
-🤖 How AI Makes the Difference
+🚀 WiFi & Network Speed Test
+• WiFi speed test — download, upload, ping, jitter
+• Network speed test for cellular + Wi-Fi
+• Real-time signal strength and bandwidth
+• Latency and packet loss for gamers
 
-Other battery health apps show numbers. DeviceGPT explains them. After every scan, tap Ask AI and get instant fixes in plain English:
-
-“Battery is overheating — reduce background apps.”
-“Mic was used last night — revoke app permissions.”
-“Wi-Fi jitter may affect gaming — restart router.”
-
-We prefill a smart, context-aware prompt for your AI of choice. Your data stays on-device unless you share.
-
-🔋 AI Battery Health — What Android Doesn’t Show You
-
-Android has no built-in battery health screen. DeviceGPT fills that gap with AI-powered analysis:
-
-• Real battery health status, temperature, and degradation signals
-• Power consumption in watts — per app, per hour (real physics: P = V × I)
+🔋 AI Battery Health — What Android Doesn't Show
+Android has no built-in battery health screen. DeviceGPT fills the gap:
+• Battery health status, temperature, degradation signals
+• Power draw in watts per app, per hour (real physics: P = V × I)
 • Charging behavior and cycle tracking
 • Which apps drain your battery the most
-• Component isolation testing: camera, display, CPU, network power
+• Battery tester for fast vs slow charge comparison
 • Export battery data to CSV or Ask AI for explanation
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-
-A three-section security audit that scores your device 0–100:
-
-• App Privacy Risk (35%): keylogger detection, screen recording apps, hidden apps, offline malware scanning, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection (DPI), ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
-
-Asked “is my phone hacked?” The Zero Trust Dashboard gives you a scored, structured answer.
-
-📱 Phone Health Check — AI-Powered, One Scan
-
-• Phone health score covering battery, storage, RAM, temperature, and sensors
-• Phone hardware test: touchscreen, speakers, mic, camera, GPS, accelerometer
+🎤 Mic Test, Hardware Test, Sensor Test
+• Mic test — input level, noise floor, instant playback
+• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
 • FPS monitoring and frame drop detection (Choreographer API)
 • Touch latency measurement
+• Charging test — speed, temperature, current draw
+
+🛡️ Zero Trust Dashboard — Phone Security Audit
+A three-section audit scoring your device 0–100:
+• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
+• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
+• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+
+Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+
+🤖 AI Explains Your Phone in Plain English
+Other diagnostics apps show numbers. DeviceGPT explains them:
+"Battery is overheating — close background apps."
+"Mic was used last night — revoke app permissions."
+"Wi-Fi jitter may affect gaming — restart router."
+We prefill a smart, context-aware prompt for your AI of choice.
+
+📱 Phone Health Check — One Scan
+• Phone health score covering battery, storage, RAM, temperature, sensors
 • Device info: specs, system details, build info
-• Certified phone report with resale value and shareable verification code
-• Cryptographically signed reports (RSA, Android KeyStore)
+• Component isolation testing for camera, display, CPU, network power
 
-📊 Phone Condition Check & Resale Value
-
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed with tamper detection. Verified reports with a shareable code.
+📊 Phone Condition Check & Resale Report
+Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
 
 🏆 Leaderboard & Achievements
-
-• 10 global leaderboard categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
+• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 • Trust badges: Bronze, Silver, Gold
-• Power achievements: monitoring streaks, research milestones
 • Sleep/wake tracking for overnight battery analysis
 
 🚀 Also Includes
+• Lock screen widget (Android 13+): health score, battery, temperature
+• 15+ languages
+• Works offline for most scans (Ask AI needs network)
+• No signup. No root.
 
-• Wi-Fi speed test and signal strength
-• Lock screen widget (Android 13+): health score, battery, temperature at a glance
-• 15+ languages supported
-• Works offline (most features)
-• No account required
+💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
 
-DeviceGPT Premium removes ads and supports ongoing development.
-
-Download DeviceGPT — the AI phone health check app. Other apps show data. DeviceGPT explains it.
+📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
