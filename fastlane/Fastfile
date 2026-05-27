@@ -80,6 +80,20 @@ platform :android do
     )
   end
 
+  desc "Full production release — same as production_full but submits as COMPLETED (sends for Play review immediately). Use when ready to actually ship."
+  lane :production_release do
+    build
+    upload_to_play_store(
+      track: "production", aab: AAB_PATH, mapping: MAPPING_PATH,
+      release_status: "completed",
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+      skip_upload_changelogs: false,
+      validate_only: false
+    )
+  end
+
   desc "Validate Play Store credentials"
   lane :validate do
     validate_play_store_json_key

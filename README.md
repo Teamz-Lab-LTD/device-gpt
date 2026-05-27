@@ -404,6 +404,8 @@ All sensitive configuration is managed via `local_config.properties` (not commit
 
 **Note**: If `local_config.properties` is missing, the app uses Google test ad IDs (debug builds only).
 
+Native ad request throttling is controlled by Firebase Remote Config defaults in `RemoteConfigUtils.kt`: `native_ad_target_count=1`, `native_ad_max_retries=0` (explicitly disables retries), `native_ad_request_interval_ms=60000`, and `native_ad_max_requests_per_session=5`.
+
 #### 3. OAuth Client ID Configuration (Optional)
 
 **Required for**: Google Sign-In (leaderboard feature)

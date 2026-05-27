@@ -261,10 +261,11 @@ object RemoteConfigUtils {
         return if (value == 0L) 3 else value.toInt()
     }
 
-    /** Max retry attempts when a native ad fails to load. Default: 1 */
+    /** Max retry attempts when a native ad fails to load. Default: 0 (no retries). */
     fun getNativeAdMaxRetries(): Int {
         val value = remoteConfig.getLong("native_ad_max_retries")
-        return if (value == 0L) 1 else value.toInt()
+        // Keep 0 as a valid value so retries can be explicitly disabled.
+        return value.toInt()
     }
 
     /** Minimum ms between native ad requests (throttling). Default: 10000 */

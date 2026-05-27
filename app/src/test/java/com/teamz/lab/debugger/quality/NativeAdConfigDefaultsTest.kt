@@ -19,8 +19,28 @@ import java.io.File
  * without a paired commit message explaining why, this test fails CI.
  */
 class NativeAdConfigDefaultsTest {
+    private fun findRemoteConfigUtilsFile(): File {
+        val projectRoot = System.getProperty("user.dir") ?: "."
+        val absoluteProjectRoot = File(projectRoot).absoluteFile
+        val candidatePaths = listOf(
+            File(projectRoot, "app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File(projectRoot, "src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File("app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File("src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File("../app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File("../../app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"),
+            File(absoluteProjectRoot, "app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt")
+        )
+        return candidatePaths.firstOrNull { it.exists() && it.isFile }
+            ?: error(
+                "RemoteConfigUtils.kt not found. Tried: ${
+                    candidatePaths.joinToString { it.absolutePath }
+                }"
+            )
+    }
+
     private val src by lazy {
-        File("src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt").readText()
+        findRemoteConfigUtilsFile().readText()
     }
 
     @Test

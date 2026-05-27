@@ -63,6 +63,14 @@ Upload AAB to production (draft, 10% rollout)
 
 Full production release — AAB + all 17 locales' metadata + screenshots + featureGraphic + changelogs. Submits to Production track as draft (no rollout) for manual review/release in Play Console.
 
+### android production_release
+
+```sh
+[bundle exec] fastlane android production_release
+```
+
+Full production release — same as production_full but submits as COMPLETED (sends for Play review immediately). Use when ready to actually ship.
+
 ### android validate
 
 ```sh
