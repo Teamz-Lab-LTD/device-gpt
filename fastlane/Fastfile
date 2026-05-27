@@ -66,6 +66,20 @@ platform :android do
     )
   end
 
+  desc "Full production release — AAB + all 17 locales' metadata + screenshots + featureGraphic + changelogs. Submits to Production track as draft (no rollout) for manual review/release in Play Console."
+  lane :production_full do
+    build
+    upload_to_play_store(
+      track: "production", aab: AAB_PATH, mapping: MAPPING_PATH,
+      release_status: "draft",
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+      skip_upload_changelogs: false,
+      validate_only: false
+    )
+  end
+
   desc "Validate Play Store credentials"
   lane :validate do
     validate_play_store_json_key

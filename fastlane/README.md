@@ -55,6 +55,14 @@ Promote internal build to beta (no rebuild)
 
 Upload AAB to production (draft, 10% rollout)
 
+### android production_full
+
+```sh
+[bundle exec] fastlane android production_full
+```
+
+Full production release — AAB + all 17 locales' metadata + screenshots + featureGraphic + changelogs. Submits to Production track as draft (no rollout) for manual review/release in Play Console.
+
 ### android validate
 
 ```sh

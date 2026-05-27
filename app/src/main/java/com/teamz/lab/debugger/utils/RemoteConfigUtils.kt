@@ -59,10 +59,12 @@ object RemoteConfigUtils {
                 "paywall_repeat_interval_days" to 7L,       // Days between paywall re-shows for non-premium users
                 "enable_review_first_strategy" to true,      // Master toggle for review-first-then-paywall flow
                 // Native ad loading configuration
-                "native_ad_target_count" to 3L,              // How many native ads to load per session (lower = fewer wasted requests)
-                "native_ad_max_retries" to 1L,               // Max retry attempts on ad load failure
-                "native_ad_request_interval_ms" to 10000L,   // Minimum ms between ad requests (throttling)
-                "native_ad_max_requests_per_session" to 20L  // Total ad request budget per session
+                // Tuned 2026-05-27: prior defaults (3/1/10s/20) hit 69798 req / 200 shown = 0.29% show rate
+                // which throttles AdMob match rate. Cut to one-ad-at-a-time + long throttle + tight budget.
+                "native_ad_target_count" to 1L,              // Cache only 1 ad at a time (was 3)
+                "native_ad_max_retries" to 0L,               // No retry on fail; low fill = retries burn more (was 1)
+                "native_ad_request_interval_ms" to 60000L,   // 60s between requests (was 10s)
+                "native_ad_max_requests_per_session" to 5L   // 5 requests/session cap (was 20)
             )
         )
         

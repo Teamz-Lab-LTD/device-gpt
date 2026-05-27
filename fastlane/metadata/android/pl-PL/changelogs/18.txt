@@ -1,0 +1,7 @@
+• New polished screenshots & feature graphic — see what DeviceGPT actually measures
+• Battery health in watts, not just %
+• Live FPS + frame drop for gamers
+• Zero Trust dashboard: "Is my phone hacked?" — real answer
+• Verified Device Report: sell your phone with cryptographic proof
+• AI explainer now defaults to on-device Gemini Nano (private)
+• Stability fixes & faster scan times
