@@ -1,0 +1,257 @@
+{
+  "schema_version": 2,
+  "captured_at": "2026-05-27",
+  "app": "com.teamz.lab.debugger",
+  "app_display_name": "DeviceGPT",
+  "build_type": "debug",
+  "device_emulator": "Pixel 9 Pro XL AVD (Android 15, 1344x2992)",
+  "premium_state_during_capture": "FORCED Premium Active — ads suppressed via temporary RevenueCatManager.kt edit. Edit reverted after capture session.",
+  "total_screenshots": 16,
+  "structure": "by-feature/{NN-feature}/{NN-descriptive-slug}.png",
+  "purpose": "Source material for Play Store screenshot redesign. Each shot is mapped to ASO keyword targets, Play Store slot priority, and suggested headline overlay text.",
+  "play_store_strategy": {
+    "current_problem": "Existing screenshots not winning. Listing rewrite shipped 2026-05-19, awaiting Play re-index settle (~14 days). Title misses biggest keyword 'internet speed test' (1.1M Bing/mo).",
+    "biggest_keywords_to_anchor": [
+      {"keyword": "internet speed test", "bing_volume": 1126505, "tier": "1"},
+      {"keyword": "speed test", "bing_volume": 730081, "tier": "1"},
+      {"keyword": "wifi speed test", "bing_volume": 97366, "tier": "1"},
+      {"keyword": "mic test", "bing_volume": 23050, "tier": "2"},
+      {"keyword": "battery health", "bing_volume": 10669, "tier": "1", "trend": "RISING"},
+      {"keyword": "network speed test", "bing_volume": 9784, "tier": "2"},
+      {"keyword": "ai phone", "trend": "RISING", "tier": "2"},
+      {"keyword": "is my phone hacked", "tier": "moat — Zero Trust differentiator"},
+      {"keyword": "phone resale report", "tier": "moat — Verified Report differentiator"}
+    ],
+    "recommended_play_store_order": [
+      "Slot 1: 04-network/01 (Network Privacy Report)  OR  02-battery/01 (7.9W power overview)",
+      "Slot 2: 01-health/01 (Today's Health Score 5/10)",
+      "Slot 3: 02-battery/02 (Component watts breakdown)",
+      "Slot 4: 03-hardware/03 (FPS + Frame Drop — gamer angle)",
+      "Slot 5: 01-health/03 (Privacy Dashboard 60/100 — security angle)",
+      "Slot 6: 05-trust-resale/01 (Generating Verified Report — moat)",
+      "Slot 7: 07-drawer/01 (Widgets + Verified Report + Open Source)",
+      "Slot 8: 06-leaderboard/01 (Social proof — verified by N users)"
+    ]
+  },
+  "categories": {
+    "01-health": {
+      "label": "Phone Health Tab",
+      "asso_role": "Anchors 'phone health check', 'phone diagnostics', 'ai phone'",
+      "screenshots": [
+        {
+          "file": "01-todays-health-score-5of10.png",
+          "shows": "Today's Health Score card (5/10), Streak, Best, Total scans, Scan Device Health button, Get Device Health Report, Verify Someone's Report, Cert/AI/Send action FABs",
+          "best_for_aso": true,
+          "headline_overlay": "Your phone, scored 0-10 every day",
+          "keyword_anchor": "phone health check, phone diagnostics, ai phone",
+          "priority": "HIGH"
+        },
+        {
+          "file": "02-memory-storage-battery-optimization.png",
+          "shows": "Memory Usage 43% + Free RAM action, Storage Cleanup 83% + Clean Storage, Battery Optimization (Status, Charge Type, Temp 25C, Battery Health 10% — critical visual)",
+          "best_for_aso": true,
+          "headline_overlay": "Free RAM, Clean Storage, Save Battery — in one tap",
+          "keyword_anchor": "phone cleaner alternative, ram booster, storage cleanup",
+          "priority": "MEDIUM",
+          "caveat": "Battery Health '10%' in red could look scary — emulator showing real value, fine for marketing"
+        },
+        {
+          "file": "03-privacy-dashboard-60of100.png",
+          "shows": "Privacy Dashboard score 60/100, Threats Today (screen recording / USB debugging), Today's Tasks (Review app permissions, Free up storage, Restart phone)",
+          "best_for_aso": true,
+          "headline_overlay": "Real-time privacy threats, scored daily",
+          "keyword_anchor": "is my phone hacked, privacy scan, spyware detector",
+          "priority": "HIGH — moat shot"
+        },
+        {
+          "file": "04-smart-recommendations-card.png",
+          "shows": "Smart Recommendations: security system off (risky), Contact customer support, App install caution, Battery + storage focus, Restart daily, Don't install too many apps",
+          "best_for_aso": false,
+          "headline_overlay": "AI tells you exactly what to fix",
+          "keyword_anchor": "ai phone advice, phone tips",
+          "priority": "MEDIUM"
+        }
+      ]
+    },
+    "02-battery": {
+      "label": "Power / Battery Tab",
+      "asso_role": "Anchors 'battery health' (RISING 10.6k/mo), 'battery tester', 'app battery drain'",
+      "screenshots": [
+        {
+          "file": "01-power-consumption-7p9w-overview.png",
+          "shows": "Power Consumption card — current 7.9W, 'High Usage - Battery Draining Fast' warning, App Power Monitor (Grant Permission CTA), Power Statistics section start",
+          "best_for_aso": true,
+          "headline_overlay": "Your battery in WATTS, not just percent",
+          "keyword_anchor": "battery health, battery tester, watts per app",
+          "priority": "HIGH — Slot 1 candidate"
+        },
+        {
+          "file": "02-component-breakdown-watts-per-hour.png",
+          "shows": "Highest Usage 7.9W, Component Breakdown (Battery 4.5W/-9%/hr, Display 2.0W/-4%/hr, Cellular 0.8W/-1.6%/hr, RAM 0.5W/-1.1%/hr), Current Level: High",
+          "best_for_aso": true,
+          "headline_overlay": "Exactly which component drains your phone",
+          "keyword_anchor": "battery drain, app power usage",
+          "priority": "HIGH — DIFFERENTIATOR vs competitors who only show %"
+        },
+        {
+          "file": "03-nfc-cpu-camera-audio-gps-bluetooth-watts.png",
+          "shows": "Per-component watt readouts: NFC, CPU (4/4 cores), Camera, Audio (perm req), GPS (perm req), Bluetooth (perm req) — plus 'How Much Battery Does Your Camera Use?' test",
+          "best_for_aso": true,
+          "headline_overlay": "12+ components measured in real time",
+          "keyword_anchor": "phone hardware test, battery component",
+          "priority": "MEDIUM"
+        },
+        {
+          "file": "04-brightness-level-test.png",
+          "shows": "'Find Your Perfect Brightness Level' test (Fast Sweep + Full Sweep), Permission Required for Modify System Settings, 'How Fast Processing Drains Your Battery' card start",
+          "best_for_aso": false,
+          "headline_overlay": "Test brightness levels to save battery",
+          "keyword_anchor": "screen brightness battery saver",
+          "priority": "LOW"
+        }
+      ]
+    },
+    "03-hardware": {
+      "label": "Device Info / Hardware Tab",
+      "asso_role": "Anchors 'phone hardware test', 'phone specs', 'mic test', 'sensor test', 'fps counter'",
+      "screenshots": [
+        {
+          "file": "01-security-dashboard-80of100-plus-specs.png",
+          "shows": "Security Dashboard B+ (80/100), search box, expandable cards: Device Specifications, Device Spyware & Tracking Test, Processor & Performance, Graphics & GPU Info, Battery & Charging",
+          "best_for_aso": true,
+          "headline_overlay": "Every spec + spyware check in one place",
+          "keyword_anchor": "device info, phone specs, spyware detector",
+          "priority": "HIGH",
+          "caveat": "Bottom Cert/AI/Send buttons partly cut off — crop carefully"
+        },
+        {
+          "file": "02-sim-display-sensors-system-logs.png",
+          "shows": "SIM & Mobile Network, Screen & Display (resolution 1344x2992), Text & Font Settings (scale x1.15), Sensors Available (Goldfish accelerometer etc), Recent System Logs, Date Time & Auto Sync",
+          "best_for_aso": false,
+          "headline_overlay": "Sensors, display, logs — all visible",
+          "keyword_anchor": "sensor test, system info",
+          "priority": "MEDIUM"
+        },
+        {
+          "file": "03-temp-memory-fps-frame-drop-root.png",
+          "shows": "Audio formats, Temperature 25C, Memory & Storage 1262/2975 MB, Security & Privacy (SELinux), Real-time FPS 60, Graphics & Frame Drop Analysis (Smoothness 1 drop 0.3% stutter), Device Root Status: No",
+          "best_for_aso": true,
+          "headline_overlay": "Live FPS + frame drop for gamers",
+          "keyword_anchor": "fps counter, gamer phone, frame drop monitor",
+          "priority": "HIGH — gamer angle"
+        }
+      ]
+    },
+    "04-network": {
+      "label": "Network Info Tab",
+      "asso_role": "Anchors 'wifi speed test' (97k/mo), 'internet speed test' (1.1M/mo!), 'network privacy'",
+      "screenshots": [
+        {
+          "file": "01-network-privacy-report-Bplus-plus-reachability.png",
+          "shows": "Network Privacy Report grade B+ (80/100, Threat Low), Network Reachability card, search box, Network Usage Breakdown (Loading), ISP Details (Loading), ISP Streaming/CDN Servers (Loading)",
+          "best_for_aso": true,
+          "headline_overlay": "Network privacy graded + speed tested",
+          "keyword_anchor": "wifi speed test, network privacy, dns security",
+          "priority": "HIGH — Slot 1 candidate, but Loading states distract — wait for data populated before re-capture, OR crop only top 2 cards"
+        }
+      ]
+    },
+    "05-trust-resale": {
+      "label": "Verified Device Reports (signature feature)",
+      "asso_role": "Anchors 'phone resale report', 'sell phone', 'verify used phone' — UNIQUE moat vs competitors",
+      "screenshots": [
+        {
+          "file": "01-generating-verified-report-dialog.png",
+          "shows": "Modal dialog: 'Generating Verified Report — We're creating a snapshot of your phone's health and safety that you can share with others. Collecting device data and signing...'",
+          "best_for_aso": true,
+          "headline_overlay": "Sell your phone with cryptographic proof",
+          "keyword_anchor": "phone resale report, sell phone, device certificate",
+          "priority": "HIGH — moat shot, Play Store slot 5-6"
+        },
+        {
+          "file": "02-verify-someone-report-input-dialog.png",
+          "shows": "Modal dialog: 'Verify a Report — Someone sent you a code? Enter it here to see their device report and confirm it's real. When to use this: Support asked you to send a code / Buying used phone / Someone shared their code'",
+          "best_for_aso": true,
+          "headline_overlay": "Buying a used phone? Verify the seller's report.",
+          "keyword_anchor": "verify used phone, used phone check",
+          "priority": "HIGH — buyer-side moat shot"
+        }
+      ]
+    },
+    "06-leaderboard": {
+      "label": "Leaderboard Tab",
+      "asso_role": "Social proof — Verified by N users counts",
+      "screenshots": [
+        {
+          "file": "01-device-rankings-best-device-category.png",
+          "shows": "Leaderboard top — Best Device + Cool Phone category chips, Search, ranked devices: #1 Pixel 8a (31/100, 16 users), #2 Xiaomi 2412DPC0AG (28/100, 10 users), #3 Samsung SM-A546, #4 SM-G990, #5 SM-A736",
+          "best_for_aso": true,
+          "headline_overlay": "See how your phone ranks vs the world",
+          "keyword_anchor": "phone benchmark, device ranking, phone comparison",
+          "priority": "MEDIUM"
+        }
+      ]
+    },
+    "07-drawer": {
+      "label": "Navigation Drawer (side menu)",
+      "asso_role": "Widget + Verified Report + Open Source — trust signals",
+      "screenshots": [
+        {
+          "file": "01-widget-verified-report-share-github.png",
+          "shows": "Drawer scrolled: App Notifications toggle, Widget section (Add to Home Screen / Lock Screen), Leaderboard (Anonymous Account, Link Gmail Account CTA), More Apps banner (Ad), Help us grow, Generate Verified Report, Verify a Report, Share with Friends, Open Source (View Source on GitHub)",
+          "best_for_aso": true,
+          "headline_overlay": "Widgets, sharing, open source — all built in",
+          "keyword_anchor": "lock screen widget, home screen widget, open source phone app",
+          "priority": "MEDIUM"
+        }
+      ]
+    }
+  },
+  "removed_screenshots_reasons": [
+    "02_leaderboard_scrolled1: redundant — same content as 01, just scrolled down",
+    "03_leaderboard_scrolled2: redundant — more device list, no new info",
+    "16_network_info_scrolled: all 'Loading...' placeholders — emulator network too slow",
+    "17_network_info_bottom: all 'Loading...' placeholders",
+    "18_drawer_top: drawer overlay had Network Info tab leaking through background, visually confusing",
+    "20_drawer_bottom: redundant with 19_drawer_mid (now renamed to 07-drawer/01)",
+    "21_realtime_monitor: tap target wrong — got drawer view, not actual Realtime Monitor screen",
+    "24_theme_picker: low-value tiny dropdown menu",
+    "25_settings_top: WRONG CAPTURE — Android system Settings opened, not in-app",
+    "26_settings_scrolled: WRONG CAPTURE — Android system Settings continued",
+    "27_developer_options: tap missed — captured Leaderboard again"
+  ],
+  "missing_to_capture_later": [
+    {
+      "name": "AI Assistant / Ask AI 9-platform chooser dialog",
+      "why_important": "Showcases ChatGPT/Gemini/Claude/DeepSeek/Perplexity/Copilot/Grok/You.com/Replika + on-device Gemini Nano — core differentiator + AI keyword anchor",
+      "how_to_capture": "Health tab > tap 'AI' FAB at bottom > capture the chooser dialog",
+      "priority": "HIGH — needed for AI moat shot, Play Store slot 4 candidate"
+    },
+    {
+      "name": "Onboarding / first-launch flow",
+      "why_important": "First-impression screens often used for Play Store slot 1",
+      "how_to_capture": "adb shell pm clear com.teamz.lab.debugger && relaunch — capture each onboarding step",
+      "priority": "MEDIUM"
+    },
+    {
+      "name": "Network speed test running (actual numbers, not Loading)",
+      "why_important": "Anchor for 'wifi speed test' keyword needs live values not 'Loading...'",
+      "how_to_capture": "Open Network tab > tap WiFi Speed Test > wait for completion (real WiFi needed, not emulator)",
+      "priority": "HIGH — re-capture on real device with WiFi"
+    },
+    {
+      "name": "Premium / Paywall dialog",
+      "why_important": "Conversion-funnel reference",
+      "how_to_capture": "Build with DEBUG_FORCE_FREE_USER=true, navigate to any premium feature, paywall shows",
+      "priority": "LOW — only for paid-conversion analysis"
+    }
+  ],
+  "next_steps_for_user": [
+    "1. Open screenshots/by-feature/ in Finder — browse by feature category",
+    "2. For each HIGH priority shot, crop to Play Store spec: 1080x1920 (portrait) or 1440x2560 (high-res)",
+    "3. Add bold headline text overlay matching 'headline_overlay' field per shot",
+    "4. Order Play Store slots per 'recommended_play_store_order' section",
+    "5. Re-capture the 'missing_to_capture_later' items on a real device with WiFi (for live network numbers)",
+    "6. A/B test in Play Console Listing Experiments before global push"
+  ]
+}
