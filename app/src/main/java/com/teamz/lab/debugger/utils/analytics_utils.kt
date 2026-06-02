@@ -232,6 +232,10 @@ enum class AnalyticsEvent(val eventName: String) {
     AchievementUnlocked("achievement_unlocked"),
     DailyStreakMilestone("daily_streak_milestone"),
     SocialProofShown("social_proof_shown"),
+    // Engagement events — same names as team_mvp_kit (Flutter) for cross-app analytics
+    AppInstalled("app_installed"),
+    UserEngagementSession("user_engagement_session"),
+    UserEngagementSignificantAction("user_engagement_significant_action"),
     // Power consumption events
     PowerTabViewed("power_tab_viewed"),
     PowerExperimentStarted("power_experiment_started"),

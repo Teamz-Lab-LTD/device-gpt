@@ -32,6 +32,7 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AppLog
 import com.teamz.lab.debugger.utils.AppOpenAdManager
 import com.teamz.lab.debugger.utils.DeviceSleepTracker
+import com.teamz.lab.debugger.utils.EngagementTracker
 import com.teamz.lab.debugger.utils.ErrorHandler
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.ReferralManager
@@ -104,6 +105,7 @@ class MainActivity : ComponentActivity() {
                 ReferralManager.checkInstallReferrer(this@MainActivity)
                 ReferralManager.isAdFreeFromReferrals(this@MainActivity)
                 ReferralManager.onReferredUserAppOpen(this@MainActivity)
+                EngagementTracker.init(this@MainActivity)
 
                 DeviceSleepTracker.initializeState(this@MainActivity)
 
