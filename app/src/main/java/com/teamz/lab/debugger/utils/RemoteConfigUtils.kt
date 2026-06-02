@@ -107,8 +107,8 @@ object RemoteConfigUtils {
                 "native_ad_request_interval_ms" to 60000L,   // 60s between requests (was 10s)
                 "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
                 "native_ad_ttl_ms" to 1_680_000L,            // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
-                "app_open_ad_min_session" to 3L,             // Sessions 1-2 ad-free — kills 37% first-impression uninstall
-                "ad_suppressed_country_codes" to "IR,BD,PK"  // No-fill geos — hide ad slots instead of empty containers
+                "app_open_ad_min_session" to 1L,             // Default 1 = NO session gate (ads from session 1). Set to 3+ via Remote Config when ready to trade short-term ad revenue for retention.
+                "ad_suppressed_country_codes" to ""          // Empty by default — geo suppression OFF. Set via Remote Config (e.g. "IR" or "IR,BD,PK") only when you decide to suppress specific markets.
             )
         )
         
@@ -360,23 +360,25 @@ object RemoteConfigUtils {
     }
 
     /**
-     * Minimum session count before app-open interstitials are shown. First-impression
-     * uninstall is 37% in the lifetime data — most of that fires before the user has
-     * seen the AI value prop. Default: 3 (sessions 1, 2 are ad-free).
+     * Minimum session count before app-open interstitials are shown.
+     * Default: 1 (no session gate, ads from session 1 — preserves existing revenue).
+     * Set to 3+ via Remote Config when ready to trade short-term ad revenue for
+     * lower first-session uninstall (lifetime data shows 37% same-session churn).
      */
     fun getAppOpenAdMinSession(): Int {
         val value = remoteConfig.getLong("app_open_ad_min_session")
-        return if (value <= 0L) 3 else value.toInt()
+        return if (value <= 0L) 1 else value.toInt()
     }
 
     /**
      * Comma-separated ISO country codes where ad requests are suppressed entirely.
-     * Default: IR,BD,PK — these markets show 10:1 ad_failed:ad_impression and zero
-     * IAP revenue (Iran sanctioned, BD/PK very low fill). Empty/missing = no suppression.
+     * Default: "" (empty — suppression OFF, all geos see ads).
+     * Set via Remote Config (e.g. "IR" or "IR,BD,PK") only when telemetry justifies
+     * cutting a specific market.
      */
     fun getAdSuppressedCountryCodes(): Set<String> {
         val raw = remoteConfig.getString("ad_suppressed_country_codes")
-        val effective = if (raw.isBlank()) "IR,BD,PK" else raw
-        return effective.split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }.toSet()
+        if (raw.isBlank()) return emptySet()
+        return raw.split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }.toSet()
     }
 }

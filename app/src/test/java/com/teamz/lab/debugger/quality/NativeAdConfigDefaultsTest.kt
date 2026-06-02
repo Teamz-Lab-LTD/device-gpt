@@ -98,26 +98,21 @@ class NativeAdConfigDefaultsTest {
     }
 
     @Test
-    fun `app open ad min session set to 3 by default`() {
-        // 2026-06-03: first-impression uninstall is 37% per lifetime GA4 audit; sessions
-        // 1-2 are now ad-free. If this ever ships at 0 or 1, it means somebody disabled
-        // the gate without removing the test — block.
+    fun `app open ad min session key present (default revenue-safe)`() {
+        // 2026-06-03: key MUST exist. Default value is 1 (revenue-safe — no session gate).
+        // User decides via Remote Config when ready to trade some ad revenue for retention.
         val match = Regex("\"app_open_ad_min_session\" to (\\d+)L").find(src)
-        assertTrue("app_open_ad_min_session entry missing — Tier 1 retention gate broken", match != null)
+        assertTrue("app_open_ad_min_session entry missing", match != null)
         val n = match!!.groupValues[1].toInt()
-        assertTrue("app_open_ad_min_session must be ≥ 2 (was set to 3 by Tier 1). Was $n.", n >= 2)
+        assertTrue("app_open_ad_min_session must be >= 1 (1 = no gate, revenue-safe). Was $n.", n >= 1)
     }
 
     @Test
-    fun `ad suppression list contains zero-fill geos`() {
-        // 2026-06-03: IR/BD/PK contribute ~54% of installs but ~0% of revenue.
-        // Removing them avoids the "broken app" signal from empty ad slots.
-        // RC-driven so we can rebalance without a release, but the default must include
-        // at least these three.
+    fun `ad suppression list key present (default empty - revenue-safe)`() {
+        // 2026-06-03: key MUST exist so RC can flip it on. Default is empty string —
+        // suppression OFF — so we don't accidentally cut a paying market.
         val match = Regex("\"ad_suppressed_country_codes\" to \"([^\"]*)\"").find(src)
         assertTrue("ad_suppressed_country_codes entry missing", match != null)
-        val codes = match!!.groupValues[1]
-        assertTrue("ad_suppressed_country_codes default must include IR. Was $codes.", codes.contains("IR"))
-        assertTrue("ad_suppressed_country_codes default must include BD. Was $codes.", codes.contains("BD"))
+        // Empty default is OK — proves the key is wired up but nothing is suppressed.
     }
 }
