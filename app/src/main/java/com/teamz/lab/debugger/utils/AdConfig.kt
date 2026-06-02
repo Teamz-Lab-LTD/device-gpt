@@ -21,7 +21,7 @@ object AdConfig {
      */
     fun getAppOpenAdUnitId(): String {
         return if (BuildConfig.DEBUG) {
-            "ca-app-pub-3940256099942555/9257395921" // Google test ID
+            "ca-app-pub-3940256099942544/9257395921" // Google test ID (corrected: was ...555/, Google's test publisher is ...544/)
         } else {
             BuildConfig.APP_OPEN_AD_UNIT_ID
         }

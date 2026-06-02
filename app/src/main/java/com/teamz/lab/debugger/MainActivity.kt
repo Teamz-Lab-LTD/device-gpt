@@ -156,6 +156,15 @@ class MainActivity : ComponentActivity() {
                     "monitor_notification_opened"
                 )
             }
+            "test_charge_disconnect" -> {
+                // Debug-only hook for end-to-end verification via:
+                //   adb shell am start -n com.teamz.lab.debugger/.MainActivity --es from test_charge_disconnect
+                // Triggers the SAME code path that ACTION_POWER_DISCONNECTED uses,
+                // bypassing the need for a real cable event. Only fires in debug builds.
+                if (com.teamz.lab.debugger.BuildConfig.DEBUG) {
+                    com.teamz.lab.debugger.utils.ChargeCycleTracker.onPowerDisconnected(this)
+                }
+            }
         }
         // Clear the extra so a configuration change doesn't double-log.
         intent.removeExtra("from")

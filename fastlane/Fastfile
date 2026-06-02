@@ -20,8 +20,18 @@ PROMPT
 platform :android do
   # --- Build + upload lanes --------------------------------------------------
 
+  desc "Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, etc)."
+  lane :preflight do
+    gradle(
+      task: "test",
+      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest*"
+    )
+    UI.success "✅ Ad-pipeline safety gate passed. No known regression patterns detected."
+  end
+
   desc "Build release AAB"
   lane :build do
+    preflight
     gradle(task: "clean")
     gradle(task: "bundle", build_type: "Release")
   end

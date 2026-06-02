@@ -38,13 +38,27 @@ object RemoteConfigUtils {
     }
 
     /**
-     * Capture device country once on app init. Called from RemoteConfigUtils.initWithContext()
-     * or Application.onCreate (whichever runs first). Reads from Locale.getDefault().country
-     * which is the system locale's region — most reliable signal for ad-fill behavior.
+     * Capture device country once on app init. Reads from multiple sources in
+     * order of reliability:
+     *   1. TelephonyManager.networkCountryIso (SIM's home network — most accurate)
+     *   2. TelephonyManager.simCountryIso (fallback for users on roaming)
+     *   3. Locale.getDefault().country (last resort — many users have en-US system
+     *      locale even when physically abroad, so geo suppression would miss them)
+     * Required because IR/BD/PK users frequently have en-US set as system locale.
      */
     fun captureCountryCode(context: android.content.Context) {
         val code = try {
-            java.util.Locale.getDefault().country.uppercase()
+            val tm = context.getSystemService(android.content.Context.TELEPHONY_SERVICE)
+                    as? android.telephony.TelephonyManager
+            val networkIso = tm?.networkCountryIso?.uppercase().orEmpty()
+            val simIso = tm?.simCountryIso?.uppercase().orEmpty()
+            val localeIso = java.util.Locale.getDefault().country.uppercase()
+            when {
+                networkIso.isNotBlank() -> networkIso
+                simIso.isNotBlank() -> simIso
+                localeIso.isNotBlank() -> localeIso
+                else -> ""
+            }
         } catch (_: Exception) { "" }
         cachedCountryCode = code
         AppLog.d("RemoteConfigUtils", "captureCountryCode() - country=$code, suppressed=${isCountrySuppressed()}")
