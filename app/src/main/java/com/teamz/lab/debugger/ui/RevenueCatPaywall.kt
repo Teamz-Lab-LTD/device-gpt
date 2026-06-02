@@ -169,6 +169,11 @@ fun RevenueCatPaywall(
                                     "product_ids" to storeTransaction.productIds.joinToString(",")
                                 )
                             )
+                            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                                context,
+                                com.teamz.lab.debugger.utils.SignificantAction.PREMIUM_PURCHASED,
+                                mapOf("product_id" to productId, "source" to analyticsSource)
+                            )
                             onDismiss()
                             Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
                         }

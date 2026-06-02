@@ -73,6 +73,11 @@ fun GenerateReportDialog(
                     AnalyticsEvent.VerifiedReportUploaded,
                     mapOf("report_id" to generated.reportId)
                 )
+                com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                    context,
+                    com.teamz.lab.debugger.utils.SignificantAction.REPORT_GENERATED,
+                    mapOf("report_id" to generated.reportId)
+                )
                 onReportReady(generated)
             } else {
                 error = "Report generated but upload failed. You can still share the code."

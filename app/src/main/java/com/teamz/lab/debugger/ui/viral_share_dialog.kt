@@ -229,6 +229,11 @@ fun ViralShareDialog(
                         containerColor = Color(0xFF25D366),
                         contentColor = Color.White,
                         onClick = {
+                            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                                context,
+                                com.teamz.lab.debugger.utils.SignificantAction.REFERRAL_INVITE_SENT,
+                                mapOf("channel" to "whatsapp")
+                            )
                             shareToWhatsApp(context, finalShareText, referralLink, referralCode)
                             onDismiss()
                         }
@@ -243,6 +248,11 @@ fun ViralShareDialog(
                         containerColor = Color(0xFF0088CC),
                         contentColor = Color.White,
                         onClick = {
+                            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                                context,
+                                com.teamz.lab.debugger.utils.SignificantAction.REFERRAL_INVITE_SENT,
+                                mapOf("channel" to "telegram")
+                            )
                             shareToTelegram(context, finalShareText, referralLink, referralCode)
                             onDismiss()
                         }
@@ -257,6 +267,11 @@ fun ViralShareDialog(
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary,
                         onClick = {
+                            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                                context,
+                                com.teamz.lab.debugger.utils.SignificantAction.REFERRAL_INVITE_SENT,
+                                mapOf("channel" to "sms")
+                            )
                             shareToSMS(context, finalShareText, referralLink, referralCode)
                             onDismiss()
                         }
@@ -271,6 +286,11 @@ fun ViralShareDialog(
                         containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onTertiary,
                         onClick = {
+                            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                                context,
+                                com.teamz.lab.debugger.utils.SignificantAction.REFERRAL_INVITE_SENT,
+                                mapOf("channel" to "email")
+                            )
                             shareToEmail(context, finalShareText, referralLink, referralCode)
                             onDismiss()
                         }

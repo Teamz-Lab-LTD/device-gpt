@@ -244,6 +244,11 @@ fun HealthSection(
                         "streak" to HealthScoreUtils.getDailyStreak(context),
                         "best_score" to HealthScoreUtils.getBestScore(context)
                     ))
+                    com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                        context,
+                        com.teamz.lab.debugger.utils.SignificantAction.SCAN_COMPLETED,
+                        mapOf("health_score" to newHealthScore)
+                    )
                     
                     // Track meaningful interaction for review prompt (after positive experience)
                     if (context is android.app.Activity) {

@@ -72,6 +72,11 @@ fun ZeroTrustDashboard(
                 AnalyticsEvent.ZeroTrustScanCompleted,
                 mapOf("score" to result.compositeScore, "grade" to result.compositeGrade)
             )
+            com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                context,
+                com.teamz.lab.debugger.utils.SignificantAction.SCAN_COMPLETED,
+                mapOf("scan_type" to "zero_trust", "score" to result.compositeScore)
+            )
         } catch (_: Exception) {
             // Graceful degradation
         } finally {
