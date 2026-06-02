@@ -129,6 +129,7 @@ import com.teamz.lab.debugger.services.setDoNotAskMeAgain
 import com.teamz.lab.debugger.services.setUserFirstTime
 import com.teamz.lab.debugger.services.startSystemMonitorService
 import com.teamz.lab.debugger.ui.AIAssistantDialog
+import com.teamz.lab.debugger.ui.PaywallWithReferralFallback
 import com.teamz.lab.debugger.ui.ai.rememberPrivateAiFlow
 import com.teamz.lab.debugger.ui.DrawerContent
 import com.teamz.lab.debugger.ui.DeviceInfoSection
@@ -1669,7 +1670,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
     // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
     // Full screen composable approach (not dialog)
     // Using reusable composable component
-    RevenueCatPaywall(
+    PaywallWithReferralFallback(
         showPaywall = showRevenueCatPaywall,
         onDismiss = {
             showRevenueCatPaywall = false

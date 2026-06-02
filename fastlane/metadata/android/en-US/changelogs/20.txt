@@ -1,0 +1,5 @@
+• New: invite friends → unlock ad-free premium for free
+• Earn rewards at 1, 3, 5, 10 referrals — track progress in-app
+• Full-screen Share & Earn dialog with WhatsApp/Telegram/SMS/Email
+• Fraud protection: rate limits + behavioral validation built in
+• Stability + UI polish on premium upgrade flow

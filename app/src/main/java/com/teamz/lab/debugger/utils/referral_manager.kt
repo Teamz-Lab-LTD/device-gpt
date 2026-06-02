@@ -30,6 +30,19 @@ object ReferralManager {
     private const val KEY_FIRST_OPEN_TIME = "first_open_time"
     private const val KEY_IS_REFERRER = "is_referrer"
     private const val KEY_INSTALL_REFERRER_CHECKED = "install_referrer_checked"
+    // Fraud-guard keys
+    private const val KEY_REFERRAL_TIMESTAMPS = "referral_timestamps"           // CSV of granted ms
+    private const val KEY_REFEREE_OPEN_COUNT = "referee_open_count"             // app opens since install (this device)
+    private const val KEY_REFEREE_VALIDATED = "referee_validated"               // friend confirmed: opens>=2 + use>=5min
+    private const val KEY_DEVICE_FINGERPRINT = "device_fingerprint"             // hashed Android ID for self-ref check
+    private const val KEY_INSTALL_REFERRER_DEVICE = "install_referrer_device"   // fingerprint of referrer device, if known
+    // Fraud-guard limits
+    private const val MAX_REFERRALS_PER_DAY = 5L
+    private const val MAX_REFERRALS_PER_WEEK = 20L
+    private const val MIN_MS_BETWEEN_REFERRALS = 90_000L                        // 90s — block instant-fire fakes
+    private const val REFEREE_VALIDATION_MIN_OPENS = 2
+    private const val DAY_MS = 24L * 60L * 60L * 1000L
+    private const val WEEK_MS = 7L * DAY_MS
     // Reward keys
     private const val KEY_AD_FREE_UNTIL = "ad_free_until"
     private const val KEY_CURRENT_TIER = "current_tier"
@@ -225,6 +238,140 @@ object ReferralManager {
     fun getReferralCount(context: Context): Int {
         return getPrefs(context).getInt(KEY_REFERRAL_COUNT, 0)
     }
+
+    /**
+     * Validated entry point. Use this from server-side push OR install-referrer trusted source.
+     * Returns: true = counted, false = rejected (fraud guard).
+     * Rejection reasons logged to Firebase as referral_fraud_rejected.
+     */
+    fun incrementReferralCountGuarded(
+        context: Context,
+        refereeFingerprint: String? = null,
+        source: String = "unknown"
+    ): Boolean {
+        val rejection = checkFraudGuards(context, refereeFingerprint)
+        if (rejection != null) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.ReferralInstalled,
+                mapOf(
+                    "fraud_rejected" to true,
+                    "rejection_reason" to rejection,
+                    "source" to source
+                )
+            )
+            Log.w(TAG, "Referral rejected: $rejection (source=$source)")
+            return false
+        }
+        recordReferralTimestamp(context)
+        incrementReferralCount(context)
+        return true
+    }
+
+    private fun checkFraudGuards(context: Context, refereeFingerprint: String?): String? {
+        val now = System.currentTimeMillis()
+        val timestamps = getReferralTimestamps(context)
+
+        // Rule 1: anti-rapid-fire (last grant must be > MIN_MS_BETWEEN_REFERRALS ago)
+        val lastTs = timestamps.maxOrNull() ?: 0L
+        if (lastTs > 0 && (now - lastTs) < MIN_MS_BETWEEN_REFERRALS) {
+            return "rapid_fire"
+        }
+
+        // Rule 2: max per day
+        val perDay = timestamps.count { it > now - DAY_MS }
+        if (perDay >= MAX_REFERRALS_PER_DAY) return "rate_limit_day"
+
+        // Rule 3: max per week
+        val perWeek = timestamps.count { it > now - WEEK_MS }
+        if (perWeek >= MAX_REFERRALS_PER_WEEK) return "rate_limit_week"
+
+        // Rule 4: self-device check (referee fingerprint must differ from referrer device)
+        val myFingerprint = getOrCreateDeviceFingerprint(context)
+        if (refereeFingerprint != null && refereeFingerprint == myFingerprint) {
+            return "self_device"
+        }
+
+        return null
+    }
+
+    private fun getReferralTimestamps(context: Context): List<Long> {
+        val raw = getPrefs(context).getString(KEY_REFERRAL_TIMESTAMPS, "") ?: ""
+        if (raw.isBlank()) return emptyList()
+        return raw.split(",").mapNotNull { it.trim().toLongOrNull() }
+    }
+
+    private fun recordReferralTimestamp(context: Context) {
+        val now = System.currentTimeMillis()
+        val keep = (getReferralTimestamps(context) + now)
+            .filter { it > now - WEEK_MS }   // garbage-collect older than 7d
+            .takeLast(50)                    // hard cap
+        getPrefs(context).edit {
+            putString(KEY_REFERRAL_TIMESTAMPS, keep.joinToString(","))
+        }
+    }
+
+    /**
+     * Stable per-install device fingerprint. Uses Android ID (per-app-signing-key on Android 8+).
+     * Resets only on factory reset or app uninstall+reinstall on Android <8.
+     */
+    fun getOrCreateDeviceFingerprint(context: Context): String {
+        val prefs = getPrefs(context)
+        val cached = prefs.getString(KEY_DEVICE_FINGERPRINT, null)
+        if (cached != null) return cached
+
+        val androidId = try {
+            android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.ANDROID_ID
+            ) ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+        val raw = "$androidId|${android.os.Build.MANUFACTURER}|${android.os.Build.MODEL}|${android.os.Build.FINGERPRINT}"
+        val hash = try {
+            val md = java.security.MessageDigest.getInstance("SHA-256")
+            md.digest(raw.toByteArray()).joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            raw.hashCode().toString(16)
+        }
+        prefs.edit { putString(KEY_DEVICE_FINGERPRINT, hash) }
+        return hash
+    }
+
+    // ── Referee-side behavioral validation ─────────────────────────────
+
+    /**
+     * Call on every cold app-start. Tracks opens on the referred-friend's side.
+     * When opens reach REFEREE_VALIDATION_MIN_OPENS, mark referral as validated
+     * (so a server-side listener can credit the referrer with confidence).
+     */
+    fun onReferredUserAppOpen(context: Context) {
+        val prefs = getPrefs(context)
+        // Only track if this device was referred
+        if (!prefs.contains(KEY_REFERRED_BY)) return
+        if (prefs.getBoolean(KEY_REFEREE_VALIDATED, false)) return
+
+        val count = prefs.getInt(KEY_REFEREE_OPEN_COUNT, 0) + 1
+        prefs.edit { putInt(KEY_REFEREE_OPEN_COUNT, count) }
+
+        if (count >= REFEREE_VALIDATION_MIN_OPENS) {
+            prefs.edit { putBoolean(KEY_REFEREE_VALIDATED, true) }
+            val referrerCode = prefs.getString(KEY_REFERRED_BY, null) ?: return
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.ReferralInstalled,
+                mapOf(
+                    "stage" to "validated",
+                    "referrer_code" to referrerCode,
+                    "referee_fingerprint" to getOrCreateDeviceFingerprint(context),
+                    "open_count" to count
+                )
+            )
+            Log.d(TAG, "Referral validated after $count opens. Server should credit referrer=$referrerCode")
+        }
+    }
+
+    fun isRefereeValidated(context: Context): Boolean =
+        getPrefs(context).getBoolean(KEY_REFEREE_VALIDATED, false)
 
     fun incrementReferralCount(context: Context) {
         val prefs = getPrefs(context)

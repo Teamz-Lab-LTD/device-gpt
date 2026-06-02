@@ -1204,15 +1204,15 @@ fun LeaderboardSection(activity: Activity) {
     
     // Premium Paywall for leaderboard premium gate (outside LazyColumn)
     if (showPremiumPaywall) {
-        RevenueCatPaywall(
+        PaywallWithReferralFallback(
             showPaywall = showPremiumPaywall,
             onDismiss = { showPremiumPaywall = false },
             analyticsSource = "leaderboard_premium_gate"
         )
     }
-    
+
     if (showPremiumPaywallAppPower) {
-        RevenueCatPaywall(
+        PaywallWithReferralFallback(
             showPaywall = showPremiumPaywallAppPower,
             onDismiss = { showPremiumPaywallAppPower = false },
             analyticsSource = "leaderboard_app_power_premium_gate"

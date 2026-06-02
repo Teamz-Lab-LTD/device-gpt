@@ -103,6 +103,7 @@ class MainActivity : ComponentActivity() {
                 ReferralManager.checkReferral(this@MainActivity, intent)
                 ReferralManager.checkInstallReferrer(this@MainActivity)
                 ReferralManager.isAdFreeFromReferrals(this@MainActivity)
+                ReferralManager.onReferredUserAppOpen(this@MainActivity)
 
                 DeviceSleepTracker.initializeState(this@MainActivity)
 

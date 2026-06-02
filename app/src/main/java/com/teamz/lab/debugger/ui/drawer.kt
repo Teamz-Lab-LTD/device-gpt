@@ -1188,7 +1188,7 @@ fun DrawerContent(
     // RevenueCat Paywall - shows the "device-gpt" paywall designed in RevenueCat console
     // Full screen composable approach (not dialog)
     // Using reusable composable component
-    RevenueCatPaywall(
+    PaywallWithReferralFallback(
         showPaywall = showPremiumDialog,
         onDismiss = { showPremiumDialog = false },
         analyticsSource = "revenuecat_paywall_drawer"
