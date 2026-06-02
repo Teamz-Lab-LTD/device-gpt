@@ -1750,11 +1750,20 @@ fun HandleSystemMonitorAutoStart() {
                 // 3. Service is NOT already running (prevent duplicate starts)
                 if ((postNotificationPermission == null || ActivityCompat.checkSelfPermission(
                         context, postNotificationPermission
-                    ) == PackageManager.PERMISSION_GRANTED) 
+                    ) == PackageManager.PERMISSION_GRANTED)
                     && context.isUserEnableMonitoringService()
                     && !context.isSystemMonitorRunning() // Prevent duplicate starts
                 ) {
                     context.startSystemMonitorService()
+                    // Distinguish auto-starts (user opens app, service already enabled in prefs)
+                    // from explicit toggle-on events tracked at drawer.kt. Lets us measure
+                    // how many sessions are "ritual" (came back, monitor auto-resumed) vs
+                    // "active opt-in" (user toggled in this session).
+                    try {
+                        com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                            com.teamz.lab.debugger.utils.AnalyticsEvent.RealtimeMonitorAutoStarted
+                        )
+                    } catch (_: Exception) { /* analytics never blocks core flow */ }
                 }
             }
         }

@@ -106,6 +106,7 @@ class MainActivity : ComponentActivity() {
                 ReferralManager.isAdFreeFromReferrals(this@MainActivity)
                 ReferralManager.onReferredUserAppOpen(this@MainActivity)
                 EngagementTracker.init(this@MainActivity)
+                handleChargeSummaryDeepLink(intent)
 
                 DeviceSleepTracker.initializeState(this@MainActivity)
 
@@ -123,6 +124,39 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         ReferralManager.checkReferral(this, intent)
+        handleChargeSummaryDeepLink(intent)
+    }
+
+    /**
+     * Single dispatch for any notification deep-link source. Each "from" value comes
+     * from a specific notification surface (charge cycle ritual hook, persistent system
+     * monitor notification, etc.). Logs both the AnalyticsEvent (for GA4 aggregation)
+     * and the SignificantAction (for EngagementTracker habit-streak math).
+     */
+    private fun handleChargeSummaryDeepLink(intent: Intent?) {
+        val from = intent?.getStringExtra("from") ?: return
+        when (from) {
+            "charge_summary" -> {
+                com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                    com.teamz.lab.debugger.utils.AnalyticsEvent.ChargeSummaryOpened
+                )
+                com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                    this,
+                    com.teamz.lab.debugger.utils.SignificantAction.CHARGE_SUMMARY_OPENED
+                )
+            }
+            "monitor_notification" -> {
+                com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                    com.teamz.lab.debugger.utils.AnalyticsEvent.MonitorNotificationOpened
+                )
+                com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                    this,
+                    "monitor_notification_opened"
+                )
+            }
+        }
+        // Clear the extra so a configuration change doesn't double-log.
+        intent.removeExtra("from")
     }
 
     override fun onResume() {

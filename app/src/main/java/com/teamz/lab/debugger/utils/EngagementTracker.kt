@@ -202,4 +202,11 @@ object SignificantAction {
     const val PREMIUM_PURCHASED = "premium_purchased"
     const val PAYWALL_DISMISSED = "paywall_dismissed"
     const val ANOMALY_RESOLVED = "anomaly_resolved"
+
+    // Event-driven habit triggers (per 2026-06-02 synthesized plan).
+    const val CHARGE_CYCLE_COMPLETED = "charge_cycle_completed"
+    const val CHARGE_SUMMARY_OPENED = "charge_summary_opened"
+    const val NEW_APP_INSTALLED = "new_app_installed"
+    const val NEW_APP_SCAN_PROMPTED = "new_app_scan_prompted"
+    const val NEW_WIFI_DETECTED = "new_wifi_detected"
 }

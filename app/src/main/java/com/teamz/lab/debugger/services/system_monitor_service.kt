@@ -58,6 +58,10 @@ class SystemMonitorService : Service() {
     private val fpsDataFlow = MutableStateFlow("Initializing...")
     private var fpsCleanup: (() -> Unit)? = null
 
+    // Habit-loop instrumentation: capture how long users keep the monitor running.
+    // Set in onCreate, read in onDestroy.
+    private var serviceStartMs: Long = 0L
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -67,6 +71,17 @@ class SystemMonitorService : Service() {
             startForeground(notificationId, buildNotification("Initializing system monitor..."))
             startMonitoring()
             setMonitorServiceRunning(true)
+            // Habit-loop instrumentation: persistent monitor running is the strongest
+            // re-engagement surface. Track start so we can measure session length + retention.
+            try {
+                serviceStartMs = System.currentTimeMillis()
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.RealtimeMonitorStarted,
+                    mapOf("service_start_ms" to serviceStartMs)
+                )
+            } catch (e: Exception) {
+                android.util.Log.w("SystemMonitorService", "analytics start failed: ${e.message}")
+            }
         } catch (e: android.app.ForegroundServiceStartNotAllowedException) {
             // On Android 12+ (API 31+), foreground services can only be started from certain contexts
             // This happens when the app is in the background or service is started inappropriately
@@ -417,6 +432,9 @@ class SystemMonitorService : Service() {
         // Create an intent to launch MainActivity when notification is tapped
         Intent(this, MainActivity::class.java).let { intent ->
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            // Habit-loop instrumentation: tag the launch source so MainActivity can log
+            // a "monitor_notification_opened" engagement event when this tap converts.
+            intent.putExtra("from", "monitor_notification")
             val pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -703,6 +721,22 @@ class SystemMonitorService : Service() {
     }
 
     override fun onDestroy() {
+        // Habit-loop instrumentation: capture monitor session duration. If users keep it
+        // on for hours/days, the persistent notification is actively used. If <60s, they
+        // probably turned it off immediately — bad UX signal.
+        try {
+            val durationMs = if (serviceStartMs > 0) System.currentTimeMillis() - serviceStartMs else 0L
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.RealtimeMonitorStopped,
+                mapOf(
+                    "duration_ms" to durationMs,
+                    "duration_min" to (durationMs / 60_000L).toInt(),
+                )
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("SystemMonitorService", "analytics stop failed: ${e.message}")
+        }
+
         // Stop foreground immediately to meet Android's timeout requirement
         // Foreground services must stop within a timeout, so we must remove foreground status first
         try {

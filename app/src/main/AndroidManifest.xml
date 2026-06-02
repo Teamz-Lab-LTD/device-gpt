@@ -168,6 +168,18 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/lock_screen_widget_info" />
         </receiver>
-        
+
+        <!-- Charge cycle ritual hook. ACTION_POWER_CONNECTED + ACTION_POWER_DISCONNECTED
+             are exempt from Android 8+ implicit-broadcast restrictions, so the manifest
+             receiver runs even when the app is killed. -->
+        <receiver
+            android:name=".receivers.ChargeEventReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>
