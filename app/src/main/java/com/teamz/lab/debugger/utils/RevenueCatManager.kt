@@ -564,18 +564,31 @@ object RevenueCatManager {
     ) {
         if (!isInitialized) {
             Log.w(TAG, "Not initialized - cannot purchase. Check if REVENUECAT_API_KEY is set in local_config.properties")
+            // Dedicated event so we can grep this exact failure mode in GA4.
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.BillingNotInitialized,
+                mapOf("source" to "purchaseProduct")
+            )
             onError("RevenueCat not initialized. Please check your configuration.")
             return
         }
-        
+
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
                 Log.d(TAG, "Received offerings. Available offering IDs: ${offerings.all.keys}")
-                
+
                 // Use specific offering ID "device-gpt-offering"
                 val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
                 if (currentOffering == null) {
                     Log.e(TAG, "No offering available for ID: $OFFERING_ID. Available offerings: ${offerings.all.keys}")
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.BillingNoProductFound,
+                        mapOf(
+                            "reason" to "no_offering",
+                            "expected_offering" to OFFERING_ID,
+                            "available_offerings" to offerings.all.keys.joinToString(",")
+                        )
+                    )
                     onError("No subscription available. Please check your RevenueCat configuration.")
                     return
                 }
@@ -595,6 +608,14 @@ object RevenueCatManager {
                 
                 if (product == null) {
                     Log.e(TAG, "No premium product found in offering")
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.BillingNoProductFound,
+                        mapOf(
+                            "reason" to "no_premium_product",
+                            "offering_id" to currentOffering.identifier,
+                            "packages_in_offering" to currentOffering.availablePackages.size.toString()
+                        )
+                    )
                     onError("No premium product available. Please try again later.")
                     return
                 }
@@ -656,21 +677,15 @@ object RevenueCatManager {
                                     "source" to "direct_purchase"
                                 )
                             )
+                            // Note: PremiumPurchaseCancelled/Failed already logged above
+                            // with full error code + message. The DrawerItemClicked duplicate
+                            // logs were polluting the drawer click count without adding
+                            // signal — removed.
                             if (userCancelled) {
                                 Log.d(TAG, "User cancelled purchase")
-                                // Track cancellation
-                                AnalyticsUtils.logEvent(
-                                    AnalyticsEvent.DrawerItemClicked,
-                                    mapOf("item" to "purchase_cancelled")
-                                )
                                 onDismiss()
                             } else {
                                 Log.e(TAG, "Purchase failed: ${error.message}")
-                                // Track purchase failure
-                                AnalyticsUtils.logEvent(
-                                    AnalyticsEvent.DrawerItemClicked,
-                                    mapOf("item" to "purchase_failed", "error" to (error.message ?: "unknown"))
-                                )
                                 onError(error.message ?: "Purchase failed. Please try again.")
                             }
                         }
@@ -680,10 +695,16 @@ object RevenueCatManager {
             
             override fun onError(error: com.revenuecat.purchases.PurchasesError) {
                 Log.e(TAG, "Failed to get offerings: ${error.message}")
-                // Track error
+                // Dedicated event so we can attribute "users who tried to buy but Play Billing
+                // couldn't even fetch the catalog" — distinct from purchase_failed which means
+                // they actually got to the buy step.
                 AnalyticsUtils.logEvent(
-                    AnalyticsEvent.DrawerItemClicked,
-                    mapOf("item" to "paywall_load_failed", "error" to (error.message ?: "unknown"))
+                    AnalyticsEvent.BillingOfferingsFailed,
+                    mapOf(
+                        "error_code" to error.code.name,
+                        "error_message" to (error.message ?: "unknown"),
+                        "underlying_error" to (error.underlyingErrorMessage ?: "none")
+                    )
                 )
                 onError(error.message ?: "Failed to load subscription options. Please check your internet connection.")
             }

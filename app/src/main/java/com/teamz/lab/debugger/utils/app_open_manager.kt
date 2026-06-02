@@ -176,11 +176,15 @@ object AppOpenAdManager {
             return
         }
 
-        val shouldShow = RemoteConfigUtils.shouldShowAppOpenAds()
-        android.util.Log.d(TAG, "showAdIfAvailable() - RemoteConfig shouldShowAppOpenAds: $shouldShow")
-        
+        // Session-gated: sessions 1 and 2 are ad-free so new users see the product
+        // before a launch interstitial. Driven by Remote Config app_open_ad_min_session
+        // (default 3). Also blocks ads in suppressed geos (IR/BD/PK) inside the helper.
+        val sessionCount = EngagementTracker.getSessionCount(activity)
+        val shouldShow = RemoteConfigUtils.shouldShowAppOpenAdsForSession(sessionCount)
+        android.util.Log.d(TAG, "showAdIfAvailable() - session=$sessionCount, shouldShow=$shouldShow")
+
         if (!shouldShow) {
-            android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ Skipping: RemoteConfig disabled app open ads")
+            android.util.Log.w(TAG, "showAdIfAvailable() - ⚠️ Skipping: session-gated or RC disabled or country suppressed")
             return
         }
 

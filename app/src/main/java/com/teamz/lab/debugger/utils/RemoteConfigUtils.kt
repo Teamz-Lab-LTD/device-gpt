@@ -23,6 +23,33 @@ object RemoteConfigUtils {
      */
     private val FORCE_SHOW_ADS_IN_DEBUG = BuildConfig.DEBUG
 
+    /**
+     * ISO country code captured on app init. Cached because Locale.getDefault().country
+     * can change mid-session (rare but possible) and we want a stable signal.
+     * Used by isCountrySuppressed() to gate ad requests in zero-fill geos.
+     */
+    @Volatile private var cachedCountryCode: String = ""
+
+    /** Returns true if the device's country is in the RC-driven suppression list. */
+    fun isCountrySuppressed(): Boolean {
+        val code = cachedCountryCode
+        if (code.isBlank()) return false
+        return code in getAdSuppressedCountryCodes()
+    }
+
+    /**
+     * Capture device country once on app init. Called from RemoteConfigUtils.initWithContext()
+     * or Application.onCreate (whichever runs first). Reads from Locale.getDefault().country
+     * which is the system locale's region — most reliable signal for ad-fill behavior.
+     */
+    fun captureCountryCode(context: android.content.Context) {
+        val code = try {
+            java.util.Locale.getDefault().country.uppercase()
+        } catch (_: Exception) { "" }
+        cachedCountryCode = code
+        AppLog.d("RemoteConfigUtils", "captureCountryCode() - country=$code, suppressed=${isCountrySuppressed()}")
+    }
+
     fun init() {
         AppLog.d("RemoteConfigUtils", "init() - Initializing RemoteConfig...")
         
@@ -65,7 +92,9 @@ object RemoteConfigUtils {
                 "native_ad_max_retries" to 0L,               // No retry on fail; low fill = retries burn more (was 1)
                 "native_ad_request_interval_ms" to 60000L,   // 60s between requests (was 10s)
                 "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
-                "native_ad_ttl_ms" to 1_680_000L             // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
+                "native_ad_ttl_ms" to 1_680_000L,            // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
+                "app_open_ad_min_session" to 3L,             // Sessions 1-2 ad-free — kills 37% first-impression uninstall
+                "ad_suppressed_country_codes" to "IR,BD,PK"  // No-fill geos — hide ad slots instead of empty containers
             )
         )
         
@@ -98,7 +127,11 @@ object RemoteConfigUtils {
             AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - User is ad-free (premium or referral), skipping ads")
             return false
         }
-        
+        if (isCountrySuppressed()) {
+            AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - Country $cachedCountryCode in suppression list, skipping")
+            return false
+        }
+
         // In debug mode: Only show ads if FORCE_SHOW_ADS_IN_DEBUG is true (for testing)
         // In release mode: FORCE_SHOW_ADS_IN_DEBUG is false, so this check is skipped (safe for production)
         // Production safety: In release builds, BuildConfig.DEBUG is false, so this condition never blocks ads
@@ -106,14 +139,15 @@ object RemoteConfigUtils {
             AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - Debug mode, ads disabled (FORCE_SHOW_ADS_IN_DEBUG=$FORCE_SHOW_ADS_IN_DEBUG)")
             return false
         }
-        
+
         // Production safety: In release builds, ads are always controlled by RemoteConfig
         // Debug builds: Ads are enabled for testing (FORCE_SHOW_ADS_IN_DEBUG = true)
         return remoteConfig.getBoolean("show_interstitial_ads")
     }
-    
+
     fun shouldShowBannerAds(): Boolean {
         if (isUserAdFree()) return false
+        if (isCountrySuppressed()) return false
         return remoteConfig.getBoolean("show_banner_ads")
     }
 
@@ -122,14 +156,34 @@ object RemoteConfigUtils {
             AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - User is ad-free, skipping ads")
             return false
         }
-        
+        if (isCountrySuppressed()) {
+            AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - Country $cachedCountryCode suppressed, skipping")
+            return false
+        }
+
         val shouldShow = remoteConfig.getBoolean("show_app_open_ads")
         AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - Returning: $shouldShow")
         return shouldShow
     }
-    
+
+    /**
+     * Session-aware variant of shouldShowAppOpenAds. Returns false for the first
+     * `app_open_ad_min_session` sessions (default 3) so new users see the product
+     * before seeing a launch interstitial. Pass the EngagementTracker session count.
+     */
+    fun shouldShowAppOpenAdsForSession(sessionCount: Int): Boolean {
+        if (!shouldShowAppOpenAds()) return false
+        val minSession = getAppOpenAdMinSession()
+        if (sessionCount < minSession) {
+            AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAdsForSession() - session=$sessionCount < min=$minSession, suppressing")
+            return false
+        }
+        return true
+    }
+
     fun shouldShowNativeAds(): Boolean {
         if (isUserAdFree()) return false
+        if (isCountrySuppressed()) return false
         return remoteConfig.getBoolean("show_native_ads")
     }
 
@@ -289,5 +343,26 @@ object RemoteConfigUtils {
     fun getNativeAdTtlMs(): Long {
         val value = remoteConfig.getLong("native_ad_ttl_ms")
         return if (value <= 0L) 1_680_000L else value
+    }
+
+    /**
+     * Minimum session count before app-open interstitials are shown. First-impression
+     * uninstall is 37% in the lifetime data — most of that fires before the user has
+     * seen the AI value prop. Default: 3 (sessions 1, 2 are ad-free).
+     */
+    fun getAppOpenAdMinSession(): Int {
+        val value = remoteConfig.getLong("app_open_ad_min_session")
+        return if (value <= 0L) 3 else value.toInt()
+    }
+
+    /**
+     * Comma-separated ISO country codes where ad requests are suppressed entirely.
+     * Default: IR,BD,PK — these markets show 10:1 ad_failed:ad_impression and zero
+     * IAP revenue (Iran sanctioned, BD/PK very low fill). Empty/missing = no suppression.
+     */
+    fun getAdSuppressedCountryCodes(): Set<String> {
+        val raw = remoteConfig.getString("ad_suppressed_country_codes")
+        val effective = if (raw.isBlank()) "IR,BD,PK" else raw
+        return effective.split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }.toSet()
     }
 }
