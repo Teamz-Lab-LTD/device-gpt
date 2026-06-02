@@ -138,7 +138,8 @@ fun PowerConsumptionCard(
     
     // Ad management
     val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAds()
-    val nativeAds = remember { NativeAdManager.nativeAds }
+    val powerAdCacheGen = NativeAdManager.cacheGeneration.intValue
+    val nativeAds = remember(powerAdCacheGen) { NativeAdManager.nativeAds }
     val adLoader = activity?.let { rememberAdLoader(it) }
     
     // Track tab view on first load - use a key to prevent retriggering on activity resume
@@ -275,7 +276,7 @@ Power Level: ${when {
                 
                 // Native Ad 1 - After App Power Monitor (Policy: Adequate spacing from content)
                 if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                    val nativeAd1 = NativeAdManager.getAdForPosition("power_consumption_ad1")
+                    val nativeAd1 = remember(powerAdCacheGen, "power_consumption_ad1") { NativeAdManager.getAdForPosition("power_consumption_ad1") }
                     if (nativeAd1 != null) {
                         // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd1)
@@ -392,7 +393,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                 
                 // Native Ad 2 - After Component Breakdown (Policy: Adequate spacing between ads)
                 if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                    val nativeAd2 = NativeAdManager.getAdForPosition("power_consumption_ad2")
+                    val nativeAd2 = remember(powerAdCacheGen, "power_consumption_ad2") { NativeAdManager.getAdForPosition("power_consumption_ad2") }
                     if (nativeAd2 != null) {
                         // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd2)
@@ -423,7 +424,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                 // Native Ad 3 - Between Test Sections (Policy: Reduced ad density - only show if no rewarded ad shown)
                 // Only show this ad if rewarded ad was not shown to avoid too many ads
                 if (shouldShowNativeAds && nativeAds.isNotEmpty() && !RemoteConfigUtils.shouldShowRewardedAds()) {
-                    val nativeAd3 = NativeAdManager.getAdForPosition("power_consumption_ad3")
+                    val nativeAd3 = remember(powerAdCacheGen, "power_consumption_ad3") { NativeAdManager.getAdForPosition("power_consumption_ad3") }
                     if (nativeAd3 != null) {
                         // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd3)
@@ -6215,8 +6216,9 @@ private fun AppPowerMonitorSection(
     
     // Native ads for this section
     val shouldShowNativeAds = RemoteConfigUtils.shouldShowNativeAds()
-    val nativeAds = remember { NativeAdManager.nativeAds }
-    
+    val powerMonitoringAdCacheGen = NativeAdManager.cacheGeneration.intValue
+    val nativeAds = remember(powerMonitoringAdCacheGen) { NativeAdManager.nativeAds }
+
     val usageStatsPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -6396,7 +6398,7 @@ Total Apps Monitored: ${apps.size}
                 
                 // Native Ad 1 - After monitoring button (Policy: Adequate spacing from content)
                 if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                    val nativeAd1 = NativeAdManager.getAdForPosition("power_monitoring_ad1")
+                    val nativeAd1 = remember(powerMonitoringAdCacheGen, "power_monitoring_ad1") { NativeAdManager.getAdForPosition("power_monitoring_ad1") }
                     if (nativeAd1 != null) {
                         // Logging handled by getAdForPosition (reduced)
                         AdMobNativeAdCard(nativeAd = nativeAd1)
@@ -6452,7 +6454,7 @@ Total Apps Monitored: ${apps.size}
                                 
                                 // Native Ad - Show after 5 apps (Policy: Adequate spacing between ads)
                                 if (index == 5 && shouldShowNativeAds && nativeAds.isNotEmpty()) {
-                                    val nativeAd2 = NativeAdManager.getAdForPosition("power_app_list_ad")
+                                    val nativeAd2 = remember(powerMonitoringAdCacheGen, "power_app_list_ad") { NativeAdManager.getAdForPosition("power_app_list_ad") }
                                     if (nativeAd2 != null) {
                                         // Logging handled by getAdForPosition (reduced)
                                         Spacer(modifier = Modifier.height(8.dp))

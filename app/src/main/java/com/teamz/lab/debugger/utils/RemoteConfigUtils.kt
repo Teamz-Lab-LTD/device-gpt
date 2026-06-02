@@ -64,7 +64,8 @@ object RemoteConfigUtils {
                 "native_ad_target_count" to 1L,              // Cache only 1 ad at a time (was 3)
                 "native_ad_max_retries" to 0L,               // No retry on fail; low fill = retries burn more (was 1)
                 "native_ad_request_interval_ms" to 60000L,   // 60s between requests (was 10s)
-                "native_ad_max_requests_per_session" to 5L   // 5 requests/session cap (was 20)
+                "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
+                "native_ad_ttl_ms" to 1_680_000L             // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
             )
         )
         
@@ -279,4 +280,14 @@ object RemoteConfigUtils {
         val value = remoteConfig.getLong("native_ad_max_requests_per_session")
         return if (value == 0L) 20 else value.toInt()
     }
-} 
+
+    /**
+     * TTL (ms) before a cached native ad is considered expired and evicted.
+     * Default: 1_680_000 (28 min) — under typical mediation network TTLs.
+     * 0L or negative values fall back to the default.
+     */
+    fun getNativeAdTtlMs(): Long {
+        val value = remoteConfig.getLong("native_ad_ttl_ms")
+        return if (value <= 0L) 1_680_000L else value
+    }
+}

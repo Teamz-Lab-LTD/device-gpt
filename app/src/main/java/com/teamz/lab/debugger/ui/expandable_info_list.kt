@@ -108,9 +108,14 @@ fun ExpandableInfoList(
         infoList.mapIndexed { index, (key, _) -> key to index }.toMap()
     }
     
+    // Subscribe to NativeAdManager.cacheGeneration so adPositionCache + flattenedList
+    // re-run whenever an ad is added/evicted/expired — even if filteredInfo and
+    // originalIndexMap are identity-stable.
+    val adCacheGen = NativeAdManager.cacheGeneration.intValue
+
     // Create flattened list with info items and ads - optimized with index map
     // Cache ad positions to prevent repeated lookups during recomposition
-    val adPositionCache = remember(filteredInfo.value, originalIndexMap) {
+    val adPositionCache = remember(filteredInfo.value, originalIndexMap, adCacheGen) {
         val cache = mutableMapOf<Int, NativeAd?>()
         val filtered = filteredInfo.value
         filtered.forEachIndexed { filteredIndex, (key, _) ->
@@ -128,10 +133,10 @@ fun ExpandableInfoList(
         }
         cache
     }
-    
+
     // Create flattened list using cached ads to prevent blocking during composition
     // This only recomputes when filteredInfo or adPositionCache changes
-    val flattenedList = remember(filteredInfo.value, originalIndexMap, adPositionCache) {
+    val flattenedList = remember(filteredInfo.value, originalIndexMap, adPositionCache, adCacheGen) {
         val list = mutableListOf<ListItem>()
         val filtered = filteredInfo.value
         filtered.forEachIndexed { filteredIndex, (key, value) ->
@@ -246,20 +251,26 @@ fun ExpandableInfoList(
                     // AdMob Best Practice: Use different ad for expanded view vs list ads
                     // Use key to prevent unnecessary LaunchedEffect restarts
                     // Reactive check for ads - updates when premium is purchased
-                    val shouldShowAdsInline = RemoteConfigUtils.shouldShowNativeAdsReactive() 
-                    LaunchedEffect(key1 = expanded, key2 = actualIndex, key3 = shouldShowAdsInline) {
-                        if (expanded && inlineAd == null && shouldShowAdsInline) {
+                    val shouldShowAdsInline = RemoteConfigUtils.shouldShowNativeAdsReactive()
+                    val expandedAdCacheGen = NativeAdManager.cacheGeneration.intValue
+                    LaunchedEffect(expanded, actualIndex, shouldShowAdsInline, expandedAdCacheGen) {
+                        // Refetch when the cached inlineAd has been evicted from the pool.
+                        val needsFetch = inlineAd == null || inlineAd !in NativeAdManager.nativeAds
+                        if (expanded && needsFetch && shouldShowAdsInline) {
                             // Use position-specific ad to ensure different ad in expanded view
                             val positionId = "device_info_expanded_$actualIndex"
                             val newAd = NativeAdManager.getAdForPosition(positionId)
-                            newAd?.let {
+                            // Verify the returned ad is actually in the pool (not just-evicted).
+                            if (newAd != null && newAd in NativeAdManager.nativeAds) {
                                 val logKey = "expanded_$actualIndex"
-                                if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != it.hashCode()) {
+                                if (!shownAdHashes.containsKey(logKey) || shownAdHashes[logKey] != newAd.hashCode()) {
                                     Log.d("AdDisplay", "📺 Expanded view ad at index $actualIndex, " +
-                                            "Ad hash: ${it.hashCode()}, Position: $positionId")
-                                    shownAdHashes[logKey] = it.hashCode()
+                                            "Ad hash: ${newAd.hashCode()}, Position: $positionId")
+                                    shownAdHashes[logKey] = newAd.hashCode()
                                 }
-                                inlineAds[actualIndex] = it
+                                inlineAds[actualIndex] = newAd
+                            } else {
+                                inlineAds[actualIndex] = null
                             }
                         }
                     }
@@ -456,26 +467,38 @@ fun rememberAdLoader(activity: Activity): AdLoader {
         AdLoader.Builder(activity, adUnitId)
             .forNativeAd { nativeAd ->
                 if (!activity.isDestroyed) {
-                    NativeAdManager.nativeAds.add(nativeAd)
+                    // I5: attach paid-event listener BEFORE the ad enters the pool.
+                    // A composition could pick up the ad and fire an impression between
+                    // addAd and the listener attach, costing us revenue tracking on the
+                    // very first paid event.
+                    nativeAd.setOnPaidEventListener { adValue ->
+                        AdRevenueOptimizer.trackAdRevenue(
+                            activity,
+                            adUnitId,
+                            "native",
+                            adValue
+                        )
+                    }
+
+                    // addAd() registers loadedAtMs, invalidates positionAdCache, and bumps
+                    // cacheGeneration atomically so downstream remember() blocks re-fetch.
+                    NativeAdManager.addAd(nativeAd)
                     NativeAdManager.recordSuccessfulLoad()
-                    
-                    // Invalidate cache when new ad is added so positions can get different ads
-                    NativeAdManager.invalidateCache()
-                    
+
                     val currentCount = NativeAdManager.nativeAds.filterNotNull().size
                     val targetCount = NativeAdManager.getTargetAdCount()
                     Log.i(TAG, "✅ Native ad loaded! Total ads in cache: $currentCount/$targetCount")
-                    
+
                     AnalyticsUtils.logEvent(AnalyticsEvent.AdLoaded, mapOf(
                         "ad_type" to "native",
                         "total_ads_loaded" to currentCount,
                         "target_count" to targetCount
                     ))
-                    
+
                     // Reset retry count on successful load
                     retryCount = 0
                     NativeAdManager.resetRetryCount()
-                    
+
                     // If we still need more ads, trigger another load attempt
                     // Note: Removed isCurrentlyLoading() check to allow continuation
                     // Also check premium status - don't load more ads if user has premium
@@ -485,7 +508,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                             // Wait for throttle period before next request
                             delay(RemoteConfigUtils.getNativeAdRequestIntervalMs() + 1000L)
                             // Re-check premium status before loading (user might have purchased premium)
-                            if (!activity.isDestroyed && 
+                            if (!activity.isDestroyed &&
                                 RemoteConfigUtils.shouldShowNativeAds() &&
                                 NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
                                 NativeAdManager.canMakeRequest()) {
@@ -493,7 +516,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                                 NativeAdManager.setLoading(true) // Set loading before request
                                 NativeAdManager.recordRequest()
                                 adLoaderRef?.loadAd(AdRequest.Builder().build())
-                                
+
                                 // Reset loading flag after delay to allow next request
                                 launch {
                                     delay(12000) // Wait for response (10s request + 2s buffer)
@@ -506,18 +529,11 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                             }
                         }
                     }
-                    
-                    // Track revenue for native ads
-                    nativeAd.setOnPaidEventListener { adValue ->
-                        AdRevenueOptimizer.trackAdRevenue(
-                            activity,
-                            adUnitId,
-                            "native",
-                            adValue
-                        )
-                    }
                 } else {
-                    nativeAd.destroy()
+                    // Activity gone before we could register the ad. Route through
+                    // registerForDestroy so loadedAtMs / positionAdCache stay consistent
+                    // even if the ad was somehow added by a parallel callback.
+                    NativeAdManager.registerForDestroy(nativeAd)
                 }
             }.withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -728,6 +744,36 @@ fun rememberAdLoader(activity: Activity): AdLoader {
             } else {
                 Log.d(TAG, "⏸️ Cannot make request (throttled)")
             }
+            NativeAdManager.endLoadPipeline()
+        }
+    }
+
+    // I2: refill wake-up. Fires whenever cacheGeneration bumps (i.e. an ad was
+    // evicted/expired/added). If the pool drops below targetCount and we can make a
+    // request, kick the loader. Without this, an evict-then-empty pool would never
+    // repopulate because the LaunchedEffect above is keyed only on (Unit, shouldShowAds).
+    LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds) {
+        if (!shouldShowAds || activity.isDestroyed) return@LaunchedEffect
+        val targetCount = NativeAdManager.getTargetAdCount()
+        val currentCount = NativeAdManager.nativeAds.filterNotNull().size
+        if (currentCount >= targetCount) return@LaunchedEffect
+        if (!NativeAdManager.canMakeRequest()) return@LaunchedEffect
+        if (!NativeAdManager.tryStartLoadPipeline()) return@LaunchedEffect
+        try {
+            Log.d(TAG, "♻️ Refill wake-up: have $currentCount/$targetCount, requesting one ad (gen=${NativeAdManager.cacheGeneration.intValue})")
+            NativeAdManager.setLoading(true)
+            NativeAdManager.recordRequest()
+            adLoaderRef?.loadAd(AdRequest.Builder().build())
+            // Mirror the staggered LaunchedEffect's loadtime-clear coroutine: defer
+            // endLoadPipeline + setLoading(false) so a parallel cacheGeneration bump
+            // within the request window doesn't race a duplicate load.
+            launch {
+                delay(12000L)
+                NativeAdManager.setLoading(false)
+                NativeAdManager.endLoadPipeline()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Refill wake-up failed: ${e.message}", e)
             NativeAdManager.endLoadPipeline()
         }
     }

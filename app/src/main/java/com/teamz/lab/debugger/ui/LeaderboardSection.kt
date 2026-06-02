@@ -369,7 +369,9 @@ fun LeaderboardSection(activity: Activity) {
     // AdMob Best Practice: Use different ad for top banner vs list ads to maximize revenue
     // Only change when ad pool changes, not on every recomposition
     // Only fetch ad if user is not premium and native ads are enabled (centralized reactive check)
-    val topBannerAd = remember(NativeAdManager.nativeAds.size, shouldShowNativeAds) {
+    // cacheGeneration is included so eviction/expiry triggers a re-fetch even if pool size happens to stay the same.
+    val leaderboardAdCacheGen = NativeAdManager.cacheGeneration.intValue
+    val topBannerAd = remember(NativeAdManager.nativeAds.size, shouldShowNativeAds, leaderboardAdCacheGen) {
         // Don't fetch ad if user is premium or native ads are disabled
         if (!shouldShowNativeAds) {
             null
@@ -499,10 +501,11 @@ fun LeaderboardSection(activity: Activity) {
             }
         }
         
-        // Track native ads list for stable ad assignments
-        // Use derivedStateOf to reactively track ad pool changes
-        val nativeAdsList = remember { NativeAdManager.nativeAds }
-        val validAdsSize = remember { derivedStateOf { nativeAdsList.filterNotNull().size } }.value
+        // Track native ads list for stable ad assignments. cacheGeneration is included
+        // so a recomposition fires when ads are evicted/expired even if list size happens
+        // to stay the same (e.g. evict + add in the same frame).
+        val nativeAdsList = remember(leaderboardAdCacheGen) { NativeAdManager.nativeAds }
+        val validAdsSize = remember(leaderboardAdCacheGen) { derivedStateOf { nativeAdsList.filterNotNull().size } }.value
         
         // Create mapping from filtered indices to original indices for ad assignments
         val filteredToOriginalIndexMap = remember(
@@ -538,11 +541,12 @@ fun LeaderboardSection(activity: Activity) {
         // AdMob Best Practice: Assign DIFFERENT ads to different positions to maximize revenue
         // Only create ad assignments if user is not premium and native ads are enabled
         val adAssignments = remember(
-            if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size 
+            if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) appPowerEntries.size
             else leaderboardEntries.size,
             selectedCategory.id,
             validAdsSize,
-            shouldShowNativeAds
+            shouldShowNativeAds,
+            leaderboardAdCacheGen
         ) {
             // Don't create ad assignments if user is premium or native ads are disabled (centralized reactive check)
             if (!shouldShowNativeAds) {
@@ -574,7 +578,7 @@ fun LeaderboardSection(activity: Activity) {
         }
         
         // Map ad assignments from original indices to filtered indices
-        val filteredAdAssignments = remember(adAssignments, filteredToOriginalIndexMap) {
+        val filteredAdAssignments = remember(adAssignments, filteredToOriginalIndexMap, leaderboardAdCacheGen) {
             if (filteredToOriginalIndexMap.isEmpty()) {
                 // No search - use ad assignments as-is, but map to filtered indices
                 adAssignments.mapKeys { it.key }

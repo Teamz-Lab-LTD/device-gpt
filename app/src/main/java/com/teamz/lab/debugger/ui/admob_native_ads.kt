@@ -23,17 +23,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.teamz.lab.debugger.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -149,84 +148,83 @@ fun NativeAdView(
     ad: NativeAd,
     adContent: @Composable (ad: NativeAd, contentView: View) -> Unit,
 ) {
-    val contentViewId by remember { mutableIntStateOf(View.generateViewId()) }
-    val adViewId by remember { mutableIntStateOf(View.generateViewId()) }
-    val coroutineScope = rememberCoroutineScope()
-    
+    // Stable refs to the inflated AdView + its inner ComposeView so update{} can
+    // mutate them without findViewById and DisposableEffect can destroy the view
+    // (NOT the NativeAd — manager owns ad lifecycle).
+    val adViewRef = remember { mutableStateOf<NativeAdView?>(null) }
+    val contentViewRef = remember { mutableStateOf<ComposeView?>(null) }
+
     // Track impression when ad is displayed
     LaunchedEffect(ad.hashCode()) {
         android.util.Log.d("AdImpression", "📊 Ad impression recorded - Ad hash: ${ad.hashCode()}")
     }
-    
+
+    // View-side cleanup ONLY. Pair with NativeAdManager.consumePendingDestroy(ad)
+    // so the manager-driven eviction destroys the NativeAd AFTER the view, per AdMob
+    // SDK contract (destroy view before ad).
+    DisposableEffect(ad) {
+        onDispose {
+            try {
+                adViewRef.value?.destroy()
+            } catch (e: Exception) {
+                android.util.Log.w("NativeAdView", "adView.destroy() failed: ${e.message}")
+            }
+            if (NativeAdManager.consumePendingDestroy(ad)) {
+                try {
+                    ad.destroy()
+                } catch (e: Exception) {
+                    android.util.Log.w("NativeAdView", "ad.destroy() failed: ${e.message}")
+                }
+            }
+            adViewRef.value = null
+            contentViewRef.value = null
+        }
+    }
+
     AndroidView(
         factory = { context ->
-            // Create a lightweight container first to avoid blocking composition
-            // Generate container ID outside of async block to prevent JNI blocking during composition
-            val containerId = View.generateViewId()
-            val container = FrameLayout(context).apply {
-                id = containerId
+            // SYNCHRONOUS construction — return the NativeAdView itself, not a FrameLayout
+            // wrapper. No coroutineScope.launch, no container.post. adViewRef.value is
+            // guaranteed non-null before factory returns so update{} cannot race.
+            val adView = NativeAdView(context)
+            val contentView = ComposeView(context)
+            val adChoicesView = AdChoicesView(context).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Gravity.TOP or Gravity.END
+                )
             }
-            
-            coroutineScope.launch(Dispatchers.Main) {
-                try {
-                    // Single yield to let the current composition frame complete before creating views
-                    kotlinx.coroutines.yield()
 
-                    val adView = NativeAdView(context).apply { id = adViewId }
+            adView.addView(contentView)
+            adView.addView(adChoicesView)
 
-                    val contentView = ComposeView(context).apply { id = contentViewId }
+            // Only register callToActionView — registering all assets to the same
+            // ComposeView breaks click attribution and lowers match/fill rate.
+            adView.adChoicesView = adChoicesView
+            adView.callToActionView = contentView
+            adView.setNativeAd(ad)
 
-                    val adChoicesView = AdChoicesView(context).apply {
-                        layoutParams = FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            Gravity.TOP or Gravity.END
-                        )
-                    }
+            // Tag with the bound ad hash so update{} can no-op on identity-stable recomposes.
+            adView.setTag(R.id.native_ad_bound_hash, ad.hashCode())
 
-                    adView.addView(contentView)
-                    adView.addView(adChoicesView)
+            contentView.setContent { adContent(ad, adView) }
 
-                    // Only register callToActionView so AdMob can track clicks correctly.
-                    // Registering all assets to the same ComposeView breaks click attribution
-                    // and causes AdMob to penalise the unit with lower match rate and fill rate.
-                    adView.adChoicesView = adChoicesView
-                    adView.callToActionView = contentView
-
-                    adView.setNativeAd(ad)
-
-                    contentView.setContent {
-                        adContent(ad, adView)
-                    }
-
-                    // Single post to defer past the current layout pass
-                    container.post {
-                        try {
-                            if (container.parent != null && adView.parent == null) {
-                                container.addView(adView)
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("NativeAdView", "Error adding ad view to container: ${e.message}", e)
-                        }
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("NativeAdView", "Error creating NativeAdView: ${e.message}", e)
-                }
-            }
-            
-            container
+            adViewRef.value = adView
+            contentViewRef.value = contentView
+            adView
         },
-        update = { view ->
-            // Find the NativeAdView if it's been created
-            val adView = view.findViewById<NativeAdView>(adViewId)
-            if (adView != null) {
-                val contentView = view.findViewById<ComposeView>(contentViewId)
-                if (contentView != null) {
-                    adView.setNativeAd(ad)
-                    adView.callToActionView = contentView
-                    contentView.setContent { adContent(ad, contentView) }
-                }
-            }
+        update = { adView ->
+            // Idempotent — skip if this AdView already holds this exact ad.
+            val boundHash = adView.getTag(R.id.native_ad_bound_hash) as? Int
+            val newHash = ad.hashCode()
+            if (boundHash == newHash) return@AndroidView
+
+            val contentView = contentViewRef.value ?: return@AndroidView
+            adView.setNativeAd(ad)
+            adView.callToActionView = contentView
+            adView.setTag(R.id.native_ad_bound_hash, newHash)
+            contentView.setContent { adContent(ad, adView) }
         }
     )
 }
@@ -239,6 +237,7 @@ object NativeAdManager {
     private var currentRotationIndex = 0 // For ad rotation
     private val initializationLock = Any() // Lock for thread-safe initialization
     private val pipelineLock = Any()
+    private val lifecycleLock = Any() // Guards nativeAds + loadedAtMs + positionAdCache during evict/add
     @Volatile private var loadPipelineActive = false
 
     // Tracking counters for monitoring
@@ -249,29 +248,121 @@ object NativeAdManager {
     private val positionUsageMap = mutableMapOf<String, Int>() // Track which ad is used where
     private val positionAdCache = mutableMapOf<String, NativeAd?>() // Cache ad assignments to reduce redundant calls
     private val loggedPositions = mutableSetOf<String>() // Track which positions we've logged to reduce spam
-    
+
+    // Per-ad load timestamp for TTL-based eviction.
+    private val loadedAtMs = mutableMapOf<NativeAd, Long>()
+
+    // Two-phase eviction: removeFromPool() drops the ad from data structures and
+    // bumps cacheGeneration; registerForDestroy() schedules ad.destroy() — actually
+    // invoked by NativeAdView's DisposableEffect.onDispose (after adView.destroy()),
+    // or by a 500ms Handler fallback for ads that never reached a view.
+    private val pendingDestroy = java.util.Collections.synchronizedSet(mutableSetOf<NativeAd>())
+    private const val PENDING_DESTROY_FALLBACK_MS = 500L
+    private const val LOAD_TIMEOUT_MS = 12_000L
+
+    /**
+     * Compose-readable counter. Bumped on every addAd/removeFromPool/clear/invalidateCache.
+     * Used as a remember() key at every NativeAd consumer surface so stale refs are
+     * invalidated when the pool changes.
+     */
+    val cacheGeneration: MutableIntState = mutableIntStateOf(0)
+
     private const val TAG = "NativeAdManager"
 
+    /**
+     * Register a freshly-loaded NativeAd. Replaces raw nativeAds.add() so loadedAtMs
+     * is populated in lockstep + cacheGeneration is bumped.
+     */
+    fun addAd(ad: NativeAd) {
+        synchronized(lifecycleLock) {
+            nativeAds.add(ad)
+            loadedAtMs[ad] = System.currentTimeMillis()
+            positionAdCache.clear()
+            loggedPositions.clear()
+        }
+        cacheGeneration.intValue++
+    }
+
+    /**
+     * Drop an ad from the pool + scrub all references to it. Does NOT call ad.destroy()
+     * — pair with registerForDestroy() so the view-side DisposableEffect can destroy in
+     * the correct order (adView.destroy() first, then ad.destroy()).
+     */
+    fun removeFromPool(ad: NativeAd) {
+        synchronized(lifecycleLock) {
+            nativeAds.remove(ad)
+            loadedAtMs.remove(ad)
+            val stalePositions = positionAdCache.entries
+                .filter { it.value === ad }
+                .map { it.key }
+            stalePositions.forEach { positionAdCache.remove(it) }
+        }
+        cacheGeneration.intValue++
+    }
+
+    /**
+     * Mark an ad for destruction. NativeAdView.DisposableEffect.onDispose will call
+     * consumePendingDestroy(ad) and run ad.destroy() AFTER adView.destroy(). For ads
+     * that never reached a view, a 500ms Handler fallback runs the destroy.
+     */
+    fun registerForDestroy(ad: NativeAd) {
+        pendingDestroy.add(ad)
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (pendingDestroy.remove(ad)) {
+                try {
+                    ad.destroy()
+                    android.util.Log.d(TAG, "♻️ Handler fallback destroyed orphan ad ${ad.hashCode()}")
+                } catch (e: Exception) {
+                    android.util.Log.w(TAG, "Handler fallback destroy failed: ${e.message}")
+                }
+            }
+        }, PENDING_DESTROY_FALLBACK_MS)
+    }
+
+    /**
+     * Called by NativeAdView.DisposableEffect.onDispose. Returns true if this ad was
+     * in pendingDestroy (and was removed); caller must then call ad.destroy() itself.
+     */
+    fun consumePendingDestroy(ad: NativeAd): Boolean = pendingDestroy.remove(ad)
+
+    /** Returns true if ad is missing a timestamp or exceeds the Remote-Config TTL. */
+    fun isExpired(ad: NativeAd): Boolean {
+        val ts = synchronized(lifecycleLock) { loadedAtMs[ad] } ?: return true
+        return (System.currentTimeMillis() - ts) > com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdTtlMs()
+    }
+
     fun clear() {
-        nativeAds.forEach { it?.destroy() }
-        nativeAds.clear()
+        val snapshot: List<NativeAd>
+        synchronized(lifecycleLock) {
+            snapshot = nativeAds.filterNotNull().toList()
+            nativeAds.clear()
+            loadedAtMs.clear()
+            positionAdCache.clear()
+            positionUsageMap.clear()
+            loggedPositions.clear()
+        }
+        // Route each ad through registerForDestroy so any live NativeAdView destroys
+        // its adView first via DisposableEffect.onDispose.
+        snapshot.forEach { registerForDestroy(it) }
         synchronized(this) {
             isLoading = false
             hasInitialized = false
             currentRotationIndex = 0
         }
-        positionAdCache.clear()
-        loggedPositions.clear()
         resetStats()
+        cacheGeneration.intValue++
     }
-    
+
     /**
      * Clear cache when ads are added/removed to ensure fresh assignments
      */
     fun invalidateCache() {
-        positionAdCache.clear()
-        loggedPositions.clear()
-        android.util.Log.d(TAG, "🔄 Ad cache invalidated")
+        synchronized(lifecycleLock) {
+            positionAdCache.clear()
+            loggedPositions.clear()
+        }
+        cacheGeneration.intValue++
+        android.util.Log.d(TAG, "🔄 Ad cache invalidated (gen=${cacheGeneration.intValue})")
     }
     
     fun setLoading(loading: Boolean) {
@@ -348,16 +439,29 @@ object NativeAdManager {
      * @return Different ad for each position, or fallback to same ad if not enough ads available
      */
     fun getAdForPosition(positionId: String): NativeAd? {
-        // Check cache first to avoid redundant calculations
+        // 1. Snapshot pool + identify expired ads. Eviction shrinks nativeAds.size so
+        //    the refill LaunchedEffect at expandable_info_list wakes up and reloads.
+        val expired = synchronized(lifecycleLock) {
+            nativeAds.filterNotNull().filter { isExpired(it) }
+        }
+        expired.forEach { stale ->
+            android.util.Log.i(TAG, "♻️ Expiring stale ad ${stale.hashCode()}")
+            removeFromPool(stale)
+            registerForDestroy(stale)
+        }
+
         val cachedAd = positionAdCache[positionId]
         val validAds = nativeAds.filterNotNull()
-        
-        // If cached ad is still valid, return it
-        if (cachedAd != null && validAds.contains(cachedAd)) {
+
+        // 2. Cached ad still in pool AND not expired → reuse.
+        if (cachedAd != null && validAds.contains(cachedAd) && !isExpired(cachedAd)) {
             return cachedAd
         }
-        
-        // Cache is invalid or doesn't exist, calculate new assignment
+        // 3. Cached ad gone/stale → scrub the cache entry.
+        if (cachedAd != null) {
+            synchronized(lifecycleLock) { positionAdCache.remove(positionId) }
+        }
+
         if (validAds.isEmpty()) {
             if (!loggedPositions.contains("${positionId}_empty")) {
                 android.util.Log.w(TAG, "⚠️ getAdForPosition($positionId): No ads available")
@@ -366,7 +470,7 @@ object NativeAdManager {
             positionAdCache[positionId] = null
             return null
         }
-        
+
         // Assign a stable sequential index to each position on first encounter.
         // hashCode() has poor distribution for sequential names like "list_5", "list_10" etc.
         // Once a position is seen, its index never changes — only the ad it maps to may shift
@@ -376,23 +480,18 @@ object NativeAdManager {
         }
         val adIndex = positionUsageMap[positionId]!! % validAds.size
         val selectedAd = validAds[adIndex]
-        
-        // Cache the assignment
+
         positionAdCache[positionId] = selectedAd
-        
-        // Track usage for logging (don't overwrite the stable index stored on first encounter)
+
         val usageCount = positionUsageMap.values.count { it % validAds.size == adIndex }
-        
-        // Only log once per position to reduce spam (unless ad count changes)
         val logKey = "${positionId}_${validAds.size}_${adIndex}"
         if (!loggedPositions.contains(logKey)) {
             android.util.Log.d(TAG, "📍 Ad assigned - Position: $positionId, AdIndex: $adIndex/${validAds.size}, " +
                     "TotalAds: ${validAds.size}, SameAdUsedIn: $usageCount positions, " +
-                    "AdHash: ${selectedAd.hashCode()}")
+                    "AdHash: ${selectedAd.hashCode()}, Gen: ${cacheGeneration.intValue}")
             loggedPositions.add(logKey)
-            
         }
-        
+
         return selectedAd
     }
     

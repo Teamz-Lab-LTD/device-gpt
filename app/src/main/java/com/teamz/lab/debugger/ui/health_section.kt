@@ -178,23 +178,27 @@ fun HealthSection(
     // This ensures native ads are available immediately, not just after visiting other tabs
     val adLoader = activity?.let { rememberAdLoader(it) }
     
-    // Cache native ads - update only when scroll stops to prevent scroll jumps
-    // This ensures ads are ALWAYS displayed (revenue-safe) but prevents recomposition during scroll
+    // Cache native ads - update only when scroll stops to prevent scroll jumps.
+    // Also re-snapshot whenever cacheGeneration changes (an ad was added/evicted/expired)
+    // so a destroyed NativeAd never renders just because the user happens to be scrolling.
     var nativeAdsCache by remember { mutableStateOf(NativeAdManager.nativeAds.toList()) }
-    
+    val healthAdCacheGen = NativeAdManager.cacheGeneration.intValue
+
     // Update ads when scroll stops (very short delay - 50ms - to balance UX and revenue)
-    // Ads are still displayed via cached list, so no revenue loss
     LaunchedEffect(listState.isScrollInProgress) {
         if (!listState.isScrollInProgress) {
-            // Minimal delay - just enough to prevent scroll jumps, not enough to hurt revenue
             kotlinx.coroutines.delay(50)
             if (!listState.isScrollInProgress) {
-                // Update cache with fresh ads when scroll stops
                 nativeAdsCache = NativeAdManager.nativeAds.toList()
             }
         }
     }
-    
+
+    // Safety net for evictions that happen mid-scroll: refresh cache on cacheGen bump.
+    LaunchedEffect(healthAdCacheGen) {
+        nativeAdsCache = NativeAdManager.nativeAds.toList()
+    }
+
     // Always use cached ads - they're updated when scroll stops, but displayed immediately
     // This prevents scroll jumps while ensuring ads are always visible (revenue-safe)
     val nativeAds = nativeAdsCache
@@ -491,7 +495,7 @@ fun HealthSection(
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_top") {
                 // Use position-specific ad to ensure proper rotation
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_top")
+                val nativeAd = remember(healthAdCacheGen, "health_section_top") { NativeAdManager.getAdForPosition("health_section_top") }
                 if (nativeAd != null) {
                     // Logging reduced - only log once
                     LaunchedEffect(nativeAd.hashCode()) {
@@ -532,7 +536,7 @@ fun HealthSection(
         // Native Ad (after Quick Actions header)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_quick_actions") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_quick_actions_header")
+                val nativeAd = remember(healthAdCacheGen, "health_section_quick_actions_header") { NativeAdManager.getAdForPosition("health_section_quick_actions_header") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -743,7 +747,7 @@ Free RAM action optimizes background processes and clears memory to improve devi
         // Native Ad (after RAM Optimization)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_ram") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_ram")
+                val nativeAd = remember(healthAdCacheGen, "health_section_ram") { NativeAdManager.getAdForPosition("health_section_ram") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1051,7 +1055,7 @@ Storage cleanup clears app caches and temporary files to free up space.
         // Native Ad (after Storage Cleanup)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_storage") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_storage")
+                val nativeAd = remember(healthAdCacheGen, "health_section_storage") { NativeAdManager.getAdForPosition("health_section_storage") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1370,7 +1374,7 @@ Battery optimization provides suggestions to improve battery life and health.
         // Native Ad (after Battery Optimization)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_battery") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_battery")
+                val nativeAd = remember(healthAdCacheGen, "health_section_battery") { NativeAdManager.getAdForPosition("health_section_battery") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1434,7 +1438,7 @@ $recentUsage
         // Native Ad (after Privacy Dashboard)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_privacy") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_privacy")
+                val nativeAd = remember(healthAdCacheGen, "health_section_privacy") { NativeAdManager.getAdForPosition("health_section_privacy") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1508,7 +1512,7 @@ Health Score: $currentHealthScore/10
         // Native Ad (after Today's Tasks)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_tasks") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_tasks")
+                val nativeAd = remember(healthAdCacheGen, "health_section_tasks") { NativeAdManager.getAdForPosition("health_section_tasks") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1562,7 +1566,7 @@ Trend: $trend
         // Native Ad (after Temperature History)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_temperature") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_temperature")
+                val nativeAd = remember(healthAdCacheGen, "health_section_temperature") { NativeAdManager.getAdForPosition("health_section_temperature") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1608,7 +1612,7 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
         // Native Ad (after Health History)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_history") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_history")
+                val nativeAd = remember(healthAdCacheGen, "health_section_history") { NativeAdManager.getAdForPosition("health_section_history") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
@@ -1647,7 +1651,7 @@ $suggestionsText
         // Native Ad (after Recommendations)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_recommendations") {
-                val nativeAd = NativeAdManager.getAdForPosition("health_section_recommendations")
+                val nativeAd = remember(healthAdCacheGen, "health_section_recommendations") { NativeAdManager.getAdForPosition("health_section_recommendations") }
                 if (nativeAd != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AdMobNativeAdCard(nativeAd = nativeAd)
