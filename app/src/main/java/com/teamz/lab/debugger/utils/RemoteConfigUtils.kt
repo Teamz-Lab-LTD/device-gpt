@@ -108,7 +108,18 @@ object RemoteConfigUtils {
                 "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
                 "native_ad_ttl_ms" to 1_680_000L,            // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
                 "app_open_ad_min_session" to 1L,             // Default 1 = NO session gate (ads from session 1). Set to 3+ via Remote Config when ready to trade short-term ad revenue for retention.
-                "ad_suppressed_country_codes" to ""          // Empty by default — geo suppression OFF. Set via Remote Config (e.g. "IR" or "IR,BD,PK") only when you decide to suppress specific markets.
+                // Verified zero-fill markets per 2026-06-03 lifetime GA4 audit (≥20 users, 0.0% fill rate):
+                //   IR=Iran (1214 users, 3 imp / 19474 fail) — sanctioned
+                //   RU=Russia (54 users, 0 imp / 543 fail) — sanctioned
+                //   IQ=Iraq (26 users, 0 imp / 981 fail) — low-fill region
+                //   SG=Singapore (23 users, 0 imp / 351 fail) — PDPA blocks until UMP integrated
+                //   YE=Yemen (22 users, 0 imp / 570 fail)
+                //   ET=Ethiopia (20 users, 0 imp / 710 fail)
+                //   SE=Sweden (28 users, 0 imp / 77 fail) — GDPR-strict, UMP needed
+                // NOT included: BD (1.3% fill, 167 paid), PK (12.2% fill, better than US).
+                // Suppression saves zero revenue (these earn $0) but removes ~22,800 wasted requests
+                // that hurt AdMob global match rate signal.
+                "ad_suppressed_country_codes" to "IR,RU,IQ,SG,YE,ET,SE"
             )
         )
         

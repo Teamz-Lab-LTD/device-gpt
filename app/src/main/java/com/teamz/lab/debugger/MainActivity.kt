@@ -108,6 +108,11 @@ class MainActivity : ComponentActivity() {
                 ReferralManager.onReferredUserAppOpen(this@MainActivity)
                 EngagementTracker.init(this@MainActivity)
                 RemoteConfigUtils.captureCountryCode(this@MainActivity)
+                // UMP / GDPR / PDPA consent flow. Required for SE / SG / EU / BR / CH ad fill.
+                // No-op for non-regulated geos. Runs ad network re-init internally when ready.
+                com.teamz.lab.debugger.utils.UmpConsentManager.ensureConsent(this@MainActivity) {
+                    android.util.Log.d("MainActivity", "✅ UMP consent resolved, ads can request now")
+                }
                 handleChargeSummaryDeepLink(intent)
 
                 DeviceSleepTracker.initializeState(this@MainActivity)

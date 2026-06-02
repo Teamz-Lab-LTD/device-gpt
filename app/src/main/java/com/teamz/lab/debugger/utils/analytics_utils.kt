@@ -330,6 +330,8 @@ enum class AnalyticsEvent(val eventName: String) {
     BillingNotInitialized("billing_not_initialized"),
     BillingOfferingsFailed("billing_offerings_failed"),
     BillingNoProductFound("billing_no_product_found"),
+    UmpConsentResolved("ump_consent_resolved"),
+    UmpConsentFailed("ump_consent_failed"),
     PremiumRestoreInitiated("premium_restore_initiated"),
     PremiumRestoreCompleted("premium_restore_completed"),
     PremiumRestoreFailed("premium_restore_failed"),

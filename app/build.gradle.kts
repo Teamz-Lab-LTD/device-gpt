@@ -146,6 +146,9 @@ android {
 dependencies {
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
+    // UMP (User Messaging Platform) — GDPR/PDPA consent flow for EU + Singapore + Sweden.
+    // Without this, ad networks refuse to serve ads in those geos → ad_failed storm.
+    implementation("com.google.android.ump:user-messaging-platform:3.0.0")
     implementation(libs.androidx.material3)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
