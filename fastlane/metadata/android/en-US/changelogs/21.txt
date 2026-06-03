@@ -1,0 +1,6 @@
+• Fixed native ad rendering — ads now display reliably in lists
+• New: charge-cycle summary notification after overnight charging
+• Faster, smoother experience on Health, Leaderboard, and Power screens
+• Better consent flow for EU/UK/Switzerland (GDPR/UMP)
+• Improved support for users on weaker connections (Iran, Sweden, Singapore)
+• Stability fixes around premium purchase + monitoring service

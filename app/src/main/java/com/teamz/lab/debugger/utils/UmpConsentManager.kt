@@ -2,6 +2,7 @@ package com.teamz.lab.debugger.utils
 
 import android.app.Activity
 import android.content.Context
+import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
@@ -77,6 +78,26 @@ object UmpConsentManager {
         val params = ConsentRequestParameters.Builder()
             // Production: set tagForUnderAgeOfConsent based on your TOS. Default false.
             .setTagForUnderAgeOfConsent(false)
+            .apply {
+                // Debug builds only: force EEA geography so the consent form fires
+                // regardless of device IP. Lets us QA the dialog from any country.
+                // Production builds never override geography — UMP uses real IP geo.
+                if (com.teamz.lab.debugger.BuildConfig.DEBUG) {
+                    val debugSettings = ConsentDebugSettings.Builder(activity)
+                        .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                        // Add this device as a "test device" so debug settings apply.
+                        // The hashed ID is logged by UMP itself the first time we call
+                        // requestConsentInfoUpdate — check logcat for "ConsentInformation"
+                        // and add the hash here. For now we tag all debug builds.
+                        // Pixel 8a (test device) — captured 2026-06-03 from UMP logcat.
+                        // To add a different test device: install debug build, grep logcat
+                        // for "UserMessagingPlatform: Use new ConsentDebugSettings.Builder()
+                        // .addTestDeviceHashedId" — Google logs the hash there.
+                        .addTestDeviceHashedId("47B870AD1E1B7428ECA11EA24696D6DB")
+                        .build()
+                    setConsentDebugSettings(debugSettings)
+                }
+            }
             .build()
 
         consentInfo.requestConsentInfoUpdate(
