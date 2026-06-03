@@ -22,8 +22,11 @@ platform :android do
 
   desc "Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, etc)."
   lane :preflight do
+    # --tests filter requires a CONCRETE Test task (e.g. testDebugUnitTest),
+    # not the umbrella :app:test meta-task. testDebugUnitTest covers our
+    # AdPipelineSafetyTest + NativeAdConfigDefaultsTest in app/src/test/.
     gradle(
-      task: "test",
+      task: ":app:testDebugUnitTest",
       flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest*"
     )
     UI.success "✅ Ad-pipeline safety gate passed. No known regression patterns detected."
@@ -64,6 +67,37 @@ platform :android do
       skip_upload_metadata: true, skip_upload_images: true,
       skip_upload_screenshots: true, skip_upload_changelogs: true
     )
+  end
+
+  desc "Promote existing internal release to production at 10% staged rollout (sends for Play review). No rebuild — reuses the internal AAB. Staged rollout is safer than 100% — Play accepts even when new AAB has narrower device coverage than current production."
+  lane :promote_to_production do
+    upload_to_play_store(
+      track: "internal", track_promote_to: "production",
+      release_status: "inProgress",     # in-review + staged rollout
+      rollout: "0.1",                    # 10% — bump to 1.0 manually after review
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_metadata: true, skip_upload_images: true,
+      skip_upload_screenshots: true, skip_upload_changelogs: true
+    )
+    UI.success "✅ Internal build promoted to production at 10% rollout (in review). Bump to 100% in Play Console after review clears."
+  end
+
+  desc "Same as promote_to_production but uploads as DRAFT — appears in Play Console UI for manual review/release with warnings (use when staged rollout is also rejected)."
+  lane :promote_to_production_draft do
+    upload_to_play_store(
+      track: "internal", track_promote_to: "production",
+      release_status: "draft",
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_metadata: true, skip_upload_images: true,
+      skip_upload_screenshots: true, skip_upload_changelogs: true
+    )
+    UI.success "✅ Promoted to production as DRAFT. Open Play Console → Production → Review and Release manually."
+  end
+
+  desc "ONE-SHOT release: build → upload to internal → promote to production (sends for Play review). Same AAB on both tracks."
+  lane :release_full do
+    internal
+    promote_to_production
   end
 
   desc "Upload AAB to production (draft, 10% rollout)"
