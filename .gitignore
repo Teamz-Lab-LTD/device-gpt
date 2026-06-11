@@ -44,3 +44,6 @@ vendor/bundle/
 automation_data/
 # Exception: ASO screenshot presets are project-tracked config
 !automation_data/aso_screenshot_presets.json
+
+# shared automation (symlinked to canonical; created by setup, not tracked)
+teamz-company-automation
