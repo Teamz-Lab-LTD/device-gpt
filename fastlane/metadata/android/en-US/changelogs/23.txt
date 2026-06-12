@@ -1,0 +1,3 @@
+• Hotfix: removed app freezes around startup consent dialog (EU/UK/CH users)
+• Faster app launch — initialization now runs in background
+• Continued stability improvements after the 3.1.7 release

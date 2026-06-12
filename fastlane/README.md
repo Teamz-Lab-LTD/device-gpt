@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Android
 
+### android preflight
+
+```sh
+[bundle exec] fastlane android preflight
+```
+
+Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, etc).
+
 ### android build
 
 ```sh
@@ -46,6 +54,30 @@ Upload AAB to closed beta track (draft)
 ```
 
 Promote internal build to beta (no rebuild)
+
+### android promote_to_production
+
+```sh
+[bundle exec] fastlane android promote_to_production
+```
+
+Promote existing internal release to production at 10% staged rollout (sends for Play review). No rebuild — reuses the internal AAB. Staged rollout is safer than 100% — Play accepts even when new AAB has narrower device coverage than current production.
+
+### android promote_to_production_draft
+
+```sh
+[bundle exec] fastlane android promote_to_production_draft
+```
+
+Same as promote_to_production but uploads as DRAFT — appears in Play Console UI for manual review/release with warnings (use when staged rollout is also rejected).
+
+### android release_full
+
+```sh
+[bundle exec] fastlane android release_full
+```
+
+ONE-SHOT release: build → upload to internal → promote to production (sends for Play review). Same AAB on both tracks.
 
 ### android production
 
