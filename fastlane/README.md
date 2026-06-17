@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane android preflight
 ```
 
-Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, etc).
+Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, native ad viewability bug, etc).
 
 ### android build
 

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XML-inflated NativeAdView for AdMob.
+
+  Why XML, not Compose AndroidView: the prior Compose renderer registered a
+  ComposeView as the call-to-action slot and called setNativeAd() BEFORE the
+  Compose pass ran. AdMob SDK measured registered asset Views at 0x0 → failed
+  viewability check on 100% of native renders → 2% show rate.
+
+  Layout invariant (DO NOT change without updating NativeAdViewabilityTest):
+  each typed asset slot below MUST keep its current @+id so the inflater +
+  the AdMob SDK both find it. native_ad_root is required for the SDK to
+  recognize this as a NativeAdView.
+-->
+<com.google.android.gms.ads.nativead.NativeAdView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/native_ad_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/native_ad_card_background">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/native_ad_attribution"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ad"
+                android:textColor="#FFFFFFFF"
+                android:background="@drawable/native_ad_attribution_bg"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:textStyle="bold"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/native_ad_sponsored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="Sponsored"
+                android:textColor="#B312151A"
+                android:textSize="10sp" />
+        </RelativeLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <TextView
+            android:id="@+id/native_ad_headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FF12151A"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="4dp" />
+
+        <TextView
+            android:id="@+id/native_ad_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FF12151A"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/native_ad_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/native_ad_call_to_action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/native_ad_cta_bg"
+                android:textColor="#FFFFFFFF"
+                android:textAllCaps="false"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:minWidth="0dp"
+                android:minHeight="36dp"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.gms.ads.nativead.AdChoicesView
+        android:id="@+id/native_ad_choices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end" />
+
+</com.google.android.gms.ads.nativead.NativeAdView>

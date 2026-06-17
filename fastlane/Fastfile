@@ -20,14 +20,16 @@ PROMPT
 platform :android do
   # --- Build + upload lanes --------------------------------------------------
 
-  desc "Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, etc)."
+  desc "Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, native ad viewability bug, etc)."
   lane :preflight do
     # --tests filter requires a CONCRETE Test task (e.g. testDebugUnitTest),
     # not the umbrella :app:test meta-task. testDebugUnitTest covers our
-    # AdPipelineSafetyTest + NativeAdConfigDefaultsTest in app/src/test/.
+    # AdPipelineSafetyTest + NativeAdConfigDefaultsTest + NativeAdViewabilityTest
+    # in app/src/test/. NativeAdViewabilityTest is the 2026-06-15 guard against
+    # the Compose-asset-slot regression that caused the 1-year 98% show-rate bug.
     gradle(
       task: ":app:testDebugUnitTest",
-      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest*"
+      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest* --tests *NativeAdViewabilityTest*"
     )
     UI.success "✅ Ad-pipeline safety gate passed. No known regression patterns detected."
   end
