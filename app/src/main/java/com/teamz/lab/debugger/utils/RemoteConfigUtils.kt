@@ -392,4 +392,20 @@ object RemoteConfigUtils {
         if (raw.isBlank()) return emptySet()
         return raw.split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }.toSet()
     }
+
+    /**
+     * v3.1.11 Week 1 retention milestone — D1 overnight-drain push.
+     * Default false. Set true in Firebase console to enable on next-install A/B test.
+     */
+    fun isD1OvernightDrainEnabled(): Boolean {
+        return remoteConfig.getBoolean("d1_overnight_drain_enabled")
+    }
+
+    /**
+     * v3.1.11 Week 1 retention milestone — First-launch 10s auto-scan + Device Score gate.
+     * Default false. Set true in Firebase console to enable on next-install A/B test.
+     */
+    fun isFirstScanGateEnabled(): Boolean {
+        return remoteConfig.getBoolean("first_scan_gate_enabled")
+    }
 }

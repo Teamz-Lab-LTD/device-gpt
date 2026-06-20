@@ -48,7 +48,8 @@ object EngagementTracker {
      */
     fun init(context: Context) {
         val p = prefs(context)
-        if (!p.contains(KEY_INSTALL_DATE)) {
+        val isFirstInstall = !p.contains(KEY_INSTALL_DATE)
+        if (isFirstInstall) {
             val nowIso = utcIso.format(Date())
             p.edit { putString(KEY_INSTALL_DATE, nowIso) }
             AnalyticsUtils.logEvent(
@@ -56,6 +57,20 @@ object EngagementTracker {
                 mapOf("timestamp" to nowIso)
             )
             Log.d(TAG, "First install recorded at $nowIso")
+            // v3.1.11 Week 1 retention milestone: schedule D1 overnight-drain push.
+            // Gated by RC flag inside the worker so this no-ops when flag is off.
+            try {
+                D1OvernightDrainWorker.scheduleOnFirstInstall(context)
+            } catch (t: Throwable) {
+                Log.w(TAG, "scheduleOnFirstInstall failed: ${t.message}")
+            }
+        } else {
+            // Returning user — cancel any pending D1 push, they came back organically.
+            try {
+                D1OvernightDrainWorker.cancelIfPendingOrganicReturn(context)
+            } catch (t: Throwable) {
+                Log.w(TAG, "cancelIfPendingOrganicReturn failed: ${t.message}")
+            }
         }
         trackSession(context)
     }

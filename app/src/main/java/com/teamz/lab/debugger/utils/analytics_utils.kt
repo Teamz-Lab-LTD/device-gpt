@@ -278,6 +278,12 @@ enum class AnalyticsEvent(val eventName: String) {
     AppInstalled("app_installed"),
     UserEngagementSession("user_engagement_session"),
     UserEngagementSignificantAction("user_engagement_significant_action"),
+    // v3.1.11 Week 1 retention milestone events
+    D1OvernightDrainScheduled("d1_overnight_drain_scheduled"),
+    D1OvernightDrainPushed("d1_overnight_drain_pushed"),
+    D1OvernightDrainCancelled("d1_overnight_drain_cancelled"),
+    FirstScanCompleted("first_scan_completed"),
+    FirstScanShareTapped("first_scan_share_tapped"),
     // Power consumption events
     PowerTabViewed("power_tab_viewed"),
     PowerExperimentStarted("power_experiment_started"),
