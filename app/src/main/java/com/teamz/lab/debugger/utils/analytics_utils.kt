@@ -3,6 +3,8 @@ package com.teamz.lab.debugger.utils
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.os.HandlerThread
+import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -13,6 +15,20 @@ object AnalyticsUtils {
 
     private var firebaseAnalytics: FirebaseAnalytics? = null
     private var appContext: Context? = null
+
+    // Dedicated background thread for analytics work. v3.1.10 fix — Crashlytics
+    // showed v3.1.9 ANR in LeaderboardSection.CategorySelector. Root cause was
+    // logEvent() calling isDeviceInRestrictedMode() on the main thread, which
+    // synchronously queries Settings.Global.AIRPLANE_MODE_ON via IPC to the
+    // SettingsProvider. On slow devices that single IPC can stack with other
+    // main-thread work and trip an ANR. Routing every logEvent body through
+    // this single HandlerThread keeps the call site fire-and-forget without
+    // spawning a new thread per event (which would be wasteful — every tap
+    // logs an event).
+    private val analyticsThread: HandlerThread by lazy {
+        HandlerThread("teamzlab-analytics").apply { start() }
+    }
+    private val analyticsHandler: Handler by lazy { Handler(analyticsThread.looper) }
 
     fun init(context: Context) {
         if (firebaseAnalytics == null) {
@@ -77,6 +93,9 @@ object AnalyticsUtils {
      * - Doze Mode (deep sleep)
      */
     fun logEvent(event: AnalyticsEvent, params: Map<String, Any?> = emptyMap()) {
+        // Snapshot the inputs synchronously (caller's thread may release the map
+        // before the background handler runs), then defer all blocking work
+        // (SettingsProvider IPC + Firebase) to the analytics HandlerThread.
         val bundle = Bundle()
         params.forEach { (key, value) ->
             when (value) {
@@ -87,23 +106,28 @@ object AnalyticsUtils {
                 is Boolean -> bundle.putBoolean(key, value)
             }
         }
-        
-        // Always log locally for debugging
+
+        // Always log locally for debugging — Log.d itself is non-blocking.
         Log.d("AnalyticsUtils", "Event logged: ${event.eventName} with params: $params")
-        
-        // Never send to Firebase in debug mode
+
         if (BuildConfig.DEBUG) {
             Log.d("AnalyticsUtils", "Event NOT sent to Firebase (DEBUG mode): ${event.eventName}")
             return
         }
-        
-        // Only send to Firebase if device is NOT in restricted mode
-        val context = appContext
-        if (context != null && !isDeviceInRestrictedMode(context)) {
-            firebaseAnalytics?.logEvent(event.eventName, bundle)
-            Log.d("AnalyticsUtils", "Event sent to Firebase: ${event.eventName}")
-        } else {
-            Log.d("AnalyticsUtils", "Event NOT sent to Firebase (device in restricted mode): ${event.eventName}")
+
+        val context = appContext ?: return
+        val eventName = event.eventName
+        analyticsHandler.post {
+            try {
+                if (!isDeviceInRestrictedMode(context)) {
+                    firebaseAnalytics?.logEvent(eventName, bundle)
+                    Log.d("AnalyticsUtils", "Event sent to Firebase: $eventName")
+                } else {
+                    Log.d("AnalyticsUtils", "Event NOT sent to Firebase (device in restricted mode): $eventName")
+                }
+            } catch (t: Throwable) {
+                Log.w("AnalyticsUtils", "Background logEvent failed for $eventName: ${t.message}")
+            }
         }
     }
 
@@ -130,17 +154,23 @@ object AnalyticsUtils {
             return
         }
 
-        val context = appContext
-        if (context != null && !isDeviceInRestrictedMode(context)) {
-            val bundle = Bundle().apply {
-                putString(FirebaseAnalytics.Param.AD_PLATFORM, "admob")
-                putString(FirebaseAnalytics.Param.AD_FORMAT, adType)
-                putString(FirebaseAnalytics.Param.AD_UNIT_NAME, adUnitId)
-                putString(FirebaseAnalytics.Param.CURRENCY, currencyCode)
-                putDouble(FirebaseAnalytics.Param.VALUE, revenueValue)
+        val context = appContext ?: return
+        analyticsHandler.post {
+            try {
+                if (!isDeviceInRestrictedMode(context)) {
+                    val bundle = Bundle().apply {
+                        putString(FirebaseAnalytics.Param.AD_PLATFORM, "admob")
+                        putString(FirebaseAnalytics.Param.AD_FORMAT, adType)
+                        putString(FirebaseAnalytics.Param.AD_UNIT_NAME, adUnitId)
+                        putString(FirebaseAnalytics.Param.CURRENCY, currencyCode)
+                        putDouble(FirebaseAnalytics.Param.VALUE, revenueValue)
+                    }
+                    firebaseAnalytics?.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION, bundle)
+                    Log.d("AnalyticsUtils", "Ad revenue sent to Firebase: $revenueValue $currencyCode")
+                }
+            } catch (t: Throwable) {
+                Log.w("AnalyticsUtils", "Background logAdRevenue failed: ${t.message}")
             }
-            firebaseAnalytics?.logEvent(FirebaseAnalytics.Event.AD_IMPRESSION, bundle)
-            Log.d("AnalyticsUtils", "Ad revenue sent to Firebase: $revenueValue $currencyCode")
         }
     }
 
@@ -150,18 +180,22 @@ object AnalyticsUtils {
      * - Device is NOT in restricted mode
      */
     fun setUserId(userId: String?) {
-        // Never set user ID in debug mode
         if (BuildConfig.DEBUG) {
             Log.d("AnalyticsUtils", "User ID NOT set (DEBUG mode): $userId")
             return
         }
-        
-        val context = appContext
-        if (context != null && !isDeviceInRestrictedMode(context)) {
-            firebaseAnalytics?.setUserId(userId)
-            Log.d("AnalyticsUtils", "User ID set: $userId")
-        } else {
-            Log.d("AnalyticsUtils", "User ID NOT set (device in restricted mode): $userId")
+        val context = appContext ?: return
+        analyticsHandler.post {
+            try {
+                if (!isDeviceInRestrictedMode(context)) {
+                    firebaseAnalytics?.setUserId(userId)
+                    Log.d("AnalyticsUtils", "User ID set: $userId")
+                } else {
+                    Log.d("AnalyticsUtils", "User ID NOT set (device in restricted mode): $userId")
+                }
+            } catch (t: Throwable) {
+                Log.w("AnalyticsUtils", "Background setUserId failed: ${t.message}")
+            }
         }
     }
 
@@ -171,18 +205,22 @@ object AnalyticsUtils {
      * - Device is NOT in restricted mode
      */
     fun setUserProperty(name: String, value: String) {
-        // Never set user property in debug mode
         if (BuildConfig.DEBUG) {
             Log.d("AnalyticsUtils", "User property NOT set (DEBUG mode): $name = $value")
             return
         }
-        
-        val context = appContext
-        if (context != null && !isDeviceInRestrictedMode(context)) {
-            firebaseAnalytics?.setUserProperty(name, value)
-            Log.d("AnalyticsUtils", "User property set: $name = $value")
-        } else {
-            Log.d("AnalyticsUtils", "User property NOT set (device in restricted mode): $name = $value")
+        val context = appContext ?: return
+        analyticsHandler.post {
+            try {
+                if (!isDeviceInRestrictedMode(context)) {
+                    firebaseAnalytics?.setUserProperty(name, value)
+                    Log.d("AnalyticsUtils", "User property set: $name = $value")
+                } else {
+                    Log.d("AnalyticsUtils", "User property NOT set (device in restricted mode): $name = $value")
+                }
+            } catch (t: Throwable) {
+                Log.w("AnalyticsUtils", "Background setUserProperty failed: ${t.message}")
+            }
         }
     }
 }
