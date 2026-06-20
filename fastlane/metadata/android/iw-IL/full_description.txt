@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 בדיקת מהירות WiFi, בריאות סוללה, בדיקת מיקרופון, אבחון טלפון עם AI — הכל בנגיעה אחת באנדרואיד. DeviceGPT סורק את המכשיר שלך ומסביר את התוצאה בעברית פשוטה. אין צורך ב-root.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+אחרי כל סריקה, הקש על שאל את ה-AI לקבלת פתרונות מיידיים דרך ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com או Replika. תשע פלטפורמות AI בנגיעה אחת. הסריקה שלך נשארת במכשיר — לא משתפים כלום עד שאתה רוצה.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 בדיקת מהירות WiFi ורשת
+• בדיקת מהירות WiFi: הורדה, העלאה, ping, jitter
+• בדיקת מהירות רשת לסלולרי ו-Wi-Fi
+• עוצמת אות ורוחב פס בזמן אמת
+• השהיה ואיבוד חבילות לגיימרים שסופרים כל ms
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 בריאות סוללה עם AI — מה ש-Android מסתיר
+ל-Android אין מסך מובנה לבריאות סוללה. DeviceGPT ממלא את החסר:
+• מצב בריאות סוללה, טמפרטורה וסימני בלאי במסך אחד
+• צריכת חשמל בוואטים אמיתיים לאפליקציה, לשעה (P = V × I, ללא הערכה)
+• התנהגות טעינה ומעקב מחזורים לאורך שבועות
+• אילו אפליקציות באמת מרוקנות את הסוללה שלך
+• בודק סוללה להשוואה בין טעינה מהירה לאיטית
+• ייצוא נתוני סוללה ל-CSV או שאל AI להסבר
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 בדיקת מיקרופון, חומרה, חיישן
+• בדיקת מיקרופון: רמת קלט, רעש רקע, השמעה מיידית
+• בדיקת חומרה של הטלפון: מסך מגע, רמקולים, מצלמה, GPS, מד תאוצה
+• ניטור FPS וזיהוי frame drops דרך Choreographer API
+• מדידת השהיית מגע עד מילישנייה
+• בדיקת טעינה — מהירות, טמפרטורה וזרם יחד
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — ביקורת אבטחה לטלפון
+ביקורת בשלושה חלקים שמדרגת את המכשיר מ-0 עד 100:
+• סיכון פרטיות אפליקציות (35%): זיהוי keylogger, אפליקציות הקלטת מסך, אפליקציות מוסתרות, סורק תוכנות זדוניות on-device, ניצול לרעה של מיקרופון/מצלמה, עוקבי פרסום
+• אמון רשת (35%): מניפולציה של DNS, חטיפת SSL (MITM), proxy שקוף, בדיקת חבילות עמוקה, מעקב ISP, DNS פרטי
+• יושרת מכשיר (30%): מצב root, bootloader, sideloading, מצב מפתח, הרשאות overlay
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"האם הטלפון שלי פרוץ?" — Zero Trust Dashboard נותן תשובה מדורגת ומובנית במקום תחושה עמומה.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 ה-AI מסביר את הטלפון שלך בשפה פשוטה
+אפליקציות אבחון אחרות מראות רק מספרים. DeviceGPT מסביר אותם:
+"הסוללה מתחממת — סגור אפליקציות ברקע."
+"המיקרופון היה בשימוש אמש — בטל הרשאות אפליקציה."
+"jitter ב-Wi-Fi עלול לפגוע במשחקים — אתחל את הראוטר."
+prompt חכם ומותאם להקשר מוכן עבור ה-AI שתבחר.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 בדיקת בריאות טלפון — סריקה אחת
+• ציון בריאות הטלפון לסוללה, אחסון, RAM, טמפרטורה, חיישנים
+• מידע על המכשיר: מפרטים, פרטי מערכת, build info
+• בדיקת בידוד רכיבים: מצלמה, מסך, CPU, עוצמת רשת
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 בדיקת מצב טלפון ודוח מכירה חוזרת
+צור דוח טלפון מוסמך למכירה חוזרת, פניות תמיכה או הוכחת מצב. חתום קריפטוגרפית (RSA, Android KeyStore) עם זיהוי מניפולציה וקוד אימות שניתן לשתף.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 לוח מובילים והישגים
+• 10 קטגוריות גלובליות: חוסך סוללה, מהירות, תרמית, עוצמה, בריאות, עקביות, מסך, מצלמה, CPU, עוצמת אפליקציות
+• תגי Trust: ארד, כסף, זהב
+• מעקב שינה/יקיצה לניתוח סוללה לילי
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 כולל גם
+• Widget למסך נעילה (Android 13+) עם ציון בריאות, סוללה, טמפרטורה
+• 15+ שפות
+• עובד offline ברוב הסריקות (שאל את ה-AI דורש רשת)
+• ללא הרשמה. ללא root.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (רכישה בתוך האפליקציה): מסיר פרסומות ותומך בפיתוח מתמשך.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 הורד את DeviceGPT — אפליקציית אבחון טלפון עם AI, בדיקת מהירות WiFi ובריאות סוללה לאנדרואיד. התקן והרץ סריקה ראשונה תוך 30 שניות.

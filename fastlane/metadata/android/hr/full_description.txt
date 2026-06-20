@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 WiFi test brzine, zdravlje baterije, test mikrofona, AI dijagnostika telefona — sve jednim dodirom na Androidu. DeviceGPT skenira vaš uređaj i objašnjava rezultat na običnom hrvatskom. Bez roota.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+Nakon svakog skeniranja, pritisnite Pitaj AI za trenutna rješenja preko ChatGPT-a, Geminija, Claudea, DeepSeeka, Perplexityja, Copilota, Groka, You.com-a ili Replike. Devet AI platformi nadohvat ruke. Skeniranje ostaje na uređaju — ne dijelimo ništa dok sami ne želite.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 WiFi i Mrežni Test Brzine
+• WiFi test brzine: preuzimanje, slanje, ping, jitter
+• Mrežni test brzine za mobilni internet i Wi-Fi
+• Jačina signala i propusnost u stvarnom vremenu
+• Kašnjenje i gubitak paketa za igrače koji broje svaku ms
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI Zdravlje Baterije — Što Android Skriva
+Android nema ugrađen zaslon zdravlja baterije. DeviceGPT popunjava tu prazninu:
+• Stanje zdravlja baterije, temperatura i signali trošenja na jednom zaslonu
+• Potrošnja u stvarnim vatima po aplikaciji, na sat (P = V × I, ne procjena)
+• Ponašanje pri punjenju i praćenje ciklusa kroz tjedne
+• Koje aplikacije stvarno troše vašu bateriju
+• Tester baterije za usporedbu brzog i sporog punjenja
+• Izvezite podatke baterije u CSV ili pitajte AI za objašnjenje
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Test Mikrofona, Hardvera, Senzora
+• Test mikrofona: razina ulaza, razina šuma, trenutna reprodukcija
+• Test hardvera telefona: zaslon na dodir, zvučnici, kamera, GPS, akcelerometar
+• FPS praćenje i detekcija pada okvira preko Choreographer API-ja
+• Mjerenje kašnjenja dodira do milisekunde
+• Test punjenja — brzina, temperatura i struja zajedno
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Sigurnosni Audit Telefona
+Audit u tri dijela koji ocjenjuje vaš uređaj od 0 do 100:
+• Rizik Privatnosti Aplikacija (35%): detekcija keyloggera, aplikacije za snimanje zaslona, skrivene aplikacije, on-device skener zlonamjernog softvera, zlouporaba mikrofona/kamere, reklamni trackeri
+• Pouzdanost Mreže (35%): manipulacija DNS-a, SSL otmica (MITM), transparentni proxy, duboka inspekcija paketa, ISP praćenje, privatni DNS
+• Integritet Uređaja (30%): root status, bootloader, sideloading, način rada za razvojne programere, overlay dozvole
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Je li mi telefon hakiran?" — Zero Trust Dashboard daje ocijenjeni, strukturirani odgovor umjesto maglovitog osjećaja.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI Objašnjava Vaš Telefon Ljudskim Jezikom
+Druge dijagnostičke aplikacije pokazuju samo brojeve. DeviceGPT ih objašnjava:
+"Baterija se pregrijava — zatvorite pozadinske aplikacije."
+"Mikrofon je korišten prošle noći — opozovite dozvole aplikacija."
+"Wi-Fi jitter može kvariti igranje — restartajte router."
+Pametan, kontekstualni prompt već je spreman za AI po vašem izboru.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Provjera Zdravlja Telefona — Jedno Skeniranje
+• Ocjena zdravlja telefona za bateriju, pohranu, RAM, temperaturu, senzore
+• Info o uređaju: specifikacije, detalji sustava, build info
+• Izolirano testiranje komponenti: kamera, zaslon, CPU, mrežna snaga
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Provjera Stanja Telefona i Izvještaj za Preprodaju
+Generirajte certificirani izvještaj o telefonu za preprodaju, tickete za podršku ili dokaz stanja. Kriptografski potpisano (RSA, Android KeyStore) s detekcijom manipulacije i dijeljivim verifikacijskim kodom.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 Ljestvica i Postignuća
+• 10 globalnih kategorija: Štedljivac Baterije, Brzina, Termička, Snaga, Zdravlje, Konzistencija, Zaslon, Kamera, CPU, Snaga Aplikacija
+• Trust značke: Brončana, Srebrna, Zlatna
+• Praćenje spavanja/buđenja za noćnu analizu baterije
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Također Uključuje
+• Widget zaključanog zaslona (Android 13+) s ocjenom zdravlja, baterijom, temperaturom
+• 15+ jezika
+• Radi offline za većinu skeniranja (Pitaj AI zahtijeva mrežu)
+• Bez registracije. Bez roota.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (kupnja unutar aplikacije): uklanja oglase i podržava daljnji razvoj.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 Preuzmite DeviceGPT — AI dijagnostika telefona, WiFi test brzine i aplikacija zdravlja baterije za Android. Instalirajte i pokrenite prvo skeniranje za 30 sekundi.

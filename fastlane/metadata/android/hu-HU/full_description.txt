@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 WiFi sebesség teszt, akkumulátor egészség, mikrofon teszt, AI telefon diagnosztika — mind egyetlen érintéssel Androidon. A DeviceGPT beszkenneli a készülékedet és érthető magyar nyelven elmagyarázza az eredményt. Nincs szükség rootra.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+Minden szkennelés után koppints a Kérdezd az AI-t gombra azonnali megoldásokért a ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com vagy Replika segítségével. Kilenc AI platform egy érintésre. A szkennelés a készüléken marad — semmit sem osztunk meg, amíg te ezt nem akarod.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 WiFi és Hálózat Sebesség Teszt
+• WiFi sebesség teszt: letöltés, feltöltés, ping, jitter
+• Hálózati sebesség teszt mobilra és Wi-Fi-re
+• Jelerősség és sávszélesség valós időben
+• Latencia és csomagvesztés a játékosoknak, akik minden ms-t számolnak
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI Akkumulátor Egészség — Amit az Android elrejt
+Az Androidnak nincs beépített akkumulátor egészség képernyője. A DeviceGPT betölti ezt a hiányt:
+• Akkumulátor egészség állapota, hőmérséklet és kopási jelek egy képernyőn
+• Fogyasztás valós wattban applikációnként, óránként (P = V × I, nem becslés)
+• Töltési viselkedés és ciklus követés hetek alatt
+• Mely alkalmazások merítik valójában az akkumulátort
+• Akkumulátor tesztelő gyors vs lassú töltés összehasonlításhoz
+• Akkumulátor adatok exportálása CSV-be vagy AI magyarázat kérése
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Mikrofon Teszt, Hardver Teszt, Szenzor Teszt
+• Mikrofon teszt: bemeneti szint, zajküszöb, azonnali visszajátszás
+• Telefon hardver teszt: érintőképernyő, hangszórók, kamera, GPS, gyorsulásmérő
+• FPS monitoring és frame drop észlelés Choreographer API-n keresztül
+• Érintési latencia mérés milliszekundumig
+• Töltési teszt — sebesség, hőmérséklet és áram együtt
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Telefon Biztonsági Audit
+Háromrészes audit, 0-tól 100-ig pontozás:
+• App Kockázat (35%): keylogger, képernyőfelvevő appok, rejtett appok, on-device malware szkenner, mikrofon/kamera visszaélés, trackerek
+• Hálózat (35%): DNS, SSL eltérítés (MITM), proxy, mély csomag vizsgálat, ISP követés, privát DNS
+• Készülék (30%): root, bootloader, sideloading, fejlesztői mód, overlay
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Feltörték a telefonomat?" — Zero Trust pontozott választ ad ködös érzés helyett.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 Az AI Magyaráz Téged Tisztán
+Más diagnosztikai appok csak számokat mutatnak. A DeviceGPT elmagyarázza őket:
+"Az akkumulátor túlmelegszik — zárd be a háttér appokat."
+"A mikrofont az éjjel használták — vond vissza az app engedélyeket."
+"A Wi-Fi jitter zavarhatja a játékot — indítsd újra a routert."
+Egy okos, kontextusra szabott prompt már készen áll a választott AI-hoz.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Telefon Egészség Ellenőrzés — Egy Szkennelés
+• Telefon egészség pontszám akkumulátorra, tárolóra, RAM-ra, hőmérsékletre, szenzorokra
+• Készülék info: specifikációk, rendszer részletek, build info
+• Komponens izolációs teszt: kamera, kijelző, CPU, hálózati teljesítmény
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Telefon Állapot Ellenőrzés és Viszonteladói Jelentés
+Generálj tanúsított telefon jelentést viszonteladáshoz, support jegyekhez vagy állapot bizonyítékhoz. Kriptográfiailag aláírva (RSA, Android KeyStore) manipuláció észleléssel és megosztható ellenőrzési kóddal.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 Ranglista és Eredmények
+• 10 globális kategória: Akkumulátor Spóroló, Sebesség, Termikus, Teljesítmény, Egészség, Konzisztencia, Kijelző, Kamera, CPU, App Teljesítmény
+• Trust jelvények: Bronz, Ezüst, Arany
+• Alvás/ébredés követés éjszakai akkumulátor elemzéshez
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Tartalmaz Még
+• Zárolt képernyő widget (Android 13+) egészség pontszámmal, akkumulátorral, hőmérséklettel
+• 15+ nyelv
+• Offline működik a legtöbb szkenneléshez (Kérdezd az AI-t hálózatot igényel)
+• Nincs regisztráció. Nincs root.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (in-app vásárlás): eltávolítja a hirdetéseket és támogatja a folyamatos fejlesztést.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 Töltsd le a DeviceGPT-t — az AI telefon diagnosztika, WiFi sebesség teszt és akkumulátor egészség app Androidra. Telepítsd és futtasd az első szkennelést 30 másodperc alatt.

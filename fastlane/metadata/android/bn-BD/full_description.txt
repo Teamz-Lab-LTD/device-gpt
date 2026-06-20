@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 ওয়াইফাই স্পিড টেস্ট, ব্যাটারি হেলথ, মাইক টেস্ট, AI ফোন ডায়াগনস্টিক — Android এ এক ট্যাপে সব। DeviceGPT আপনার ডিভাইস স্ক্যান করে এবং ফলাফল সহজ বাংলায় ব্যাখ্যা করে। root লাগে না।
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+প্রতিটি স্ক্যানের পর AI কে জিজ্ঞাসা করুন বোতামে ট্যাপ করে ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com বা Replika থেকে তাৎক্ষণিক সমাধান পান। নয়টি AI প্ল্যাটফর্ম এক ট্যাপে। আপনার স্ক্যান ডিভাইসেই থাকে — আপনি না চাইলে কিছুই শেয়ার করি না।
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 ওয়াইফাই ও নেটওয়ার্ক স্পিড টেস্ট
+• ওয়াইফাই স্পিড টেস্ট: ডাউনলোড, আপলোড, পিং, জিটার
+• মোবাইল এবং Wi-Fi এর জন্য নেটওয়ার্ক স্পিড টেস্ট
+• রিয়েল-টাইম সিগন্যাল শক্তি ও ব্যান্ডউইথ
+• প্রতিটি ms গণনাকারী গেমারদের জন্য লেটেন্সি ও প্যাকেট লস
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI ব্যাটারি হেলথ — যা Android দেখায় না
+Android এর কোনো বিল্ট-ইন ব্যাটারি হেলথ স্ক্রিন নেই। DeviceGPT এই ফাঁক পূরণ করে:
+• ব্যাটারি হেলথ স্ট্যাটাস, তাপমাত্রা ও ক্ষয়ের সংকেত এক স্ক্রিনে
+• অ্যাপ প্রতি, ঘণ্টা প্রতি প্রকৃত ওয়াটে বিদ্যুৎ ব্যবহার (P = V × I, অনুমান নয়)
+• চার্জিং আচরণ ও সাইকেল ট্র্যাকিং সপ্তাহজুড়ে
+• কোন অ্যাপগুলো আপনার ব্যাটারি সবচেয়ে বেশি খরচ করে
+• দ্রুত বনাম ধীর চার্জ তুলনার জন্য ব্যাটারি টেস্টার
+• ব্যাটারি ডেটা CSV তে এক্সপোর্ট করুন বা ব্যাখ্যার জন্য AI কে জিজ্ঞাসা করুন
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 মাইক টেস্ট, হার্ডওয়্যার টেস্ট, সেন্সর টেস্ট
+• মাইক টেস্ট: ইনপুট লেভেল, নয়েজ ফ্লোর, তাৎক্ষণিক প্লেব্যাক
+• ফোন হার্ডওয়্যার টেস্ট: টাচস্ক্রিন, স্পিকার, ক্যামেরা, GPS, অ্যাক্সেলেরোমিটার
+• Choreographer API দিয়ে FPS মনিটরিং ও ফ্রেম ড্রপ ডিটেকশন
+• টাচ লেটেন্সি ms পর্যন্ত পরিমাপ
+• চার্জিং টেস্ট — গতি, তাপমাত্রা ও কারেন্ট একসাথে
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — ফোন নিরাপত্তা অডিট
+তিন-অংশের অডিট যা আপনার ডিভাইসকে 0 থেকে 100 স্কোর দেয়:
+• অ্যাপ গোপনীয়তা ঝুঁকি (35%): কীলগার সনাক্তকরণ, স্ক্রিন রেকর্ডিং অ্যাপ, লুকানো অ্যাপ, অন-ডিভাইস ম্যালওয়্যার স্ক্যান, মাইক্রোফোন/ক্যামেরা অপব্যবহার, বিজ্ঞাপন ট্র্যাকার
+• নেটওয়ার্ক বিশ্বাস (35%): DNS ম্যানিপুলেশন, SSL হাইজ্যাক (MITM), স্বচ্ছ প্রক্সি, ডিপ প্যাকেট ইন্সপেকশন, ISP ট্র্যাকিং, প্রাইভেট DNS
+• ডিভাইস ইন্টিগ্রিটি (30%): root স্ট্যাটাস, বুটলোডার, sideloading, ডেভেলপার মোড, overlay অনুমতি
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"আমার ফোন কি হ্যাক হয়েছে?" — Zero Trust Dashboard আপনাকে অস্পষ্ট অনুভূতির পরিবর্তে স্কোর করা, কাঠামোবদ্ধ উত্তর দেয়।
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI আপনার ফোন সহজ ভাষায় ব্যাখ্যা করে
+অন্যান্য ডায়াগনস্টিক অ্যাপ শুধু সংখ্যা দেখায়। DeviceGPT সেগুলো ব্যাখ্যা করে:
+"ব্যাটারি অতিরিক্ত গরম হচ্ছে — ব্যাকগ্রাউন্ড অ্যাপ বন্ধ করুন।"
+"মাইক্রোফোন গতকাল রাতে ব্যবহৃত হয়েছে — অ্যাপ অনুমতি বাতিল করুন।"
+"Wi-Fi জিটার গেমিং নষ্ট করতে পারে — রাউটার রিস্টার্ট করুন।"
+আপনার পছন্দের AI এর জন্য একটি স্মার্ট, প্রসঙ্গভিত্তিক প্রম্পট প্রস্তুত আছে।
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 ফোন হেলথ চেক — এক স্ক্যান
+• ব্যাটারি, স্টোরেজ, RAM, তাপমাত্রা, সেন্সরের জন্য ফোন হেলথ স্কোর
+• ডিভাইস তথ্য: স্পেক, সিস্টেম বিবরণ, build তথ্য
+• কম্পোনেন্ট আইসোলেশন টেস্ট: ক্যামেরা, ডিসপ্লে, CPU, নেটওয়ার্ক পাওয়ার
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 ফোন কন্ডিশন চেক ও রিসেল রিপোর্ট
+পুনঃবিক্রয়, সাপোর্ট টিকেট বা অবস্থার প্রমাণের জন্য সার্টিফায়েড ফোন রিপোর্ট তৈরি করুন। ক্রিপ্টোগ্রাফিকভাবে স্বাক্ষরিত (RSA, Android KeyStore) — ম্যানিপুলেশন সনাক্তকরণ ও শেয়ারযোগ্য যাচাইকরণ কোড সহ।
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 লিডারবোর্ড ও অর্জন
+• 10টি গ্লোবাল ক্যাটাগরি: ব্যাটারি সেভার, গতি, তাপীয়, পাওয়ার, হেলথ, সামঞ্জস্য, ডিসপ্লে, ক্যামেরা, CPU, অ্যাপ পাওয়ার
+• Trust ব্যাজ: ব্রোঞ্জ, রৌপ্য, স্বর্ণ
+• রাতের ব্যাটারি বিশ্লেষণের জন্য ঘুম/জাগরণ ট্র্যাকিং
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 আরও আছে
+• লক স্ক্রিন উইজেট (Android 13+): হেলথ স্কোর, ব্যাটারি, তাপমাত্রা
+• 15+ ভাষা
+• বেশিরভাগ স্ক্যানের জন্য অফলাইন কাজ করে (AI কে জিজ্ঞাসা করুন এর জন্য নেটওয়ার্ক দরকার)
+• কোন রেজিস্ট্রেশন নয়। কোন root নয়।
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (in-app ক্রয়): বিজ্ঞাপন সরায় ও চলমান উন্নয়নকে সমর্থন করে।
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 DeviceGPT ডাউনলোড করুন — Android এর জন্য AI ফোন ডায়াগনস্টিক, ওয়াইফাই স্পিড টেস্ট ও ব্যাটারি হেলথ অ্যাপ। ইনস্টল করুন এবং 30 সেকেন্ডে প্রথম স্ক্যান চালান।

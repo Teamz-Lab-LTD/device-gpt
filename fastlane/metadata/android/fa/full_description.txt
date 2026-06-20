@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 تست سرعت WiFi، سلامت باتری، تست میکروفون، تشخیص هوش مصنوعی گوشی — همه با یک لمس روی اندروید. DeviceGPT دستگاه شما را اسکن می‌کند و نتیجه را به فارسی ساده توضیح می‌دهد. بدون نیاز به root.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+پس از هر اسکن، روی از AI بپرس بزنید تا راه‌حل‌های فوری از طریق ChatGPT، Gemini، Claude، DeepSeek، Perplexity، Copilot، Grok، You.com یا Replika دریافت کنید. نه پلتفرم AI در دسترس. اسکن شما روی دستگاه می‌ماند — تا زمانی که خودتان نخواهید چیزی به اشتراک گذاشته نمی‌شود.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 تست سرعت WiFi و شبکه
+• تست سرعت WiFi: دانلود، آپلود، پینگ، جیتر
+• تست سرعت شبکه برای موبایل و Wi-Fi
+• قدرت سیگنال و پهنای باند در زمان واقعی
+• تأخیر و از دست رفتن بسته برای گیمرها که هر ms مهم است
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI سلامت باتری — آنچه اندروید پنهان می‌کند
+اندروید صفحه داخلی برای سلامت باتری ندارد. DeviceGPT این خلأ را پر می‌کند:
+• وضعیت سلامت باتری، دما و علائم فرسودگی در یک صفحه
+• مصرف به وات واقعی برای هر برنامه، در ساعت (P = V × I، نه تخمین)
+• رفتار شارژ و ردیابی چرخه‌ها در طول هفته‌ها
+• کدام برنامه‌ها واقعاً باتری شما را خالی می‌کنند
+• تستر باتری برای مقایسه شارژ سریع و کند
+• خروجی داده باتری به CSV یا درخواست توضیح از AI
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 تست میکروفون، سخت‌افزار، سنسور
+• تست میکروفون: سطح ورودی، کف نویز، پخش فوری
+• تست سخت‌افزار گوشی: صفحه لمسی، اسپیکر، دوربین، GPS، شتاب‌سنج
+• مانیتورینگ FPS و تشخیص افت فریم از طریق Choreographer API
+• اندازه‌گیری تأخیر لمس تا میلی‌ثانیه
+• تست شارژ — سرعت، دما و جریان همزمان
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — ممیزی امنیت گوشی
+ممیزی سه‌بخشی که دستگاه شما را از 0 تا 100 امتیاز می‌دهد:
+• ریسک حریم خصوصی برنامه‌ها (35%): تشخیص کیلاگر، برنامه‌های ضبط صفحه، برنامه‌های مخفی، اسکنر بدافزار on-device، سوءاستفاده از میکروفون/دوربین، ردیاب‌های تبلیغاتی
+• اعتماد شبکه (35%): دستکاری DNS، ربودن SSL (MITM)، پروکسی شفاف، بازرسی عمیق بسته، ردیابی ISP، DNS خصوصی
+• یکپارچگی دستگاه (30%): وضعیت root، بوت‌لودر، sideloading، حالت توسعه‌دهنده، مجوزهای overlay
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"آیا گوشی من هک شده؟" — Zero Trust Dashboard به‌جای حس مبهم، پاسخ امتیازبندی‌شده و ساختاریافته می‌دهد.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI گوشی شما را به زبان ساده توضیح می‌دهد
+سایر برنامه‌های تشخیصی فقط اعداد را نشان می‌دهند. DeviceGPT آنها را توضیح می‌دهد:
+"باتری بیش از حد گرم می‌شود — برنامه‌های پس‌زمینه را ببندید."
+"میکروفون دیشب استفاده شده — مجوزهای برنامه را لغو کنید."
+"جیتر Wi-Fi می‌تواند به بازی آسیب بزند — روتر را راه‌اندازی مجدد کنید."
+یک پرامپت هوشمند و آگاه از زمینه برای AI انتخابی شما آماده است.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 بررسی سلامت گوشی — یک اسکن
+• امتیاز سلامت گوشی برای باتری، حافظه، RAM، دما، سنسورها
+• اطلاعات دستگاه: مشخصات، جزئیات سیستم، build info
+• تست ایزوله اجزا: دوربین، صفحه، CPU، توان شبکه
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 بررسی وضعیت گوشی و گزارش فروش مجدد
+گزارش گواهی‌شده گوشی برای فروش مجدد، تیکت‌های پشتیبانی یا اثبات وضعیت تولید کنید. به‌صورت رمزنگاری‌شده امضا شده (RSA، Android KeyStore) با تشخیص دستکاری و کد تأیید قابل اشتراک‌گذاری.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 جدول رده‌بندی و دستاوردها
+• 10 دسته جهانی: صرفه‌جویی باتری، سرعت، حرارتی، توان، سلامت، ثبات، صفحه، دوربین، CPU، توان برنامه‌ها
+• نشان‌های Trust: برنز، نقره، طلا
+• ردیابی خواب/بیداری برای تحلیل شبانه باتری
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 همچنین شامل
+• ویجت صفحه قفل (Android 13+) با امتیاز سلامت، باتری، دما
+• 15+ زبان
+• برای اکثر اسکن‌ها آفلاین کار می‌کند (از AI بپرس به شبکه نیاز دارد)
+• بدون ثبت‌نام. بدون root.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (خرید درون‌برنامه‌ای): تبلیغات را حذف می‌کند و از توسعه مستمر پشتیبانی می‌کند.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 DeviceGPT را دانلود کنید — تشخیص گوشی با AI، تست سرعت WiFi و برنامه سلامت باتری برای اندروید. نصب کنید و اولین اسکن را در 30 ثانیه اجرا کنید.

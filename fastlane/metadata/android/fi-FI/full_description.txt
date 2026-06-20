@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 WiFi-nopeustesti, akun terveys, mikrofonitesti, AI puhelimen diagnostiikka — kaikki yhdellä napsautuksella Androidilla. DeviceGPT skannaa laitteesi ja selittää tuloksen tavallisella suomella. Ei rootia.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+Jokaisen skannauksen jälkeen napauta Kysy AI:lta saadaksesi välittömiä ratkaisuja ChatGPT:n, Geminin, Clauden, DeepSeekin, Perplexityn, Copilotin, Grokin, You.comin tai Replikan kautta. Yhdeksän AI alustaa yhdellä napsautuksella. Skannauksesi pysyy laitteessa — emme jaa mitään ennen kuin itse haluat.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 WiFi ja Verkon Nopeustesti
+• WiFi-nopeustesti: lataus, lähetys, ping, jitter
+• Verkon nopeustesti mobiilille ja Wi-Fi:lle
+• Signaalin voimakkuus ja kaistanleveys reaaliajassa
+• Latenssi ja pakettihäviö pelaajille jotka laskevat jokaisen ms:n
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI Akun Terveys — Mitä Android piilottaa
+Androidissa ei ole sisäänrakennettua akun terveys -näyttöä. DeviceGPT täyttää tämän aukon:
+• Akun terveystila, lämpötila ja kulumissignaalit yhdellä näytöllä
+• Kulutus oikeina watteina sovellusta kohti, tuntia kohti (P = V × I, ei arviota)
+• Latauskäyttäytyminen ja syklien seuranta viikkojen aikana
+• Mitkä sovellukset todella tyhjentävät akkuasi
+• Akkutesteri nopean ja hitaan latauksen vertailuun
+• Vie akkutiedot CSV:hen tai kysy AI:lta selitystä
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Mikrofonitesti, Laitteistotesti, Anturitesti
+• Mikrofonitesti: tulosignaali, kohinan pohja, välitön toisto
+• Puhelimen laitteistotesti: kosketusnäyttö, kaiuttimet, kamera, GPS, kiihtyvyysanturi
+• FPS-seuranta ja ruudunpoiston havaitseminen Choreographer API:n kautta
+• Kosketuksen latenssin mittaus millisekuntiin asti
+• Lataustesti — nopeus, lämpötila ja virta yhdessä
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Puhelimen Tietoturva-auditointi
+Kolmiosainen auditointi, joka pisteyttää laitteen 0:sta 100:aan:
+• Sovellusten Yksityisyysriski (35%): keylogger-tunnistus, ruudunkaappaussovellukset, piilotetut sovellukset, on-device malware-skanneri, mikrofonin/kameran väärinkäyttö, mainosseuraimet
+• Verkon Luotettavuus (35%): DNS-manipulaatio, SSL-kaappaus (MITM), läpinäkyvä välityspalvelin, syvä pakettitarkastus, ISP-seuranta, yksityinen DNS
+• Laitteen Eheys (30%): root-tila, käynnistyslataaja, sideloading, kehittäjätila, overlay-luvat
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Onko puhelimeni hakkeroitu?" — Zero Trust Dashboard antaa pisteytetyn, jäsennellyn vastauksen sumean tunteen sijaan.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI Selittää Puhelimesi Tavallisella Kielellä
+Muut diagnostiikkasovellukset näyttävät vain numeroita. DeviceGPT selittää ne:
+"Akku ylikuumenee — sulje taustasovellukset."
+"Mikrofonia käytettiin viime yönä — peruuta sovellusluvat."
+"Wi-Fi-jitter voi häiritä pelaamista — käynnistä reititin uudelleen."
+Älykäs, kontekstitietoinen kehote on valmiina valitsemallesi AI:lle.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Puhelimen Kuntotarkistus — Yksi Skannaus
+• Puhelimen terveyspisteet akulle, tallennustilalle, RAM-muistille, lämpötilalle, antureille
+• Laitetiedot: spesifikaatiot, järjestelmä, build info
+• Komponentin eristystesti: kamera, näyttö, CPU, verkon virta
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Puhelimen Kuntotarkistus & Jälleenmyyntiraportti
+Luo sertifioitu puhelinraportti jälleenmyyntiä, tukipyyntöjä tai kuntotodistusta varten. Kryptografisesti allekirjoitettu (RSA, Android KeyStore) manipulaatiotunnistuksella ja jaettavalla vahvistuskoodilla.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 Tulostaulu ja Saavutukset
+• 10 globaalia kategoriaa: Akkusäästäjä, Nopeus, Terminen, Teho, Terveys, Johdonmukaisuus, Näyttö, Kamera, CPU, Sovellusten Teho
+• Trust-merkit: Pronssi, Hopea, Kulta
+• Uni/herätyksen seuranta yölliseen akun analyysiin
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Sisältää Myös
+• Lukitusnäytön widget (Android 13+) terveyspisteillä, akulla, lämpötilalla
+• 15+ kieltä
+• Toimii offline-tilassa useimmissa skannauksissa (Kysy AI:lta vaatii verkon)
+• Ei rekisteröintiä. Ei rootia.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (sovelluksen sisäinen osto): poistaa mainokset ja tukee jatkokehitystä.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 Lataa DeviceGPT — AI puhelimen diagnostiikka, WiFi-nopeustesti ja akun terveys -sovellus Androidille. Asenna ja suorita ensimmäinen skannaus 30 sekunnissa.
