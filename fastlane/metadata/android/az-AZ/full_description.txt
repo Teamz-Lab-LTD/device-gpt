@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 WiFi sürət testi, batareya sağlamlığı, mikrofon testi, AI telefon diaqnostikası — Android-də bir toxunuşla. DeviceGPT cihazınızı skan edir və nəticəni sadə dildə izah edir. Root tələb olunmur.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+Hər skandan sonra AI-dan Soruş düyməsinə basaraq ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com və ya Replika vasitəsilə dərhal həll yolu alın. Doqquz AI platforması bir toxunuşda. Skanınız cihazda qalır — siz paylaşana qədər heç nə göndərilmir.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 WiFi və Şəbəkə Sürət Testi
+• WiFi sürət testi: yükləmə, göndərmə, ping, jitter
+• Mobil və Wi-Fi üçün şəbəkə sürət testi
+• Real vaxtda siqnal gücü və bant genişliyi
+• Hər millisaniyəni sayan oyunçular üçün gecikmə və paket itkisi
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI Batareya Sağlamlığı — Android-in göstərmədikləri
+Android-də quraşdırılmış batareya sağlamlığı ekranı yoxdur. DeviceGPT bu boşluğu doldurur:
+• Batareya sağlamlığı, temperatur və köhnəlmə siqnalları bir ekranda
+• Saatlıq tətbiq başına real vatt istehlakı (P = V × I, təxmin deyil)
+• Şarj davranışı və dövr izləməsi
+• Hansı tətbiqlərin batareyanı ən çox yedüyü
+• Sürətli vs yavaş şarj müqayisəsi üçün batareya testeri
+• Batareya məlumatlarını CSV-yə ixrac və ya AI-dan izahat
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Mikrofon Testi, Aparat Testi, Sensor Testi
+• Mikrofon testi: giriş səviyyəsi, küy zəmini, dərhal səsləndirmə
+• Telefon aparat testi: sensor ekran, dinamiklər, kamera, GPS, akselerometr
+• FPS monitorinqi və kadr itkisi aşkarlanması (Choreographer API)
+• Toxunma gecikməsinin ms səviyyəsində ölçülməsi
+• Şarj testi — sürət, temperatur və cərəyan bir yerdə
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Telefon Təhlükəsizlik Auditi
+Cihazınızı 0-dan 100-ə qədər qiymətləndirən üç bölmədə audit:
+• Tətbiq Məxfilik Riski (35%): keylogger aşkarlanması, ekran qeyd tətbiqləri, gizli tətbiqlər, on-device malware skanı, mikrofon/kamera sui-istifadəsi, reklam izləyiciləri
+• Şəbəkə Etibarlılığı (35%): DNS manipulyasiyası, SSL ələ keçirilməsi (MITM), şəffaf proxy, dərin paket yoxlaması, ISP izləməsi, şəxsi DNS
+• Cihaz Bütövlüyü (30%): root statusu, bootloader, sideloading, developer rejimi, overlay icazələri
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Telefonum hack olunub?" sualına Zero Trust Dashboard təxmini hisslər yerinə qiymətləndirilmiş, strukturlaşdırılmış cavab verir.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI Telefonunuzu Sadə Dildə İzah Edir
+Digər diaqnostika tətbiqləri yalnız rəqəmlər göstərir. DeviceGPT onları izah edir:
+"Batareya istiləşir — fon tətbiqlərini bağlayın."
+"Mikrofon dünən gecə istifadə olunub — tətbiq icazələrini geri çağırın."
+"Wi-Fi jitter oyunlara təsir edə bilər — routeri yenidən başladın."
+Seçdiyiniz AI üçün ağıllı, kontekstual prompt artıq hazırdır.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Telefon Sağlamlıq Yoxlanışı — Bir Skan
+• Batareya, yaddaş, RAM, temperatur, sensorlar üçün telefon sağlamlıq balı
+• Cihaz məlumatı: spesifikasiyalar, sistem detalları, build info
+• Komponent təcrid testi: kamera, ekran, CPU, şəbəkə gücü
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Telefon Vəziyyət Yoxlanışı və Yenidən Satış Hesabatı
+Yenidən satış, dəstək biletləri və ya vəziyyət sübutu üçün sertifikatlı telefon hesabatı yaradın. Kriptoqrafik olaraq imzalanıb (RSA, Android KeyStore) — manipulyasiya aşkarlanması və paylaşıla bilən doğrulama kodu daxildir.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 Liderlər Cədvəli və Nailiyyətlər
+• 10 qlobal kateqoriya: Batareya Qənaətçisi, Sürət, Termal, Güc, Sağlamlıq, Sabitlik, Ekran, Kamera, CPU, Tətbiq Gücü
+• Trust nişanları: Bürünc, Gümüş, Qızıl
+• Gecə batareya analizi üçün yuxu/oyanış izləməsi
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Həmçinin Daxildir
+• Kilid ekran vidceti (Android 13+): sağlamlıq balı, batareya, temperatur
+• 15+ dil
+• Əksər skanlar üçün offline işləyir (AI-dan Soruş şəbəkə tələb edir)
+• Qeydiyyat tələb olunmur. Root tələb olunmur.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (tətbiqdaxili alış): reklamları silir və inkişafı dəstəkləyir.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 DeviceGPT-i yükləyin — Android üçün AI telefon diaqnostikası, WiFi sürət testi və batareya sağlamlığı tətbiqi. Quraşdırın və ilk skanı 30 saniyəyə işə salın.

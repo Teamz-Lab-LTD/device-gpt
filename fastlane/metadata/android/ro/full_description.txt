@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 Test viteză WiFi, sănătate baterie, test microfon, diagnostic IA telefon — totul cu o atingere pe Android. DeviceGPT scanează dispozitivul și explică rezultatul în română obișnuită. Fără root.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+După fiecare scanare, apasă Întreabă IA pentru soluții instant prin ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com sau Replika. Nouă platforme IA la îndemână. Scanarea rămâne pe dispozitiv — nu împărtășim nimic până nu decizi tu.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 Test Viteză WiFi și Rețea
+• Test viteză WiFi: download, upload, ping, jitter
+• Test viteză rețea pentru mobil și Wi-Fi
+• Putere semnal și lățime de bandă în timp real
+• Latență și pierdere pachete pentru gamerii care numără fiecare ms
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 Sănătate Baterie cu IA — Ce nu îți arată Android
+Android nu are un ecran integrat de sănătate baterie. DeviceGPT umple golul:
+• Stare sănătate baterie, temperatură și semnale de degradare pe un singur ecran
+• Consum în watți reali per aplicație, pe oră (P = V × I, fără aproximări)
+• Comportament încărcare și urmărirea ciclurilor în timp
+• Care aplicații îți consumă cel mai mult bateria
+• Tester baterie pentru comparare încărcare rapidă vs lentă
+• Exportă date baterie în CSV sau întreabă IA pentru explicații
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Test Microfon, Hardware, Senzor
+• Test microfon: nivel intrare, podea zgomot, redare instant
+• Test hardware telefon: ecran tactil, difuzoare, cameră, GPS, accelerometru
+• Monitorizare FPS și detectare frame drop prin Choreographer API
+• Măsurare latență atingere până la ms
+• Test încărcare — viteză, temperatură și curent împreună
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Audit de Securitate Telefon
+Audit în trei secțiuni care punctează dispozitivul de la 0 la 100:
+• Risc Confidențialitate Aplicații (35%): detectare keylogger, aplicații care înregistrează ecranul, aplicații ascunse, scanner malware on-device, abuz microfon/cameră, trackere publicitare
+• Încredere Rețea (35%): manipulare DNS, interceptare SSL (MITM), proxy transparent, inspecție profundă pachete, urmărire ISP, DNS privat
+• Integritate Dispozitiv (30%): stare root, bootloader, sideloading, mod dezvoltator, permisiuni overlay
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Mi-a fost telefonul hack-uit?" — Zero Trust Dashboard îți dă un răspuns punctat și structurat în loc de o senzație vagă.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 IA Îți Explică Telefonul în Limbaj Normal
+Alte aplicații de diagnostic arată doar cifre. DeviceGPT le explică:
+"Bateria se supraîncălzește — închide aplicațiile din fundal."
+"Microfonul a fost folosit noaptea trecută — revocă permisiunile aplicațiilor."
+"Jitter Wi-Fi poate strica gaming-ul — restartează routerul."
+Un prompt inteligent și contextual este deja pregătit pentru IA aleasă de tine.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Verificare Sănătate Telefon — O Singură Scanare
+• Scor sănătate telefon pentru baterie, stocare, RAM, temperatură, senzori
+• Info dispozitiv: specificații, detalii sistem, build info
+• Test izolat componente: cameră, ecran, CPU, putere rețea
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Verificare Stare Telefon & Raport pentru Revânzare
+Generează un raport telefon certificat pentru revânzare, tickete de suport sau dovada stării. Semnat criptografic (RSA, Android KeyStore) cu detectare manipulare și cod verificare partajabil.
 
-🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+🏆 Clasament și Realizări
+• 10 categorii globale: Economisire Baterie, Viteză, Termică, Putere, Sănătate, Consistență, Ecran, Cameră, CPU, Putere Aplicații
+• Trust badge-uri: Bronz, Argint, Aur
+• Urmărire somn/trezire pentru analiză nocturnă baterie
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Include și
+• Widget ecran blocat (Android 13+): scor sănătate, baterie, temperatură
+• 15+ limbi
+• Funcționează offline pentru majoritatea scanărilor (Întreabă IA necesită rețea)
+• Fără înregistrare. Fără root.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (achiziție în aplicație): elimină reclamele și susține dezvoltarea continuă.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 Descarcă DeviceGPT — aplicația de diagnostic IA telefon, test viteză WiFi și sănătate baterie pentru Android. Instalează și rulează prima scanare în 30 de secunde.

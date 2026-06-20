@@ -1,63 +1,63 @@
-🔍 WiFi speed test, battery health, mic test, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
+🔍 WiFi hastighetstest, batterihelse, mikrofontest, AI telefon diagnostikk — alt med ett trykk på Android. DeviceGPT skanner enheten din og forklarer resultatet på vanlig norsk. Ingen root nødvendig.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+Etter hver skanning, trykk Spør AI for umiddelbare løsninger via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com eller Replika. Ni AI plattformer innenfor rekkevidde. Skanningen blir på enheten — vi deler ingenting før du selv ønsker det.
 
-🚀 WiFi & Network Speed Test
-• WiFi speed test — download, upload, ping, jitter
-• Network speed test for cellular + Wi-Fi
-• Real-time signal strength and bandwidth
-• Latency and packet loss for gamers
+🚀 WiFi & Nettverk Hastighetstest
+• WiFi hastighetstest med nedlasting, opplasting, ping og jitter
+• Nettverkshastighetstest for mobil og Wi-Fi
+• Signalstyrke og båndbredde i sanntid
+• Latens og packet loss for gamere som teller hver ms
 
-🔋 AI Battery Health — What Android Doesn't Show
-Android has no built-in battery health screen. DeviceGPT fills the gap:
-• Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
-• Charging behavior and cycle tracking
-• Which apps drain your battery the most
-• Battery tester for fast vs slow charge comparison
-• Export battery data to CSV or Ask AI for explanation
+🔋 AI Batterihelse — Hva Android Ikke Viser
+Android har ingen innebygd skjerm for batterihelse. DeviceGPT fyller det tomrommet:
+• Batterihelse, temperatur og slitasjesignaler på én skjerm
+• Strømforbruk i ekte watt per app, per time (P = V × I, ingen gjetning)
+• Ladeadferd og syklussporing over uker
+• Hvilke apper som virkelig drenerer batteriet
+• Batteri tester for rask vs sakte lading sammenligning
+• Eksporter batteridata til CSV eller spør AI om forklaring
 
-🎤 Mic Test, Hardware Test, Sensor Test
-• Mic test — input level, noise floor, instant playback
-• Phone hardware test: touchscreen, speakers, camera, GPS, accelerometer
-• FPS monitoring and frame drop detection (Choreographer API)
-• Touch latency measurement
-• Charging test — speed, temperature, current draw
+🎤 Mikrofontest, Maskinvaretest, Sensortest
+• Mikrofontest med inngangsnivå, støygolv og umiddelbar avspilling
+• Telefon maskinvaretest: berøringsskjerm, høyttalere, kamera, GPS, akselerometer
+• FPS overvåking og frame drop deteksjon via Choreographer API
+• Berøringslatens måling helt ned til millisekunder
+• Ladetest — hastighet, temperatur og strøm samlet
 
-🛡️ Zero Trust Dashboard — Phone Security Audit
-A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
-• Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
+🛡️ Zero Trust Dashboard — Telefon Sikkerhetsaudit
+En audit i tre deler som scorer enheten fra 0 til 100:
+• App Personvernrisiko (35%): keylogger deteksjon, skjermopptak apper, skjulte apper, on-device malware scanner, mikrofon/kamera misbruk, ad tracker deteksjon
+• Nettverkstillit (35%): DNS manipulasjon, SSL kapring (MITM), transparent proxy, deep packet inspection, ISP tracking, privat DNS
+• Enhetsintegritet (30%): root status, bootloader, sideloading, utviklermodus, overlay tillatelser
 
-Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.
+"Er telefonen min hacket?" — Zero Trust Dashboard gir et scoret, strukturert svar i stedet for en vag følelse.
 
-🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
-"Battery is overheating — close background apps."
-"Mic was used last night — revoke app permissions."
-"Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
+🤖 AI Forklarer Telefonen på Vanlig Norsk
+Andre diagnoseapper viser bare tall. DeviceGPT forklarer dem:
+"Batteriet overopphetes — lukk bakgrunnsapper."
+"Mikrofonen ble brukt i natt — trekk tilbake apptillatelser."
+"Wi-Fi jitter kan ødelegge gaming — start ruteren på nytt."
+En smart, kontekstbevisst prompt står klar for den AI du velger.
 
-📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
-• Component isolation testing for camera, display, CPU, network power
+📱 Telefon Helsesjekk — Én Skanning, Hele Bildet
+• Telefon helsescore for batteri, lagring, RAM, temperatur, sensorer
+• Enhetsinfo: specs, systemdetaljer, build info
+• Komponent isolasjon test for kamera, skjerm, CPU, nettverksstrøm
 
-📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+📊 Telefon Tilstandssjekk & Videresalgsrapport
+Generer en sertifisert telefonrapport for videresalg, support saker eller bevis på tilstand. Kryptografisk signert (RSA, Android KeyStore) med manipulasjonsdeteksjon og en delbar verifikasjonskode.
 
 🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
-• Trust badges: Bronze, Silver, Gold
-• Sleep/wake tracking for overnight battery analysis
+• 10 globale kategorier: Batteri Sparer, Hastighet, Termisk, Strøm, Helse, Konsistens, Skjerm, Kamera, CPU, App Strøm
+• Trust badges: Bronse, Sølv, Gull
+• Søvn/våkne tracking for nattlig batterianalyse
 
-🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
-• 15+ languages
-• Works offline for most scans (Ask AI needs network)
-• No signup. No root.
+🚀 Inkluderer Også
+• Låseskjerm widget (Android 13+) med helsescore, batteri, temperatur
+• 15+ språk
+• Fungerer offline for de fleste skanninger (Spør AI krever nettverk)
+• Ingen registrering. Ingen root.
 
-💎 DeviceGPT Premium (in-app purchase): removes ads and supports ongoing development.
+💎 DeviceGPT Premium (kjøp i appen): fjerner annonser og støtter videre utvikling.
 
-📥 Download DeviceGPT — the AI phone diagnostics, WiFi speed test, and battery health app for Android. Tap install and run your first scan in 30 seconds.
+📥 Last ned DeviceGPT — AI telefon diagnostikk, WiFi hastighetstest og batterihelse app for Android. Installer og kjør første skanning på 30 sekunder.
