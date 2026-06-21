@@ -913,6 +913,45 @@ fun DrawerContent(
             )
         }
 
+        // v3.1.11 W2 — Invite-a-Friend section.
+        // GA4 28d data: referral_shared / referral_link_clicked / referral_installed
+        // events all <22 users (<7% reach). Despite the ReferralManager backend being
+        // fully built (5 reward tiers, install-referrer API, fraud guards), there was
+        // NO visible CTA outside PaywallWithReferralFallback — users only saw the
+        // option if they hit the paywall. This section surfaces it in the drawer
+        // so it's discoverable in normal usage.
+        // The button calls ReferralManager.shareReferralLink which fires the
+        // Android ACTION_SEND chooser + logs the ReferralShared event. Reward
+        // tiers (24h → 30 days ad-free at 1/3/5/10 referrals) handled server-side
+        // via Install Referrer API attribution.
+        Text(
+            text = "Invite Friends — Earn ad-free",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
+        IconTextButton(
+            icon = Icons.Default.Share,
+            label = "Invite a Friend"
+        ) {
+            try {
+                com.teamz.lab.debugger.utils.ReferralManager.shareReferralLink(context)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    "Couldn't open share dialog — try again",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 6.dp),
+            color = MaterialTheme.colorScheme.outline
+        )
+
         Text(
             text = "App Permissions",
             style = MaterialTheme.typography.labelLarge,

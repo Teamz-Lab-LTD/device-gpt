@@ -470,16 +470,18 @@ object ReferralManager {
         val referralLink = getReferralLink(context)
         val code = getOrCreateReferralCode(context)
 
+        // v3.1.11 W2 — share text rewrite. Old text was generic + hashtag-heavy
+        // (#PhoneHealth #DeviceChecker — nobody clicks hashtags in a private DM).
+        // New version: (1) leads with the friend's benefit, not the sender's,
+        // (2) names a concrete number ("0–100 Device Score"), (3) makes the
+        // reward visible to receiver ("install with my code = no ads for you
+        // too"), (4) puts the link FIRST line for one-tap copy in WhatsApp.
         val defaultText = """
-            🔍 Check out this amazing device health checker app!
+            $referralLink
 
-            📱 Get detailed insights about your phone's performance, battery, storage, and security.
+            Got a sec? Try DeviceGPT — it tells you exactly what's draining your battery, slowing your phone, or eating your storage. Free 0–100 Device Score in 10 seconds.
 
-            Use my referral code: $code
-
-            Download now: $referralLink
-
-            #PhoneHealth #DeviceChecker #TechTools
+            Use code $code on install → we BOTH get ad-free time. 🎁
         """.trimIndent()
 
         val finalText = if (shareText.isNotEmpty()) shareText else defaultText
