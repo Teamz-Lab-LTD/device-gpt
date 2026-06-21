@@ -952,6 +952,49 @@ fun DrawerContent(
             color = MaterialTheme.colorScheme.outline
         )
 
+        // v3.1.11 W2 — Verified Reports promoted section (per /ui-ux-pro-max audit 2026-06-22).
+        // Was buried at drawer item ~16 (after AdBadge + More Apps + Review prompt). GA4
+        // 28d data showed verified_report_generated / verified_report_shared /
+        // report_verification_attempted ALL <22 users (<7% reach). The feature is the
+        // app's strongest viral asset (ECDSA-signed score badge = social proof) but
+        // discovery is zero. Moving to top-third of drawer gives it a real shot at reach.
+        // "Pro Feature" label sets expectation since both actions trigger paywall gate.
+        Text(
+            text = "Verified Reports — Pro Feature",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
+        IconTextButton(
+            icon = Icons.Default.Verified,
+            label = "Generate Verified Report"
+        ) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DrawerItemClicked,
+                mapOf("item" to "generate_verified_report")
+            )
+            coroutineScope.launch { drawerState.close() }
+            onGenerateVerifiedReport?.invoke()
+        }
+        IconTextButton(
+            icon = Icons.Default.Info,
+            label = "Verify a Report"
+        ) {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DrawerItemClicked,
+                mapOf("item" to "verify_report")
+            )
+            coroutineScope.launch { drawerState.close() }
+            onVerifyReport?.invoke()
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 6.dp),
+            color = MaterialTheme.colorScheme.outline
+        )
+
         Text(
             text = "App Permissions",
             style = MaterialTheme.typography.labelLarge,
@@ -1135,29 +1178,12 @@ fun DrawerContent(
             activity.showInAppReview()
         }
 
-        IconTextButton(
-            icon = Icons.Default.Verified,
-            label = "Generate Verified Report"
-        ) {
-            AnalyticsUtils.logEvent(
-                AnalyticsEvent.DrawerItemClicked,
-                mapOf("item" to "generate_verified_report")
-            )
-            coroutineScope.launch { drawerState.close() }
-            onGenerateVerifiedReport?.invoke()
-        }
-
-        IconTextButton(
-            icon = Icons.Default.Info,
-            label = "Verify a Report"
-        ) {
-            AnalyticsUtils.logEvent(
-                AnalyticsEvent.DrawerItemClicked,
-                mapOf("item" to "verify_report")
-            )
-            coroutineScope.launch { drawerState.close() }
-            onVerifyReport?.invoke()
-        }
+        // v3.1.11 W2 — Generate Verified Report + Verify a Report buttons MOVED
+        // to the new "Verified Reports — Pro Feature" section above App Permissions
+        // per /ui-ux-pro-max audit 2026-06-22. Old position here (item ~16, below
+        // AdBadge + More Apps + Review prompt) produced near-zero usage (<22 users
+        // for verified_report_generated event). Promoting to top-third of drawer
+        // gives the feature a fighting chance of reach.
 
         IconTextButton(
             icon = Icons.Default.Share,
