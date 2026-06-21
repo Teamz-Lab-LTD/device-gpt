@@ -120,7 +120,18 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         } catch (e: Exception) { "--" }
         
         // MOST IMPORTANT: Health Score (Psychological Trigger #1)
+        // v3.1.11 W2 user-behavior insight — color-code health score so the user's
+        // eye lands on the most-important metric first. Same XML, just tinted at
+        // runtime. RemoteViews.setTextColor via setInt + method name (Android's
+        // RemoteViews API for cross-process View mutation).
         views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10")
+        val healthColor = when {
+            healthScore >= 7 -> 0xFFD9FE06.toInt()   // lime — original "good" color preserved
+            healthScore >= 4 -> 0xFFFFC107.toInt()   // amber — caution
+            healthScore >= 1 -> 0xFFFF6B6B.toInt()   // red-coral — needs attention
+            else -> 0xFFAAAAAA.toInt()                // grey — no data yet
+        }
+        views.setInt(R.id.widget_health_score, "setTextColor", healthColor)
         
         // Streak (FOMO Trigger) - fix grammar: "1 day" vs "2 days"
         val streakText = if (streak > 0) {
@@ -160,6 +171,14 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             else -> "Battery: ---"
         }
         views.setTextViewText(R.id.widget_battery, batteryDisplay)
+        // v3.1.11 W2 — tint battery text red when ≤20% so user notices at a glance.
+        // Same row in XML, no layout change.
+        val batteryColor = when {
+            batteryPercent in 1..20 -> 0xFFFF6B6B.toInt()   // red — critical
+            batteryPercent in 21..35 -> 0xFFFFC107.toInt()  // amber — low
+            else -> 0xFFFFFFFF.toInt()                       // white — normal (matches XML default)
+        }
+        views.setInt(R.id.widget_battery, "setTextColor", batteryColor)
         
         // Temperature with clear label - show "---" on errors
         val tempDisplay = if (tempValue != "--" && tempValue.isNotEmpty()) {
@@ -178,7 +197,16 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             "Temp: ---"
         }
         views.setTextViewText(R.id.widget_thermal, tempDisplay)
-        
+        // v3.1.11 W2 — tint temperature red when overheating (>45°C) so the warning
+        // catches the eye even without reading the "Hot!" suffix.
+        val tempNum = tempValue.toFloatOrNull() ?: 0f
+        val tempColor = when {
+            tempNum > 45f -> 0xFFFF6B6B.toInt()   // red — overheating
+            tempNum > 40f -> 0xFFFFC107.toInt()   // amber — warm
+            else -> 0xFFFFFFFF.toInt()             // white — normal
+        }
+        views.setInt(R.id.widget_thermal, "setTextColor", tempColor)
+
         // RAM with clear label - show "---" on errors
         views.setTextViewText(R.id.widget_ram, "RAM: ${if (ramPercent != "--" && ramPercent.isNotEmpty()) "${ramPercent}%" else "---"}")
         
