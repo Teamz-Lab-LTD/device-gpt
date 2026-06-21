@@ -92,12 +92,38 @@ class MainActivity : ComponentActivity() {
                         //   (b) user has not yet completed first_scan_completed flag.
                         // Once user taps Share or See-details, FirstScanGate.markCompleted
                         // pins the flag and this branch never fires again.
-                        // The Composable observes the gate-once flag through a State so
-                        // it recomposes when the user dismisses without manual reload.
+                        //
+                        // v3.1.11 race fix (2026-06-22): on fresh install RC hasn't
+                        // fetched yet at first composition, so currentState() reads the
+                        // bundled `false` default and the gate is skipped permanently
+                        // (same class of bug as the original D1Worker race). The
+                        // LaunchedEffect below polls currentState every 500ms for up
+                        // to 10 seconds — long enough to catch RC's typical fetch
+                        // window (~1-5s on warm cache, up to ~5min on first install).
+                        // If currentState transitions from NOT_GATED -> SCANNING/SCORED,
+                        // we flip into the gate UI immediately. After 10s we stop
+                        // polling (no battery / runtime cost beyond the window).
                         val gateState = androidx.compose.runtime.remember {
                             androidx.compose.runtime.mutableStateOf(
                                 com.teamz.lab.debugger.ui.FirstScanGate.currentState(this@MainActivity)
                             )
+                        }
+                        androidx.compose.runtime.LaunchedEffect(Unit) {
+                            var elapsedMs = 0L
+                            val pollIntervalMs = 500L
+                            val maxWaitMs = 10_000L
+                            while (elapsedMs < maxWaitMs &&
+                                gateState.value == com.teamz.lab.debugger.ui.FirstScanGate.State.NOT_GATED
+                            ) {
+                                kotlinx.coroutines.delay(pollIntervalMs)
+                                elapsedMs += pollIntervalMs
+                                val fresh = com.teamz.lab.debugger.ui.FirstScanGate
+                                    .currentState(this@MainActivity)
+                                if (fresh != com.teamz.lab.debugger.ui.FirstScanGate.State.NOT_GATED) {
+                                    gateState.value = fresh
+                                    break
+                                }
+                            }
                         }
                         when (gateState.value) {
                             com.teamz.lab.debugger.ui.FirstScanGate.State.SCANNING,
