@@ -170,12 +170,123 @@ class D1OvernightDrainWorkerTest {
     }
 
     @Test
-    fun `D1 analytics events exist with correct event names`() {
+    fun `D1 analytics events exist with correct event names (full funnel)`() {
         // AnalyticsEvent enum is the contract between the worker and GA4 funnels.
+        // Full funnel = Scheduled -> Pushed -> (Cancelled | Opened). Missing any
+        // makes the D1 retention dashboard unreadable.
         val analyticsSrc = locate("src/main/java/com/teamz/lab/debugger/utils/analytics_utils.kt").readText()
+        val required = listOf(
+            "D1OvernightDrainScheduled(\"d1_overnight_drain_scheduled\")",
+            "D1OvernightDrainPushed(\"d1_overnight_drain_pushed\")",
+            "D1OvernightDrainCancelled(\"d1_overnight_drain_cancelled\")",
+            "D1OvernightDrainOpened(\"d1_overnight_drain_opened\")",
+        )
+        required.forEach { decl ->
+            assertTrue(
+                "AnalyticsEvent enum must contain $decl — full funnel measurability " +
+                    "requires all four lifecycle events.",
+                analyticsSrc.contains(decl)
+            )
+        }
+    }
+
+    @Test
+    fun `scheduleOnFirstInstall EMITS D1OvernightDrainScheduled analytics event`() {
+        // Without this event, owner can't measure "how many users entered the
+        // experiment cohort" vs "how many actually got the push." Required for
+        // funnel math: scheduled count is the denominator of pushed/scheduled.
+        val scheduleStart = workerSrc.indexOf("fun scheduleOnFirstInstall(context: Context)")
+        val scheduleEnd = workerSrc.indexOf("\n    fun ", scheduleStart + 1).let {
+            if (it < 0) workerSrc.length else it
+        }
+        val body = workerSrc.substring(scheduleStart, scheduleEnd)
         assertTrue(
-            "AnalyticsEvent.D1OvernightDrainPushed must exist with event name 'd1_overnight_drain_pushed'.",
-            analyticsSrc.contains("D1OvernightDrainPushed(\"d1_overnight_drain_pushed\")")
+            "scheduleOnFirstInstall must emit AnalyticsEvent.D1OvernightDrainScheduled — " +
+                "denominator of the D1 funnel.",
+            body.contains("AnalyticsEvent.D1OvernightDrainScheduled")
+        )
+        assertTrue(
+            "D1OvernightDrainScheduled event must include baseline_pct param for cohort " +
+                "segmentation (e.g. low-battery cohort might respond differently).",
+            body.contains("\"baseline_pct\"")
+        )
+    }
+
+    @Test
+    fun `cancelIfPendingOrganicReturn EMITS D1OvernightDrainCancelled event`() {
+        // Cancel rate measures "how many users came back organically before push fired".
+        // High cancel rate vs pushed rate = good — means UI is sticky. Required signal
+        // to know whether D1 push is needed at all or if onboarding is doing the work.
+        val cancelStart = workerSrc.indexOf("fun cancelIfPendingOrganicReturn(context: Context)")
+        val cancelEnd = workerSrc.indexOf("\n    fun ", cancelStart + 1).let {
+            if (it < 0) workerSrc.length else it
+        }
+        val body = workerSrc.substring(cancelStart, cancelEnd)
+        assertTrue(
+            "cancelIfPendingOrganicReturn must emit AnalyticsEvent.D1OvernightDrainCancelled " +
+                "— organic-return rate is the diagnostic for whether D1 push is needed.",
+            body.contains("AnalyticsEvent.D1OvernightDrainCancelled")
+        )
+        assertTrue(
+            "D1OvernightDrainCancelled event must include cancel_at_min param so we can " +
+                "histogram time-to-organic-return (e.g. most cancel at +2h vs +18h).",
+            body.contains("\"cancel_at_min\"")
+        )
+    }
+
+    @Test
+    fun `trackPushOpened exists and emits D1OvernightDrainOpened event`() {
+        // CLOSES THE FUNNEL: scheduled -> pushed -> OPENED. Without this we know
+        // pushes fired but not whether they brought users back — can't measure
+        // D1 retention lift at all.
+        assertTrue(
+            "D1OvernightDrainWorker must expose trackPushOpened(context: Context) for " +
+                "MainActivity to call when launched via the D1 notification deep-link.",
+            workerSrc.contains("fun trackPushOpened(context: Context)")
+        )
+        val openStart = workerSrc.indexOf("fun trackPushOpened(context: Context)")
+        val openEnd = workerSrc.indexOf("\n    fun ", openStart + 1).let {
+            if (it < 0) workerSrc.length else it
+        }
+        val body = workerSrc.substring(openStart, openEnd)
+        assertTrue(
+            "trackPushOpened must emit AnalyticsEvent.D1OvernightDrainOpened — closes the " +
+                "scheduled->pushed->opened funnel that proves D1 lift.",
+            body.contains("AnalyticsEvent.D1OvernightDrainOpened")
+        )
+        assertTrue(
+            "trackPushOpened must include time_from_install_min so we can correlate push " +
+                "timing with open rate (e.g. is 20h truly the sweet spot vs 16h or 24h).",
+            body.contains("\"time_from_install_min\"")
+        )
+    }
+
+    @Test
+    fun `MainActivity wires d1_overnight_drain deep-link case to trackPushOpened`() {
+        // If MainActivity's deep-link switch doesn't handle "d1_overnight_drain",
+        // the user tapping the notification still launches the app but no Opened
+        // event fires — funnel breaks invisibly.
+        val mainSrc = locate("src/main/java/com/teamz/lab/debugger/MainActivity.kt").readText()
+        val handlerStart = mainSrc.indexOf("private fun handleChargeSummaryDeepLink(intent: Intent?)")
+        if (handlerStart < 0) error("MainActivity.handleChargeSummaryDeepLink not found")
+        val handlerEnd = mainSrc.indexOf("\n    override fun ", handlerStart + 1).let {
+            if (it < 0) mainSrc.length else it
+        }
+        val body = mainSrc.substring(handlerStart, handlerEnd)
+        assertTrue(
+            "MainActivity.handleChargeSummaryDeepLink must include the \"d1_overnight_drain\" " +
+                "case so notification-tap launches close the funnel.",
+            body.contains("\"d1_overnight_drain\" ->")
+        )
+        assertTrue(
+            "The d1_overnight_drain case must call D1OvernightDrainWorker.trackPushOpened(this) " +
+                "— that's the funnel-close event emitter.",
+            body.contains("D1OvernightDrainWorker.trackPushOpened(this)")
+        )
+        assertTrue(
+            "The d1_overnight_drain case should also record an EngagementTracker significant " +
+                "action so habit-streak math counts the return.",
+            body.contains("\"d1_overnight_drain_opened\"")
         )
     }
 }
