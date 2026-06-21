@@ -1,0 +1,10 @@
+v3.1.11 — D1 retention + ad pipeline overhaul
+
+- New Device Score gate: 10s scan + 0-100 verdict + 1-tap share
+- Smart 20h push: see what drained your battery overnight
+- Major ad pipeline fix: 90%+ fewer wasted requests, match rate recovers
+- App-open ads no longer fire dozens of times per session
+- Native ads no longer re-requested by racing coroutines
+- Foundation for D1 retention A/B testing
+
+Stability + revenue. No UI breakage. Premium users see zero ads.
