@@ -509,6 +509,44 @@ fun HealthSection(
             }
         }
 
+        // v3.1.11 W2 user-behavior insight — Health History promoted from
+        // item position #9 (below 8 other cards) to position #2 (right after
+        // health_score). GA4 28d data: 4.2 views/user but only 46% of
+        // Health-tab visitors discovered it. Surfacing above the fold should
+        // grow reach from 19% (58/302) toward Health-tab reach 42% (127/302).
+        item(key = "health_history") {
+            LaunchedEffect(Unit) {
+                AnalyticsUtils.logEvent(AnalyticsEvent.HealthHistoryViewed)
+            }
+            HealthHistoryCard(
+                context = context,
+                onAIClick = onItemAIClick?.let { handler ->
+                    {
+                        AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
+                            "source" to "health_history",
+                            "item_title" to "7-Day Health History"
+                        ))
+                        val history = HealthScoreUtils.getHealthScoreHistory(context, 7)
+                        val historyText = if (history.isNotEmpty()) {
+                            history.joinToString("\n") { (date, score) -> "$date: $score/10" }
+                        } else {
+                            "No health history yet. Start scanning to build your history!"
+                        }
+                        val content = """
+7-Day Health History:
+$historyText
+
+Current Score: $currentHealthScore/10
+Daily Streak: ${HealthScoreUtils.getDailyStreak(context)} days
+Best Score: ${HealthScoreUtils.getBestScore(context)}/10
+Total Scans: ${HealthScoreUtils.getTotalScans(context)}
+                        """.trimIndent()
+                        handler("7-Day Health History", content)
+                    }
+                }
+            )
+        }
+
         // Quick Actions Section Header
         item(key = "quick_actions_header") {
             Row(
@@ -1575,41 +1613,11 @@ Trend: $trend
             }
         }
 
-        // Health History
-        item(key = "health_history") {
-            LaunchedEffect(Unit) {
-                AnalyticsUtils.logEvent(AnalyticsEvent.HealthHistoryViewed)
-            }
-            HealthHistoryCard(
-                context = context,
-                onAIClick = onItemAIClick?.let { handler ->
-                    {
-                        AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
-                            "source" to "health_history",
-                            "item_title" to "7-Day Health History"
-                        ))
-                        val history = HealthScoreUtils.getHealthScoreHistory(context, 7)
-                        val historyText = if (history.isNotEmpty()) {
-                            history.joinToString("\n") { (date, score) -> "$date: $score/10" }
-                        } else {
-                            "No health history yet. Start scanning to build your history!"
-                        }
-                        val content = """
-7-Day Health History:
-$historyText
+        // v3.1.11 W2 user-behavior insight — Health History block MOVED to position #2
+        // (right after health_score) for above-the-fold visibility. Old position here
+        // produced 19% reach despite 4.2 views/user repeat engagement.
 
-Current Score: $currentHealthScore/10
-Daily Streak: ${HealthScoreUtils.getDailyStreak(context)} days
-Best Score: ${HealthScoreUtils.getBestScore(context)}/10
-Total Scans: ${HealthScoreUtils.getTotalScans(context)}
-                        """.trimIndent()
-                        handler("7-Day Health History", content)
-                    }
-                }
-            )
-        }
-
-        // Native Ad (after Health History)
+        // Native Ad (after Temperature History — was after Health History before W2 move)
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_history") {
                 val nativeAd = remember(healthAdCacheGen, "health_section_history") { NativeAdManager.getAdForPosition("health_section_history") }

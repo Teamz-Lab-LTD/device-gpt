@@ -310,11 +310,16 @@ fun NetworkInfoSection(
         activity = activity,
         onItemAIClick = if (isFullyLoaded) onItemAIClick else null,
         headerContent = {
-            NetworkPrivacyReportCard(
-                onShareClick = { /* Sharing handled internally via ViralShareDialog */ },
+            // v3.1.11 W2 user-behavior insight — Reachability test promoted from
+            // position #2 to #1 in the Network header. GA4 28d data showed 93%
+            // completion rate (26 of 28 users finished it once started) but only
+            // 9% discovery (28/302 users). Highest hidden-gem win-rate in the
+            // entire app. Bring it above the fold of an already-low-reach tab.
+            NetworkReachabilityCard(
                 onAIClick = onItemAIClick
             )
-            NetworkReachabilityCard(
+            NetworkPrivacyReportCard(
+                onShareClick = { /* Sharing handled internally via ViralShareDialog */ },
                 onAIClick = onItemAIClick
             )
         }
