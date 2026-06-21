@@ -683,113 +683,6 @@ fun DrawerContent(
             color = MaterialTheme.colorScheme.outline
         )
 
-        Text(
-            text = "App Permissions",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp
-        )
-
-        permissions.forEach { (permission, label) ->
-            PermissionToggleRow(
-                label = label,
-                permission = permission,
-                isGranted = permissionStates[permission] == true,
-                onRequest = {
-                    handlePermissionRequest(permission)
-                }
-            )
-        }
-
-        val anyDenied = permissionStates.any { (perm, granted) ->
-            isDangerousPermission(perm) && !granted
-        }
-
-        if (anyDenied) {
-            Spacer(modifier = Modifier.height(6.dp))
-            IconTextButton(
-                icon = Icons.Default.Warning,
-                label = "Grant Permissions"
-            ) {
-                AnalyticsUtils.logEvent(
-                    AnalyticsEvent.DrawerSettingsOpened, mapOf(
-                        "reason" to "grant_permissions"
-                    )
-                )
-                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = "package:${context.packageName}".toUri()
-                })
-            }
-        }
-
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 6.dp),
-            color = MaterialTheme.colorScheme.outline
-        )
-
-        // Notification Toggle
-        Text(
-            text = "Notifications",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp
-        )
-
-        var notificationsEnabled by remember {
-            mutableStateOf(RetentionNotificationManager.areNotificationsEnabled(context))
-        }
-
-        LaunchedEffect(drawerState.isOpen) {
-            if (drawerState.isOpen) {
-                notificationsEnabled = RetentionNotificationManager.areNotificationsEnabled(context)
-            }
-        }
-
-        // Notification toggle - Compact card with reduced padding
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp)
-            ) {
-                NotificationToggle(
-                    isEnabled = notificationsEnabled,
-                    onToggle = { enabled ->
-                        notificationsEnabled = enabled
-                        RetentionNotificationManager.setNotificationsEnabled(context, enabled)
-                        AnalyticsUtils.logEvent(
-                            AnalyticsEvent.DrawerNotificationToggled,
-                            mapOf("enabled" to enabled)
-                        )
-                        if (enabled) {
-                            Toast.makeText(
-                                context,
-                                "Notifications enabled",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Notifications disabled",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                )
-            }
-        }
-
         // Widget Setup Section
         Text(
             text = "Widget",
@@ -1018,6 +911,113 @@ fun DrawerContent(
                     }
                 }
             )
+        }
+
+        Text(
+            text = "App Permissions",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
+
+        permissions.forEach { (permission, label) ->
+            PermissionToggleRow(
+                label = label,
+                permission = permission,
+                isGranted = permissionStates[permission] == true,
+                onRequest = {
+                    handlePermissionRequest(permission)
+                }
+            )
+        }
+
+        val anyDenied = permissionStates.any { (perm, granted) ->
+            isDangerousPermission(perm) && !granted
+        }
+
+        if (anyDenied) {
+            Spacer(modifier = Modifier.height(6.dp))
+            IconTextButton(
+                icon = Icons.Default.Warning,
+                label = "Grant Permissions"
+            ) {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.DrawerSettingsOpened, mapOf(
+                        "reason" to "grant_permissions"
+                    )
+                )
+                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = "package:${context.packageName}".toUri()
+                })
+            }
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 6.dp),
+            color = MaterialTheme.colorScheme.outline
+        )
+
+        // Notification Toggle
+        Text(
+            text = "Notifications",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
+
+        var notificationsEnabled by remember {
+            mutableStateOf(RetentionNotificationManager.areNotificationsEnabled(context))
+        }
+
+        LaunchedEffect(drawerState.isOpen) {
+            if (drawerState.isOpen) {
+                notificationsEnabled = RetentionNotificationManager.areNotificationsEnabled(context)
+            }
+        }
+
+        // Notification toggle - Compact card with reduced padding
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                NotificationToggle(
+                    isEnabled = notificationsEnabled,
+                    onToggle = { enabled ->
+                        notificationsEnabled = enabled
+                        RetentionNotificationManager.setNotificationsEnabled(context, enabled)
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.DrawerNotificationToggled,
+                            mapOf("enabled" to enabled)
+                        )
+                        if (enabled) {
+                            Toast.makeText(
+                                context,
+                                "Notifications enabled",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Notifications disabled",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                )
+            }
         }
 
         HorizontalDivider(
