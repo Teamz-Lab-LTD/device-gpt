@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.android.gms.ads.MobileAds
 import com.teamz.lab.debugger.utils.AppOpenAdManager
+import com.teamz.lab.debugger.utils.CohortLabeler
 import com.onesignal.OneSignal
 import com.onesignal.debug.LogLevel
 import com.teamz.lab.debugger.utils.InterstitialAdManager
@@ -55,6 +56,11 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             // session = fresh budget.
             AppOpenAdManager.resetSessionCounters()
             com.teamz.lab.debugger.ui.NativeAdManager.resetStats()
+            // v3.1.11 W1 user-behavior insight — A/B cohort labeler.
+            // Stamps the GA4 user property ab_cohort_v3111 exactly once per install
+            // so post-v3.1.11 retention dashboards can slice control vs treatment.
+            // Idempotent — second call re-stamps the prior assignment.
+            CohortLabeler.labelOnce(applicationContext)
             MobileAds.initialize(this) {
                 AppLog.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
                 // Preload ad after SDK is initialized (no activity yet, just preload)

@@ -368,6 +368,10 @@ enum class AnalyticsEvent(val eventName: String) {
     // Premium events
     PremiumPaywallShown("premium_paywall_shown"),
     PremiumPaywallDismissed("premium_paywall_dismissed"),
+    // v3.1.11 W3 user-behavior insight — capture WHY users dismiss paywall.
+    // Param `reason`: too_expensive | not_now | no_value_seen | closed_by_mistake | other
+    // Without this, plan to fix 89% dismiss rate is blind (we'd be A/B-ing without a hypothesis).
+    PaywallDismissReason("paywall_dismiss_reason"),
     PremiumPurchaseInitiated("premium_purchase_initiated"),
     PremiumPurchaseCompleted("premium_purchase_completed"),
     PremiumPurchaseFailed("premium_purchase_failed"),

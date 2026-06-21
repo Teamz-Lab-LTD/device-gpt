@@ -86,7 +86,38 @@ class MainActivity : ComponentActivity() {
             setContent {
                 CompositionLocalProvider(LocalThemeManager provides ThemeManager) {
                     ThemeAwareContent {
-                        AdaptiveDeviceGptLayout(this@MainActivity)
+                        // v3.1.11 W1 — FirstScanGate: render the 10s scan + Device Score
+                        // experience instead of the normal tab UI when:
+                        //   (a) Firebase RC flag first_scan_gate_enabled = true, AND
+                        //   (b) user has not yet completed first_scan_completed flag.
+                        // Once user taps Share or See-details, FirstScanGate.markCompleted
+                        // pins the flag and this branch never fires again.
+                        // The Composable observes the gate-once flag through a State so
+                        // it recomposes when the user dismisses without manual reload.
+                        val gateState = androidx.compose.runtime.remember {
+                            androidx.compose.runtime.mutableStateOf(
+                                com.teamz.lab.debugger.ui.FirstScanGate.currentState(this@MainActivity)
+                            )
+                        }
+                        when (gateState.value) {
+                            com.teamz.lab.debugger.ui.FirstScanGate.State.SCANNING,
+                            com.teamz.lab.debugger.ui.FirstScanGate.State.SCORED -> {
+                                com.teamz.lab.debugger.ui.FirstScanGateScreen(
+                                    onShareScore = { _ ->
+                                        gateState.value =
+                                            com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
+                                    },
+                                    onDismiss = {
+                                        gateState.value =
+                                            com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
+                                    },
+                                )
+                            }
+                            com.teamz.lab.debugger.ui.FirstScanGate.State.NOT_GATED,
+                            com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED -> {
+                                AdaptiveDeviceGptLayout(this@MainActivity)
+                            }
+                        }
                     }
                 }
             }

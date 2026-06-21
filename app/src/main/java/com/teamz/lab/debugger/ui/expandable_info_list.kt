@@ -499,36 +499,13 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     retryCount = 0
                     NativeAdManager.resetRetryCount()
 
-                    // If we still need more ads, trigger another load attempt
-                    // Note: Removed isCurrentlyLoading() check to allow continuation
-                    // Also check premium status - don't load more ads if user has premium
-                    if (currentCount < targetCount && RemoteConfigUtils.shouldShowNativeAds()) {
-                        Log.d(TAG, "🔄 New ad loaded, checking if we need more...")
-                        coroutineScope.launch {
-                            // Wait for throttle period before next request
-                            delay(RemoteConfigUtils.getNativeAdRequestIntervalMs() + 1000L)
-                            // Re-check premium status before loading (user might have purchased premium)
-                            if (!activity.isDestroyed &&
-                                RemoteConfigUtils.shouldShowNativeAds() &&
-                                NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
-                                NativeAdManager.canMakeRequest()) {
-                                Log.d(TAG, "📤 Loading additional ad...")
-                                NativeAdManager.setLoading(true) // Set loading before request
-                                NativeAdManager.recordRequest()
-                                adLoaderRef?.loadAd(AdRequest.Builder().build())
-
-                                // Reset loading flag after delay to allow next request
-                                launch {
-                                    delay(12000) // Wait for response (10s request + 2s buffer)
-                                    NativeAdManager.setLoading(false)
-                                }
-                            } else if (!NativeAdManager.canMakeRequest()) {
-                                Log.d(TAG, "⏸️ Cannot make request yet (throttled), will retry later")
-                                // Reset loading flag so continuation can retry
-                                NativeAdManager.setLoading(false)
-                            }
-                        }
-                    }
+                    // v3.1.11 W1 ad-pipeline fix — DELETED the onAdLoaded continuation
+                    // that scheduled MORE loads. This was reentrant path #1 of 4 that
+                    // produced the 8463 weekly request volume. Refill is now driven
+                    // exclusively by the cacheGeneration-keyed LaunchedEffect below
+                    // (NativeAdManager.addAd bumps cacheGeneration → refill wakes →
+                    // checks budget + count, fires ONE request if needed). One source
+                    // of truth, no reentrancy possible.
                 } else {
                     // Activity gone before we could register the ad. Route through
                     // registerForDestroy so loadedAtMs / positionAdCache stay consistent
@@ -559,55 +536,17 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         )
                     )
                     
-                    // Retry loading with exponential backoff (only for retryable errors)
-                    // Error codes: 0=INVALID_REQUEST, 2=INVALID_AD_SIZE, 8=INVALID_APP_ID
-                    val nonRetryableErrors = listOf(0, 2, 8)
-                    
-                    // Only retry if:
-                    // 1. Error is retryable
-                    // 2. We don't have enough ads
-                    // 3. We haven't exceeded max retries
-                    // 4. We can make a request (throttled)
-                    // 5. User doesn't have premium (premium users don't see ads)
-                    if (errorCode !in nonRetryableErrors && 
-                        RemoteConfigUtils.shouldShowNativeAds() &&
-                        currentCount < targetCount &&
-                        NativeAdManager.canMakeRequest() &&
-                        NativeAdManager.canRetry()) {
-                        
-                        val canRetry = NativeAdManager.recordRetryAttempt()
-                        if (canRetry) {
-                            retryCount++
-                            val retryDelay = RemoteConfigUtils.getNativeAdRequestIntervalMs()
-                            
-                            Log.d(TAG, "🔄 Scheduling retry #$retryCount in ${retryDelay/1000} seconds...")
-                            
-                            adLoaderRef?.let { loader ->
-                                coroutineScope.launch {
-                                    delay(retryDelay)
-                                    // Re-check premium status before retry (user might have purchased premium)
-                                    if (!activity.isDestroyed && 
-                                        RemoteConfigUtils.shouldShowNativeAds() &&
-                                        NativeAdManager.nativeAds.filterNotNull().size < targetCount &&
-                                        NativeAdManager.canMakeRequest()) {
-                                        Log.d(TAG, "🔄 Executing retry #$retryCount...")
-                                        NativeAdManager.recordRequest()
-                                        loader.loadAd(AdRequest.Builder().build())
-                                    } else if (!RemoteConfigUtils.shouldShowNativeAds()) {
-                                        Log.d(TAG, "🚫 Premium user detected - cancelling retry")
-                                    }
-                                }
-                            }
-                        } else {
-                            Log.w(TAG, "⚠️ Max retries reached. Stopping retry attempts.")
-                        }
-                    } else {
-                        if (!NativeAdManager.canRetry()) {
-                            Log.w(TAG, "⚠️ Max retries reached ($retryCount). Stopping retry attempts.")
-                        } else if (errorCode in nonRetryableErrors) {
-                            Log.w(TAG, "⚠️ Non-retryable error ($errorCode). Not retrying.")
-                        }
-                    }
+                    // v3.1.11 W1 ad-pipeline fix — DELETED the onAdFailedToLoad
+                    // retry coroutine. This was reentrant path #2 of 4 (every failure
+                    // launched another loadAd, doubling auction slot consumption).
+                    // New contract: on failure, bump cacheGeneration via invalidateCache
+                    // so the refill LaunchedEffect re-wakes; if budget + premium + count
+                    // checks pass, it fires ONE retry through the single ad-load path.
+                    NativeAdManager.invalidateCache()
+                    // Reset isLoading so the refill wake-up can immediately re-fire if
+                    // budget allows. Without this, the pipeline lock stays held and
+                    // the next refill is delayed by the 12s safety net.
+                    NativeAdManager.setLoading(false)
                 }
 
                 override fun onAdClicked() {
@@ -696,7 +635,15 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 }
             }
 
-            // Reset loading flag after a delay to allow for async loading
+            // v3.1.11 W1 ad-pipeline fix — safety-net pipeline release.
+            // Old code launched a SECOND `repeat(remainingAds)` block here if cached
+            // count < target after the 12s wait. That was reentrant path #3 of 4 and
+            // doubled the request fan-out. NEW contract:
+            //   - This block ONLY releases isLoading + endLoadPipeline after the
+            //     timeout, so future LaunchedEffects can fire.
+            //   - The refill LaunchedEffect (cacheGeneration-keyed) is now the SINGLE
+            //     source of "we need more ads" — it re-wakes on any cache change and
+            //     fires ONE request through the single ad-load path.
             coroutineScope.launch {
                 val timeout = if (adsToLoad > 0) {
                     (adsToLoad - 1) * staggerMs + 12000L
@@ -708,29 +655,8 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                 val finalCount = NativeAdManager.nativeAds.filterNotNull().size
                 Log.i(TAG, "📊 Load attempt completed - Current ads: $finalCount/$targetAdCount")
                 if (finalCount < targetAdCount) {
+                    Log.d(TAG, "📊 Below target ($finalCount/$targetAdCount) — refill LaunchedEffect will re-fire on next cacheGeneration bump if budget permits")
                     NativeAdManager.logStats()
-                    if (NativeAdManager.canMakeRequest() && !activity.isDestroyed) {
-                        Log.d(TAG, "🔄 Continuing to load remaining ads...")
-                        val remainingAds = targetAdCount - finalCount
-                        repeat(remainingAds) { index ->
-                            delay(index * staggerMs + 1000L)
-                            if (!activity.isDestroyed &&
-                                NativeAdManager.nativeAds.filterNotNull().size < targetAdCount &&
-                                NativeAdManager.canMakeRequest()) {
-                                Log.d(TAG, "📤 Requesting additional ad ${index + 1}/$remainingAds...")
-                                NativeAdManager.setLoading(true)
-                                NativeAdManager.recordRequest()
-                                adLoader.loadAd(AdRequest.Builder().build())
-
-                                launch {
-                                    delay(12000)
-                                    NativeAdManager.setLoading(false)
-                                }
-                            }
-                        }
-                    } else {
-                        Log.d(TAG, "⏸️ Cannot continue loading - throttled or activity destroyed")
-                    }
                 } else {
                     Log.i(TAG, "✅ Successfully loaded all $finalCount ads!")
                 }
