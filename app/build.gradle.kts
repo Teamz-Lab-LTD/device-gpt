@@ -211,8 +211,12 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.21.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    // v3.1.11 W1 retention milestone — Robolectric runtime tests for D1Worker
+    testImplementation("androidx.work:work-testing:2.11.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    // v3.1.11 W1 — instrumentation tests need work-testing for TestDriver
+    androidTestImplementation("androidx.work:work-testing:2.11.1")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     // UiAutomator for real device notification testing

@@ -29,7 +29,7 @@ platform :android do
     # the Compose-asset-slot regression that caused the 1-year 98% show-rate bug.
     gradle(
       task: ":app:testDebugUnitTest",
-      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest* --tests *NativeAdViewabilityTest* --tests *AnalyticsThreadingTest*"
+      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest* --tests *NativeAdViewabilityTest* --tests *AnalyticsThreadingTest* --tests *D1OvernightDrainWorkerTest* --tests *D1OvernightDrainContractTest* --tests *D1OvernightDrainRuntimeTest* --tests *FirstScanGateTest* --tests *FirstScanGateRuntimeTest* --tests *AppOpenLoadAdCallSiteCountTest* --tests *AppOpenThrottleContractTest* --tests *AppOpenThrottleRuntimeTest* --tests *NativeAdResetOnColdStartTest*"
     )
     UI.success "✅ Ad-pipeline safety gate passed. No known regression patterns detected."
   end

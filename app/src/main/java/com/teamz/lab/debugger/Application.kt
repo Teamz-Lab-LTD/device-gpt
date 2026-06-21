@@ -48,6 +48,13 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
 
             // Initialize Mobile Ads SDK
             AppLog.d("MyApplication", "onCreate() - Initializing MobileAds SDK...")
+            // v3.1.11 W1 ad-pipeline fix — honest per-process session boundary.
+            // BOTH ad managers are Kotlin objects (process singletons) so their
+            // counters survive across user sessions without an explicit reset. This
+            // hook makes the per-session contract real for both: cold-start = new
+            // session = fresh budget.
+            AppOpenAdManager.resetSessionCounters()
+            com.teamz.lab.debugger.ui.NativeAdManager.resetStats()
             MobileAds.initialize(this) {
                 AppLog.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
                 // Preload ad after SDK is initialized (no activity yet, just preload)

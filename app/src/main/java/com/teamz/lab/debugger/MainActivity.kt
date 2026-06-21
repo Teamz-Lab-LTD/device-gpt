@@ -170,6 +170,16 @@ class MainActivity : ComponentActivity() {
                     com.teamz.lab.debugger.utils.ChargeCycleTracker.onPowerDisconnected(this)
                 }
             }
+            "d1_overnight_drain" -> {
+                // v3.1.11 W1: user tapped the D1 push notification — close the
+                // funnel between scheduled → pushed → OPENED so D1 lift is
+                // measurable per cohort, not just push-send count.
+                com.teamz.lab.debugger.utils.D1OvernightDrainWorker.trackPushOpened(this)
+                com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
+                    this,
+                    "d1_overnight_drain_opened"
+                )
+            }
         }
         // Clear the extra so a configuration change doesn't double-log.
         intent.removeExtra("from")
