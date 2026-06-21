@@ -82,16 +82,31 @@ class D1OvernightDrainWorkerTest {
     }
 
     @Test
-    fun `D1 worker is gated by Remote Config flag and reads it at both schedule and fire time`() {
-        // Reading the RC flag at fire time too (not just at schedule) lets us A/B mid-cohort
-        // by flipping the flag without re-installing every user.
+    fun `D1 worker is gated by Remote Config flag at FIRE TIME ONLY (race guard)`() {
+        // Schedule-time RC gate is a BUG: bundled APK defaults (flag=false) are read on
+        // fresh install BEFORE the network fetch completes (~5 min). A schedule-time
+        // gate would lose the D1 lever for every user installing before RC fetches.
+        // Worker re-checks the flag at fire time (20h later) — by then RC has fetched
+        // the latest server value, and the owner can also flip mid-flight to kill push.
         val checks = Regex("RemoteConfigUtils\\.isD1OvernightDrainEnabled\\(\\)").findAll(workerSrc).count()
         assertTrue(
-            "Worker must read RemoteConfigUtils.isD1OvernightDrainEnabled() at BOTH schedule " +
-                "time and fire time (found $checks). Single-check at schedule means a stale " +
-                "RC value gets pinned for the 20-hour delay; double-check lets owner kill the " +
-                "push mid-flight by flipping the flag.",
-            checks >= 2
+            "Worker must read isD1OvernightDrainEnabled() at LEAST ONCE (at fire time). " +
+                "Found $checks. Zero means no RC gate at all — push fires even when owner " +
+                "has disabled it.",
+            checks >= 1
+        )
+        // Race-condition regression guard: schedule path must NOT gate on RC.
+        val scheduleStart = workerSrc.indexOf("fun scheduleOnFirstInstall(context: Context)")
+        val scheduleEnd = workerSrc.indexOf("\n    fun ", scheduleStart + 1).let {
+            if (it < 0) workerSrc.length else it
+        }
+        val scheduleBody = workerSrc.substring(scheduleStart, scheduleEnd)
+        assertFalse(
+            "scheduleOnFirstInstall MUST NOT call isD1OvernightDrainEnabled() — that creates " +
+                "a race where on a fresh install the bundled APK default=false is read before " +
+                "the RC network fetch completes (~5 min), and the D1 lever is silently lost " +
+                "for every user installing before RC fetches. Gate at fire time only.",
+            scheduleBody.contains("isD1OvernightDrainEnabled")
         )
         assertTrue(
             "RemoteConfigUtils must expose isD1OvernightDrainEnabled() — required by the worker gate.",

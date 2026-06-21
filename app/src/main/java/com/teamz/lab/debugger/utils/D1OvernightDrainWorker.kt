@@ -71,10 +71,11 @@ object D1OvernightDrainWorker {
             Log.d(TAG, "Already scheduled — skipping")
             return
         }
-        if (!RemoteConfigUtils.isD1OvernightDrainEnabled()) {
-            Log.d(TAG, "RC d1_overnight_drain_enabled=false — skipping")
-            return
-        }
+        // No schedule-time RC gate: bundled defaults read at first launch
+        // (flag=false) BEFORE the network fetch completes (~5 min). A gate
+        // here would lose the D1 lever for every user installing before RC
+        // fetches. Worker re-checks the flag at fire time — if owner wants
+        // to kill mid-flight, flip RC and worker exits silently when it runs.
 
         val baselinePct = readBatteryPctSafe(context)
         if (baselinePct == null) {
@@ -95,7 +96,7 @@ object D1OvernightDrainWorker {
             .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.KEEP, request)
 
         Log.i(TAG, "Scheduled D1 overnight-drain push for +${INITIAL_DELAY_HOURS}h " +
-            "(baseline=$baselinePct%)")
+            "(baseline=$baselinePct%; RC gate evaluated at fire time)")
     }
 
     /**
