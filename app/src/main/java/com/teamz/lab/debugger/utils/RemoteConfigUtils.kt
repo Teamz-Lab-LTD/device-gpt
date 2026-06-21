@@ -108,6 +108,16 @@ object RemoteConfigUtils {
                 "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
                 "native_ad_ttl_ms" to 1_680_000L,            // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
                 "app_open_ad_min_session" to 1L,             // Default 1 = NO session gate (ads from session 1). Set to 3+ via Remote Config when ready to trade short-term ad revenue for retention.
+                // v3.1.11 W1 ad-pipeline fix — app-open over-fire throttle.
+                // Per 2026-06-21 audit: AdMob report showed 5148 weekly requests for 18 displays
+                // (0.43% show rate). Root cause: 5 separate loadAd() trigger paths in
+                // app_open_manager.kt + Application.kt fired with no request-side throttle.
+                // The show-side 30-min cooldown was preserved (revenue protection), but
+                // requests kept firing during cooldown, wasting AdMob auction slots.
+                // Defaults chosen as safe floor (3 loads/session, 60s between loads) per
+                // converged diagnosis 2026-06-21; can be loosened via RC if too tight.
+                "app_open_max_loads_per_session" to 3L,
+                "app_open_ad_max_retries" to 0L,             // Was hardcoded 1 in ImprovedAdManager — now RC-tunable. 0 = no retry on transient failure (one auction slot per attempt, not two).
                 // Verified zero-fill markets per 2026-06-03 lifetime GA4 audit (≥20 users, 0.0% fill rate):
                 //   IR=Iran (1214 users, 3 imp / 19474 fail) — sanctioned
                 //   RU=Russia (54 users, 0 imp / 543 fail) — sanctioned
@@ -386,6 +396,27 @@ object RemoteConfigUtils {
     fun getAppOpenAdMinSession(): Int {
         val value = remoteConfig.getLong("app_open_ad_min_session")
         return if (value <= 0L) 1 else value.toInt()
+    }
+
+    /**
+     * v3.1.11 W1 ad-pipeline fix — hard cap on AppOpen loadAd() attempts per process session.
+     * Default: 3. Per 2026-06-21 audit, app-open had ZERO request-side throttle (only
+     * show-side cooldown), causing 5148/wk requests for 18 displays. Cap mirrors
+     * NativeAdManager.MAX_REQUESTS_PER_SESSION contract.
+     */
+    fun getAppOpenMaxLoadsPerSession(): Int {
+        val value = remoteConfig.getLong("app_open_max_loads_per_session")
+        return if (value <= 0L) 3 else value.toInt()
+    }
+
+    /**
+     * v3.1.11 W1 ad-pipeline fix — replace hardcoded ImprovedAdManager.MAX_RETRIES=1.
+     * Default: 0 (no retry on transient failure). One AdRequest per attempt = no
+     * hidden 2x request multiplier on flaky networks.
+     */
+    fun getAppOpenAdMaxRetries(): Int {
+        val value = remoteConfig.getLong("app_open_ad_max_retries")
+        return if (value < 0L) 0 else value.toInt()
     }
 
     /**

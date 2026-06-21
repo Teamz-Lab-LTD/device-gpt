@@ -17,7 +17,11 @@ import java.util.concurrent.TimeUnit
  * Reduces ad_failed rate significantly
  */
 object ImprovedAdManager {
-    private const val MAX_RETRIES = 1 // Reduced from 3 to 1 to prevent excessive requests
+    // v3.1.11 W1 ad-pipeline fix — was hardcoded 1, now RC-tunable.
+    // 2026-06-21 audit: hardcoded retry was hidden 2x request multiplier on transient
+    // failures. New default: 0 (no retry). Tunable via RC app_open_ad_max_retries.
+    private val MAX_RETRIES: Int
+        get() = RemoteConfigUtils.getAppOpenAdMaxRetries()
     private const val INITIAL_RETRY_DELAY_MS = 2000L // 2 seconds
     private const val MAX_RETRY_DELAY_MS = 30000L // 30 seconds
     
