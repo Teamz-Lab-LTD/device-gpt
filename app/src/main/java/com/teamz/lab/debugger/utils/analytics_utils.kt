@@ -282,6 +282,7 @@ enum class AnalyticsEvent(val eventName: String) {
     D1OvernightDrainScheduled("d1_overnight_drain_scheduled"),
     D1OvernightDrainPushed("d1_overnight_drain_pushed"),
     D1OvernightDrainCancelled("d1_overnight_drain_cancelled"),
+    D1OvernightDrainOpened("d1_overnight_drain_opened"),
     FirstScanCompleted("first_scan_completed"),
     FirstScanShareTapped("first_scan_share_tapped"),
     // Power consumption events

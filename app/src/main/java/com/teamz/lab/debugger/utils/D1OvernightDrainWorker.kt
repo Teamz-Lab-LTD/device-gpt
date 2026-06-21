@@ -97,6 +97,12 @@ object D1OvernightDrainWorker {
 
         Log.i(TAG, "Scheduled D1 overnight-drain push for +${INITIAL_DELAY_HOURS}h " +
             "(baseline=$baselinePct%; RC gate evaluated at fire time)")
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.D1OvernightDrainScheduled,
+                mapOf("baseline_pct" to baselinePct, "delay_hours" to INITIAL_DELAY_HOURS.toInt())
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
     }
 
     /**
@@ -115,6 +121,34 @@ object D1OvernightDrainWorker {
         WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
         p.edit { putBoolean(KEY_WORK_SCHEDULED, false) }
         Log.i(TAG, "Cancelled D1 push — user returned organically at ${ageMs / 1000 / 60} min")
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.D1OvernightDrainCancelled,
+                mapOf("cancel_at_min" to (ageMs / 1000 / 60).toInt())
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
+    }
+
+    /**
+     * Call from MainActivity.onCreate / onNewIntent when launched via the D1
+     * notification (Intent extra "from" == "d1_overnight_drain"). Emits the
+     * push-opened event so the funnel between scheduled → pushed → opened is
+     * complete. Without this we know how many users got the push but not how
+     * many actually came back.
+     */
+    fun trackPushOpened(context: Context) {
+        val p = prefs(context)
+        val baselineTs = p.getLong(KEY_BASELINE_TS, 0L)
+        val timeFromInstallMin = if (baselineTs > 0) {
+            ((System.currentTimeMillis() - baselineTs) / 1000 / 60).toInt()
+        } else -1
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.D1OvernightDrainOpened,
+                mapOf("time_from_install_min" to timeFromInstallMin)
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
+        Log.i(TAG, "D1 push OPENED at +${timeFromInstallMin}min from install")
     }
 
     private fun readBatteryPctSafe(context: Context): Int? = try {

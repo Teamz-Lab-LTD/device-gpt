@@ -127,6 +127,28 @@ class D1OvernightDrainContractTest {
     }
 
     @Test
+    fun `New v3_1_11 RC flags have explicit bundled defaults (race-safety belt)`() {
+        // Without bundled defaults, getBoolean falls back to Firebase SDK
+        // "unknown → false" — couples behaviour to SDK internals AND makes the
+        // schedule path read 'false' for the first ~5 minutes on every cold
+        // install (real-device bug discovered 2026-06-21 on Pixel 8a).
+        val rcSrcText = locate(
+            "src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"
+        ).readText()
+        assertTrue(
+            "RemoteConfigUtils.init() must bundle \"d1_overnight_drain_enabled\" to false " +
+                "as the explicit default. Without it the RC SDK falls back to unknown→false " +
+                "which is implementation-defined behaviour and was the bug pattern on Pixel 8a.",
+            rcSrcText.contains("\"d1_overnight_drain_enabled\" to false")
+        )
+        assertTrue(
+            "RemoteConfigUtils.init() must bundle \"first_scan_gate_enabled\" to false " +
+                "as the explicit default. Same race-safety reasoning.",
+            rcSrcText.contains("\"first_scan_gate_enabled\" to false")
+        )
+    }
+
+    @Test
     fun `Notification channel importance is DEFAULT not HIGH or MAX`() {
         // D1 push is NOT urgent — it's a soft re-engagement nudge. Channel importance
         // HIGH or MAX would full-screen the notification on Android 13+, breaking

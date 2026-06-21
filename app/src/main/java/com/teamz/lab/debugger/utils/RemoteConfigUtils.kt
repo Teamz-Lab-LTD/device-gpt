@@ -119,7 +119,14 @@ object RemoteConfigUtils {
                 // NOT included: BD (1.3% fill, 167 paid), PK (12.2% fill, better than US).
                 // Suppression saves zero revenue (these earn $0) but removes ~22,800 wasted requests
                 // that hurt AdMob global match rate signal.
-                "ad_suppressed_country_codes" to "IR,RU,IQ,SG,YE,ET,SE"
+                "ad_suppressed_country_codes" to "IR,RU,IQ,SG,YE,ET,SE",
+                // v3.1.11 Week 1 retention milestone — explicit bundled defaults.
+                // First-install cold start reads bundled values BEFORE server fetch
+                // completes (~5 min). Without these here, getBoolean falls back to
+                // SDK "unknown → false" which couples behaviour to SDK internals.
+                // Owner flips to true in Firebase Console when ready to A/B.
+                "d1_overnight_drain_enabled" to false,
+                "first_scan_gate_enabled" to false
             )
         )
         
