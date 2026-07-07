@@ -1,0 +1,8 @@
+v3.1.12 — See your Device Score anytime
+
+- New Device Score card on Health tab shows your last 0-100 score + how long ago you scanned
+- "Run again" button re-runs the 10-second scan whenever you want
+- One-tap share your score to friends and family
+- Fixes: v3.1.11's Device Score was one-and-done. Now it's on-demand.
+
+Premium users see zero ads.

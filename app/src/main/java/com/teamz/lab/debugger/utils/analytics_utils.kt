@@ -285,6 +285,9 @@ enum class AnalyticsEvent(val eventName: String) {
     D1OvernightDrainOpened("d1_overnight_drain_opened"),
     FirstScanCompleted("first_scan_completed"),
     FirstScanShareTapped("first_scan_share_tapped"),
+    DeviceScoreCardViewed("device_score_card_viewed"),
+    DeviceScoreReplayed("device_score_replayed"),
+    DeviceScoreCardShared("device_score_card_shared"),
     // Power consumption events
     PowerTabViewed("power_tab_viewed"),
     PowerExperimentStarted("power_experiment_started"),

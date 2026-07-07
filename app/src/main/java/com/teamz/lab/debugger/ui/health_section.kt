@@ -330,6 +330,16 @@ fun HealthSection(
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // v3.1.12 — Last Device Score card (only renders if user has completed FirstScanGate)
+        if (FirstScanGate.hasCompletedScan(context)) {
+            item(key = "last_device_score") {
+                LastScoreCard(onShareClick = { score ->
+                    val shareText = "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
+                    onShareClick(shareText)
+                })
+            }
+        }
+
         // Health Score Card
         item(key = "health_score") {
             // Memoize the onScoreClick callback to prevent unnecessary recomposition

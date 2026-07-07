@@ -126,6 +126,29 @@ object FirstScanGate {
     fun getLastScanScore(context: Context): Int =
         prefs(context).getInt(KEY_FIRST_SCAN_SCORE, -1)
 
+    fun getLastScanTimestamp(context: Context): Long =
+        prefs(context).getLong(KEY_FIRST_SCAN_TS, 0L)
+
+    fun hasCompletedScan(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FIRST_SCAN_COMPLETED, false)
+
+    /**
+     * v3.1.12: user-triggered replay from the LastScoreCard on the Health tab.
+     * Wipes the completion flag so [currentState] returns SCANNING on next cold
+     * start. Score + timestamp are kept so the LastScoreCard can still show the
+     * previous result until the new scan overwrites it.
+     */
+    fun clearForReplay(context: Context) {
+        prefs(context).edit { remove(KEY_FIRST_SCAN_COMPLETED) }
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.DeviceScoreReplayed,
+                mapOf("previous_score" to getLastScanScore(context))
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
+        Log.i(TAG, "First-scan gate cleared for replay (user-initiated)")
+    }
+
     private fun readBatteryPctSafe(context: Context): Int? = try {
         val bm = context.getSystemService<BatteryManager>() ?: return null
         bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).takeIf { it in 1..100 }
