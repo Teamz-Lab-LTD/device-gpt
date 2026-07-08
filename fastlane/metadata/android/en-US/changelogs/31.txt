@@ -1,0 +1,8 @@
+v3.1.13 — Policy update
+
+- Memory Usage card now reports real memory stats (Android manages RAM automatically)
+- Battery Health card now surfaces diagnostic tips + deep-links to Android's battery settings
+- Removed background-process killing (Play policy: process kills hurt performance more than they help)
+- Same features, more honest labels
+
+Premium users see zero ads.

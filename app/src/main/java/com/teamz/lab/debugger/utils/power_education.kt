@@ -170,7 +170,7 @@ object PowerEducation {
                 • Higher power = shorter battery life
                 • Battery health degrades over time and charge cycles
                 
-                💡 **Battery Optimization Tips:**
+                💡 **Battery Tips:**
                 • Monitor power consumption to identify drain sources
                 • Enable battery saver mode when needed
                 • Avoid extreme temperatures (hot or cold)

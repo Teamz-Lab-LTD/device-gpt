@@ -89,62 +89,30 @@ fun getRamUsage(context: Context): String {
     return "$usedRam MB / $totalRam MB ($usagePercent%)"
 }
 
-/**
- * Clear RAM by killing background processes (optimize memory)
- * This function attempts to free RAM by clearing recent tasks and background processes
- * Note: Android limits what apps can kill, but we can optimize memory usage
- */
+// Play policy 2026-07-08: Deceptive Behavior. Killing background processes
+// via Process.killProcess() causes cold-restart cost > any memory reclaimed,
+// so claiming "free RAM improves performance" is misleading. Kill loop removed.
+// This function now reports current memory usage only — accurate + policy-safe.
 fun clearRam(context: Context): Pair<Boolean, String> {
     return try {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        val memoryInfoBefore = android.app.ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfoBefore)
-        val usedRamBefore = (memoryInfoBefore.totalMem - memoryInfoBefore.availMem) / (1024 * 1024)
-        
-        // Get running app processes (limit to prevent UI blocking)
-        val runningApps = activityManager.runningAppProcesses ?: emptyList()
-        
-        // Count processes that can be killed (not system, not our app)
-        val ourPackageName = context.packageName
-        var killedCount = 0
-        
-        // Limit to first 30 processes to prevent UI blocking on devices with many apps
-        val processesToKill = runningApps
-            .filter { processInfo ->
-            // Don't kill system processes or our own app
-                processInfo.importance > android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE &&
-                processInfo.importance < android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                !processInfo.pkgList.contains(ourPackageName)
-            }
-            .take(30) // Limit to prevent blocking
-        
-        processesToKill.forEach { processInfo ->
-                try {
-                    // Try to kill background processes (Android will decide if it's safe)
-                    android.os.Process.killProcess(processInfo.pid)
-                    killedCount++
-                } catch (e: Exception) {
-                    // Some processes can't be killed - that's normal
-            }
-        }
-        
-        // Force garbage collection to free memory (non-blocking)
-        System.gc()
-        
-        // Check memory after cleanup (no sleep - let GC happen asynchronously)
-        val memoryInfoAfter = android.app.ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfoAfter)
-        val usedRamAfter = (memoryInfoAfter.totalMem - memoryInfoAfter.availMem) / (1024 * 1024)
-        val freedRam = usedRamBefore - usedRamAfter
-        
-        if (freedRam > 0) {
-            Pair(true, "Freed ${freedRam} MB RAM. Optimized ${killedCount} background processes.")
+        val memoryInfo = android.app.ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        val totalMb = memoryInfo.totalMem / (1024 * 1024)
+        val availMb = memoryInfo.availMem / (1024 * 1024)
+        val usedMb = totalMb - availMb
+        val usedPercent = if (totalMb > 0) (usedMb * 100 / totalMb).toInt() else 0
+        val lowMemory = memoryInfo.lowMemory
+
+        val msg = if (lowMemory) {
+            "Memory pressure detected: ${usedMb} MB used of ${totalMb} MB (${usedPercent}%). Android will auto-close background apps as needed."
         } else {
-            Pair(true, "Memory optimized. Your device is already running efficiently.")
+            "Current memory: ${usedMb} MB used of ${totalMb} MB (${usedPercent}%). Android manages RAM automatically."
         }
+        Pair(true, msg)
     } catch (e: Exception) {
         handleError(e)
-        Pair(false, "Unable to clear RAM: ${e.message ?: "Unknown error"}")
+        Pair(false, "Unable to read memory info: ${e.message ?: "Unknown error"}")
     }
 }
 
@@ -2672,90 +2640,53 @@ fun getStorageUsagePercent(context: Context): Int {
  */
 fun optimizeBattery(context: Context): Triple<Boolean, String, Boolean> {
     return try {
-        val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
         val batteryInfo = getBatteryChargingInfo(context)
         val batteryTemp = getBatteryTemperature(context)
-        
-        var suggestions = mutableListOf<String>()
+
+        val suggestions = mutableListOf<String>()
         var optimizations = 0
-        var actionsTaken = 0
-        
-        // Priority 1: Try to optimize via app
-        // Close background apps if too many are running
+
+        // Play policy 2026-07-08: process-killing removed — cold-restart cost
+        // exceeds any battery saved. Only surface diagnostic suggestions and let
+        // the user act via the Settings deep-link.
         try {
             val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
             val runningApps = activityManager.runningAppProcesses?.size ?: 0
             if (runningApps > 10) {
-                // Try to kill some background processes (same logic as clearRam)
-                val ourPackageName = context.packageName
-                val processesKilled = activityManager.runningAppProcesses?.count { processInfo ->
-                    if (processInfo.importance > android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE &&
-                        processInfo.importance < android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
-                        !processInfo.pkgList.contains(ourPackageName)) {
-                        try {
-                            android.os.Process.killProcess(processInfo.pid)
-                            true
-                        } catch (e: Exception) {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                } ?: 0
-                
-                if (processesKilled > 0) {
-                    actionsTaken++
-                    suggestions.add("Closed $processesKilled background apps")
-                } else {
-                    suggestions.add("Close ${runningApps - 5} background apps manually")
-                }
+                suggestions.add("$runningApps apps running — review battery-heavy ones in Settings")
                 optimizations++
             }
         } catch (e: Exception) {
-            // Can't kill processes
+            // Can't read process list
         }
-        
-        // Check battery health and provide suggestions
+
         if (batteryInfo.contains("Overheat") || (batteryTemp != null && batteryTemp > 40f)) {
             suggestions.add("Remove phone case to cool down")
             suggestions.add("Close battery-draining apps")
             optimizations++
         }
-        
+
         if (batteryInfo.contains("Battery Full")) {
-            suggestions.add("Unplug charger - keeping at 100% damages battery")
+            suggestions.add("Unplug charger — keeping at 100% wears the battery faster")
             optimizations++
         }
-        
-        // Check if battery saver is off
+
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
         if (powerManager != null && !powerManager.isPowerSaveMode) {
-            suggestions.add("Enable battery saver mode in settings")
+            suggestions.add("Enable battery saver in Settings")
             optimizations++
         }
         
-        // Check if app is ignoring battery optimizations (Android 6.0+)
-        var isIgnoringBatteryOptimizations = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && powerManager != null) {
-            try {
-                isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
-            } catch (e: Exception) {
-                // Permission might not be granted, that's okay
-            }
-        }
-        
-        // If we took actions, return success
-        if (actionsTaken > 0) {
-            Triple(true, "Optimized battery. ${suggestions.take(2).joinToString(" ")}", false)
-        } else if (optimizations > 0) {
-            // Found optimizations but need user to do them - open settings
-            Triple(false, "Found $optimizations optimization${if (optimizations > 1) "s" else ""}. Opening battery settings...", true)
+        // Play policy 2026-07-08: no in-app "optimization" action — surface
+        // diagnostic tips and open Android's battery settings so the user acts.
+        if (optimizations > 0) {
+            Triple(false, "Found $optimizations tip${if (optimizations > 1) "s" else ""}. Opening battery settings…", true)
         } else {
-            Triple(true, "Battery is optimized. Your device is running efficiently.", false)
+            Triple(true, "No battery tips right now. Android manages battery automatically.", false)
         }
     } catch (e: Exception) {
         handleError(e)
-        Triple(false, "Unable to optimize battery: ${e.message ?: "Unknown error"}. Opening settings...", true)
+        Triple(false, "Unable to read battery info: ${e.message ?: "Unknown error"}. Opening settings…", true)
     }
 }
 

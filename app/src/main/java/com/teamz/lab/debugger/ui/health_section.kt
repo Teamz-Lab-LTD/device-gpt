@@ -784,9 +784,9 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
 RAM Usage: $ramUsage
 Current Usage: $ramPercent%
 
-Free RAM action optimizes background processes and clears memory to improve device performance.
+Android manages RAM automatically. This card shows current memory usage; refreshing re-reads the memory stats.
                         """.trimIndent()
-                        handler("RAM Optimization", content)
+                        handler("Memory Usage", content)
                     }
                 }
             )
@@ -1163,7 +1163,7 @@ Storage cleanup clears app caches and temporary files to free up space.
                     onDismissRequest = { showBatteryGuideDialog = false },
                     title = {
                         Text(
-                            text = "How to Optimize Battery",
+                            text = "Battery Tips",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -1411,9 +1411,9 @@ Storage cleanup clears app caches and temporary files to free up space.
 Battery Health: $batteryHealth%
 Battery Status: $batteryInfo
 
-Battery optimization provides suggestions to improve battery life and health.
+Android manages battery automatically. This card surfaces diagnostic tips (charging, temperature, saver mode) and deep-links to Android's battery settings.
                         """.trimIndent()
-                        handler("Battery Optimization", content)
+                        handler("Battery Health", content)
                     }
                 }
             )
@@ -2647,7 +2647,7 @@ private fun RamOptimizationCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "RAM Optimization",
+                        text = "Memory Usage",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2749,7 +2749,7 @@ private fun RamOptimizationCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Optimizing...")
+                    Text("Refreshing…")
                 } else {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -2758,14 +2758,13 @@ private fun RamOptimizationCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Free RAM",
+                        text = "Refresh",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
-            
-            // Show result message with neon green background (alpha) supporting both light and dark modes
+
             if (lastClearResult != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Surface(
@@ -2780,11 +2779,10 @@ private fun RamOptimizationCard(
                     )
                 }
             }
-            
-            // Info text
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Clears background processes to free up memory and improve performance",
+                text = "Shows current memory usage. Android manages RAM automatically.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -3021,7 +3019,7 @@ private fun BatteryOptimizationCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Battery Optimization",
+                        text = "Battery Health",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -3143,7 +3141,7 @@ private fun BatteryOptimizationCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Optimizing...")
+                    Text("Checking…")
                 } else {
                     Icon(
                         imageVector = Icons.Default.PowerSettingsNew,
@@ -3152,14 +3150,13 @@ private fun BatteryOptimizationCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Optimize Battery",
+                        text = "Battery Tips",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
-            
-            // Show result message
+
             if (lastOptimizeResult != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Surface(
@@ -3174,11 +3171,10 @@ private fun BatteryOptimizationCard(
                     )
                 }
             }
-            
-            // Info text
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Closes background apps and opens battery optimization settings",
+                text = "Shows battery diagnostics + opens Android's battery settings. Android manages battery automatically.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
