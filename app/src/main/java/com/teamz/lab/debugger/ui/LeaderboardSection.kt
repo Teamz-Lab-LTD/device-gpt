@@ -737,13 +737,14 @@ fun LeaderboardSection(activity: Activity) {
                             // Blur first 3 items for non-premium users
                             val shouldBlur = !isPremium && filteredIndex < 3
                             
-                            // Get price dynamically for premium prompt
-                            var premiumPriceAppPower by remember { mutableStateOf("$2.99") }
+                            // Price from RevenueCat only — never display a hardcoded
+                            // price (misleading when localized/tiered pricing differs).
+                            var premiumPriceAppPower by remember { mutableStateOf("") }
                             LaunchedEffect(filteredIndex) {
                                 if (shouldBlur && filteredIndex == 0) { // Only fetch once for first item
                                     RevenueCatManager.getLifetimeProductPrice(
                                         onSuccess = { price -> premiumPriceAppPower = price },
-                                        onError = { /* Keep default $2.99 */ }
+                                        onError = { /* no price shown on failure */ }
                                     )
                                 }
                             }
@@ -900,7 +901,7 @@ fun LeaderboardSection(activity: Activity) {
                                                             fontWeight = FontWeight.Bold
                                                         )
                                                         Text(
-                                                            "$premiumPriceAppPower • See Everything Forever",
+                                                            if (premiumPriceAppPower.isNotEmpty()) "$premiumPriceAppPower • See Everything Forever" else "See Everything Forever",
                                                             style = MaterialTheme.typography.labelSmall,
                                                             fontWeight = FontWeight.Normal
                                                         )
@@ -995,13 +996,14 @@ fun LeaderboardSection(activity: Activity) {
                         // Blur first 3 items for non-premium users
                         val shouldBlur = !isPremium && filteredIndex < 3
                         
-                        // Get price dynamically for premium prompt
-                        var premiumPrice by remember { mutableStateOf("$2.99") }
+                        // Price from RevenueCat only — never display a hardcoded
+                        // price (misleading when localized/tiered pricing differs).
+                        var premiumPrice by remember { mutableStateOf("") }
                         LaunchedEffect(filteredIndex) {
                             if (shouldBlur && filteredIndex == 0) { // Only fetch once for first item
                                 RevenueCatManager.getLifetimeProductPrice(
                                     onSuccess = { price -> premiumPrice = price },
-                                    onError = { /* Keep default $2.99 */ }
+                                    onError = { /* no price shown on failure */ }
                                 )
                             }
                         }
@@ -1178,7 +1180,7 @@ fun LeaderboardSection(activity: Activity) {
                                                         fontWeight = FontWeight.Bold
                                                     )
                                                     Text(
-                                                        "$premiumPrice • See Everything Forever",
+                                                        if (premiumPrice.isNotEmpty()) "$premiumPrice • See Everything Forever" else "See Everything Forever",
                                                         style = MaterialTheme.typography.labelSmall,
                                                         fontWeight = FontWeight.Normal
                                                     )
@@ -1951,12 +1953,13 @@ fun UserRankCardPremiumGate(
     totalEntries: Int = 0,
     onUnlockClick: () -> Unit
 ) {
-    // Get price dynamically
-    var premiumPrice by remember { mutableStateOf("$2.99") }
+    // Price from RevenueCat only — never display a hardcoded price
+    // (misleading when localized/tiered pricing differs).
+    var premiumPrice by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         RevenueCatManager.getLifetimeProductPrice(
             onSuccess = { price -> premiumPrice = price },
-            onError = { /* Keep default $2.99 */ }
+            onError = { /* no price shown on failure */ }
         )
     }
 
@@ -2035,7 +2038,7 @@ fun UserRankCardPremiumGate(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        "$premiumPrice • See Everything Forever",
+                        if (premiumPrice.isNotEmpty()) "$premiumPrice • See Everything Forever" else "See Everything Forever",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Normal
                     )

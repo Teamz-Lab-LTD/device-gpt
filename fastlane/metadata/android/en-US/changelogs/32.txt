@@ -1,0 +1,9 @@
+v3.2.0 — Honest scan + Device Timeline
+
+- Device Score scan now runs 4 real checks: battery condition, memory, storage, network — with the scoring weights shown on the result
+- New Device Timeline: your scans, charge sessions and device changes, saved on your phone
+- Charge summary: see how fast your last charge was
+- Quick "why did you close?" question after the premium screen — one tap, helps us improve
+- Cleaner widget text and fewer interruptions from ads in your first sessions
+
+Premium users see zero ads.

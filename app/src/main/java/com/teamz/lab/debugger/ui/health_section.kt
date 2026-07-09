@@ -68,6 +68,14 @@ fun HealthSection(
     // Use ViewModel to persist scroll state across activity recreation (survives ad show/close)
     val viewModel: HealthSectionViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     
+    // v3.2.0 R5: paywall trigger for the Device Timeline locked-history row.
+    var showTimelineHistoryPaywall by remember { mutableStateOf(false) }
+    PaywallWithReferralFallback(
+        showPaywall = showTimelineHistoryPaywall,
+        onDismiss = { showTimelineHistoryPaywall = false },
+        analyticsSource = "timeline_history"
+    )
+
     // Preserve LazyColumn scroll state across activity recreation
     // Get saved scroll position from ViewModel and restore it
     val savedFirstVisibleItemIndex by viewModel.lazyListFirstVisibleItemIndex.collectAsState()
@@ -334,10 +342,27 @@ fun HealthSection(
         if (FirstScanGate.hasCompletedScan(context)) {
             item(key = "last_device_score") {
                 LastScoreCard(onShareClick = { score ->
-                    val shareText = "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
-                    onShareClick(shareText)
+                    // v3.2.0: share card v2 (PNG) when RC-enabled; text fallback always works.
+                    val usedCard = if (RemoteConfigUtils.isShareCardV2Enabled()) {
+                        com.teamz.lab.debugger.utils.ShareCardRenderer.shareScoreCard(context, score)
+                    } else false
+                    if (!usedCard) {
+                        val shareText = "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
+                        onShareClick(shareText)
+                    }
                 })
             }
+        }
+
+        // v3.2.0 R2 — charge summary card (RC-gated charge_summary_enabled, OFF).
+        item(key = "charge_summary") {
+            ChargeSummaryCard()
+        }
+
+        // v3.2.0 R5 — Device Timeline (RC-gated timeline_enabled, default OFF).
+        // 7-day window free; tapping older history opens the timeline_history paywall.
+        item(key = "device_timeline") {
+            DeviceTimelineSection(onHistoryPaywall = { showTimelineHistoryPaywall = true })
         }
 
         // Health Score Card

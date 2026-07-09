@@ -101,9 +101,12 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val isFull = prefs.getBoolean("battery_full", false)
         val chargingType = prefs.getString("charging_type", "") ?: ""
         
-        // Get psychologically compelling messages
-        val alertMessage = prefs.getString("alert_message", "") ?: ""
-        val ctaMessage = prefs.getString("cta_message", "Tap to optimize →") ?: "Tap to optimize →"
+        // Factual status messages. Play policy 2026-07-10: stale prefs may still hold
+        // pre-v3.2 "optimize" strings — sanitize on read so no banned word ever renders.
+        val alertMessage = sanitizeLegacyVocab(prefs.getString("alert_message", "") ?: "")
+        val ctaMessage = sanitizeLegacyVocab(
+            prefs.getString("cta_message", "Open health check →") ?: "Open health check →"
+        )
         
         // Extract temperature - use stored value first, fallback to parsing thermal string
         val tempValue = prefs.getString("temperature_value", null) ?: try {
@@ -124,7 +127,38 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         // eye lands on the most-important metric first. Same XML, just tinted at
         // runtime. RemoteViews.setTextColor via setInt + method name (Android's
         // RemoteViews API for cross-process View mutation).
-        views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10")
+        //
+        // v3.2.0 R3 widget v2 (RC widget_v2_enabled, default OFF): delta-first
+        // content in the SAME layout — score + trend arrow, alert line becomes
+        // "what changed vs yesterday". Honest "no change" state is common and fine.
+        val widgetV2 = try {
+            com.teamz.lab.debugger.utils.RemoteConfigUtils.isWidgetV2Enabled()
+        } catch (e: Exception) { false }
+        var v2DeltaLine: String? = null
+        var trendArrow = ""
+        if (widgetV2) {
+            try {
+                // Write today's snapshot if due (dedup inside), then read prefs-cached delta.
+                com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(context, healthScore)
+                val (prev, last) = com.teamz.lab.debugger.db.DeviceEventsRepository.snapshotDeltaFromPrefs(context)
+                if (prev in 0..10 && last in 0..10) {
+                    val diff = last - prev
+                    trendArrow = when {
+                        diff > 0 -> " ↑"
+                        diff < 0 -> " ↓"
+                        else -> ""
+                    }
+                    v2DeltaLine = when {
+                        diff > 0 -> "Health +$diff vs yesterday"
+                        diff < 0 -> "Health $diff vs yesterday — see what changed"
+                        else -> "Nothing changed — all steady"
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("DeviceGPT_Widget", "widget v2 delta failed: ${e.message}")
+            }
+        }
+        views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10$trendArrow")
         val healthColor = when {
             healthScore >= 7 -> 0xFFD9FE06.toInt()   // lime — original "good" color preserved
             healthScore >= 4 -> 0xFFFFC107.toInt()   // amber — caution
@@ -133,18 +167,17 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         }
         views.setInt(R.id.widget_health_score, "setTextColor", healthColor)
         
-        // Streak (FOMO Trigger) - fix grammar: "1 day" vs "2 days"
-        val streakText = if (streak > 0) {
-            if (streak == 1) "🔥 1 day" else "🔥 $streak days"
-        } else {
-            ""
-        }
-        views.setTextViewText(R.id.widget_streak, streakText)
+        // Play policy 2026-07-10: streak row removed — FOMO mechanic on a utility
+        // widget is manufactured urgency. View kept in XML for layout stability,
+        // always rendered empty.
+        views.setTextViewText(R.id.widget_streak, "")
         
-        // Critical Alert/Issue (Urgency Trigger - Most Compelling)
-        if (alertMessage.isNotEmpty()) {
+        // Alert line. v2: the delta line takes priority — "what changed" is the
+        // hook, not urgency. v1: factual alert from the monitor service.
+        val alertLine = if (widgetV2 && v2DeltaLine != null) v2DeltaLine else alertMessage
+        if (alertLine.isNotEmpty()) {
             views.setViewVisibility(R.id.widget_alert, android.view.View.VISIBLE)
-            views.setTextViewText(R.id.widget_alert, alertMessage)
+            views.setTextViewText(R.id.widget_alert, alertLine)
         } else {
             views.setViewVisibility(R.id.widget_alert, android.view.View.GONE)
         }
@@ -312,15 +345,15 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             // No alert shown, so show primary status here
             when {
                 // Critical issues (highest priority)
-                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🔥 Overheating"
-                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "⚠️ Slow Device"
-                healthScore < 5 -> "⚠️ Critical"
+                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🌡️ Hot"
+                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "📊 High Memory"
+                healthScore < 5 -> "⚠️ Low Score"
                 // Warnings (medium priority)
                 tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 40f -> "🌡️ Warm"
-                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "⚠️ High Usage"
-                healthScore < 7 -> "📉 Needs Care"
+                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "📊 High Usage"
+                healthScore < 7 -> "📉 Below Normal"
                 // Positive status (when everything is good)
-                healthScore >= 8 -> "✅ Optimized"
+                healthScore >= 8 -> "✅ Healthy"
                 else -> "📊 Good"
             }
         }
@@ -393,7 +426,19 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
 
     companion object {
         const val ACTION_UPDATE_WIDGET = "com.teamz.lab.debugger.UPDATE_LOCK_SCREEN_WIDGET"
-        
+
+        /**
+         * Play policy 2026-07-10: prefs written by a pre-v3.2 APK can still contain
+         * banned "optimize" vocabulary after upgrade. Sanitize on read — the new
+         * writer never produces these, so this only fires once per upgrade window.
+         */
+        fun sanitizeLegacyVocab(text: String): String {
+            if (text.isEmpty()) return text
+            val banned = listOf("optimize", "optimized", "boost", "clean up", "speed up", "junk", "free up ram")
+            val lower = text.lowercase()
+            return if (banned.any { lower.contains(it) }) "Open health check →" else text
+        }
+
         /**
          * Trigger widget update from SystemMonitorService
          */

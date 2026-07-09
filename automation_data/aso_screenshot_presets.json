@@ -1,66 +1,66 @@
 {
-  "_doc": "DeviceGPT Play Store + App Store screenshot presets. Consumed by teamz-company-automation/py/aso/aso-generate-batch.py. Paths are relative to this JSON file's directory.",
+  "_doc": "DeviceGPT Play Store + App Store screenshot presets. Consumed by teamz-company-automation/py/aso/aso-generate-batch.py. Paths are relative to this JSON file's directory. 2026-07-06: swapped iPhone 16 Pro Max frame -> no-frame fallback (Android-agnostic clean rounded phone shape on lime bg). 2026-07-07: added #01 DEVICE SCORE (real Pixel 8a capture of v3.1.11 FirstScanGate SCORED phase), reordered remaining 1-8. Dropped 08-scan-specs (redundant with 05-live-fps hardware theme). Play limit = 8 phone screenshots per locale.",
   "device": "iphone-6.7",
   "bg": "#D9FE06",
   "text_color": "#000000",
-  "frame": "~/.fastlane/frameit/latest/Apple iPhone 16 Pro Max Black Titanium.png",
+  "frame": "~/.fastlane/frameit/NONEXISTENT_intentional_no_frame_fallback.png",
   "output_dir": "../screenshots/store-ready",
   "shots": [
     {
-      "name": "01-battery-health",
+      "name": "01-device-score",
+      "raw": "../screenshots/by-feature/00-first-scan-gate/01-scored-capture.png",
+      "hero": "10 SECONDS",
+      "subtitle": ["TO YOUR", "DEVICE SCORE"],
+      "keywords": "phone check, device score, phone health check (RISING), instant diagnostics -- matches v3.1.11 FirstScanGate first-launch experience, closes install-expectation gap"
+    },
+    {
+      "name": "02-battery-health",
       "raw": "../screenshots/by-feature/02-battery/01-power-consumption-7p9w-overview.png",
       "hero": "BATTERY HEALTH",
       "subtitle": ["IN WATTS", "NOT JUST %"],
-      "keywords": "battery health (RISING 10.6k Bing/mo, #1 seed keyword), ai battery, watts per app — anchors app name 'DeviceGPT: AI Battery Health'"
+      "keywords": "battery health (RISING 10.6k Bing/mo, #1 seed keyword), ai battery, watts per app -- anchors app name 'DeviceGPT: AI Battery Health'"
     },
     {
-      "name": "02-phone-health",
+      "name": "03-phone-health",
       "raw": "../screenshots/by-feature/01-health/01-todays-health-score-5of10.png",
       "hero": "PHONE HEALTH",
-      "subtitle": ["SCORED 0–10", "EVERY DAY"],
+      "subtitle": ["SCORED 0-10", "EVERY DAY"],
       "keywords": "phone health check, phone diagnostics, ai phone"
     },
     {
-      "name": "03-app-drain",
+      "name": "04-app-drain",
       "raw": "../screenshots/by-feature/02-battery/02-component-breakdown-watts-per-hour.png",
       "hero": "DRAIN",
       "subtitle": ["FIND WHICH", "APP KILLS IT"],
-      "keywords": "battery drain, app power usage, ai battery — differentiator vs competitors who only show %"
+      "keywords": "battery drain, app power usage, ai battery -- differentiator vs competitors who only show %"
     },
     {
-      "name": "04-live-fps",
+      "name": "05-live-fps",
       "raw": "../screenshots/by-feature/03-hardware/03-temp-memory-fps-frame-drop-root.png",
       "hero": "LIVE FPS",
       "subtitle": ["FOR PHONE", "GAMERS"],
       "keywords": "fps counter, gamer phone, frame drop monitor"
     },
     {
-      "name": "05-privacy-threats",
+      "name": "06-privacy-threats",
       "raw": "../screenshots/by-feature/01-health/03-privacy-dashboard-60of100.png",
       "hero": "IS MY PHONE",
       "subtitle": ["HACKED?", "GET A REAL ANSWER"],
       "keywords": "is my phone hacked, spyware detector, privacy scan"
     },
     {
-      "name": "06-verified-report",
+      "name": "07-verified-report",
       "raw": "../screenshots/by-feature/05-trust-resale/01-generating-verified-report-dialog.png",
       "hero": "SELL YOUR",
       "subtitle": ["PHONE WITH", "CRYPTO PROOF"],
-      "keywords": "phone resale report, sell phone, verify used phone — MOAT shot, unique vs all competitors"
+      "keywords": "phone resale report, sell phone, verify used phone -- MOAT shot, unique vs all competitors"
     },
     {
-      "name": "07-wifi-speed",
+      "name": "08-wifi-speed",
       "raw": "../screenshots/by-feature/04-network/01-network-privacy-report-Bplus-plus-reachability.png",
       "hero": "WIFI SPEED",
       "subtitle": ["+ NETWORK", "PRIVACY"],
       "keywords": "wifi speed test (97k Bing/mo), internet speed test (1.1M/mo!), network privacy"
-    },
-    {
-      "name": "08-scan-specs",
-      "raw": "../screenshots/by-feature/03-hardware/01-security-dashboard-80of100-plus-specs.png",
-      "hero": "SCAN PHONE",
-      "subtitle": ["EVERY SPEC", "+ THREATS"],
-      "keywords": "phone hardware test (RISING), device info, phone specs"
     }
   ]
 }

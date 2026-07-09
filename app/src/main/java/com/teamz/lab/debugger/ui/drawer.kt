@@ -112,7 +112,6 @@ import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AdConfig
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
-import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.LeaderboardManager
 import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.PasskeyAuthManager
@@ -331,9 +330,9 @@ fun DrawerContent(
                         productPrice = price
                     },
                     onError = { error ->
-                        // Fallback to default if price fetch fails
-                        productPrice = "$2.99"
-                        android.util.Log.w("Drawer", "Failed to fetch price: $error, using fallback")
+                        // No hardcoded fallback — a wrong displayed price is a
+                        // misleading-price claim. UI renders without price when null.
+                        android.util.Log.w("Drawer", "Failed to fetch price: $error, hiding price")
                     }
                 )
             }
@@ -393,7 +392,7 @@ fun DrawerContent(
                         // Show RevenueCat paywall designed in console
                         AnalyticsUtils.logEvent(AnalyticsEvent.PremiumDrawerCardClicked, mapOf(
                             "source" to "drawer",
-                            "price" to (productPrice ?: "2.99"),
+                            "price" to (productPrice ?: "unknown"),
                             "type" to "lifetime"
                         ))
                         coroutineScope.launch {
@@ -1197,13 +1196,10 @@ fun DrawerContent(
             coroutineScope.launch {
                 drawerState.close()
             }
-            // Show ad before opening share dialog
-            InterstitialAdManager.showAdBeforeAction(
-                activity = activity,
-                actionName = "share_with_friends"
-            ) {
-                onShareClick?.invoke()
-            }
+            // v3.2.0: interstitial removed — taxing the user's SHARE action with a
+            // fullscreen ad kills the one free growth loop the app has. Near-zero
+            // revenue cost at 36.9% match rate.
+            onShareClick?.invoke()
         }
 
         HorizontalDivider(
@@ -1234,18 +1230,13 @@ fun DrawerContent(
                 coroutineScope.launch {
                     drawerState.close()
                 }
-                // Show interstitial ad before opening GitHub
-                InterstitialAdManager.showAdBeforeAction(
-                    activity = activity,
-                    actionName = "view_github_source"
-                ) {
-                    // Open GitHub repository after ad is dismissed
-                    val urlIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        "https://github.com/Teamz-Lab-LTD/device-gpt".toUri()
-                    )
-                    context.startActivity(urlIntent)
-                }
+                // v3.2.0: interstitial removed — punishing a trust-building action
+                // (viewing source code) with a fullscreen ad is anti-trust UX.
+                val urlIntent = Intent(
+                    Intent.ACTION_VIEW,
+                    "https://github.com/Teamz-Lab-LTD/device-gpt".toUri()
+                )
+                context.startActivity(urlIntent)
             }
         }
     }

@@ -76,8 +76,10 @@ fun RevenueCatPaywall(
             com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
                 object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
                     override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
-                            ?: offerings.current
+                        // v3.2.0: prefer offerings.current (enables Experiments +
+                        // country-targeted offerings); pinned ID is fallback only.
+                        val targetOffering = offerings.current
+                            ?: offerings.getOffering(RevenueCatManager.OFFERING_ID)
                         if (targetOffering != null) {
                             offering = targetOffering
                         } else {

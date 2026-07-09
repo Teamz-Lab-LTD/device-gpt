@@ -375,6 +375,26 @@ enum class AnalyticsEvent(val eventName: String) {
     // Param `reason`: too_expensive | not_now | no_value_seen | closed_by_mistake | other
     // Without this, plan to fix 89% dismiss rate is blind (we'd be A/B-ing without a hypothesis).
     PaywallDismissReason("paywall_dismiss_reason"),
+    // v3.2.0 growth program (2026-07-10 synthesis) — behaviour-log events.
+    // Every new surface logs to GA4 so each feature's funnel is trackable
+    // before its RC flag is flipped for real users.
+    PaywallRerouted("paywall_rerouted"),                 // reason + action + applied
+    PaywallColdGateBlocked("paywall_cold_gate_blocked"), // cold-open chain blocked by session/scan gate
+    WidgetPinPromptResult("widget_pin_prompt_result"),   // shown | accepted | unsupported | already_added
+    ChargeSummarySurfaced("charge_summary_surfaced"),    // in-app card rendered after unplug (open-tracking reuses existing ChargeSummaryOpened)
+    ChargeNotifPermissionAsked("charge_notif_permission_asked"),
+    ChargeNotifPermissionResult("charge_notif_permission_result"),
+    NewAppReviewNotified("new_app_review_notified"),     // watchdog notification posted
+    NewAppReviewOpened("new_app_review_opened"),         // user tapped -> review screen
+    TimelineOpened("timeline_opened"),                   // Health-tab timeline viewed
+    TimelineHistoryPaywallShown("timeline_history_paywall_shown"), // >7d tap -> paywall
+    InsightShown("insight_shown"),                       // R6 template id + delta params
+    InsightTapped("insight_tapped"),
+    ShareCardRendered("share_card_rendered"),            // share card v2 bitmap generated
+    ShareCardSent("share_card_sent"),                    // share sheet completed
+    RewardedUnlockOffered("rewarded_unlock_offered"),    // loaded-only button rendered
+    RewardedUnlockUsed("rewarded_unlock_used"),          // ad watched -> grant delivered
+    BaselineSnapshotWritten("baseline_snapshot_written"),// daily device_events snapshot
     PremiumPurchaseInitiated("premium_purchase_initiated"),
     PremiumPurchaseCompleted("premium_purchase_completed"),
     PremiumPurchaseFailed("premium_purchase_failed"),

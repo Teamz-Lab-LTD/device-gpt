@@ -150,8 +150,10 @@ import com.teamz.lab.debugger.utils.AIIcon
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.AppOpenAdManager
+import com.teamz.lab.debugger.utils.EngagementTracker
 import com.teamz.lab.debugger.utils.ErrorHandler
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.PaywallPolicy
 import com.teamz.lab.debugger.utils.PowerConsumptionAggregator
 import com.teamz.lab.debugger.utils.PowerConsumptionUtils
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
@@ -241,23 +243,19 @@ fun DeviceGptNavExperience(
     
     LaunchedEffect(widgetAction) {
         if (widgetAction == "clear_ram") {
-            // Show interstitial ad before clearing RAM from widget
-            InterstitialAdManager.showAdBeforeAction(
-                activity = activity,
-                actionName = "clear_ram_widget"
-            ) {
-                // Action to execute after ad is dismissed (or if ad fails)
-                val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
-                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                AnalyticsUtils.logEvent(
-                    AnalyticsEvent.WidgetTapped,
-                    mapOf(
-                        "source" to "lock_screen_widget",
-                        "action" to "clear_ram",
-                        "success" to success
-                    )
+            // Play policy 2026-07-10: interstitial removed from the widget-tap path.
+            // A fullscreen ad between tapping the widget and seeing the memory report
+            // is the disruptive-ads pattern — and this is the #1 surface (59 displays/user).
+            val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.WidgetTapped,
+                mapOf(
+                    "source" to "lock_screen_widget",
+                    "action" to "clear_ram",
+                    "success" to success
                 )
-            }
+            )
             // Clear the action to prevent re-execution
             activity.intent?.removeExtra("widget_action")
         }
@@ -276,6 +274,8 @@ fun DeviceGptNavExperience(
     var showRevenueCatPaywall by remember { mutableStateOf(false) }
     var paywallAnalyticsSource by remember { mutableStateOf("revenuecat_paywall") }
     var showGenerateReportDialog by remember { mutableStateOf(false) }
+    // v3.2.0 rewarded v1: "watch an ad -> generate 1 report" offer dialog.
+    var showRewardedReportOffer by remember { mutableStateOf(false) }
     var showReportReadyDialog by remember { mutableStateOf(false) }
     var showVerifyReportDialog by remember { mutableStateOf(false) }
     var generatedReport by remember { mutableStateOf<VerifiedReport?>(null) }
@@ -324,6 +324,15 @@ fun DeviceGptNavExperience(
             ))
             if (!RevenueCatManager.isPremium() && !paywallTriggeredThisSession &&
                 RemoteConfigUtils.isReviewFirstStrategyEnabled()) {
+                // v3.2.0: cold-open paywall gated on session>=min + first scan done.
+                // 89% dismiss rate was measured on ungated cold-open triggers.
+                if (!PaywallPolicy.coldTriggerAllowed(context)) {
+                    AnalyticsUtils.logEvent(AnalyticsEvent.PaywallColdGateBlocked, mapOf(
+                        "chain" to "after_review_chain",
+                        "session_count" to EngagementTracker.getSessionCount(context)
+                    ))
+                    return@collect
+                }
                 val delayMs = RemoteConfigUtils.getPaywallDelayAfterReviewMs()
                 kotlinx.coroutines.delay(delayMs)
                 val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
@@ -363,6 +372,14 @@ fun DeviceGptNavExperience(
         else Long.MAX_VALUE
 
         val repeatDays = RemoteConfigUtils.getPaywallRepeatIntervalDays()
+        // v3.2.0: cold-open fallback gated on session>=min + first scan done.
+        if (!PaywallPolicy.coldTriggerAllowed(context)) {
+            AnalyticsUtils.logEvent(AnalyticsEvent.PaywallColdGateBlocked, mapOf(
+                "chain" to "smart_session_trigger",
+                "session_count" to EngagementTracker.getSessionCount(context)
+            ))
+            return@LaunchedEffect
+        }
         val shouldShow = lastPaywallTime == 0L || daysSinceLastPaywall >= repeatDays
         if (shouldShow) {
             val fallbackDelay = RemoteConfigUtils.getPaywallFallbackDelayMs()
@@ -405,9 +422,19 @@ fun DeviceGptNavExperience(
             },
             onGenerateVerifiedReport = {
                 if (!RevenueCatManager.isPremium()) {
-                    paywallAnalyticsSource = "verified_report_gate"
-                    AnalyticsUtils.logEvent(AnalyticsEvent.PaywallVerifiedReportGated)
-                    showRevenueCatPaywall = true
+                    // v3.2.0 rewarded v1 (RC rewarded_report_enabled, default OFF):
+                    // offer renders ONLY when a rewarded ad is actually loaded —
+                    // a no-fill unlock button is a broken promise (36.9% match rate).
+                    if (RemoteConfigUtils.isRewardedReportEnabled() &&
+                        com.teamz.lab.debugger.utils.RewardedAdManager.isAdLoaded()
+                    ) {
+                        AnalyticsUtils.logEvent(AnalyticsEvent.RewardedUnlockOffered, mapOf("feature" to "verified_report"))
+                        showRewardedReportOffer = true
+                    } else {
+                        paywallAnalyticsSource = "verified_report_gate"
+                        AnalyticsUtils.logEvent(AnalyticsEvent.PaywallVerifiedReportGated)
+                        showRevenueCatPaywall = true
+                    }
                 } else {
                     InterstitialAdManager.showAdBeforeAction(
                         activity = activity,
@@ -538,9 +565,9 @@ fun DeviceGptNavExperience(
                                 productPrice = price
                             },
                             onError = { error ->
-                                // Fallback to default if price fetch fails
-                                productPrice = "$2.99"
-                                android.util.Log.w("MainActivity", "Failed to fetch price: $error, using fallback")
+                                // No hardcoded fallback — a wrong displayed price is a
+                                // misleading-price claim. FAB renders "PRO" when null.
+                                android.util.Log.w("MainActivity", "Failed to fetch price: $error, hiding price")
                             }
                         )
                     }
@@ -664,7 +691,7 @@ fun DeviceGptNavExperience(
                                         .rotate(if (startRotation) starRotation else 0f) // Rotate star after delay with pause
                                 )
                                 Text(
-                                    text = productPrice ?: "$2.99",
+                                    text = productPrice ?: "PRO",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 2.dp),
@@ -1630,6 +1657,48 @@ https://play.google.com/store/apps/details?id=${context.packageName}
             showReferralCode = true,
             powerData = if (selectedTab == TabOrderManager.getTabIndex(TabType.POWER)) currentPowerData else null,
             aggregatedStats = if (selectedTab == TabOrderManager.getTabIndex(TabType.POWER)) aggregatedPowerStats else null
+        )
+    }
+
+    // v3.2.0 rewarded v1 — exact-grant offer. Copy states the grant verbatim:
+    // one report per ad. Grant is delivered even if the ad fails AFTER starting;
+    // an early user dismiss (no reward callback) grants nothing.
+    if (showRewardedReportOffer) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRewardedReportOffer = false },
+            title = { Text("Generate 1 Verified Report") },
+            text = { Text("Watch a short ad to generate 1 report — or go Premium for unlimited reports.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showRewardedReportOffer = false
+                    com.teamz.lab.debugger.utils.RewardedAdManager.showAd(
+                        activity = activity,
+                        onRewardEarned = {
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.RewardedUnlockUsed,
+                                mapOf("feature" to "verified_report")
+                            )
+                            showGenerateReportDialog = true
+                        },
+                        onAdFailed = {
+                            // Ad started but failed to render — user held up their
+                            // side; deliver the grant anyway.
+                            AnalyticsUtils.logEvent(
+                                AnalyticsEvent.RewardedUnlockUsed,
+                                mapOf("feature" to "verified_report", "via" to "ad_failed_grant")
+                            )
+                            showGenerateReportDialog = true
+                        }
+                    )
+                }) { Text("Watch ad") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showRewardedReportOffer = false
+                    paywallAnalyticsSource = "verified_report_gate"
+                    showRevenueCatPaywall = true
+                }) { Text("Go Premium") }
+            }
         )
     }
 

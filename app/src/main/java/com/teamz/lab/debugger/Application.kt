@@ -95,6 +95,27 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             AppLog.d("MyApplication", "onCreate() - Initializing RemoteConfig...")
             RemoteConfigUtils.init()
             AppLog.d("MyApplication", "onCreate() - RemoteConfig initialized")
+
+            // v3.2.0 R5: device_events timeline maintenance (async on IO) —
+            // backfills from prefs on first run, prunes >90d rows.
+            com.teamz.lab.debugger.db.DeviceEventsRepository.initMaintenance(applicationContext)
+
+            // v3.2.0 R2: charge-session delivery fix. The manifest receiver is dead
+            // on API 26+ (POWER_CONNECTED/DISCONNECTED not exemption-listed), so:
+            // runtime receiver (process alive) + charging-constraint worker (process
+            // dead) + reconcile of dangling sessions on process start.
+            com.teamz.lab.debugger.utils.ChargeCycleTracker.registerRuntimeReceiver(applicationContext)
+            com.teamz.lab.debugger.utils.ChargeStartWorker.schedule(applicationContext)
+            com.teamz.lab.debugger.utils.ChargeCycleTracker.reconcileOnAppOpen(applicationContext)
+
+            // v3.2.0 R3: widget freshness — WorkManager primary path (the FGS most
+            // users never enable was previously the ONLY refresher). Early-exits
+            // when no widget instances exist.
+            com.teamz.lab.debugger.widgets.WidgetRefreshWorker.schedule(applicationContext)
+
+            // v3.2.0 R4: new-app watchdog wake moment — cold start.
+            // No-ops unless RC new_app_watchdog_enabled flips true.
+            com.teamz.lab.debugger.utils.NewAppWatchdog.checkNow(applicationContext)
             
             // Initialize Leaderboard Manager (Firebase Auth)
             AppLog.d("MyApplication", "onCreate() - Initializing LeaderboardManager...")

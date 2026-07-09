@@ -407,8 +407,10 @@ object RevenueCatManager {
         
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                // Use specific offering ID "device-gpt-offering"
-                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
+                // v3.2.0: prefer offerings.current (dashboard-controlled — enables
+                // RevenueCat Experiments + country-targeted offerings like
+                // emerging_markets). Pinned OFFERING_ID is the fallback only.
+                val currentOffering = offerings.current ?: offerings.getOffering(OFFERING_ID)
                 if (currentOffering == null) {
                     onError("No offerings available")
                     return
@@ -577,8 +579,10 @@ object RevenueCatManager {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
                 Log.d(TAG, "Received offerings. Available offering IDs: ${offerings.all.keys}")
 
-                // Use specific offering ID "device-gpt-offering"
-                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
+                // v3.2.0: prefer offerings.current (dashboard-controlled — enables
+                // RevenueCat Experiments + country-targeted offerings like
+                // emerging_markets). Pinned OFFERING_ID is the fallback only.
+                val currentOffering = offerings.current ?: offerings.getOffering(OFFERING_ID)
                 if (currentOffering == null) {
                     Log.e(TAG, "No offering available for ID: $OFFERING_ID. Available offerings: ${offerings.all.keys}")
                     AnalyticsUtils.logEvent(

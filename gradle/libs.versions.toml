@@ -31,6 +31,7 @@ uiautomator = "2.3.0"
 workRuntimeKtx = "2.11.1"
 installReferrer = "2.2"
 ksp = "2.1.0-1.0.29"
+room = "2.7.1"
 appfunctions = "1.0.0-alpha08"
 mlkitGenai = "1.0.0-beta1"
 composeAdaptive = "1.1.0"
@@ -40,6 +41,9 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-junit-v115 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 app-update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

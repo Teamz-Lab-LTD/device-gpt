@@ -622,7 +622,10 @@ class SystemMonitorService : Service() {
     }
     
     /**
-     * Generate psychologically compelling alert message to trigger user action
+     * Alert line for the widget/notification.
+     * Play policy 2026-07-10 (Deceptive Behavior clearance): every string must state a
+     * measured fact + honest action. Banned vocabulary: optimize, boost, clean, speed up,
+     * junk, free up RAM. No streak FOMO, no manufactured urgency.
      */
     private suspend fun generateCompellingAlert(
         context: Context,
@@ -634,57 +637,44 @@ class SystemMonitorService : Service() {
         streak: Int
     ): String {
         return try {
-            // Priority 1: Critical issues (highest urgency)
             val temp = tempValue.toFloatOrNull() ?: 0f
             if (temp > 45f) {
-                return "⚠️ Phone overheating! ${temp.toInt()}°C - Tap to fix"
+                return "🌡️ Temp ${temp.toInt()}°C — higher than normal"
             }
-            
+
             val ram = ramPercent.toIntOrNull() ?: 0
             if (ram > 85) {
-                return "⚠️ Phone is slow! Tap to optimize" // Removed RAM % - already shown in widget
+                return "📊 Memory ${ram}% used — see what's using it"
             }
-            
+
             if (healthScore < 5) {
-                return "⚠️ Health score ${healthScore}/10 - Needs attention!"
+                return "📉 Health score ${healthScore}/10 — see what changed"
             }
-            
-            // Priority 2: Warnings (medium urgency)
+
             if (temp > 40f) {
-                return "🌡️ Phone getting hot (${temp.toInt()}°C)"
+                return "🌡️ Temp ${temp.toInt()}°C — warmer than usual"
             }
-            
+
             if (ram > 70) {
-                return "⚠️ High RAM usage - Tap to optimize" // Removed RAM % - already shown in widget
+                return "📊 Memory ${ram}% used"
             }
-            
+
             if (healthScore < 7) {
-                return "📉 Health score ${healthScore}/10 - Improve now"
+                return "📉 Health score ${healthScore}/10 — see details"
             }
-            
-            // Priority 3: Streak protection (FOMO)
-            if (streak >= 7) {
-                return "🔥 Don't break your ${streak}-day streak!"
-            }
-            
-            if (streak >= 3) {
-                return "⚡ Keep your ${streak}-day streak alive!"
-            }
-            
-            // Priority 4: Positive reinforcement
+
             if (healthScore >= 8) {
-                return "✅ Great health! Maintain it"
+                return "✅ All normal — health ${healthScore}/10"
             }
-            
-            // Default: Action-oriented message
-            "📱 Check your device health"
+
+            "📱 Health score ${healthScore}/10"
         } catch (e: Exception) {
             ""
         }
     }
-    
+
     /**
-     * Generate compelling CTA message to trigger clicks
+     * Widget CTA line. Same policy rules as generateCompellingAlert.
      */
     private suspend fun generateCompellingCTA(
         context: Context,
@@ -697,26 +687,19 @@ class SystemMonitorService : Service() {
         return try {
             val temp = tempValue.toFloatOrNull() ?: 0f
             val ram = ramPercent.toIntOrNull() ?: 0
-            
+
             when {
-                // Critical issues - urgent CTA
-                temp > 45f -> "Tap to optimize →"
-                ram > 85 -> "Tap to optimize →"
-                healthScore < 5 -> "Tap to optimize →"
-                // Warnings - action CTA
-                temp > 40f -> "Tap to optimize →"
-                ram > 70 -> "Tap to optimize →"
-                healthScore < 7 -> "Tap to optimize →"
-                // Streak protection - FOMO CTA
-                streak >= 7 -> "Tap to optimize →"
-                streak >= 3 -> "Tap to optimize →"
-                // Positive - engagement CTA
-                healthScore >= 8 -> "Tap to optimize →"
-                // Default - curiosity CTA
-                else -> "Tap to optimize →"
+                temp > 45f -> "See what's hot →"
+                ram > 85 -> "See memory details →"
+                healthScore < 5 -> "See what changed →"
+                temp > 40f -> "Check temperature →"
+                ram > 70 -> "See memory details →"
+                healthScore < 7 -> "See details →"
+                healthScore >= 8 -> "All normal — details →"
+                else -> "Open health check →"
             }
         } catch (e: Exception) {
-            "Tap to optimize →"
+            "Open health check →"
         }
     }
 

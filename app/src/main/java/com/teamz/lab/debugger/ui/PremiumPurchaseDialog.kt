@@ -61,9 +61,9 @@ fun PremiumPurchaseDialog(
                 productPrice = price
             },
             onError = { error ->
-                // Fallback to default if price fetch fails
-                productPrice = "$2.99"
-                android.util.Log.w("PremiumPurchaseDialog", "Failed to fetch price: $error, using fallback")
+                // No hardcoded fallback — a wrong displayed price is a
+                // misleading-price claim. Subtitle renders without price when null.
+                android.util.Log.w("PremiumPurchaseDialog", "Failed to fetch price: $error, hiding price")
             }
         )
     }

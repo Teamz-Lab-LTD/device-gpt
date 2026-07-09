@@ -15,10 +15,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +54,7 @@ fun PaywallWithReferralFallback(
     var purchaseCompleted by remember { mutableStateOf(false) }
     var showReferralFallback by remember { mutableStateOf(false) }
     var showFullShareDialog by remember { mutableStateOf(false) }
+    var showDismissReasonSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(isPremium) {
         if (isPremium) purchaseCompleted = true
@@ -62,6 +65,17 @@ fun PaywallWithReferralFallback(
             purchaseCompleted = false
             showReferralFallback = false
             showFullShareDialog = false
+            showDismissReasonSheet = false
+        }
+    }
+
+    val handleFinalDismiss: () -> Unit = {
+        if (purchaseCompleted || isPremium) {
+            onDismiss()
+        } else {
+            showReferralFallback = false
+            showFullShareDialog = false
+            showDismissReasonSheet = true
         }
     }
 
@@ -101,7 +115,7 @@ fun PaywallWithReferralFallback(
             },
             onDismiss = {
                 showReferralFallback = false
-                onDismiss()
+                handleFinalDismiss()
             }
         )
     }
@@ -111,10 +125,105 @@ fun PaywallWithReferralFallback(
             onDismiss = {
                 showFullShareDialog = false
                 showReferralFallback = false
-                onDismiss()
+                handleFinalDismiss()
             },
             context = context
         )
+    }
+
+    if (showDismissReasonSheet) {
+        PaywallDismissReasonSheet(
+            analyticsSource = analyticsSource,
+            onFinish = {
+                showDismissReasonSheet = false
+                onDismiss()
+            }
+        )
+    }
+}
+
+@Composable
+private fun PaywallDismissReasonSheet(
+    analyticsSource: String,
+    onFinish: () -> Unit
+) {
+    var responded by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    fun logAndFinish(reasonKey: String) {
+        if (responded) return
+        responded = true
+        AnalyticsUtils.logEvent(
+            AnalyticsEvent.PaywallDismissReason,
+            mapOf(
+                "source" to analyticsSource,
+                "reason" to reasonKey
+            )
+        )
+        // v3.2.0: pre-registered routing table (Phase 1 log-only until RC
+        // paywall_reason_routing_enabled flips). Re-show handling is Phase 2.
+        com.teamz.lab.debugger.utils.PaywallPolicy.onDismissReason(context, reasonKey, analyticsSource)
+        onFinish()
+    }
+
+    LaunchedEffect(Unit) {
+        delay(5000)
+        if (!responded) logAndFinish("no_response")
+    }
+
+    Dialog(
+        onDismissRequest = { logAndFinish("sheet_dismissed") },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 4.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = "Quick — why did you close?",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "One tap. Helps us make it better.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(16.dp))
+                listOf(
+                    "too_expensive" to "Too expensive",
+                    "not_now" to "Not right now",
+                    "no_value_seen" to "Don't see the value",
+                    "closed_by_mistake" to "Closed by mistake",
+                    "other" to "Other"
+                ).forEach { (reasonKey, label) ->
+                    OutlinedButton(
+                        onClick = { logAndFinish(reasonKey) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -12,16 +12,24 @@ import androidx.core.content.getSystemService
 import com.teamz.lab.debugger.R
 
 /**
- * Charge-cycle ritual hook (per 2026-06-02 synthesized habit-loop plan).
+ * Charge-cycle ritual hook (2026-06-02 habit-loop plan; delivery FIXED in v3.2.0).
  *
- * Listens for ACTION_POWER_CONNECTED + ACTION_POWER_DISCONNECTED (these implicit
- * broadcasts are exempt from Android 8+ background-restriction list, so a manifest
- * receiver works even when the app is killed).
+ * v3.2.0 CORRECTION: the original manifest receiver never fired on API 26+ —
+ * ACTION_POWER_CONNECTED/DISCONNECTED are NOT on the implicit-broadcast exemption
+ * list, so the manifest registration was dead code on every modern device
+ * (confirmed by ~0 charge_summary GA4 events). Delivery now uses three paths:
+ *   1. [registerRuntimeReceiver] — context-registered receiver, fires while the
+ *      process is alive (most unplugs happen with the app recently used).
+ *   2. ChargeStartWorker — WorkManager with setRequiresCharging(true): wakes on
+ *      charge start even when the app process is dead, snapshots start state.
+ *   3. [reconcileOnAppOpen] — on next app open, if a start snapshot exists and
+ *      the device is no longer charging, synthesize the session end from the
+ *      current level (approximate but honest — labeled as such).
  *
  * On connect → snapshot battery % + timestamp to SharedPreferences.
- * On disconnect → compute delta + duration, log to EngagementTracker as
- * CHARGE_CYCLE_COMPLETED, post a low-importance notification with a plain-English
- * summary ("Charge complete: 38% → 100% in 2h 14m. 0 anomalies overnight.").
+ * On disconnect → compute delta + duration, log CHARGE_CYCLE_COMPLETED, write a
+ * charge_session row into device_events (R5 timeline), and — RC-gated
+ * `charge_summary_enabled` — post a low-importance factual notification.
  *
  * Notification tap opens the app with a "from=charge_summary" Intent extra so
  * MainActivity can log CHARGE_SUMMARY_OPENED + jump straight to the health tab.
@@ -53,6 +61,64 @@ object ChargeCycleTracker {
             .putLong(KEY_START_TIME, now)
             .apply()
         android.util.Log.d(TAG, "🔌 Power connected at $battery%")
+    }
+
+    /**
+     * v3.2.0 delivery path 1 — context-registered receiver, valid for the process
+     * lifetime. Called once from Application.onCreate. Safe to call repeatedly
+     * (guarded). Uses the application context so no activity leak is possible.
+     */
+    @Volatile private var runtimeReceiverRegistered = false
+    fun registerRuntimeReceiver(context: Context) {
+        if (runtimeReceiverRegistered) return
+        synchronized(this) {
+            if (runtimeReceiverRegistered) return
+            try {
+                val filter = android.content.IntentFilter().apply {
+                    addAction(Intent.ACTION_POWER_CONNECTED)
+                    addAction(Intent.ACTION_POWER_DISCONNECTED)
+                }
+                context.applicationContext.registerReceiver(
+                    object : android.content.BroadcastReceiver() {
+                        override fun onReceive(ctx: Context, intent: Intent) {
+                            when (intent.action) {
+                                Intent.ACTION_POWER_CONNECTED -> onPowerConnected(ctx)
+                                Intent.ACTION_POWER_DISCONNECTED -> onPowerDisconnected(ctx)
+                            }
+                        }
+                    },
+                    filter
+                )
+                runtimeReceiverRegistered = true
+                android.util.Log.i(TAG, "Runtime charge receiver registered (process-lifetime)")
+            } catch (t: Throwable) {
+                android.util.Log.w(TAG, "Runtime receiver registration failed: ${t.message}")
+            }
+        }
+    }
+
+    /**
+     * v3.2.0 delivery path 3 — reconcile a dangling charge-start on app open.
+     * If a start snapshot exists but the device is no longer charging, the
+     * disconnect happened while the process was dead. Synthesize the session end
+     * from the CURRENT battery level. The label says "approx." — never presented
+     * as an exact measurement.
+     */
+    fun reconcileOnAppOpen(context: Context) {
+        try {
+            val p = prefs(context)
+            val startBattery = p.getInt(KEY_START_BATTERY, -1)
+            val startTime = p.getLong(KEY_START_TIME, 0L)
+            if (startBattery < 0 || startTime <= 0L) return
+
+            val bm = context.getSystemService<BatteryManager>() ?: return
+            if (bm.isCharging) return // still charging — receiver will handle the real end
+
+            android.util.Log.i(TAG, "Reconciling dangling charge session from app open")
+            onPowerDisconnected(context)
+        } catch (t: Throwable) {
+            android.util.Log.w(TAG, "reconcileOnAppOpen failed: ${t.message}")
+        }
     }
 
     fun onPowerDisconnected(context: Context) {
@@ -110,7 +176,23 @@ object ChargeCycleTracker {
             )
         } catch (_: Exception) { /* analytics never blocks core flow */ }
 
-        postSummaryNotification(context, startBattery, endBattery, durationMs)
+        // v3.2.0 R5: journal the session into the Device Timeline.
+        try {
+            val hours = durationMs / (60L * 60L * 1000L)
+            val mins = (durationMs / (60L * 1000L)) % 60L
+            val durText = if (hours > 0) "${hours}h ${mins}m" else "${mins}m"
+            com.teamz.lab.debugger.db.DeviceEventsRepository.recordChargeSession(
+                context,
+                label = "Charged $startBattery% → $endBattery% in $durText",
+                payloadJson = """{"start":$startBattery,"end":$endBattery,"duration_ms":$durationMs}"""
+            )
+        } catch (_: Throwable) { /* journaling never blocks core flow */ }
+
+        // v3.2.0: notification is RC-gated (charge_summary_enabled, default OFF) —
+        // dark-shipped; flip in Firebase Console per gate schedule.
+        if (RemoteConfigUtils.isChargeSummaryEnabled()) {
+            postSummaryNotification(context, startBattery, endBattery, durationMs)
+        }
     }
 
     private fun currentBatteryPercent(context: Context): Int? {

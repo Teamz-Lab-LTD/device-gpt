@@ -164,7 +164,24 @@ object InterstitialAdManager {
     ) {
         AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - actionName: $actionName, adLoaded: ${interstitialAd != null}, isLoading: $isLoading")
         AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - Activity state: isFinishing=${activity.isFinishing}, isDestroyed=${activity.isDestroyed}")
-        
+
+        // v3.2.0 ad-grace: no interstitials during the first N sessions
+        // (RC ads_grace_sessions, default 2). Bounce-reduction play — 26% of
+        // installs bounce before any feature; a fullscreen ad in session 1-2
+        // is the cheapest churn source to remove.
+        val sessionCount = EngagementTracker.getSessionCount(activity)
+        if (sessionCount in 1..RemoteConfigUtils.getAdsGraceSessions()) {
+            AppLog.d(TAG, "Ad-grace window (session $sessionCount) — skipping interstitial, executing action: $actionName")
+            Handler(Looper.getMainLooper()).post {
+                if (!activity.isFinishing && !activity.isDestroyed) {
+                    try { action() } catch (e: Exception) {
+                        ErrorHandler.handleError(e, context = "InterstitialAdManager.grace-$actionName")
+                    }
+                }
+            }
+            return
+        }
+
         // REVENUE OPTIMIZATION: Always try to load ad if not loaded (even if throttled)
         // This ensures ads are ready when throttling expires
         if (interstitialAd == null && !isLoading && RemoteConfigUtils.shouldShowInterstitialAds()) {

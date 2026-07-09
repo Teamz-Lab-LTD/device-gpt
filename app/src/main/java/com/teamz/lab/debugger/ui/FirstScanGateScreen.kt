@@ -1,8 +1,8 @@
 package com.teamz.lab.debugger.ui
 
-import android.content.Context
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,27 +34,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 
 /**
- * v3.1.11 Week 1 retention milestone — FirstScanGate Composable UI.
+ * v3.2.0 honest FirstScanGate UI.
  *
- * Renders a 10s animated scan + Device Score + Share/Details CTAs. Consumed
- * by [com.teamz.lab.debugger.MainActivity] cold-start path when
- * [FirstScanGate.currentState] returns SCANNING.
+ * Play policy 2026-07-10 (Deceptive Behavior clearance): the previous version ran a
+ * fixed 10s theater loop labeled "Battery • RAM • Storage • Network" while reading
+ * only battery charge %, with a fabricated 72 fallback. This version:
+ *   - runs [FirstScanGate.runQuickScan] — four REAL subsystem reads (~1-3s)
+ *   - binds the progress bar to actual check completion, no padded duration
+ *   - shows the scoring weights verbatim on the result card
+ *   - renders an explicit error state when nothing was readable — never a made-up score
  *
- * UI states (internal to this Composable):
- *   - Phase.SCANNING : progress bar 0->100 over ~10s
- *   - Phase.SCORED   : big number + percentile + 2 CTAs
- *
- * On Share CTA: invokes [onShareScore] (caller passes the share-dialog handle).
- * On Details CTA: invokes [onDismiss] (caller renders the normal tab UI).
- * Both flows call [FirstScanGate.markCompleted] so the gate never re-fires.
+ * UI states: SCANNING (real progress) / SCORED (count-up reveal + haptic) / FAILED.
  */
 @Composable
 fun FirstScanGateScreen(
@@ -65,23 +63,40 @@ fun FirstScanGateScreen(
     val context = LocalContext.current
     var phase by rememberSaveable { mutableStateOf(Phase.SCANNING.name) }
     var progress by remember { mutableFloatStateOf(0f) }
+    var checkLabel by remember { mutableStateOf("Starting…") }
     var finalScore by rememberSaveable { mutableIntStateOf(-1) }
+    var subBattery by rememberSaveable { mutableIntStateOf(-1) }
+    var subMemory by rememberSaveable { mutableIntStateOf(-1) }
+    var subStorage by rememberSaveable { mutableIntStateOf(-1) }
+    var subNetwork by rememberSaveable { mutableIntStateOf(-1) }
+    var scanResult by remember { mutableStateOf<FirstScanGate.QuickScanResult?>(null) }
 
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = tween(durationMillis = 250, easing = LinearEasing),
+        animationSpec = tween(durationMillis = 350, easing = LinearEasing),
         label = "first-scan-progress",
     )
 
-    // 10s scan with progress ticks every 100ms (100 ticks total)
+    // Real scan — progress advances only when a check actually finishes.
     LaunchedEffect(Unit) {
         if (phase == Phase.SCANNING.name) {
-            for (i in 1..100) {
-                delay(100)
-                progress = i / 100f
+            val result = FirstScanGate.runQuickScan(context) { completed, label ->
+                progress = completed / 4f
+                checkLabel = label
             }
-            finalScore = FirstScanGate.computeQuickScore(context)
-            phase = Phase.SCORED.name
+            scanResult = result
+            val total = result.total
+            if (total == null) {
+                FirstScanGate.markScanFailed(context)
+                phase = Phase.FAILED.name
+            } else {
+                finalScore = total
+                subBattery = result.battery ?: -1
+                subMemory = result.memory ?: -1
+                subStorage = result.storage ?: -1
+                subNetwork = result.network ?: -1
+                phase = Phase.SCORED.name
+            }
         }
     }
 
@@ -95,26 +110,31 @@ fun FirstScanGateScreen(
         when (Phase.valueOf(phase)) {
             Phase.SCANNING -> ScanningUi(
                 progress = animatedProgress,
-                percent = (animatedProgress * 100).toInt(),
+                checkLabel = checkLabel,
             )
             Phase.SCORED -> ScoredUi(
                 score = finalScore,
+                subBattery = subBattery,
+                subMemory = subMemory,
+                subStorage = subStorage,
+                subNetwork = subNetwork,
                 onShare = {
-                    FirstScanGate.markCompleted(context, finalScore)
+                    FirstScanGate.markCompleted(context, finalScore, scanResult)
                     FirstScanGate.logShareTapped(context, finalScore)
                     onShareScore(finalScore)
                 },
                 onDetails = {
-                    FirstScanGate.markCompleted(context, finalScore)
+                    FirstScanGate.markCompleted(context, finalScore, scanResult)
                     onDismiss()
                 },
             )
+            Phase.FAILED -> FailedUi(onContinue = onDismiss)
         }
     }
 }
 
 @Composable
-private fun ScanningUi(progress: Float, percent: Int) {
+private fun ScanningUi(progress: Float, checkLabel: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -126,14 +146,14 @@ private fun ScanningUi(progress: Float, percent: Int) {
         )
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "Scanning your device…",
+            text = "Checking your device…",
             fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Battery • RAM • Storage • Network",
+            text = checkLabel,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
         )
@@ -148,7 +168,7 @@ private fun ScanningUi(progress: Float, percent: Int) {
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "$percent%",
+            text = "${(progress * 4).toInt()} of 4 checks done",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
@@ -157,7 +177,15 @@ private fun ScanningUi(progress: Float, percent: Int) {
 }
 
 @Composable
-private fun ScoredUi(score: Int, onShare: () -> Unit, onDetails: () -> Unit) {
+private fun ScoredUi(
+    score: Int,
+    subBattery: Int,
+    subMemory: Int,
+    subStorage: Int,
+    subNetwork: Int,
+    onShare: () -> Unit,
+    onDetails: () -> Unit,
+) {
     val grade = when {
         score >= 90 -> Grade("Excellent", Color(0xFF2E7D32))
         score >= 75 -> Grade("Great", Color(0xFF388E3C))
@@ -165,6 +193,20 @@ private fun ScoredUi(score: Int, onShare: () -> Unit, onDetails: () -> Unit) {
         score >= 40 -> Grade("Fair", Color(0xFFEF6C00))
         else -> Grade("Needs attention", Color(0xFFC62828))
     }
+
+    // Score reveal micro-interaction: count up from 0 + one haptic tick on settle.
+    val haptic = LocalHapticFeedback.current
+    var target by remember { mutableIntStateOf(0) }
+    val animatedScore by animateIntAsState(
+        targetValue = target,
+        animationSpec = tween(durationMillis = 800),
+        label = "score-count-up",
+        finishedListener = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+    )
+    LaunchedEffect(score) { target = score }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -177,7 +219,7 @@ private fun ScoredUi(score: Int, onShare: () -> Unit, onDetails: () -> Unit) {
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "$score",
+            text = "$animatedScore",
             fontSize = 96.sp,
             fontWeight = FontWeight.Bold,
             color = grade.color,
@@ -189,14 +231,19 @@ private fun ScoredUi(score: Int, onShare: () -> Unit, onDetails: () -> Unit) {
             fontWeight = FontWeight.Medium,
             color = grade.color,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(16.dp))
+        SubScoreRow("Battery", subBattery)
+        SubScoreRow("Memory", subMemory)
+        SubScoreRow("Storage", subStorage)
+        SubScoreRow("Network", subNetwork)
+        Spacer(Modifier.height(12.dp))
         Text(
-            text = "Based on battery, RAM, storage and network health.",
-            fontSize = 13.sp,
+            text = "Score = battery ${FirstScanGate.WEIGHT_BATTERY} · memory ${FirstScanGate.WEIGHT_MEMORY} · storage ${FirstScanGate.WEIGHT_STORAGE} · network ${FirstScanGate.WEIGHT_NETWORK}",
+            fontSize = 12.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
         )
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(32.dp))
         Button(
             onClick = onShare,
             modifier = Modifier.fillMaxWidth(),
@@ -217,6 +264,59 @@ private fun ScoredUi(score: Int, onShare: () -> Unit, onDetails: () -> Unit) {
     }
 }
 
-private enum class Phase { SCANNING, SCORED }
+@Composable
+private fun SubScoreRow(label: String, value: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
+        )
+        Text(
+            text = if (value >= 0) "$value" else "not readable",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = if (value >= 0) MaterialTheme.colorScheme.onBackground
+            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+        )
+    }
+}
+
+@Composable
+private fun FailedUi(onContinue: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = "Couldn't read device state",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "None of the four checks could be completed on this device. You can still use every tool in the app.",
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
+        )
+        Spacer(Modifier.height(32.dp))
+        Button(
+            onClick = onContinue,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Continue to app", fontSize = 16.sp)
+        }
+    }
+}
+
+private enum class Phase { SCANNING, SCORED, FAILED }
 
 private data class Grade(val label: String, val color: Color)

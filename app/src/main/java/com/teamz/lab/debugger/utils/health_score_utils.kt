@@ -232,12 +232,12 @@ object HealthScoreUtils {
         }
     }
 
+    // Play policy 2026-07-10 + research insight #7: streak gamification removed.
+    // Factual scan-history line instead — no FOMO, no manufactured habit pressure.
     fun getStreakMessage(streak: Int): String {
         return when {
-            streak >= 7 -> "🔥 Amazing! ${streak}-day streak! You're a health champion!"
-            streak >= 3 -> "⚡ Great! ${streak}-day streak! Keep it up!"
-            streak >= 1 -> "📱 Good start! ${streak}-day streak."
-            else -> "🚀 Start your daily health check streak today!"
+            streak >= 1 -> "📱 Scanned $streak day${if (streak > 1) "s" else ""} in a row."
+            else -> "🔍 Run a scan to see today's device state."
         }
     }
 

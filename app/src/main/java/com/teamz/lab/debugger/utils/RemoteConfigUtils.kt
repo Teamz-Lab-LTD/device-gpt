@@ -136,7 +136,23 @@ object RemoteConfigUtils {
                 // SDK "unknown → false" which couples behaviour to SDK internals.
                 // Owner flips to true in Firebase Console when ready to A/B.
                 "d1_overnight_drain_enabled" to false,
-                "first_scan_gate_enabled" to false
+                "first_scan_gate_enabled" to false,
+                // v3.2.0 growth program (2026-07-10 synthesis) — dark-shipped features.
+                // ALL default OFF/conservative: existing users see zero change until
+                // each flag is flipped in Firebase Console per the gate schedule.
+                "paywall_delay_enabled" to true,             // Gate cold-open paywall on session>=min + first scan done
+                "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall
+                "paywall_reason_routing_enabled" to false,   // Dismiss-reason routing (Phase 1 = log-only)
+                "ads_grace_sessions" to 2L,                  // No interstitial/app-open ads in sessions 1..N (bounce reduction)
+                "post_delight_ad_quiet_ms" to 15000L,        // No fullscreen ad within Xms after a delight moment
+                "widget_v2_enabled" to false,                // R3 delta-first widget layout
+                "charge_summary_enabled" to false,           // R2 charge report ritual
+                "new_app_watchdog_enabled" to false,         // R4 permission-review watchdog
+                "insight_per_open_enabled" to false,         // R6 templated insight on LastScoreCard
+                "rewarded_report_enabled" to false,          // Rewarded ad unlock for 1 Verified Report
+                "share_card_v2_enabled" to false,            // Compose-to-bitmap score share card
+                "timeline_enabled" to false,                 // R5 Device Timeline on Health tab
+                "widget_pin_prompt_enabled" to false         // Pin prompt after score reveal
             )
         )
         
@@ -349,6 +365,38 @@ object RemoteConfigUtils {
     fun isReviewFirstStrategyEnabled(): Boolean {
         return remoteConfig.getBoolean("enable_review_first_strategy")
     }
+
+    // === v3.2.0 growth program flags (2026-07-10 synthesis) ===
+
+    /** Gate cold-open paywall triggers on session count + first scan. Default: true */
+    fun isPaywallDelayEnabled(): Boolean = remoteConfig.getBoolean("paywall_delay_enabled")
+
+    /** Minimum sessions before a cold-open paywall may show. Default: 3 */
+    fun getPaywallMinSessions(): Int {
+        val value = remoteConfig.getLong("paywall_min_sessions")
+        return if (value <= 0L) 3 else value.toInt()
+    }
+
+    /** Dismiss-reason routing. false = Phase 1 log-only. Default: false */
+    fun isPaywallReasonRoutingEnabled(): Boolean = remoteConfig.getBoolean("paywall_reason_routing_enabled")
+
+    /** No interstitial/app-open ads in sessions 1..N. Default: 2 */
+    fun getAdsGraceSessions(): Int = remoteConfig.getLong("ads_grace_sessions").toInt()
+
+    /** Quiet window after a delight moment before any fullscreen ad. Default: 15000 */
+    fun getPostDelightAdQuietMs(): Long {
+        val value = remoteConfig.getLong("post_delight_ad_quiet_ms")
+        return if (value <= 0L) 15000L else value
+    }
+
+    fun isWidgetV2Enabled(): Boolean = remoteConfig.getBoolean("widget_v2_enabled")
+    fun isChargeSummaryEnabled(): Boolean = remoteConfig.getBoolean("charge_summary_enabled")
+    fun isNewAppWatchdogEnabled(): Boolean = remoteConfig.getBoolean("new_app_watchdog_enabled")
+    fun isInsightPerOpenEnabled(): Boolean = remoteConfig.getBoolean("insight_per_open_enabled")
+    fun isRewardedReportEnabled(): Boolean = remoteConfig.getBoolean("rewarded_report_enabled")
+    fun isShareCardV2Enabled(): Boolean = remoteConfig.getBoolean("share_card_v2_enabled")
+    fun isTimelineEnabled(): Boolean = remoteConfig.getBoolean("timeline_enabled")
+    fun isWidgetPinPromptEnabled(): Boolean = remoteConfig.getBoolean("widget_pin_prompt_enabled")
 
     // === Native ad loading configuration (tunable without app update) ===
 

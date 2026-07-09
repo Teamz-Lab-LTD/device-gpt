@@ -193,10 +193,12 @@ fun HealthScoreCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                // Play policy 2026-07-10: streak stat -> factual recency stat
+                // (streak gamification killed per research insight #7).
                 StatItem(
                     icon = Icons.Default.LocalFireDepartment,
-                    label = "Streak",
-                    value = "$dailyStreak days",
+                    label = "Scanned",
+                    value = if (dailyStreak > 0) "$dailyStreak day${if (dailyStreak > 1) "s" else ""}" else "not yet",
                     color = if (dailyStreak > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 StatItem(

@@ -57,13 +57,20 @@ object RetentionNotificationManager {
      */
     fun initializeRetentionNotifications(context: Context) {
         setupNotificationChannels(context)
-        scheduleDailyHealthReminder(context)
+        // Play policy 2026-07-10 + 2026-06-02 research insight #7: time-driven
+        // reminder pushes (daily nag, streak FOMO, "we miss you") are manufactured
+        // anxiety — killed. Event-driven surfaces (charge summary, real anomaly)
+        // replace them. Cancel any workers scheduled by pre-v3.2 versions so
+        // upgrading users stop receiving them.
+        val wm = WorkManager.getInstance(context)
+        wm.cancelUniqueWork(DAILY_HEALTH_WORK)
+        wm.cancelUniqueWork(RETENTION_WORK)
+        wm.cancelUniqueWork(STREAK_REMINDER_WORK)
+
         scheduleWeeklyReport(context)
-        scheduleRetentionNotifications(context)
-        scheduleStreakReminders(context) // Re-enabled with deduplication to prevent duplicates
-        scheduleAchievementNotifications(context) // New: Achievement celebrations
-        scheduleMilestoneNotifications(context) // New: Milestone celebrations
-        schedulePersonalizedTips(context) // New: Personalized tips based on usage
+        scheduleAchievementNotifications(context) // Achievement celebrations (event-driven)
+        scheduleMilestoneNotifications(context) // Milestone celebrations (event-driven)
+        schedulePersonalizedTips(context) // Personalized tips based on usage
     }
     
     /**
@@ -174,23 +181,11 @@ object RetentionNotificationManager {
             val healthScore = kotlinx.coroutines.runBlocking {
                 HealthScoreUtils.calculateDailyHealthScore(context)
             }
-            val streak = HealthScoreUtils.getDailyStreak(context)
-            
-            // Only send if user has an active streak or low health score
-            if (streak >= 1 || healthScore < 6) {
-                val title = when {
-                    streak >= 7 -> "🔥 Don't break your ${streak}-day streak!"
-                    streak >= 3 -> "⚡ Keep your ${streak}-day streak alive!"
-                    streak >= 1 -> "📱 Continue your ${streak}-day health check streak!"
-                    else -> "🚀 Your device needs attention!"
-                }
-                
-                val message = when {
-                    healthScore >= 8 -> "Your device is doing great! Check today's score."
-                    healthScore >= 6 -> "Your device needs a quick health check."
-                    else -> "Your device might need attention. Scan now!"
-                }
-                
+            // Play policy 2026-07-10: streak FOMO removed. Only notify on a factual,
+            // low-score state — never on a healthy device, never to protect a streak.
+            if (healthScore in 1..5) {
+                val title = "📉 Health score ${healthScore}/10"
+                val message = "Lower than usual — open the app to see what changed."
                 // sendNotification has deduplication built-in, so just call it
                 sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
             }
@@ -567,8 +562,8 @@ object RetentionNotificationManager {
         
         if (currentHour >= 18 && lastReminderDate != today && completedCount < totalTasks) {
             val remaining = totalTasks - completedCount
-            val title = "📋 Complete Your Daily Tasks"
-            val message = "You have $remaining task${if (remaining > 1) "s" else ""} remaining. Complete them to maintain your streak!"
+            val title = "📋 Daily Tasks"
+            val message = "You have $remaining task${if (remaining > 1) "s" else ""} remaining today."
             
             sendNotification(title, message, ENGAGEMENT_CHANNEL, context)
             
@@ -634,30 +629,9 @@ class DailyHealthReminderWorker(context: Context, params: WorkerParameters) : Wo
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
             val lastScanDate = HealthScoreUtils.getLastScanDate(applicationContext)
             
-            // Only send if user hasn't scanned today
-            if (lastScanDate != today) {
-                // Use runBlocking since Worker runs on background thread
-                val healthScore = kotlinx.coroutines.runBlocking {
-                    HealthScoreUtils.calculateDailyHealthScore(applicationContext)
-                }
-                val streak = HealthScoreUtils.getDailyStreak(applicationContext)
-                
-                val title = when {
-                    streak >= 7 -> "🔥 Don't break your ${streak}-day streak!"
-                    streak >= 3 -> "⚡ Keep your ${streak}-day streak alive!"
-                    streak >= 1 -> "📱 Continue your ${streak}-day health check streak!"
-                    else -> "🚀 Start your daily device health check!"
-                }
-                
-                val message = when {
-                    healthScore >= 8 -> "Your device is doing great! Check today's score."
-                    healthScore >= 6 -> "Your device needs a quick health check."
-                    else -> "Your device might need attention. Scan now!"
-                }
-                
-                // Use sendNotification which has deduplication built-in
-                RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.DAILY_HEALTH_CHANNEL, applicationContext)
-            }
+            // Play policy 2026-07-10: worker no longer scheduled (cancelled in init).
+            // Class kept so WorkManager can gracefully drain any pre-v3.2 scheduled
+            // instance on upgrade — it must do nothing.
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -672,25 +646,16 @@ class DailyHealthReminderWorker(context: Context, params: WorkerParameters) : Wo
 class WeeklyReportWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     override fun doWork(): Result {
         return try {
-            val streak = HealthScoreUtils.getDailyStreak(applicationContext)
             val totalScans = HealthScoreUtils.getTotalScans(applicationContext)
             val bestScore = HealthScoreUtils.getBestScore(applicationContext)
-            
-            val title = when {
-                streak >= 7 -> "🏆 Amazing week! You're on fire!"
-                streak >= 3 -> "📈 Great progress this week!"
-                streak >= 1 -> "👍 Good start! Keep it up!"
-                else -> "📊 Your weekly device health report"
+
+            // Play policy 2026-07-10: factual weekly summary only — no streak FOMO.
+            // Skip entirely if there is nothing real to report.
+            if (totalScans > 0) {
+                val title = "📊 Your weekly device health report"
+                val message = "$totalScans scan${if (totalScans > 1) "s" else ""} so far. Best score: ${bestScore}/10."
+                RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.ENGAGEMENT_CHANNEL, applicationContext)
             }
-            
-            val message = when {
-                streak >= 7 -> "You've scanned $totalScans times with a best score of ${bestScore}/10!"
-                streak >= 3 -> "You've maintained a ${streak}-day streak. Impressive!"
-                streak >= 1 -> "You've started your health journey. $totalScans scans so far!"
-                else -> "Start your device health journey today!"
-            }
-            
-            RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.ENGAGEMENT_CHANNEL, applicationContext)
             Result.success()
         } catch (e: Exception) {
             Result.retry()
@@ -704,28 +669,9 @@ class WeeklyReportWorker(context: Context, params: WorkerParameters) : Worker(co
 class RetentionReminderWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     override fun doWork(): Result {
         return try {
-            val lastOpenTime = getLastAppOpenTime(applicationContext)
-            val currentTime = System.currentTimeMillis()
-            val hoursSinceLastOpen = (currentTime - lastOpenTime) / (1000 * 60 * 60)
-            
-            // Much more conservative: only send if haven't opened for 7+ days
-            if (hoursSinceLastOpen >= 168) { // 7 days = 168 hours
-                val streak = HealthScoreUtils.getDailyStreak(applicationContext)
-                
-                val title = when {
-                    streak >= 5 -> "🔥 Your ${streak}-day streak is at risk!"
-                    streak >= 1 -> "⚡ Don't lose your ${streak}-day streak!"
-                    else -> "📱 Your device misses you!"
-                }
-                
-                val message = when {
-                    streak >= 5 -> "Quick scan to maintain your impressive streak!"
-                    streak >= 1 -> "Just 30 seconds to keep your streak alive!"
-                    else -> "Check your device health in just 30 seconds!"
-                }
-                
-                RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.RETENTION_CHANNEL, applicationContext)
-            }
+            // Play policy 2026-07-10: worker no longer scheduled (cancelled in init).
+            // "We miss you" pushes are manufactured urgency — killed per insight #7.
+            // Class kept so WorkManager drains pre-v3.2 scheduled instances harmlessly.
             Result.success()
         } catch (e: Exception) {
             Result.retry()
@@ -744,29 +690,9 @@ class RetentionReminderWorker(context: Context, params: WorkerParameters) : Work
 class StreakReminderWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     override fun doWork(): Result {
         return try {
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            val lastScanDate = HealthScoreUtils.getLastScanDate(applicationContext)
-            val streak = HealthScoreUtils.getDailyStreak(applicationContext)
-            
-            // Only send if user hasn't scanned today and has an active streak
-            if (lastScanDate != today && streak >= 1) {
-                val title = when {
-                    streak >= 10 -> "🔥 Legendary ${streak}-day streak!"
-                    streak >= 7 -> "🏆 Amazing ${streak}-day streak!"
-                    streak >= 3 -> "⚡ Great ${streak}-day streak!"
-                    else -> "📱 Keep your ${streak}-day streak!"
-                }
-                
-                val message = when {
-                    streak >= 10 -> "Don't break your legendary streak! Quick scan now!"
-                    streak >= 7 -> "You're on fire! Maintain your amazing streak!"
-                    streak >= 3 -> "You're doing great! Keep the streak alive!"
-                    else -> "Quick scan to continue your streak!"
-                }
-                
-                // Use sendNotification which has deduplication built-in
-                RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.ENGAGEMENT_CHANNEL, applicationContext)
-            }
+            // Play policy 2026-07-10: worker no longer scheduled (cancelled in init).
+            // Streak-FOMO pushes killed per 2026-06-02 research insight #7.
+            // Class kept so WorkManager drains pre-v3.2 scheduled instances harmlessly.
             Result.success()
         } catch (e: Exception) {
             Result.retry()
@@ -910,20 +836,10 @@ class PersonalizedTipWorker(context: Context, params: WorkerParameters) : Worker
             // Only send tips if user hasn't scanned today (gentle reminder)
             if (lastScanDate != today) {
                 val tips = mutableListOf<Pair<String, String>>()
-                
-                // Tip based on streak
-                when {
-                    streak == 0 && totalScans < 5 -> {
-                        tips.add("💡 Start Your Journey" to "Begin a daily health check streak today! Just 30 seconds to get started.")
-                    }
-                    streak >= 1 && streak < 3 -> {
-                        tips.add("⚡ Build Your Streak" to "You're on a ${streak}-day streak! Keep it going with a quick scan today.")
-                    }
-                    streak >= 3 && streak < 7 -> {
-                        tips.add("🔥 Streak Building" to "Great ${streak}-day streak! One more day to hit a week!")
-                    }
-                }
-                
+
+                // Play policy 2026-07-10: streak-FOMO tips removed (insight #7).
+                // Only factual, state-based tips below survive.
+
                 // Tip based on health score
                 if (healthScore < 6) {
                     tips.add("🚨 Device Health Alert" to "Your device health score is ${healthScore}/10. Check what needs attention!")

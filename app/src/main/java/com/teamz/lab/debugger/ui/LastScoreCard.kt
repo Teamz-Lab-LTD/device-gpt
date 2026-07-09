@@ -24,7 +24,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,6 +70,9 @@ fun LastScoreCard(
 
     if (score < 0 || timestamp <= 0L) return
 
+    // v3.2.0 R6: one data-backed insight per open (RC insight_per_open_enabled,
+    // default OFF). Session-cached inside InsightEngine — no reroll farming.
+    var insightLine by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
         try {
             AnalyticsUtils.logEvent(
@@ -74,6 +80,10 @@ fun LastScoreCard(
                 mapOf("score" to score)
             )
         } catch (_: Throwable) { /* analytics not critical */ }
+        try {
+            insightLine = com.teamz.lab.debugger.utils.InsightEngine
+                .insightForThisOpen(context)?.line
+        } catch (_: Throwable) { /* insight optional */ }
     }
 
     val verdict = verdictFor(score)
@@ -123,6 +133,15 @@ fun LastScoreCard(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
+            }
+            // v3.2.0 R6 insight line — renders only when real data supports it.
+            insightLine?.let { line ->
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "💡 $line",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
             }
             Spacer(Modifier.height(16.dp))
             Row(

@@ -129,13 +129,37 @@ class MainActivity : ComponentActivity() {
                             com.teamz.lab.debugger.ui.FirstScanGate.State.SCANNING,
                             com.teamz.lab.debugger.ui.FirstScanGate.State.SCORED -> {
                                 com.teamz.lab.debugger.ui.FirstScanGateScreen(
-                                    onShareScore = { _ ->
+                                    onShareScore = { score ->
+                                        // v3.2.0 fix: the share CTA previously dead-ended
+                                        // (no share sheet launched). Card v2 when RC-enabled,
+                                        // plain-text intent otherwise.
+                                        val usedCard =
+                                            if (com.teamz.lab.debugger.utils.RemoteConfigUtils.isShareCardV2Enabled()) {
+                                                com.teamz.lab.debugger.utils.ShareCardRenderer
+                                                    .shareScoreCard(this@MainActivity, score)
+                                            } else false
+                                        if (!usedCard) {
+                                            val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(
+                                                    android.content.Intent.EXTRA_TEXT,
+                                                    "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
+                                                )
+                                            }
+                                            startActivity(
+                                                android.content.Intent.createChooser(sendIntent, "Share your Device Score")
+                                            )
+                                        }
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
+                                        // One beat later: widget pin prompt (self-guarded,
+                                        // RC widget_pin_prompt_enabled, once per install).
+                                        com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
                                     },
                                     onDismiss = {
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
+                                        com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
                                     },
                                 )
                             }

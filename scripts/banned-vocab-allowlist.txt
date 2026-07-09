@@ -1,0 +1,2 @@
+# Exact substrings exempt from banned-vocab check. One per line. Keep reasons here:
+# (none yet)

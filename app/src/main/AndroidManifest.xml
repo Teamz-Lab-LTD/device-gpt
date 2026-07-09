@@ -30,6 +30,12 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     
     <queries>
+        <!-- v3.2.0 R4 new-app watchdog: enumerate LAUNCHABLE apps only.
+             Deliberately NOT QUERY_ALL_PACKAGES — no Play declaration needed. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
         <intent>
             <action android:name="android.settings.APPLICATION_DEVELOPMENT_SETTINGS" />
         </intent>

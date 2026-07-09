@@ -101,9 +101,14 @@ class FirstScanGateTest {
 
     @Test
     fun `computeQuickScore returns a clamped 0-100 integer`() {
+        // v3.2.0 UPDATE: the score no longer maps battery CHARGE % (a full battery
+        // is not a healthy battery — that heuristic was part of the Deceptive
+        // Behavior strike class). It now reads battery CONDITION (EXTRA_HEALTH +
+        // temperature) as one of four real subsystem checks, still clamped 0..100.
         assertTrue(
-            "computeQuickScore must read battery percent and clamp the resulting score to 0..100.",
-            gateSrc.contains("BatteryManager.BATTERY_PROPERTY_CAPACITY") &&
+            "computeQuickScore must delegate to the honest 4-check scan and clamp to 0..100.",
+            gateSrc.contains("BatteryManager.EXTRA_HEALTH") &&
+                gateSrc.contains("suspend fun runQuickScan") &&
                 gateSrc.contains(".coerceIn(0, 100)")
         )
     }

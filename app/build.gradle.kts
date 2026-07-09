@@ -36,8 +36,8 @@ android {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 31
-        versionName = "3.1.13"
+        versionCode = 32
+        versionName = "3.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -193,6 +193,12 @@ dependencies {
     implementation(libs.androidx.appfunctions)
     implementation(libs.androidx.appfunctions.service)
     ksp(libs.androidx.appfunctions.compiler)
+
+    // Room — v3.2.0 device_events timeline (R5). Local-only store: score scans,
+    // charge sessions, app-install events, daily baseline snapshots. 90-day prune.
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // ML Kit GenAI — on-device Gemini Nano text summarisation / rewriting for post-scan explainer.
     // Runtime feature-detect; falls back to cloud AI chooser on unsupported devices.

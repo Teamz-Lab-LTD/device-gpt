@@ -22,6 +22,10 @@ platform :android do
 
   desc "Pre-release safety gate — runs unit tests + ad-pipeline safety guards. Blocks any release lane if a known regression pattern is detected (test ad ID typos, missing geo suppression, broken Compose render, throttle-too-tight, native ad viewability bug, etc)."
   lane :preflight do
+    # Play policy guard (Deceptive Behavior strike cleared 2026-07-10): block any
+    # release that re-introduces "optimize/boost/streak-FOMO" vocabulary in app
+    # strings or ANY Play listing locale. sh raises on non-zero exit, failing the lane.
+    sh("cd .. && bash scripts/check-banned-vocab.sh")
     # --tests filter requires a CONCRETE Test task (e.g. testDebugUnitTest),
     # not the umbrella :app:test meta-task. testDebugUnitTest covers our
     # AdPipelineSafetyTest + NativeAdConfigDefaultsTest + NativeAdViewabilityTest
@@ -29,7 +33,7 @@ platform :android do
     # the Compose-asset-slot regression that caused the 1-year 98% show-rate bug.
     gradle(
       task: ":app:testDebugUnitTest",
-      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest* --tests *NativeAdViewabilityTest* --tests *AnalyticsThreadingTest* --tests *D1OvernightDrainWorkerTest* --tests *D1OvernightDrainContractTest* --tests *D1OvernightDrainRuntimeTest* --tests *FirstScanGateTest* --tests *FirstScanGateRuntimeTest* --tests *AppOpenLoadAdCallSiteCountTest* --tests *AppOpenThrottleContractTest* --tests *AppOpenThrottleRuntimeTest* --tests *NativeAdResetOnColdStartTest* --tests *NativeAdReentrancyContractTest* --tests *CohortLabelerTest* --tests *WidgetColorCodingTest* --tests *DrawerWidgetReorderContractTest* --tests *InviteFriendDrawerCtaTest* --tests *ReferralShareTextContractTest* --tests *FirstScanGateRaceFixContractTest* --tests *VerifiedReportPromotionTest* --tests *LastScoreCardContractTest*"
+      flags: "--tests *AdPipelineSafetyTest* --tests *NativeAdConfigDefaultsTest* --tests *NativeAdViewabilityTest* --tests *AnalyticsThreadingTest* --tests *D1OvernightDrainWorkerTest* --tests *D1OvernightDrainContractTest* --tests *D1OvernightDrainRuntimeTest* --tests *FirstScanGateTest* --tests *FirstScanGateRuntimeTest* --tests *AppOpenLoadAdCallSiteCountTest* --tests *AppOpenThrottleContractTest* --tests *AppOpenThrottleRuntimeTest* --tests *NativeAdResetOnColdStartTest* --tests *NativeAdReentrancyContractTest* --tests *CohortLabelerTest* --tests *WidgetColorCodingTest* --tests *DrawerWidgetReorderContractTest* --tests *InviteFriendDrawerCtaTest* --tests *ReferralShareTextContractTest* --tests *FirstScanGateRaceFixContractTest* --tests *VerifiedReportPromotionTest* --tests *LastScoreCardContractTest* --tests *GrowthProgramV320ContractTest* --tests *DeviceEventsRuntimeTest* --tests *PaywallPolicyContractTest*"
     )
     UI.success "✅ Ad-pipeline safety gate passed. No known regression patterns detected."
   end
