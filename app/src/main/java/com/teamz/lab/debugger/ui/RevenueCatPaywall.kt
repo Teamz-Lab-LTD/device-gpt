@@ -76,10 +76,10 @@ fun RevenueCatPaywall(
             com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
                 object : com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback {
                     override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                        // v3.2.0: prefer offerings.current (enables Experiments +
-                        // country-targeted offerings); pinned ID is fallback only.
-                        val targetOffering = offerings.current
-                            ?: offerings.getOffering(RevenueCatManager.OFFERING_ID)
+                        // Shared RevenueCat project across all Teamz Lab apps means
+                        // `offerings.current` is not ours. Pin, then fall back.
+                        val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
+                            ?: offerings.current
                         if (targetOffering != null) {
                             offering = targetOffering
                         } else {

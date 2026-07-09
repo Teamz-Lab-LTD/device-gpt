@@ -407,10 +407,11 @@ object RevenueCatManager {
         
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
-                // v3.2.0: prefer offerings.current (dashboard-controlled — enables
-                // RevenueCat Experiments + country-targeted offerings like
-                // emerging_markets). Pinned OFFERING_ID is the fallback only.
-                val currentOffering = offerings.current ?: offerings.getOffering(OFFERING_ID)
+                // All 8 Teamz Lab apps share ONE RevenueCat project (proj8d8322e7),
+                // so `offerings.current` is a project-wide singleton and currently
+                // resolves to another app's offering (captains_bundle / Starship
+                // Booster). Pin our own offering; `current` is a last-resort fallback.
+                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
                 if (currentOffering == null) {
                     onError("No offerings available")
                     return
@@ -579,10 +580,9 @@ object RevenueCatManager {
             override fun onReceived(offerings: com.revenuecat.purchases.Offerings) {
                 Log.d(TAG, "Received offerings. Available offering IDs: ${offerings.all.keys}")
 
-                // v3.2.0: prefer offerings.current (dashboard-controlled — enables
-                // RevenueCat Experiments + country-targeted offerings like
-                // emerging_markets). Pinned OFFERING_ID is the fallback only.
-                val currentOffering = offerings.current ?: offerings.getOffering(OFFERING_ID)
+                // Shared RevenueCat project: `offerings.current` is project-wide and
+                // points at another app's offering. Pin ours. See OFFERING_ID.
+                val currentOffering = offerings.getOffering(OFFERING_ID) ?: offerings.current
                 if (currentOffering == null) {
                     Log.e(TAG, "No offering available for ID: $OFFERING_ID. Available offerings: ${offerings.all.keys}")
                     AnalyticsUtils.logEvent(
