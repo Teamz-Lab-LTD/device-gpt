@@ -141,10 +141,16 @@ class D1OvernightDrainContractTest {
                 "which is implementation-defined behaviour and was the bug pattern on Pixel 8a.",
             rcSrcText.contains("\"d1_overnight_drain_enabled\" to false")
         )
+        // What this guards is that the key carries an EXPLICIT bundled default at all.
+        // Its VALUE flipped to true in 3.1.14: the gate no longer runs the fake 10s scan,
+        // and Remote Config can activate an EMPTY config while logging success (observed on
+        // an API 35 emulator), which would otherwise hide the honest scan the store listing
+        // advertises. Pinned separately by FirstScanGateDefaultTest.
         assertTrue(
-            "RemoteConfigUtils.init() must bundle \"first_scan_gate_enabled\" to false " +
-                "as the explicit default. Same race-safety reasoning.",
-            rcSrcText.contains("\"first_scan_gate_enabled\" to false")
+            "RemoteConfigUtils.init() must bundle an explicit default for " +
+                "\"first_scan_gate_enabled\". Without one the RC SDK falls back to " +
+                "unknown->false, which is implementation-defined behaviour.",
+            Regex("\"first_scan_gate_enabled\"\\s+to\\s+(true|false)").containsMatchIn(rcSrcText)
         )
     }
 

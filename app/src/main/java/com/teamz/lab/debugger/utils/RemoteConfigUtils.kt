@@ -136,7 +136,17 @@ object RemoteConfigUtils {
                 // SDK "unknown → false" which couples behaviour to SDK internals.
                 // Owner flips to true in Firebase Console when ready to A/B.
                 "d1_overnight_drain_enabled" to false,
-                "first_scan_gate_enabled" to false,
+                // TRUE from 3.1.14 on. This build's FirstScanGate performs four real
+                // subsystem reads; the fake 10s progress loop and the fabricated fallback
+                // score of 72 were deleted. The old `false` default existed only to keep
+                // that fake scan away from users, and was paired with a Remote Config
+                // condition (app.version >= 3.1.14). But Remote Config sometimes activates
+                // an empty config — observed on an API 35 emulator, which logs "activated
+                // successfully" with zero entries — and every flag then falls back to the
+                // value below. Defaulting to false there means a fresh user never sees the
+                // honest scan we advertise. Older builds ship their own `false` default, so
+                // this cannot resurrect the fake scan anywhere.
+                "first_scan_gate_enabled" to true,
                 // v3.2.0 growth program (2026-07-10 synthesis) — dark-shipped features.
                 // ALL default OFF/conservative: existing users see zero change until
                 // each flag is flipped in Firebase Console per the gate schedule.
