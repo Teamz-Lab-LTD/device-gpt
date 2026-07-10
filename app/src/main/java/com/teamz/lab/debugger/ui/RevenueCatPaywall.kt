@@ -181,10 +181,11 @@ fun RevenueCatPaywall(
                         }
                         
                         override fun onPurchaseError(error: com.revenuecat.purchases.PurchasesError) {
-                            // Track purchase error
-                            // Check if user cancelled by examining error message or code
-                            val userCancelled = error.message?.contains("cancelled", ignoreCase = true) == true ||
-                                error.message?.contains("cancel", ignoreCase = true) == true
+                            // error.message is localized by the Play Billing library, so
+                            // matching on the English word "cancel" reports every non-English
+                            // user's cancellation as a hard failure. Compare the error code.
+                            val userCancelled =
+                                error.code == com.revenuecat.purchases.PurchasesErrorCode.PurchaseCancelledError
                             AnalyticsUtils.logEvent(
                                 if (userCancelled) {
                                     AnalyticsEvent.PremiumPurchaseCancelled
