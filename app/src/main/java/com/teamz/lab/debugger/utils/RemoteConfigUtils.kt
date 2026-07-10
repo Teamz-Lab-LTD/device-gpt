@@ -140,10 +140,14 @@ object RemoteConfigUtils {
                 // v3.2.0 growth program (2026-07-10 synthesis) — dark-shipped features.
                 // ALL default OFF/conservative: existing users see zero change until
                 // each flag is flipped in Firebase Console per the gate schedule.
-                "paywall_delay_enabled" to true,             // Gate cold-open paywall on session>=min + first scan done
-                "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall
+                // These two default to v3.1.13 behaviour: paywall and ads from session 1.
+                // Both are unproven bets against a paywall that converts 2 users / 28 days
+                // and ~$2.56/mo of ads; neither ships silently. Enable via Remote Config
+                // when you want to run the experiment and can measure it.
+                "paywall_delay_enabled" to false,            // true = gate cold-open paywall on session>=min + first scan
+                "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall (when gate on)
                 "paywall_reason_routing_enabled" to false,   // Dismiss-reason routing (Phase 1 = log-only)
-                "ads_grace_sessions" to 2L,                  // No interstitial/app-open ads in sessions 1..N (bounce reduction)
+                "ads_grace_sessions" to 0L,                  // >0 = no interstitial/app-open ads in sessions 1..N
                 "post_delight_ad_quiet_ms" to 15000L,        // No fullscreen ad within Xms after a delight moment
                 "widget_v2_enabled" to false,                // R3 delta-first widget layout
                 "charge_summary_enabled" to false,           // R2 charge report ritual
