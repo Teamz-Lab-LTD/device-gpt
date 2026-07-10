@@ -54,11 +54,10 @@ object HealthScoreUtils {
             score -= 1
         }
 
-        // Security Status (0-2 points)
-        // getSecurityInfo is a suspend function, use runBlocking to call it
-        val securityInfo = kotlinx.coroutines.runBlocking {
-            getSecurityInfo(context)
-        }
+        // Security Status (0-2 points). Already inside withContext(Dispatchers.IO), so the
+        // suspend call needs no runBlocking. This also warms SecurityInfoCache for the
+        // synchronous, Compose-facing callers further down this file.
+        val securityInfo = SecurityInfoCache.refresh(context)
         if (securityInfo.contains("❌") || securityInfo.contains("⚠️")) {
             score -= 2
         }
@@ -339,11 +338,11 @@ object HealthScoreUtils {
             }
         }
         
-        // Analyze security status - USER-FRIENDLY recommendations based on actual issues
-        // getSecurityInfo is a suspend function, so we need to call it with withContext
-        val securityInfo = kotlinx.coroutines.runBlocking {
-            getSecurityInfo(context)
-        }
+        // Analyze security status. This runs from Compose — a LazyColumn item body and a
+        // LaunchedEffect — so it must never block: getSecurityInfo() forks a `getenforce`
+        // subprocess. Read the cache. When it is cold we add no security advice rather than
+        // freezing the UI to fetch it; every branch below is additive, so omission is safe.
+        val securityInfo = SecurityInfoCache.cachedOrEmpty()
         when {
             securityInfo.contains("❌ Security shield is off") -> {
                 suggestions.add("🛡️ Your phone's security system is turned off - this is unusual and risky")
@@ -492,9 +491,8 @@ object HealthScoreUtils {
         val storageInfo = getMemoryAndStorageInfo(context)
         val ramUsage = getRamUsage(context)
         val thermalStatus = getThermalZoneTemperatures(context)
-        val securityInfo = kotlinx.coroutines.runBlocking {
-            getSecurityInfo(context)
-        }
+        // Non-blocking read; see getImprovementSuggestions above.
+        val securityInfo = SecurityInfoCache.cachedOrEmpty()
         
         // Task 1: RAM/App Management
         val ramMatch = Regex("\\((\\d+)%\\)").find(ramUsage)

@@ -202,6 +202,16 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                     AppLog.w("MyApplication", "On-device AI probe failed", it)
                 }
             }
+
+            // Warm the security probe (forks `getenforce`) so the Health tab's synchronous
+            // suggestion builders read a populated cache instead of blocking on it.
+            CoroutineScope(Dispatchers.IO).launch {
+                runCatching {
+                    com.teamz.lab.debugger.utils.SecurityInfoCache.refresh(this@MyApplication)
+                }.onFailure {
+                    AppLog.w("MyApplication", "Security info probe failed", it)
+                }
+            }
         } catch (e: Exception) {
             // Critical initialization failure - app cannot continue
             ErrorHandler.handleFatalError(

@@ -35,6 +35,7 @@ import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.ReviewPromptManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import com.teamz.lab.debugger.utils.SecurityInfoCache
 import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.utils.calculatePrivacyScore
 import com.teamz.lab.debugger.utils.getPrivacyThreatsToday
@@ -273,8 +274,10 @@ fun HealthSection(
                     // Upload to leaderboard after scan
                     com.teamz.lab.debugger.utils.LeaderboardDataUpload.uploadAfterHealthScan(context)
                     
-                    // Generate and share health data text
-                    val healthShareText = generateHealthShareText(context, newHealthScore)
+                    // Generate and share health data text — off the main thread.
+                    val healthShareText = withContext(Dispatchers.Default) {
+                        generateHealthShareText(context, newHealthScore)
+                    }
                     onShareClick(healthShareText)
 
                     // Reset completion state after a delay
@@ -289,9 +292,14 @@ fun HealthSection(
         }
     }
 
-    // Generate share text on initial load
+    // Generate share text on initial load. generateHealthShareText reads several system
+    // sources; keep every bit of it off the main thread. refresh() warms SecurityInfoCache
+    // first so the suggestions it builds include the security advice.
     LaunchedEffect(currentHealthScore) {
-        val healthShareText = generateHealthShareText(context, currentHealthScore)
+        val healthShareText = withContext(Dispatchers.Default) {
+            SecurityInfoCache.refresh(context)
+            generateHealthShareText(context, currentHealthScore)
+        }
         onShareClick(healthShareText)
     }
     
@@ -1666,8 +1674,14 @@ Trend: $trend
 
         // Intelligent Improvement Suggestions - At the bottom
         item(key = "recommendations") {
-            val suggestions =
+            // Keying on securityInfo recomputes once the cache lands, so the security advice
+            // appears without ever blocking composition on the `getenforce` subprocess.
+            // The remember also stops this from re-running on every recomposition.
+            val securityInfo by SecurityInfoCache.state.collectAsState()
+            LaunchedEffect(Unit) { SecurityInfoCache.refresh(context) }
+            val suggestions = remember(currentHealthScore, securityInfo) {
                 HealthScoreUtils.getImprovementSuggestions(context, currentHealthScore)
+            }
             if (suggestions.isNotEmpty()) {
                 ImprovementSuggestionsCard(
                     suggestions = suggestions, 
