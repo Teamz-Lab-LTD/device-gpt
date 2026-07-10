@@ -10,6 +10,8 @@ import com.google.mlkit.genai.summarization.SummarizationRequest
 import com.google.mlkit.genai.summarization.Summarizer
 import com.google.mlkit.genai.summarization.SummarizerOptions
 import com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability.Status
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -26,6 +28,15 @@ import kotlinx.coroutines.withContext
  * the cloud AI chooser (ChatGPT/Gemini/Claude/etc.).
  */
 object PrivateAiExplainer {
+
+    /** Upper bound on the AICore availability probe. */
+    private const val PROBE_TIMEOUT_SECONDS = 3L
+
+    /** Upper bound on one summarization. Nano is sub-second when healthy. */
+    private const val INFERENCE_TIMEOUT_SECONDS = 30L
+
+    /** Upper bound on the one-time ~300MB model download. */
+    private const val DOWNLOAD_TIMEOUT_MINUTES = 10L
 
     @Volatile
     private var cachedSummarizer: Summarizer? = null
@@ -87,7 +98,9 @@ object PrivateAiExplainer {
             }
             val prompt = buildPrompt(scanSubject, scanText)
             val request = SummarizationRequest.builder(prompt).build()
-            val result = summarizer.runInference(request).get()
+            // Bounded: an unbounded get() here leaves the caller's spinner up forever.
+            val result = summarizer.runInference(request)
+                .get(INFERENCE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             result.summary
         }
     }
@@ -115,8 +128,19 @@ object PrivateAiExplainer {
         return s
     }
 
+    /**
+     * Bounded wait. An unbounded `.get()` here wedges the calling thread for as long as
+     * AICore takes to answer, which on some Android 14+ devices is forever. Never let a
+     * system service decide how long we block.
+     */
     private fun checkStatusBlocking(summarizer: Summarizer): Int =
-        summarizer.checkFeatureStatus().get()
+        try {
+            summarizer.checkFeatureStatus().get(PROBE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        } catch (timeout: TimeoutException) {
+            FirebaseCrashlytics.getInstance()
+                .log("AICore checkFeatureStatus timed out after ${PROBE_TIMEOUT_SECONDS}s")
+            FeatureStatus.UNAVAILABLE
+        }
 
     private fun downloadFeatureBlocking(summarizer: Summarizer) {
         val callback = object : DownloadCallback {
@@ -127,6 +151,7 @@ object PrivateAiExplainer {
             override fun onDownloadProgress(totalBytesDownloaded: Long) {}
             override fun onDownloadCompleted() {}
         }
-        summarizer.downloadFeature(callback).get()
+        // Bounded: a stalled AICore download would otherwise pin this coroutine forever.
+        summarizer.downloadFeature(callback).get(DOWNLOAD_TIMEOUT_MINUTES, TimeUnit.MINUTES)
     }
 }

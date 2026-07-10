@@ -33,7 +33,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.string
 import androidx.compose.ui.Alignment
@@ -119,28 +123,36 @@ fun AIAssistantDialog(
         )
     }
 
-    val installedApps = remember(aiApps) {
-        aiApps.filter { app ->
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    context.packageManager.getPackageInfo(
-                        app.packageName,
-                        PackageManager.PackageInfoFlags.of(0L)
-                    )
-                } else {
-                    context.packageManager.getPackageInfo(
-                        app.packageName,
-                        PackageManager.GET_ACTIVITIES
-                    )
+    // Nine getPackageInfo() calls are nine binder round-trips to system_server. Running them
+    // inside remember{} put them on the main thread during composition, so a busy
+    // system_server froze the dialog. Resolve off-thread.
+    //
+    // null == "not resolved yet". An empty list is a real answer ("no AI apps installed") and
+    // must not be shown before the scan finishes, or the dialog flashes its empty state.
+    var installedApps by remember(aiApps) { mutableStateOf<List<AIApp>?>(null) }
+    LaunchedEffect(aiApps) {
+        installedApps = withContext(Dispatchers.IO) {
+            aiApps.filter { app ->
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        context.packageManager.getPackageInfo(
+                            app.packageName,
+                            PackageManager.PackageInfoFlags.of(0L)
+                        )
+                    } else {
+                        context.packageManager.getPackageInfo(
+                            app.packageName,
+                            PackageManager.GET_ACTIVITIES
+                        )
+                    }
+                    true
+                } catch (_: PackageManager.NameNotFoundException) {
+                    false
+                } catch (exception: Exception) {
+                    FirebaseCrashlytics.getInstance().recordException(exception)
+                    false
                 }
-                true
-            } catch (_: PackageManager.NameNotFoundException) {
-                false
-            } catch (exception: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(exception)
-                false
             }
-
         }
     }
 
@@ -164,7 +176,10 @@ fun AIAssistantDialog(
             modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start
         ) {
 
-            if (installedApps.isNotEmpty() && showExplanationModeToggle) {
+            // Show the Simple/Advanced toggle once we know there is something to send to:
+            // a cloud app, or on-device AI. Not while the package scan is still running.
+            val hasAnyTarget = installedApps?.isNotEmpty() == true || onDeviceAvailable
+            if (installedApps != null && hasAnyTarget && showExplanationModeToggle) {
                 // Toggle for explanation mode
                 Text(
                     "AI Explanation Mode:",
@@ -201,7 +216,20 @@ fun AIAssistantDialog(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            if (installedApps.isEmpty()) {
+            val resolved = installedApps
+            if (resolved == null) {
+                // Package scan still running on IO. Showing the empty state here would flash
+                // "No AI apps found" and hide the Private AI row on every open.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                }
+            } else if (resolved.isEmpty() && !onDeviceAvailable) {
                 Text(
                     "No AI apps found. Please install one of these apps:",
                     textAlign = TextAlign.Start,
@@ -283,7 +311,7 @@ fun AIAssistantDialog(
                             )
                         }
                     }
-                    items(installedApps) { app ->
+                    items(resolved) { app ->
                         ListItem(headlineContent = {
                             Text(
                                 app.name, style = MaterialTheme.typography.titleMedium
@@ -297,6 +325,25 @@ fun AIAssistantDialog(
                         }, modifier = Modifier.clickable {
                             onShareWithApp(app, promptMode)
                         })
+                    }
+                    // On-device AI works with no cloud app installed. Still offer the installs.
+                    if (resolved.isEmpty()) {
+                        items(aiApps) { app ->
+                            ListItem(headlineContent = {
+                                Text(app.name, style = MaterialTheme.typography.titleMedium)
+                            }, leadingContent = {
+                                Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color())
+                            }, trailingContent = {
+                                Icon(
+                                    Icons.Default.InstallMobile,
+                                    contentDescription = "Install",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }, modifier = Modifier.clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, app.playStoreUrl.toUri())
+                                context.startActivity(intent)
+                            })
+                        }
                     }
                 }
             }

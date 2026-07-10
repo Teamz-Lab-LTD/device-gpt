@@ -141,22 +141,32 @@ class GrowthProgramV320ContractTest {
 
     // ---- 5. Offering resolution priority ------------------------------------------
 
+    /**
+     * All 8 Teamz Lab apps share one RevenueCat project (proj8d8322e7). `offerings.current`
+     * is a project-wide singleton and today resolves to captains_bundle (Starship Booster),
+     * whose paywall is not even published. Preferring it serves DeviceGPT another app's
+     * offering and breaks purchases. Pin our own; `current` is a last-resort fallback only.
+     */
     @Test
-    fun `offering resolution prefers offerings-current over the pinned ID`() {
+    fun `offering resolution pins device-gpt-offering ahead of the shared current offering`() {
         val mgr = read("app/src/main/java/com/teamz/lab/debugger/utils/RevenueCatManager.kt")
         val paywall = read("app/src/main/java/com/teamz/lab/debugger/ui/RevenueCatPaywall.kt")
         assertFalse(
-            "RevenueCatManager must NOT resolve pinned ID first — that renders " +
-                "RevenueCat Experiments + country-targeted offerings permanently dead.",
-            mgr.contains("offerings.getOffering(OFFERING_ID) ?: offerings.current")
-        )
-        assertTrue(
-            "RevenueCatManager must prefer offerings.current",
+            "RevenueCatManager must NOT prefer offerings.current — the shared project's " +
+                "current offering belongs to a different app.",
             mgr.contains("offerings.current ?: offerings.getOffering(OFFERING_ID)")
         )
         assertTrue(
-            "RevenueCatPaywall must prefer offerings.current",
-            paywall.contains("offerings.current")
+            "RevenueCatManager must resolve the pinned OFFERING_ID first",
+            mgr.contains("offerings.getOffering(OFFERING_ID) ?: offerings.current")
+        )
+        assertTrue(
+            "RevenueCatPaywall must resolve the pinned OFFERING_ID first",
+            paywall.contains("offerings.getOffering(RevenueCatManager.OFFERING_ID)")
+        )
+        assertFalse(
+            "RevenueCatPaywall must not read offerings.current before the pinned ID",
+            Regex("val targetOffering = offerings\\.current").containsMatchIn(paywall)
         )
     }
 
