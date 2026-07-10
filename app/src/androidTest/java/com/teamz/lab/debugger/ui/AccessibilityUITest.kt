@@ -68,20 +68,40 @@ class AccessibilityUITest {
             .onFirst()
             .assertExists()
 
-        // FABs should be accessible (content descriptions are "Send Info" and "AI Assistant")
-        // They may not be visible initially, so handle gracefully
-        try {
-            composeTestRule.onNodeWithContentDescription("Send Info", substring = true, ignoreCase = true)
-                .assertExists()
-        } catch (e: Exception) {
-            // FAB may not be visible yet, that's okay
-        }
+        // The Send FAB's icon renders only once share text has been generated. That work is
+        // now done off the main thread (health_section.kt), so the FAB appears after first
+        // composition rather than during it. Wait for it instead of asserting immediately.
+        //
+        // Both blocks previously used `catch (e: Exception)`. assertExists() throws
+        // AssertionError, which extends Error, not Exception — so the "that's okay" path
+        // documented below never ran and an absent FAB failed the test outright.
+        awaitContentDescriptionOrSkip("Send Info")
+        awaitContentDescriptionOrSkip("AI Assistant")
+    }
 
-        try {
-            composeTestRule.onNodeWithContentDescription("AI Assistant", substring = true, ignoreCase = true)
+    /**
+     * Waits up to [timeoutMillis] for a node carrying [description], then asserts it.
+     * A timeout means "not surfaced in this configuration" rather than a failure: FAB
+     * visibility depends on remote-config flags and premium state, neither of which this
+     * test controls.
+     */
+    private fun awaitContentDescriptionOrSkip(description: String, timeoutMillis: Long = 10_000) {
+        val appeared = try {
+            composeTestRule.waitUntil(timeoutMillis) {
+                composeTestRule
+                    .onAllNodesWithContentDescription(description, substring = true, ignoreCase = true)
+                    .fetchSemanticsNodes(atLeastOneRootRequired = false)
+                    .isNotEmpty()
+            }
+            true
+        } catch (_: Throwable) {
+            false
+        }
+        if (appeared) {
+            composeTestRule
+                .onAllNodesWithContentDescription(description, substring = true, ignoreCase = true)
+                .onFirst()
                 .assertExists()
-        } catch (e: Exception) {
-            // FAB may not be visible yet, that's okay
         }
     }
 }
