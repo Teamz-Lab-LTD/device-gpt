@@ -3,11 +3,15 @@ package com.teamz.lab.debugger.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.firebase.ktx.Firebase
 import com.teamz.lab.debugger.BuildConfig
 import com.teamz.lab.debugger.utils.AppLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 object RemoteConfigUtils {
     private val remoteConfig: FirebaseRemoteConfig
@@ -500,6 +504,28 @@ object RemoteConfigUtils {
     fun isD1OvernightDrainEnabled(): Boolean {
         return remoteConfig.getBoolean("d1_overnight_drain_enabled")
     }
+
+    /**
+     * Fire-time gate for the D1 worker. Forces a bounded fetch+activate FIRST, then
+     * reads the flag against live server config (including the 50% A/B condition).
+     *
+     * Why this exists: the D1 worker runs ~20h post-install in a cold BACKGROUND
+     * process where the normal foreground fetch/activate has usually not run. A plain
+     * getBoolean() there falls back to the bundled default (false), so the push never
+     * fires. Production proof (GA4, 28d to 2026-07-11): d1_overnight_drain_scheduled
+     * = 124 users but d1_overnight_drain_pushed = 0. Awaiting a real fetch here gives
+     * the gate a live value at fire time. A failed/timed-out fetch keeps the previous
+     * activated value (or the bundled false) — same safe default as before, never worse.
+     */
+    suspend fun awaitD1OvernightDrainEnabled(timeoutSeconds: Long = 8L): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                Tasks.await(remoteConfig.fetchAndActivate(), timeoutSeconds, TimeUnit.SECONDS)
+            } catch (t: Throwable) {
+                AppLog.d("RemoteConfigUtils", "awaitD1OvernightDrainEnabled fetch failed: ${t.message}")
+            }
+            remoteConfig.getBoolean("d1_overnight_drain_enabled")
+        }
 
     /**
      * v3.1.11 Week 1 retention milestone — First-launch 10s auto-scan + Device Score gate.

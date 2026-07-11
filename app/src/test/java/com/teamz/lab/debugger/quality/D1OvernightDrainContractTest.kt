@@ -155,6 +155,58 @@ class D1OvernightDrainContractTest {
     }
 
     @Test
+    fun `doWork awaits a fresh RC fetch at fire time (not a bare getBoolean)`() {
+        // Prod bug (GA4 28d to 2026-07-11): d1_overnight_drain_scheduled = 124 users,
+        // d1_overnight_drain_pushed = 0. The worker runs in a cold BACKGROUND process
+        // ~20h post-install where RC has not fetched/activated, so a plain
+        // isD1OvernightDrainEnabled() (bare getBoolean) returns the bundled default
+        // (false) and the push never fires. The gate MUST await a bounded fetch first.
+        val doWorkStart = workerSrc.indexOf("override suspend fun doWork()")
+        assertTrue("doWork() not found", doWorkStart >= 0)
+        val doWorkBody = workerSrc.substring(doWorkStart)
+        assertTrue(
+            "doWork() must gate on awaitD1OvernightDrainEnabled() — the bounded fetch+activate " +
+                "path. A bare isD1OvernightDrainEnabled() reads the bundled default (false) in " +
+                "the cold background worker process and the push silently never fires.",
+            doWorkBody.contains("awaitD1OvernightDrainEnabled(")
+        )
+    }
+
+    @Test
+    fun `doWork initializes analytics in the cold worker process`() {
+        // Secondary failure mode: if the push DOES fire but AnalyticsUtils was never
+        // initialized in this background process, logEvent no-ops (appContext == null)
+        // and the funnel still reads 0. Init must happen before the gate/post.
+        val doWorkStart = workerSrc.indexOf("override suspend fun doWork()")
+        val postIdx = workerSrc.indexOf("postNotification(ctx", doWorkStart)
+        val initIdx = workerSrc.indexOf("AnalyticsUtils.init(", doWorkStart)
+        assertTrue(
+            "doWork() must call AnalyticsUtils.init(ctx) so the pushed event logs from the " +
+                "cold worker process.",
+            initIdx in (doWorkStart + 1) until postIdx
+        )
+    }
+
+    @Test
+    fun `RemoteConfigUtils exposes a bounded fetch-first D1 gate`() {
+        val rcSrc = locate(
+            "src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt"
+        ).readText()
+        val fnStart = rcSrc.indexOf("suspend fun awaitD1OvernightDrainEnabled")
+        assertTrue(
+            "RemoteConfigUtils must expose suspend awaitD1OvernightDrainEnabled(timeoutSeconds) " +
+                "so the worker can force a live RC value at fire time.",
+            fnStart >= 0
+        )
+        val fnBody = rcSrc.substring(fnStart, minOf(fnStart + 500, rcSrc.length))
+        assertTrue(
+            "awaitD1OvernightDrainEnabled must actually fetchAndActivate (bounded by Tasks.await) " +
+                "before reading the flag — otherwise it is no better than the bare getBoolean.",
+            fnBody.contains("fetchAndActivate") && fnBody.contains("Tasks.await")
+        )
+    }
+
+    @Test
     fun `Notification channel importance is DEFAULT not HIGH or MAX`() {
         // D1 push is NOT urgent — it's a soft re-engagement nudge. Channel importance
         // HIGH or MAX would full-screen the notification on Android 13+, breaking

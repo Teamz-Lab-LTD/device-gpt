@@ -182,8 +182,17 @@ object D1OvernightDrainWorker {
 
         override suspend fun doWork(): Result {
             val ctx = applicationContext
-            if (!RemoteConfigUtils.isD1OvernightDrainEnabled()) {
-                Log.d(TAG, "RC flipped off between schedule and fire — skipping")
+            // This worker runs in a cold BACKGROUND process; neither analytics nor
+            // Remote Config are guaranteed to be initialized here. Init analytics so
+            // the pushed/failed events actually log (was a suspected reason the funnel
+            // read 0), and set RC defaults before the gate reads the flag.
+            AnalyticsUtils.init(ctx)
+            RemoteConfigUtils.init()
+            // Await a fresh fetch+activate before gating — a plain getBoolean() in this
+            // background process falls back to the bundled default (false) and the push
+            // silently never fires (prod: scheduled 124, pushed 0).
+            if (!RemoteConfigUtils.awaitD1OvernightDrainEnabled()) {
+                Log.d(TAG, "D1 flag false at fire time (A/B off or RC disabled) — skipping")
                 return Result.success()
             }
             val p = prefs(ctx)
