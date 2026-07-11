@@ -34,6 +34,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability
 import com.teamz.lab.debugger.ai.ondevice.PrivateAiExplainer
 import com.teamz.lab.debugger.ui.PromptMode
+import com.teamz.lab.debugger.utils.AnalyticsEvent
+import com.teamz.lab.debugger.utils.AnalyticsUtils
 import kotlinx.coroutines.launch
 
 /**
@@ -84,14 +86,27 @@ fun rememberPrivateAiFlow(
         result = null
         errorMsg = null
         lastPrompt = buildPrompt(mode)
+        AnalyticsUtils.logEvent(
+            AnalyticsEvent.PrivateAiSelected,
+            mapOf("subject" to subject, "mode" to mode.name),
+        )
+        val startedAt = System.currentTimeMillis()
         scope.launch {
             // Best-effort: if the model still needs to download, kick it off and
             // fall through — user sees a "downloading" message via the empty result path.
             val ready = runCatching {
                 OnDeviceAiAvailability.refreshStatus(context)
             }.getOrDefault(OnDeviceAiAvailability.Status.UNKNOWN)
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.PrivateAiModelStatus,
+                mapOf("subject" to subject, "status" to ready.name),
+            )
 
             if (ready == OnDeviceAiAvailability.Status.DOWNLOADABLE) {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.PrivateAiDownloadStarted,
+                    mapOf("subject" to subject),
+                )
                 runCatching { PrivateAiExplainer.ensureModelReady(context) }
             }
             val explanation = PrivateAiExplainer.explain(
@@ -100,9 +115,27 @@ fun rememberPrivateAiFlow(
                 scanText = lastPrompt,
             )
             loading = false
+            val latencyMs = System.currentTimeMillis() - startedAt
             explanation
-                .onSuccess { result = it }
-                .onFailure { errorMsg = it.message ?: "On-device AI is not ready yet." }
+                .onSuccess {
+                    result = it
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.PrivateAiResultShown,
+                        mapOf("subject" to subject, "latency_ms" to latencyMs, "chars" to it.length),
+                    )
+                }
+                .onFailure {
+                    errorMsg = it.message ?: "On-device AI is not ready yet."
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.PrivateAiFailed,
+                        mapOf(
+                            "subject" to subject,
+                            "status" to ready.name,
+                            "latency_ms" to latencyMs,
+                            "reason" to (it.message?.take(100) ?: "unknown"),
+                        ),
+                    )
+                }
         }
     }
 
@@ -114,9 +147,19 @@ fun rememberPrivateAiFlow(
                 result = result,
                 errorMsg = errorMsg,
                 onCopy = {
-                    result?.let { copyToClipboard(context, "DeviceGPT · $subject", it) }
+                    result?.let {
+                        copyToClipboard(context, "DeviceGPT · $subject", it)
+                        AnalyticsUtils.logEvent(
+                            AnalyticsEvent.PrivateAiResultCopied,
+                            mapOf("subject" to subject, "chars" to it.length),
+                        )
+                    }
                 },
                 onDismiss = {
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.PrivateAiDismissed,
+                        mapOf("subject" to subject, "had_result" to (result != null)),
+                    )
                     active = false
                     loading = false
                     result = null

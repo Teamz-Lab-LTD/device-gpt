@@ -454,4 +454,17 @@ enum class AnalyticsEvent(val eventName: String) {
     AiSoftGateTriggered("ai_soft_gate_triggered"),
     AiSoftGateSkipped("ai_soft_gate_skipped"),
     PremiumSectionTeased("premium_section_teased"),
+    // Private AI (on-device Gemini Nano) funnel — shipped with ZERO analytics in 3.1.x.
+    // Without these we cannot tell if on-device AI is picked, if the model is present,
+    // or if it ever produces output. Full funnel: selected -> model_status ->
+    // (download) -> shown|failed -> copied|dismissed. Params (subject, mode, status,
+    // reason, latency_ms, chars) must be registered as GA4 custom dimensions to appear
+    // in reports — the event names themselves are collected automatically.
+    PrivateAiSelected("private_ai_selected"),           // user picked Private AI row. params: subject, mode
+    PrivateAiModelStatus("private_ai_model_status"),     // refreshStatus result. param: status
+    PrivateAiDownloadStarted("private_ai_download_started"), // model was DOWNLOADABLE -> ensureModelReady kicked
+    PrivateAiResultShown("private_ai_result_shown"),     // explain() success. params: subject, latency_ms, chars
+    PrivateAiFailed("private_ai_failed"),                // explain() failure. params: subject, reason
+    PrivateAiResultCopied("private_ai_result_copied"),   // user tapped Copy — proxy for "output was useful"
+    PrivateAiDismissed("private_ai_dismissed"),          // dialog closed. param: had_result
 }
