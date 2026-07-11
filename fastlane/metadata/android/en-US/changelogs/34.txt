@@ -1,0 +1,6 @@
+v3.1.15 — Reliability
+
+- Fixed: the day-after "overnight battery drain" reminder sometimes never arrived. It now reaches you reliably about a day after install.
+- Under-the-hood tracking improvements so we can spot and fix issues like this faster.
+
+Thanks for using DeviceGPT. Your scans always stay on your device.
