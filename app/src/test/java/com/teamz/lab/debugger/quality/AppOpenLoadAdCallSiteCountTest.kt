@@ -6,20 +6,48 @@ import org.junit.Test
 import java.io.File
 
 /**
- * v3.1.11 W1 ad-pipeline fix — source-text regression guard.
+ * App-open ad request/show pipeline — source-text regression guard.
  *
- * 2026-06-21 audit found that AppOpenAdManager.kt + Application.kt had FIVE separate
- * call sites that invoked AppOpenAdManager.loadAd(). Combined with no request-side
- * throttle, this produced 5148 AdMob requests/week for 18 displays (0.43% show rate).
+ * ## History, including the mistake this file used to enforce
  *
- * Converged fix DELETES three of those call sites. The legitimate trigger paths are:
- *   1. Application.onCreate cold-start bootstrap
- *   2. AppOpenAdManager.kt post-dismissal self-reload (onAdDismissedFullScreenContent)
+ * The 2026-06-21 audit found five call sites invoking `AppOpenAdManager.loadAd()` with
+ * no request-side throttle: **5148 AdMob requests/week for 18 displays (0.43% show
+ * rate)**. v3.1.11 (b971c61) "fixed" this by deleting call sites — including the
+ * `null-check-during-show -> load with activity` path, which was the ONLY thing that
+ * let a freshly-loaded ad actually be shown.
  *
- * Everything else (cooldown-branch preload, background-time-branch preload,
- * null-check-during-show preload, show-failure preload) WAS deleted and must
- * stay deleted. Without this regression guard, a future PR could re-introduce
- * a load-call to "fix" some edge case and silently re-break the fan-out.
+ * That was the wrong side of the ratio. The audit had already written down a 0.43%
+ * show rate; the fix attacked the numerator (requests) and left the denominator
+ * collapse untouched. **This test file then pinned the broken behaviour in place** by
+ * asserting `Application.onCreate` must preload and that the show-path load must stay
+ * deleted — making the revenue bug un-fixable without failing CI.
+ *
+ * AdMob, 30 days to 2026-07-13, proves the outcome:
+ *
+ *     app_open      18,124 requests -> 15,607 FILLED -> 59 shown   (0.38%)
+ *     native         2,664 requests ->  2,620 FILLED -> 163 shown  (6.2%)
+ *     interstitial     483 requests ->    459 FILLED -> 152 shown  (33%)
+ *
+ * Fill was never the problem (86-98% match rate). ~18,600 ads were filled and 374 were
+ * shown. Requests did not even drop as intended (~4.2k/wk) because the true source was
+ * never addressed: `Application.onCreate` runs for EVERY headless process wake
+ * (WorkManager, widgets, receivers), where no Activity exists and an ad can never be
+ * displayed. Real user sessions numbered ~573 against 18,124 requests.
+ *
+ * ## The invariants that actually matter (what this file now guards)
+ *
+ *  1. **No headless requests.** `Application.onCreate` must NOT call `loadAd()`. This is
+ *     both the revenue leak and the AdMob invalid-traffic risk (a high request count with
+ *     near-zero impressions endangers the whole publisher account, not just this app).
+ *  2. **The show path exists.** When no ad is cached, `showAdIfAvailable()` must load
+ *     WITH the Activity, so the ad can present itself on arrival. Without this, a filled
+ *     ad is simply discarded — and with 7% D1 retention there is no "next session" to
+ *     show it in.
+ *  3. **Request volume stays bounded.** The throttles that made the v3.1.11 audit
+ *     worthwhile must survive: no preload from branches where the ad cannot be shown
+ *     anyway (cooldown / short-background), plus the interval + per-session caps.
+ *
+ * Behavioural coverage of the auto-show decision lives in [AppOpenAdPipelineTest].
  */
 class AppOpenLoadAdCallSiteCountTest {
 
@@ -37,31 +65,23 @@ class AppOpenLoadAdCallSiteCountTest {
         return f.readText()
     }
 
-    private fun countOccurrences(src: String, needle: Regex): Int =
-        needle.findAll(src).count()
+    private fun countOccurrences(src: String, needle: Regex): Int = needle.findAll(src).count()
+
+    private val managerPath = "app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt"
+    private val applicationPath = "app/src/main/java/com/teamz/lab/debugger/Application.kt"
+
+    // ------------------------------------------------ invariant 1: no headless requests
 
     @Test
-    fun `AppOpenAdManager loadAd has exactly one external call site (Application onCreate)`() {
-        // External call sites use the qualified `AppOpenAdManager.loadAd(...)` form.
-        // The internal self-call inside the object body uses bare `loadAd(...)` — that
-        // one is tested separately below.
+    fun `no production code outside the manager may request an app-open ad`() {
+        // Every request must originate from a real Activity via showAdIfAvailable().
+        // Application.onCreate is explicitly included in this ban: it runs for headless
+        // process wakes (WorkManager/widgets/receivers) with no Activity, and an ad
+        // requested there can never be shown. That produced 18,124 requests / 59 shows.
         val externalCallRegex = Regex("""\bAppOpenAdManager\.loadAd\s*\(""")
-        val appKt = read("app/src/main/java/com/teamz/lab/debugger/Application.kt")
-        val externalCount = countOccurrences(appKt, externalCallRegex)
-        assertEquals(
-            "Exactly 1 external AppOpenAdManager.loadAd(...) call site allowed (Application.onCreate). " +
-                "If you added another, you are about to re-break the 5148/wk request fan-out bug from 2026-06-21. " +
-                "Read app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt header comment before adding.",
-            1, externalCount
-        )
-
-        // Make sure NO other file in the production source tree calls AppOpenAdManager.loadAd().
-        // Grep the full main source tree minus Application.kt + the manager file itself.
-        val mainSrcRoot = File(projectRoot(), "app/src/main/java")
         val violators = mutableListOf<String>()
-        mainSrcRoot.walkTopDown()
+        File(projectRoot(), "app/src/main/java").walkTopDown()
             .filter { it.isFile && it.name.endsWith(".kt") }
-            .filter { !it.absolutePath.endsWith("Application.kt") }
             .filter { !it.absolutePath.endsWith("app_open_manager.kt") }
             .forEach { f ->
                 if (externalCallRegex.containsMatchIn(f.readText())) {
@@ -69,94 +89,107 @@ class AppOpenLoadAdCallSiteCountTest {
                 }
             }
         assertTrue(
-            "No production file outside Application.kt may call AppOpenAdManager.loadAd(). Found violators: $violators",
+            "No production file may call AppOpenAdManager.loadAd() directly — requests must come " +
+                "from a real Activity through showAdIfAvailable(). Application.onCreate especially: " +
+                "it fires on every headless process wake, and an ad requested with no Activity can " +
+                "never be displayed (18,124 requests -> 59 impressions). Violators: $violators",
             violators.isEmpty()
         )
     }
 
     @Test
-    fun `Internal loadAd self-call sites in app_open_manager exactly equal one (onAdDismissed only)`() {
-        // Internal self-calls inside the AppOpenAdManager object use bare `loadAd(...)`.
-        // Pre-fix had FOUR internal self-call sites:
-        //   1. cooldown-branch preload      [DELETED]
-        //   2. background-time-branch preload [DELETED]
-        //   3. null-check-during-show preload [DELETED]
-        //   4. show-failure preload          [DELETED]
-        //   5. post-dismissal self-reload    [KEPT — legitimate]
-        // Plus the function declaration itself. Filter out the `fun loadAd(...)` decl
-        // and count bare `loadAd(activity` invocations.
-        val src = read("app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt")
-        // Match `loadAd(activity` (with or without second arg) — the post-dismissal call.
-        val selfCallRegex = Regex("""(?<!fun )\bloadAd\s*\(activity""")
-        val n = countOccurrences(src, selfCallRegex)
-        assertEquals(
-            "Exactly 1 internal self-call to loadAd(activity ...) must remain (onAdDismissedFullScreenContent). " +
-                "Found $n. If >1, you re-introduced one of the 4 deleted preload sites — check the " +
-                "DELETED-marker comments in app_open_manager.kt to see which one came back.",
-            1, n
+    fun `Application onCreate still resets the per-session load cap`() {
+        // The Application object is a process singleton, so the per-session counters would
+        // otherwise leak across user sessions. Still required even though onCreate no
+        // longer requests an ad itself.
+        val src = read(applicationPath)
+        assertTrue(
+            "Application.onCreate must call AppOpenAdManager.resetSessionCounters() so the " +
+                "per-session load cap starts honest on each cold start.",
+            src.contains("AppOpenAdManager.resetSessionCounters()")
+        )
+    }
+
+    // -------------------------------------------------- invariant 2: the show path lives
+
+    @Test
+    fun `showAdIfAvailable loads WITH the activity when nothing is cached`() {
+        val src = read(managerPath)
+        val guardIdx = src.indexOf("if (appOpenAd == null)")
+        assertTrue("the 'no ad cached' branch is missing entirely", guardIdx >= 0)
+        val branch = src.substring(guardIdx, minOf(guardIdx + 600, src.length))
+        assertTrue(
+            "When no ad is cached, showAdIfAvailable() MUST call loadAd(activity, activity, ...). " +
+                "Returning early here is the v3.1.11 bug: the ad is requested, filled and billed to " +
+                "AdMob's auction, then discarded because nothing can show it. Do not 'optimise' this " +
+                "line away to reduce request volume — bound requests with the throttles instead.",
+            Regex("""loadAd\s*\(\s*activity\s*,\s*activity""").containsMatchIn(branch)
         )
     }
 
     @Test
-    fun `internal loadAd self-calls in app_open_manager removed (cooldown + bg + null-check + show-fail)`() {
-        val src = read("app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt")
-        // The four deleted preload sites — each used to contain `loadAd(activity)` inside
-        // a guard branch. The fix replaced them with explanatory comments. Assert each
-        // deletion landmark is present so we can detect a regression by source-text alone.
-        val deletionMarkers = listOf(
-            "DELETED redundant preload here",          // cooldown branch
-            "DELETED redundant preload here for the",  // background-time branch
-            "DELETED the \"no ad available -> preload",// null-check-during-show
-            "DELETED preload-after-show-failure",      // show-failure callback
+    fun `post-dismissal self-reload is preserved`() {
+        // Fires only AFTER an ad was actually shown, so the next launch has one cached.
+        val src = read(managerPath)
+        val dismissedIdx = src.indexOf("override fun onAdDismissedFullScreenContent()")
+        assertTrue("onAdDismissedFullScreenContent must exist", dismissedIdx > 0)
+        val nextOverride = src.indexOf("override fun", dismissedIdx + 1)
+        val body = src.substring(dismissedIdx, if (nextOverride > 0) nextOverride else dismissedIdx + 1000)
+        assertTrue(
+            "Post-dismissal callback must still call loadAd(activity) — the legitimate preload " +
+                "that arms the next launch after a successful show.",
+            body.contains("loadAd(activity)")
         )
-        deletionMarkers.forEach { marker ->
+    }
+
+    // ------------------------------------------- invariant 3: request volume stays bounded
+
+    @Test
+    fun `no preload from branches where the ad could not be shown anyway`() {
+        // These two deletions from the 2026-06-21 audit were correct and must stand: both
+        // fired loadAd() inside guards that had ALREADY decided not to show an ad, so the
+        // cached result could never be used within the window. Restoring them re-opens the
+        // request fan-out without buying a single impression.
+        val src = read(managerPath)
+        listOf(
+            "DELETED redundant preload here",         // cooldown branch
+            "DELETED redundant preload here for the", // short-background branch
+        ).forEach { marker ->
             assertTrue(
-                "Deletion-landmark comment missing: '$marker'. If you removed the comment, also verify the corresponding loadAd() call has NOT been re-added — the comment is the only thing telling future devs why the line is gone.",
+                "Deletion-landmark comment missing: '$marker'. The comment is the only record of " +
+                    "why that loadAd() call is gone — if you removed it, verify the call was not " +
+                    "re-added.",
                 src.contains(marker)
             )
         }
     }
 
     @Test
-    fun `loadAd self-call inside post-dismissal callback is preserved`() {
-        // We did NOT delete the legitimate self-reload — that one fires AFTER an ad was
-        // shown, so the next session has a cached ad ready. Guard it.
-        val src = read("app/src/main/java/com/teamz/lab/debugger/utils/app_open_manager.kt")
-        val dismissedIdx = src.indexOf("override fun onAdDismissedFullScreenContent()")
+    fun `request-side throttles survive the show-path restoration`() {
+        val src = read(managerPath)
         assertTrue(
-            "onAdDismissedFullScreenContent must exist — it's where the post-dismissal preload lives.",
-            dismissedIdx > 0
+            "MIN_LOAD_INTERVAL_MS must remain — hard floor between loadAd() invocations.",
+            src.contains("MIN_LOAD_INTERVAL_MS")
         )
-        // Walk to the closing brace of this override; find the next `override fun` or 6-space `}`
-        val nextOverride = src.indexOf("override fun", dismissedIdx + 1)
-        val body = src.substring(dismissedIdx, if (nextOverride > 0) nextOverride else dismissedIdx + 1000)
         assertTrue(
-            "Post-dismissal callback must still call loadAd(activity) — this is the legitimate " +
-                "trigger path that preloads the next ad after a successful show.",
-            body.contains("loadAd(activity)")
+            "The per-session load cap must remain (getAppOpenMaxLoadsPerSession).",
+            src.contains("getAppOpenMaxLoadsPerSession")
         )
     }
 
     @Test
-    fun `Application onCreate calls resetSessionCounters before MobileAds initialize`() {
-        // resetSessionCounters() makes the per-session load cap honest. The Application
-        // object is a process singleton so counters would otherwise leak across user
-        // sessions. Order matters: reset must run BEFORE loadAd().
-        val src = read("app/src/main/java/com/teamz/lab/debugger/Application.kt")
-        val resetIdx = src.indexOf("AppOpenAdManager.resetSessionCounters()")
-        val loadIdx = src.indexOf("AppOpenAdManager.loadAd(applicationContext)")
-        assertTrue(
-            "Application.onCreate must call AppOpenAdManager.resetSessionCounters().",
-            resetIdx > 0
-        )
-        assertTrue(
-            "Application.onCreate must still preload at cold-start.",
-            loadIdx > 0
-        )
-        assertTrue(
-            "resetSessionCounters() must run BEFORE loadAd() to ensure the new session " +
-                "starts with attempts=0 and lastLoadAttemptMs=0.",
-            resetIdx < loadIdx
+    fun `internal loadAd self-calls are exactly the two legitimate activity-scoped paths`() {
+        // 1. showAdIfAvailable  -> loadAd(activity, activity, isColdStart)  [show on arrival]
+        // 2. onAdDismissed      -> loadAd(activity)                         [arm next launch]
+        // Both require an Activity, so neither can fire from a headless process.
+        val src = read(managerPath)
+        val selfCallRegex = Regex("""(?<!fun )\bloadAd\s*\(\s*activity""")
+        val n = countOccurrences(src, selfCallRegex)
+        assertEquals(
+            "Expected exactly 2 activity-scoped internal loadAd() calls (show-on-arrival + " +
+                "post-dismissal rearm). Found $n. More than 2 means a new trigger path appeared — " +
+                "check it cannot fire without an Activity.",
+            2, n
         )
     }
 }

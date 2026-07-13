@@ -34,6 +34,16 @@ object RemoteConfigUtils {
      */
     @Volatile private var cachedCountryCode: String = ""
 
+    /**
+     * True once setDefaultsAsync() has actually applied the bundled defaults. Reads that
+     * happen before this (cold start is ~1s; the callback is slower) would otherwise get
+     * Firebase's static `false` for every unset key rather than our bundled value.
+     */
+    @Volatile private var defaultsApplied: Boolean = false
+
+    /** Must mirror the "show_app_open_ads" entry in init()'s setDefaultsAsync map. */
+    private const val DEFAULT_SHOW_APP_OPEN_ADS = true
+
     /** Returns true if the device's country is in the RC-driven suppression list. */
     fun isCountrySuppressed(): Boolean {
         val code = cachedCountryCode
@@ -172,8 +182,8 @@ object RemoteConfigUtils {
                 "timeline_enabled" to false,                 // R5 Device Timeline on Health tab
                 "widget_pin_prompt_enabled" to false         // Pin prompt after score reveal
             )
-        )
-        
+        ).addOnCompleteListener { defaultsApplied = true }
+
         AppLog.d("RemoteConfigUtils", "init() - Defaults set, fetching and activating...")
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -235,6 +245,20 @@ object RemoteConfigUtils {
         if (isCountrySuppressed()) {
             AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - Country $cachedCountryCode suppressed, skipping")
             return false
+        }
+
+        // setDefaultsAsync() is ASYNC. Until it completes, getBoolean() on an unset key
+        // returns Firebase's static default — FALSE — not our bundled `true`. The app-open
+        // ad is requested from MainActivity.onStart, ~1s into a cold start, which on a
+        // FRESH INSTALL loses that race: ads were silently suppressed for exactly the users
+        // who had no cached config, i.e. every new install. With D1 retention at 7%, that is
+        // most of the user base. Observed on an API 35 emulator: "RemoteConfig disabled app
+        // open ads" on first launch, with no server override and a bundled default of true.
+        //
+        // Until defaults land, answer from the bundled constant instead of Firebase's false.
+        if (!defaultsApplied) {
+            AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - RC defaults not applied yet, using bundled default")
+            return DEFAULT_SHOW_APP_OPEN_ADS
         }
 
         val shouldShow = remoteConfig.getBoolean("show_app_open_ads")

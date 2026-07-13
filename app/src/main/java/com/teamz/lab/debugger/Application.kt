@@ -54,6 +54,17 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             // counters survive across user sessions without an explicit reset. This
             // hook makes the per-session contract real for both: cold-start = new
             // session = fresh budget.
+            // Remote Config FIRST. setDefaultsAsync() is async, and every ad gate
+            // (shouldShowAppOpenAds / interstitial / native) reads it. MainActivity.onStart
+            // asks for an app-open ad ~1s into a cold start; if RC init has not even been
+            // *called* by then, getBoolean() returns Firebase's static false for every unset
+            // key and ads are silently suppressed — on fresh installs especially, which with
+            // 7% D1 retention is most of the user base. RemoteConfigUtils also flips its own
+            // `defaultsApplied` flag so the gates can fall back to bundled values until the
+            // async apply lands.
+            AppLog.d("MyApplication", "onCreate() - Initializing RemoteConfig (before ads)...")
+            RemoteConfigUtils.init()
+
             AppOpenAdManager.resetSessionCounters()
             com.teamz.lab.debugger.ui.NativeAdManager.resetStats()
             // v3.1.11 W1 user-behavior insight — A/B cohort labeler.
@@ -63,9 +74,21 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             CohortLabeler.labelOnce(applicationContext)
             MobileAds.initialize(this) {
                 AppLog.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
-                // Preload ad after SDK is initialized (no activity yet, just preload)
-                AppLog.d("MyApplication", "onCreate() - Preloading app open ad...")
-                AppOpenAdManager.loadAd(applicationContext) // Just preload, no activity yet
+                // 2026-07-13 revenue/policy fix — do NOT request an app-open ad here.
+                //
+                // Application.onCreate runs for ANY component that wakes the process:
+                // WorkManager (D1OvernightDrainWorker), widget updates, broadcast
+                // receivers, notification actions. Most of those have no Activity at
+                // all, so the ad could never be displayed. AdMob 30d showed the damage:
+                // 18,124 app-open requests -> 15,607 filled -> 59 shown (0.38%), while
+                // real user sessions numbered only ~573. A high request count with
+                // almost no impressions is the invalid-traffic pattern AdMob penalises,
+                // and it put the whole publisher account at risk, not just this app.
+                //
+                // The app-open ad is now requested only from MainActivity.onStart via
+                // AppOpenAdManager.showAdIfAvailable(), i.e. only when a real screen is
+                // opening and can actually show it.
+                AppLog.d("MyApplication", "onCreate() - app-open ad NOT preloaded here (headless wakes must not request ads)")
             }
             
             ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -91,10 +114,8 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 ErrorHandler.handleError(e, context = "MyApplication.onCreate-RevenueCat")
             }
             
-            // Initialize Remote Config
-            AppLog.d("MyApplication", "onCreate() - Initializing RemoteConfig...")
-            RemoteConfigUtils.init()
-            AppLog.d("MyApplication", "onCreate() - RemoteConfig initialized")
+            // (Remote Config is initialized earlier in onCreate — before MobileAds — so the
+            // ad gates are not read against un-applied defaults on a cold start.)
 
             // v3.2.0 R5: device_events timeline maintenance (async on IO) —
             // backfills from prefs on first run, prunes >90d rows.

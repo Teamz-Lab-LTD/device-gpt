@@ -43,6 +43,53 @@ object AppOpenAdManager {
     private var lastAdShownTime: Long = 0L
     private var appWentToBackgroundTime: Long = 0L
 
+    // 2026-07-13 revenue fix. AdMob 30d: 18,124 app-open requests, 15,607 FILLED,
+    // 59 shown (0.38%). Fill was never the problem — the app discarded 15,548 paid
+    // ads. Two causes, both fixed here and in Application.onCreate:
+    //
+    //  (1) Application.onCreate called loadAd(applicationContext) unconditionally.
+    //      Android runs onCreate for ANY component wake (WorkManager, widgets,
+    //      the D1 worker), so most requests came from headless processes with no
+    //      Activity — an ad that literally cannot be displayed. Removed there.
+    //
+    //  (2) On a genuine launch the ad arrived AFTER the show attempt: onCreate
+    //      preloaded with NO activity, MainActivity.onStart called
+    //      showAdIfAvailable() while the ad was still downloading (appOpenAd ==
+    //      null -> return), and the "show it when it lands" path was unreachable
+    //      because pendingActivityRef was never set. The cached ad then sat unshown
+    //      until it expired — and with 7% D1 retention, "next session" never came.
+    //      v3.1.11 (b971c61) DELETED the load-with-activity path to cut request
+    //      volume; that killed the shows and did not even cut requests (still
+    //      ~4.2k/wk) because cause (1) was the real source.
+    //
+    // The load-with-activity path is restored, but ONLY from a real Activity, and
+    // the auto-show is bounded: if the ad lands after the user has already been
+    // looking at content for AUTO_SHOW_WINDOW_MS, we cache it for the next launch
+    // instead of slamming a fullscreen ad over their session.
+    private const val AUTO_SHOW_WINDOW_MS = 6_000L
+    @Volatile private var pendingShowRequestedAtMs: Long = 0L
+    @Volatile private var pendingIsColdStart: Boolean = false
+
+    /**
+     * Pure decision for "the ad just finished loading — is it still OK to show it?".
+     * Extracted so it is unit-testable without the AdMob SDK, an Activity, or a device.
+     *
+     * @param requestedAtMs when the user's launch asked for an ad (0 = nobody is waiting)
+     * @param loadedAtMs    when the ad actually arrived
+     */
+    @JvmStatic
+    @androidx.annotation.VisibleForTesting
+    fun shouldAutoShowOnLoad(
+        requestedAtMs: Long,
+        loadedAtMs: Long,
+        windowMs: Long = AUTO_SHOW_WINDOW_MS,
+    ): Boolean {
+        if (requestedAtMs <= 0L) return false          // no launch is waiting on this ad
+        val waited = loadedAtMs - requestedAtMs
+        if (waited < 0L) return false                  // clock went backwards
+        return waited <= windowMs                      // too late = don't interrupt the user
+    }
+
     /**
      * v3.1.11 W1 — call from Application.onCreate to reset the per-session load cap.
      * The object is a process singleton so counters survive across user sessions
@@ -54,8 +101,15 @@ object AppOpenAdManager {
         android.util.Log.d(TAG, "resetSessionCounters() - per-session load cap reset")
     }
 
-    fun loadAd(context: Context, activity: Activity? = null) {
+    fun loadAd(context: Context, activity: Activity? = null, isColdStart: Boolean = false) {
         android.util.Log.d(TAG, "loadAd() called - isLoading: $isLoading, appOpenAd: ${appOpenAd != null}, attempts: $loadAttemptsThisSession")
+
+        // An Activity means a real launch is waiting on this ad — record when, so the
+        // onSuccess handler can decide whether it arrived in time to be shown.
+        if (activity != null) {
+            pendingShowRequestedAtMs = System.currentTimeMillis()
+            pendingIsColdStart = isColdStart
+        }
 
         if (isLoading || appOpenAd != null) {
             android.util.Log.d(TAG, "loadAd() - Skipping: already loading or ad exists")
@@ -112,19 +166,24 @@ object AppOpenAdManager {
                     )
                     android.util.Log.d(TAG, "loadAd() - Revenue tracking listener set")
                     
-                    // If we have a pending activity, show the ad automatically
+                    // A launch is waiting on this ad — show it, provided it arrived
+                    // fast enough that the user hasn't already settled into the app.
                     val pendingActivity = pendingActivityRef?.get()
-                    if (pendingActivity != null && !pendingActivity.isFinishing && !pendingActivity.isDestroyed) {
+                    val inTime = shouldAutoShowOnLoad(pendingShowRequestedAtMs, System.currentTimeMillis())
+                    val coldStart = pendingIsColdStart
+                    if (pendingActivity != null && !pendingActivity.isFinishing && !pendingActivity.isDestroyed && inTime) {
                         android.util.Log.d(TAG, "loadAd() - Auto-showing ad for pending activity: ${pendingActivity.javaClass.simpleName}")
-                        // Clear pending activity first to avoid showing multiple times
                         pendingActivityRef = null
-                        // Show ad on main thread
+                        pendingShowRequestedAtMs = 0L
                         android.os.Handler(android.os.Looper.getMainLooper()).post {
-                            showAdIfAvailable(pendingActivity)
+                            showAdIfAvailable(pendingActivity, isColdStart = coldStart)
                         }
                     } else {
-                        android.util.Log.d(TAG, "loadAd() - No valid pending activity, ad will be shown on next showAdIfAvailable() call")
+                        // Cached, not discarded: the next launch's showAdIfAvailable()
+                        // finds it already in memory and shows it immediately.
+                        android.util.Log.d(TAG, "loadAd() - Not auto-showing (inTime=$inTime, activity=${pendingActivity != null}); ad cached for next launch")
                         pendingActivityRef = null
+                        pendingShowRequestedAtMs = 0L
                     }
                 },
                 onFailure = { error ->
@@ -206,12 +265,22 @@ object AppOpenAdManager {
             }
         }
 
-        // v3.1.11 W1 ad-pipeline fix — DELETED the "no ad available -> preload with
-        // activity" path. It was the third internal preload site contributing to the
-        // 5148 weekly request volume. If no ad is cached, the user sees nothing this
-        // session; the next session's cold-start will preload one fresh.
+        // 2026-07-13 revenue fix — RESTORED the "no ad cached -> load with activity"
+        // path that v3.1.11 (b971c61) deleted.
+        //
+        // Deleting it assumed "the next session's cold-start will preload one fresh".
+        // That assumption is false: D1 retention is 7%, so for 93% of users there IS
+        // no next session. The ad was requested, filled, billed to AdMob's auction —
+        // and never shown. 15,607 filled / 59 shown.
+        //
+        // Passing `activity` sets pendingActivityRef, so the onSuccess handler above
+        // shows the ad the moment it lands (bounded by AUTO_SHOW_WINDOW_MS). The
+        // request-side throttles (MIN_LOAD_INTERVAL_MS + per-session cap) still apply,
+        // and this path is only reachable from a real Activity — never from a headless
+        // background wake.
         if (appOpenAd == null) {
-            android.util.Log.d(TAG, "showAdIfAvailable() - ⚠️ Skipping: No ad available to show (will load on next cold-start)")
+            android.util.Log.d(TAG, "showAdIfAvailable() - No ad cached; loading with activity so it can auto-show on arrival")
+            loadAd(activity, activity, isColdStart)
             return
         }
 
