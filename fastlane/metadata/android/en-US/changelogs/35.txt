@@ -1,7 +1,5 @@
 v3.1.16 — Honest app power reporting
 
-- "App Power Monitor" is now "App Screen Time". Android does not report exact battery use per app, so we now show what we can actually measure: how long you use each app. No more per-app battery percentages.
-- Device power draw in watts and the component breakdown (display, cellular, RAM, Wi-Fi) are unchanged — those are real measurements.
-- Fixed: the day-after "overnight battery drain" reminder sometimes never arrived.
-
-Thanks for using DeviceGPT. Your scans always stay on your device.
+- "App Power Monitor" is now "App Screen Time". Android does not report exact battery use per app, so we now show what we can really measure: how long you use each app. No more per-app battery percentages.
+- Device power in watts and the component breakdown (display, cellular, RAM, Wi-Fi) are unchanged — those are real measurements.
+- Fixed: the day-after overnight battery reminder sometimes never arrived.
