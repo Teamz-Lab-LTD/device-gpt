@@ -11,9 +11,10 @@ After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, D
 🔋 AI Battery Health — What Android Doesn't Show
 Android has no built-in battery health screen. DeviceGPT fills the gap:
 • Battery health status, temperature, degradation signals
-• Power draw in watts per app, per hour (real physics: P = V × I)
+• Live device power draw in watts (real physics: P = V × I)
+• Component breakdown: display, cellular, RAM, Wi-Fi
+• App screen time — see which apps you use most (Android does not report per-app battery use, so this ranks screen time, not battery)
 • Charging behavior and cycle tracking
-• Which apps drain your battery the most
 • Battery tester for fast vs slow charge comparison
 • Export battery data to CSV or Ask AI for explanation
 

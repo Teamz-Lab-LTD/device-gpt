@@ -11,9 +11,7 @@ Hər skandan sonra AI-dan Soruş düyməsinə basaraq ChatGPT, Gemini, Claude, D
 🔋 AI Batareya Sağlamlığı — Android-in göstərmədikləri
 Android-də quraşdırılmış batareya sağlamlığı ekranı yoxdur. DeviceGPT bu boşluğu doldurur:
 • Batareya sağlamlığı, temperatur və köhnəlmə siqnalları bir ekranda
-• Saatlıq tətbiq başına real vatt istehlakı (P = V × I, təxmin deyil)
 • Şarj davranışı və dövr izləməsi
-• Hansı tətbiqlərin batareyanı ən çox yedüyü
 • Sürətli vs yavaş şarj müqayisəsi üçün batareya testeri
 • Batareya məlumatlarını CSV-yə ixrac və ya AI-dan izahat
 

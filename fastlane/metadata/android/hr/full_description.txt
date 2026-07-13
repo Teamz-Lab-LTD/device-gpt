@@ -11,9 +11,7 @@ Nakon svakog skeniranja, pritisnite Pitaj AI za trenutna rješenja preko ChatGPT
 🔋 AI Zdravlje Baterije — Što Android Skriva
 Android nema ugrađen zaslon zdravlja baterije. DeviceGPT popunjava tu prazninu:
 • Stanje zdravlja baterije, temperatura i signali trošenja na jednom zaslonu
-• Potrošnja u stvarnim vatima po aplikaciji, na sat (P = V × I, ne procjena)
 • Ponašanje pri punjenju i praćenje ciklusa kroz tjedne
-• Koje aplikacije stvarno troše vašu bateriju
 • Tester baterije za usporedbu brzog i sporog punjenja
 • Izvezite podatke baterije u CSV ili pitajte AI za objašnjenje
 

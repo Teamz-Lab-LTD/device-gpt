@@ -257,12 +257,17 @@ enum class LeaderboardCategory(
         "Which phones run smoothly without lag?",
         "These phones never slow down or stutter!"
     ),
+    // Display copy only — the "app_power_monitoring" id is the Firestore collection
+    // key and must NOT change or existing leaderboard entries orphan. Android does not
+    // expose per-app battery draw to third-party apps, so this ranks screen time, not
+    // battery. The old copy ("See which apps drain your battery the most!") was rejected
+    // under Google Play's Deceptive Behavior policy on 2026-07-12.
     APP_POWER_MONITORING(
         "app_power_monitoring",
-        "App Power Ranking",
+        "App Screen Time",
         "📱",
-        "Which apps consume the most power?",
-        "See which apps drain your battery the most!"
+        "Which apps get the most screen time?",
+        "See which apps you use the most!"
     ),
     BEST_DEVICE(
         "best_device",

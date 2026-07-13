@@ -107,13 +107,13 @@
     <string name="device_sleep_tracker">Device Sleep Tracker</string>
     
     <!-- App Power Monitor -->
-    <string name="app_power_monitor">App Power Monitor</string>
+    <string name="app_power_monitor">App Screen Time</string>
     <string name="start_monitoring">Start Monitoring</string>
     <string name="stop_monitoring">Stop Monitoring</string>
-    <string name="app_power_consumption">App Power Consumption</string>
-    <string name="battery_impact_per_hour">Battery Impact: %1$s%%/hour</string>
+    <string name="app_power_consumption">App Screen Time</string>
+    <string name="battery_impact_per_hour">Screen time share: %1$s%%</string>
     <string name="usage_stats_permission_required">Usage Stats permission required</string>
-    <string name="no_app_data">No app power data available</string>
+    <string name="no_app_data">No app usage data available</string>
     
     <!-- Health Score -->
     <string name="scan_device_health">Scan Device Health</string>

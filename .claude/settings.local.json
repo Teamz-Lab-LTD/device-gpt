@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew testDebugUnitTest 2>&1 | tail -60)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew testDebugUnitTest 2>&1 | tail -20)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew assembleRelease 2>&1 | tail -15)",
+      "Bash(adb devices:*)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew connectedDebugAndroidTest 2>&1 | tee /tmp/android_test_output.txt | tail -80)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && for f in app/src/androidTest/java/com/teamz/lab/debugger/**/*.kt; do head -15 \"$f\" | grep -L 'Assert' > /dev/null 2>&1 && echo \"NO Assert import: $f\"; done; grep -rL 'import.*Assert' app/src/androidTest/java/com/teamz/lab/debugger/ --include=\"*.kt\" 2>/dev/null | while read f; do grep -l 'assertTrue\\\\|assertFalse\\\\|assertNotNull\\\\|assertEquals' \"$f\" 2>/dev/null; done)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew connectedDebugAndroidTest 2>&1 | tee /tmp/android_test_output2.txt | tail -80)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && python3 -c \"\nimport xml.etree.ElementTree as ET\ntree = ET.parse\\('app/build/outputs/androidTest-results/connected/debug/TEST-Pixel 8a - 16-_app-.xml'\\)\nroot = tree.getroot\\(\\)\nfailures = []\nfor tc in root.iter\\('testcase'\\):\n    fail = tc.find\\('failure'\\)\n    if fail is not None:\n        classname = tc.get\\('classname',''\\)\n        name = tc.get\\('name',''\\)\n        msg = fail.get\\('message',''\\)[:120]\n        failures.append\\(\\(classname, name, msg\\)\\)\nfor c,n,m in sorted\\(failures\\):\n    print\\(f'{c.split\\(\\\\\".\\\\\"\\)[-1]}::{n}'\\)\n    print\\(f'  -> {m}'\\)\n    print\\(\\)\nprint\\(f'Total failures: {len\\(failures\\)}'\\)\n\")",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew compileDebugAndroidTestKotlin 2>&1 | tail -30)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && ./gradlew connectedDebugAndroidTest 2>&1 | tee /tmp/android_test_cycle2.txt | tail -60)",
+      "Bash(cd \"/Users/mdgolamkibriaemon/Projects/Teamz Lab Projects/teamz-projects/debugger\" && python3 -c \"\nimport xml.etree.ElementTree as ET\ntree = ET.parse\\('app/build/outputs/androidTest-results/connected/debug/TEST-Pixel 8a - 16-_app-.xml'\\)\nroot = tree.getroot\\(\\)\nfailures = {}\nfor tc in root.iter\\('testcase'\\):\n    fail = tc.find\\('failure'\\)\n    if fail is not None:\n        classname = tc.get\\('classname',''\\).split\\('.'\\)[-1]\n        name = tc.get\\('name',''\\)\n        msg = \\(fail.text or ''\\)[:200].strip\\(\\).split\\('\\\\n'\\)[0]\n        if classname not in failures:\n            failures[classname] = []\n        failures[classname].append\\(\\(name, msg\\)\\)\n\nfor cls in sorted\\(failures\\):\n    print\\(f'=== {cls} \\({len\\(failures[cls]\\)} failures\\) ==='\\)\n    for n, m in failures[cls]:\n        print\\(f'  {n}'\\)\n        print\\(f'    {m[:120]}'\\)\n    print\\(\\)\nprint\\(f'Total: {sum\\(len\\(v\\) for v in failures.values\\(\\)\\)} failures'\\)\n\")"
+    ]
+  }
+}

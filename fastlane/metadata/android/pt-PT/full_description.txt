@@ -11,9 +11,7 @@ Depois de cada análise, carrega em Perguntar à IA para obteres soluções imed
 🔋 Saúde da Bateria com IA — O que o Android não mostra
 O Android não tem um ecrã integrado para a saúde da bateria. O DeviceGPT preenche essa lacuna:
 • Estado da saúde da bateria, temperatura e sinais de degradação
-• Consumo em watts reais por app, por hora (P = V × I, sem estimativas)
 • Comportamento de carregamento e contagem de ciclos
-• Quais apps gastam mais bateria
 • Testador de bateria para comparar carregamento rápido vs lento
 • Exporta dados para CSV ou pergunta à IA
 

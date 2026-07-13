@@ -11,9 +11,7 @@ Jokaisen skannauksen jälkeen napauta Kysy AI:lta saadaksesi välittömiä ratka
 🔋 AI Akun Terveys — Mitä Android piilottaa
 Androidissa ei ole sisäänrakennettua akun terveys -näyttöä. DeviceGPT täyttää tämän aukon:
 • Akun terveystila, lämpötila ja kulumissignaalit yhdellä näytöllä
-• Kulutus oikeina watteina sovellusta kohti, tuntia kohti (P = V × I, ei arviota)
 • Latauskäyttäytyminen ja syklien seuranta viikkojen aikana
-• Mitkä sovellukset todella tyhjentävät akkuasi
 • Akkutesteri nopean ja hitaan latauksen vertailuun
 • Vie akkutiedot CSV:hen tai kysy AI:lta selitystä
 

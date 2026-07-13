@@ -6275,18 +6275,21 @@ private fun AppPowerMonitorSection(
                             val apps = appPowerSnapshot?.apps ?: emptyList()
                             val appsText = if (apps.isNotEmpty()) {
                                 apps.take(10).joinToString("\n") { app ->
-                                    "${app.appName}: ${"%.2f".format(app.batteryImpact)}%/hour (${PowerConsumptionAggregator.formatPower(app.powerConsumption)})"
+                                    "${app.appName}: ${"%.0f".format(app.foregroundTime / 60000.0)} min on screen"
                                 } + if (apps.size > 10) "\n... and ${apps.size - 10} more apps" else ""
                             } else {
-                                "No app data available yet. Start monitoring to see app power consumption."
+                                "No app data available yet. Start monitoring to see app screen time."
                             }
                             val content = """
-App Power Monitor - Overall Summary:
+App Screen Time - Overall Summary:
 $appsText
 
 Total Apps Monitored: ${apps.size}
+
+Note: Android does not report per-app battery use to third-party apps, so this is
+screen time only — not each app's battery consumption.
                             """.trimIndent()
-                            onItemAIClick("App Power Monitor", content)
+                            onItemAIClick("App Screen Time", content)
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
@@ -6305,7 +6308,7 @@ Total Apps Monitored: ${apps.size}
             // Description with benefits
             Column {
                 Text(
-                    text = "Monitor power consumption per app in real-time. Identify battery-draining apps.",
+                    text = "See which apps you use most. Android does not report exact battery use per app, so this ranks apps by screen time.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
@@ -6502,22 +6505,29 @@ Total Apps Monitored: ${apps.size}
                                                             (app.backgroundTime.toDouble() / app.totalUsageTime) * 100.0
                                                         } else 0.0
                                                         
+                                                        // Report only what UsageStats actually measures. The old
+                                                        // prompt fed the model fabricated per-app watts, a
+                                                        // "battery impact %/hour" and a "time to drain full
+                                                        // battery" — all derived from screen-time share, none
+                                                        // measured. Feeding those to an LLM produced confident
+                                                        // nonsense on top of a false premise.
+                                                        val usageShare = if (app.totalUsageTime > 0) {
+                                                            ((app.foregroundTime + app.backgroundTime).toDouble() /
+                                                                app.totalUsageTime) * 100.0
+                                                        } else 0.0
                                                         val content = """
 App: ${app.appName}
 Package: ${app.packageName}
 
-Power Consumption: ${PowerConsumptionAggregator.formatPower(app.powerConsumption)}
-Battery Impact: ${"%.2f".format(app.batteryImpact)}% per hour
-
-Usage Statistics:
-- Total Usage Time: ${"%.2f".format(totalHours)} hours
+Screen time (from Android UsageStats):
 - Foreground Time: ${"%.2f".format(fgHours)} hours
-- Background Time: ${"%.2f".format(bgHours)} hours
+- Background Visible Time: ${"%.2f".format(bgHours)} hours
 - Background Ratio: ${"%.1f".format(bgRatio)}%
+- Share of total app usage: ${"%.1f".format(usageShare)}%
 
-Efficiency:
-- Power per hour: ${"%.3f".format(app.powerConsumption / totalHours.coerceAtLeast(0.001))} W/hour
-- Estimated time to drain full battery: ${if (app.batteryImpact > 0) "${"%.1f".format(100.0 / app.batteryImpact)} hours" else "N/A"}
+Note: Android does not expose real per-app battery draw to third-party apps,
+so this is usage time only — not a measurement of this app's battery use.
+Please answer about usage habits, not battery attribution.
                                                         """.trimIndent()
                                                         
                                                         AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
@@ -6540,41 +6550,57 @@ Efficiency:
                                         
                                         Spacer(modifier = Modifier.height(12.dp))
                                         
-                                        // Main battery drain info (most important for users)
-                                        val batteryDrain = app.batteryImpact
-                                        val drainSeverity = when {
-                                            batteryDrain > 2.0 -> "High battery usage" // Red
-                                            batteryDrain > 0.5 -> "Average battery usage" // Yellow
-                                            else -> "Low battery usage" // Green
+                                        // Screen-time share. Android does not expose real per-app
+                                        // battery draw to third-party apps (BatteryStats is system-only),
+                                        // so we report what UsageStats actually gives us: how long the app
+                                        // was used, and its share of total app usage. Previously this row
+                                        // rendered "Drains X% per hour", which Google rejected under the
+                                        // Deceptive Behavior policy (2026-07-12) — that figure was only
+                                        // screen-time share x system power / battery capacity, never a
+                                        // measurement of the app's actual battery use.
+                                        val appActiveMs = app.foregroundTime + app.backgroundTime
+                                        val usageShare = if (app.totalUsageTime > 0) {
+                                            (appActiveMs.toDouble() / app.totalUsageTime) * 100.0
+                                        } else 0.0
+                                        val usageSeverity = when {
+                                            usageShare > 20.0 -> "Heavy use"
+                                            usageShare > 5.0 -> "Moderate use"
+                                            else -> "Light use"
                                         }
-                                        val drainColor = when {
-                                            batteryDrain > 2.0 -> MaterialTheme.colorScheme.error
-                                            batteryDrain > 0.5 -> MaterialTheme.colorScheme.tertiary
-                                            else -> headerTextColor // Use text color instead of neon green
+                                        val usageColor = when {
+                                            usageShare > 20.0 -> MaterialTheme.colorScheme.error
+                                            usageShare > 5.0 -> MaterialTheme.colorScheme.tertiary
+                                            else -> headerTextColor
                                         }
-                                        
+                                        val fgMinutes = app.foregroundTime / (1000.0 * 60.0)
+                                        val screenTimeLabel = if (fgMinutes >= 60) {
+                                            "${"%.1f".format(fgMinutes / 60.0)} h on screen"
+                                        } else {
+                                            "${fgMinutes.toInt()} min on screen"
+                                        }
+
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.BatteryAlert,
+                                                imageVector = Icons.Default.Schedule,
                                                 contentDescription = null,
-                                                tint = drainColor,
+                                                tint = usageColor,
                                                 modifier = Modifier.size(18.dp)
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    text = "Drains ${"%.2f".format(batteryDrain)}% per hour",
+                                                    text = "$screenTimeLabel · ${"%.1f".format(usageShare)}% of app usage",
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     color = headerTextColor,
                                                     fontWeight = FontWeight.Medium
                                                 )
                                                 Text(
-                                                    text = drainSeverity,
+                                                    text = usageSeverity,
                                                     style = MaterialTheme.typography.bodySmall,
-                                                    color = drainColor,
+                                                    color = usageColor,
                                                     fontSize = 11.sp
                                                 )
                                             }
@@ -6906,28 +6932,29 @@ Efficiency:
             .toList()
         
         CsvPreviewDialog(
-            title = "App Power Consumption Data",
-            headers = listOf("Timestamp", "Package Name", "App Name", "Power (W)", "Foreground Time (ms)", "Background Time (ms)", "Total Usage (ms)", "Battery Impact (%/hour)"),
+            title = "App Screen Time Data",
+            headers = listOf("Timestamp", "Package Name", "App Name", "Usage Share (%)", "Foreground Time (ms)", "Background Time (ms)", "Total Usage (ms)"),
             headerDescriptions = mapOf(
-                "Timestamp" to "Exact date and time when this app power measurement was recorded.",
+                "Timestamp" to "Exact date and time when this usage snapshot was recorded.",
                 "Package Name" to "Android package name of the app (e.g., com.example.app).",
                 "App Name" to "Display name of the app as shown to users.",
-                "Power (W)" to "Power consumption of this app in Watts. Calculated based on usage time ratio.",
+                "Usage Share (%)" to "This app's active time as a share of all app usage on the device. Android does not expose real per-app battery draw to third-party apps, so this is screen time, not battery use.",
                 "Foreground Time (ms)" to "Time the app was in foreground (visible to user) in milliseconds.",
-                "Background Time (ms)" to "Time the app was running in background in milliseconds.",
-                "Total Usage (ms)" to "Total time the app was active (foreground + background) in milliseconds.",
-                "Battery Impact (%/hour)" to "Estimated battery percentage consumed per hour if this app continues at current power consumption."
+                "Background Time (ms)" to "Time the app was visible in the background in milliseconds.",
+                "Total Usage (ms)" to "Total app usage across the device over the sampled window, in milliseconds."
             ),
             rows = allApps.map { app ->
+                val share = if (app.totalUsageTime > 0) {
+                    ((app.foregroundTime + app.backgroundTime).toDouble() / app.totalUsageTime) * 100.0
+                } else 0.0
                 listOf(
                     PowerConsumptionAggregator.formatTimestamp(app.timestamp),
                     app.packageName,
                     app.appName,
-                    PowerConsumptionAggregator.formatPower(app.powerConsumption),
+                    "%.1f".format(share),
                     app.foregroundTime.toString(),
                     app.backgroundTime.toString(),
-                    app.totalUsageTime.toString(),
-                    "%.2f".format(app.batteryImpact)
+                    app.totalUsageTime.toString()
                 )
             },
             onDismiss = { viewModel.setAppPowerCsvDialogVisible(false) },
@@ -6969,7 +6996,7 @@ Efficiency:
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share App Power Data"))
+                            context.startActivity(Intent.createChooser(shareIntent, "Share App Screen Time"))
                         }
                     }
                 } else {
@@ -7005,7 +7032,7 @@ Efficiency:
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share App Power Data"))
+                        context.startActivity(Intent.createChooser(shareIntent, "Share App Screen Time"))
                     }
                 }
             }
@@ -7041,14 +7068,14 @@ private fun shareWithAIApp(
         } else 0.0
         
         val appData = """
-=== APP POWER CONSUMPTION DATA ===
+=== APP SCREEN TIME DATA ===
 
 App Name: ${app.appName}
 Package: ${app.packageName}
 Timestamp: ${PowerConsumptionAggregator.formatTimestamp(app.timestamp)}
 
-Power Consumption: ${PowerConsumptionAggregator.formatPower(app.powerConsumption)}
-Battery Impact: ${"%.2f".format(app.batteryImpact)}% per hour
+Note: Android does not expose real per-app battery draw to third-party apps,
+so the figures below are screen-time only — not this app's battery use.
 
 Usage Statistics:
 - Total Usage Time: ${"%.2f".format(totalHours)} hours
@@ -7123,19 +7150,20 @@ private fun generateAppOptimizationPrompt(
     
     return if (promptMode == PromptMode.Simple) {
         """
-You are my friendly phone coach. I'm using **$appName** to understand why **"${app.appName}"** is draining battery. I’m not technical, so please:
+You are my friendly phone coach. I'm using **$appName** to understand how I use **"${app.appName}"** and whether its background activity is heavy. I’m not technical, so please:
+
+**Important**
+Android does not tell third-party apps how much battery a specific app used. The numbers below are screen time and background activity from Android UsageStats — not a measurement of this app's battery use. Do not claim to know this app's battery drain. Talk about usage habits and background activity instead.
 
 **How to reply**
-1. Start with a short vibe check (e.g., “Battery impact is low, nothing urgent”).
-2. List up to 3 simple reasons (with analogies) why this app uses battery.
-3. Give **three checkbox-style quick actions** (✅) with exact steps (e.g., Settings > Apps > …). Include at least one action for background limits or battery saver when applicable.
+1. Start with a short vibe check (e.g., “Your usage looks light, nothing unusual”).
+2. List up to 3 simple observations (with analogies) about how I use this app.
+3. Give **three checkbox-style quick actions** (✅) with exact steps (e.g., Settings > Apps > …). Include at least one action for background limits when background activity looks heavy.
 4. Say whether it’s safe to keep running, limit, or uninstall. Mention risks if I force-stop it.
 5. End with one encouraging tip to keep my phone smooth.
 
-**Data from DeviceGPT**
-- Battery impact: ${"%.2f".format(app.batteryImpact)}% per hour (${efficiencyLabel})
-- Power draw: ${PowerConsumptionAggregator.formatPower(app.powerConsumption)}
-- Active time: ${"%.1f".format(totalHours)} h${if (bgRatio > 20) " • ${"%.0f".format(bgRatio)}% in background" else ""}
+**Data from DeviceGPT (screen time only)**
+- Time on screen: ${"%.1f".format(totalHours)} h${if (bgRatio > 20) " • ${"%.0f".format(bgRatio)}% in background" else ""}
 - Foreground service time: ${"%.1f".format(app.foregroundServiceTime / (1000.0 * 60.0 * 60.0))} h
 - Last opened: ${if (app.lastTimeUsed > 0) java.text.SimpleDateFormat("MMM d, h:mm a", java.util.Locale.getDefault()).format(java.util.Date(app.lastTimeUsed)) else "unknown"}
 
@@ -7143,25 +7171,25 @@ Speak in plain language, avoid jargon, and assume I will follow your steps exact
 """.trimIndent()
     } else {
         """
-Act as an **Android Performance & Battery Expert**. Analyze **"${app.appName}"** with the DeviceGPT telemetry below and deliver a structured optimization brief.
+Act as an **Android Usage & Background Activity Expert**. Analyze **"${app.appName}"** with the DeviceGPT usage data below and deliver a structured brief.
+
+**Important constraint**
+Android does not expose per-app battery draw to third-party apps (BatteryStats is system-only). The data below is screen time and background activity from UsageStats. Do NOT state or estimate how much battery this app consumed, and do not invent a battery percentage. Base every claim on usage time and background activity only.
 
 **Required sections**
-1. **Snapshot** – Bullet summary with Battery Impact Score (0–10), risk level (Low/Med/High), and urgency.
-2. **Why it drains** – Table with columns *Reason | Evidence from data | Impact*. Max 3 rows.
+1. **Snapshot** – Bullet summary with a Usage Level (Light/Moderate/Heavy) and whether background activity looks unusual.
+2. **What the usage shows** – Table with columns *Observation | Evidence from data | Why it matters*. Max 3 rows.
 3. **Action plan** – Divide steps into *Immediate (today)*, *Routine (daily/weekly)*, *Advanced*. Each step must include Android path or exact button names.
-4. **Automation & monitoring** – How to automate savings (battery saver, routines) and what metric to re-check in DeviceGPT.
+4. **Automation & monitoring** – How to limit background activity and what to re-check in DeviceGPT.
 5. **When to limit or replace** – Explain when it’s safe to restrict/force-stop/uninstall and suggest a lighter alternative if relevant.
 
 **Rules**
-- Reference actual numbers from the dataset (battery impact, usage hours, background %, foreground-service time, efficiency score, last used date).
+- Reference actual numbers from the dataset (usage hours, background %, foreground-service time, last used date).
 - Translate technical terms (e.g., “foreground service = keeps running even when the app isn’t open”).
 - Suggest no more than 6 total actions; prioritize highest impact.
 - Mention privacy/safety considerations if the app runs continuously or hasn’t been opened recently.
 
-**DeviceGPT data**
-- Battery impact: ${"%.2f".format(app.batteryImpact)}% per hour
-- Power consumption: ${PowerConsumptionAggregator.formatPower(app.powerConsumption)}
-- Efficiency score: ${"%.0f".format(efficiencyScore)}/100 (${efficiencyLabel})
+**DeviceGPT data (screen time only — not battery attribution)**
 - Usage: ${"%.1f".format(totalHours)} h total (${String.format("%.0f", bgRatio)}% background)
 - Foreground service time: ${"%.1f".format(app.foregroundServiceTime / (1000.0 * 60.0 * 60.0))} h
 - Last used: ${if (app.lastTimeUsed > 0) java.text.SimpleDateFormat("MMM d, h:mm a", java.util.Locale.getDefault()).format(java.util.Date(app.lastTimeUsed)) else "unknown"}

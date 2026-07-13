@@ -16,7 +16,10 @@ import com.teamz.lab.debugger.utils.hasUsageStatsPermission
 /**
  * App Power Consumption Utilities
  * 
- * Measures power consumption per app using UsageStatsManager and BatteryManager.
+ * Reports per-app SCREEN TIME using UsageStatsManager. Android does not expose real
+ * per-app battery draw to third-party apps (BatteryStats is system-only), so this must
+ * never be presented as an app's battery consumption. See the Deceptive Behavior
+ * rejection on 2026-07-12.
  * 
  * Methodology:
  * - Uses UsageStatsManager to get app usage time

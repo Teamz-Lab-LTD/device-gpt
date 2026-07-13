@@ -11,9 +11,7 @@ Après chaque scan, tape sur Demander à l'IA pour obtenir des solutions instant
 🔋 Santé de Batterie IA — Ce qu'Android cache
 Android n'a pas d'écran intégré pour la santé de batterie. DeviceGPT comble cette lacune :
 • État de santé de batterie, température et signaux d'usure sur un seul écran
-• Consommation en watts réels par app, par heure (P = V × I, pas d'estimation)
 • Comportement de charge et suivi des cycles dans le temps
-• Quelles apps drainent vraiment ta batterie
 • Testeur de batterie pour comparer charge rapide vs lente
 • Exporte les données de batterie en CSV ou demande une explication à l'IA
 

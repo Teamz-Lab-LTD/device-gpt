@@ -86,13 +86,19 @@ class D1OvernightDrainWorkerTest {
         // Schedule-time RC gate is a BUG: bundled APK defaults (flag=false) are read on
         // fresh install BEFORE the network fetch completes (~5 min). A schedule-time
         // gate would lose the D1 lever for every user installing before RC fetches.
-        // Worker re-checks the flag at fire time (20h later) — by then RC has fetched
-        // the latest server value, and the owner can also flip mid-flight to kill push.
-        val checks = Regex("RemoteConfigUtils\\.isD1OvernightDrainEnabled\\(\\)").findAll(workerSrc).count()
+        // So the gate lives at fire time.
+        //
+        // BUT a bare getBoolean() at fire time was ALSO broken: the worker runs 20h later
+        // in a cold BACKGROUND process where RC has not fetched/activated either, so it
+        // read the bundled default (false) and the push silently never fired. Production
+        // proof (GA4, 28d to 2026-07-11): scheduled = 124 users, pushed = 0. The gate must
+        // therefore AWAIT a bounded fetch+activate before reading the flag.
+        val checks = Regex("RemoteConfigUtils\\.awaitD1OvernightDrainEnabled\\(").findAll(workerSrc).count()
         assertTrue(
-            "Worker must read isD1OvernightDrainEnabled() at LEAST ONCE (at fire time). " +
-                "Found $checks. Zero means no RC gate at all — push fires even when owner " +
-                "has disabled it.",
+            "Worker must gate on awaitD1OvernightDrainEnabled() at LEAST ONCE (at fire time). " +
+                "Found $checks. Zero means either no RC gate at all, or a bare getBoolean() " +
+                "that reads the bundled default (false) in the cold worker process — which is " +
+                "exactly the bug that made pushed=0 for 124 scheduled users.",
             checks >= 1
         )
         // Race-condition regression guard: schedule path must NOT gate on RC.

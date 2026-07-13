@@ -11,9 +11,7 @@ Na elke scan kun je Vraag AI gebruiken voor directe oplossingen via ChatGPT, Gem
 🔋 AI Batterij Gezondheid — Wat Android Verborgen Houdt
 Android heeft geen ingebouwd batterij gezondheidsscherm. DeviceGPT springt in dat gat:
 • Batterijgezondheid, temperatuur en slijtagesignalen in één oogopslag
-• Vermogen in echte watts per app, per uur (P = V × I, geen schatting)
 • Oplaadgedrag en cyclus tracking over weken
-• Welke apps je batterij echt leegtrekken
 • Batterij tester voor snel vs traag opladen vergelijken
 • Exporteer batterijdata naar CSV of Vraag AI om uitleg
 

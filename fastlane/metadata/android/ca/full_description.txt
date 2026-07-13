@@ -11,9 +11,7 @@ Després de cada escaneig, prem Pregunta a la IA per obtenir solucions instantà
 🔋 Salut Bateria IA — El que Android no et mostra
 Android no porta una pantalla integrada de salut de bateria. DeviceGPT cobreix aquest buit:
 • Estat de salut de bateria, temperatura i senyals de degradació
-• Consum en watts reals per app, per hora (P = V × I, sense aproximacions)
 • Comportament de càrrega i seguiment de cicles
-• Quines apps gasten més bateria
 • Provador de bateria per comparar càrrega ràpida i lenta
 • Exporta dades de bateria a CSV o pregunta a la IA
 

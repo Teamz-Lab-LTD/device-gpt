@@ -11,9 +11,7 @@ Minden szkennelés után koppints a Kérdezd az AI-t gombra azonnali megoldások
 🔋 AI Akkumulátor Egészség — Amit az Android elrejt
 Az Androidnak nincs beépített akkumulátor egészség képernyője. A DeviceGPT betölti ezt a hiányt:
 • Akkumulátor egészség állapota, hőmérséklet és kopási jelek egy képernyőn
-• Fogyasztás valós wattban applikációnként, óránként (P = V × I, nem becslés)
 • Töltési viselkedés és ciklus követés hetek alatt
-• Mely alkalmazások merítik valójában az akkumulátort
 • Akkumulátor tesztelő gyors vs lassú töltés összehasonlításhoz
 • Akkumulátor adatok exportálása CSV-be vagy AI magyarázat kérése
 

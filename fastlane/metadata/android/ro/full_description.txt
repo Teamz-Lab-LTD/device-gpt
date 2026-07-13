@@ -11,9 +11,7 @@ După fiecare scanare, apasă Întreabă IA pentru soluții instant prin ChatGPT
 🔋 Sănătate Baterie cu IA — Ce nu îți arată Android
 Android nu are un ecran integrat de sănătate baterie. DeviceGPT umple golul:
 • Stare sănătate baterie, temperatură și semnale de degradare pe un singur ecran
-• Consum în watți reali per aplicație, pe oră (P = V × I, fără aproximări)
 • Comportament încărcare și urmărirea ciclurilor în timp
-• Care aplicații îți consumă cel mai mult bateria
 • Tester baterie pentru comparare încărcare rapidă vs lentă
 • Exportă date baterie în CSV sau întreabă IA pentru explicații
 

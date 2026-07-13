@@ -11,9 +11,7 @@ Pärast iga skaneerimist puudutage Küsi AI-lt, et saada koheseid lahendusi Chat
 🔋 AI Aku Tervis — Mida Android Peidab
 Androidil pole sisseehitatud aku tervise ekraani. DeviceGPT täidab selle lünga:
 • Aku tervise olek, temperatuur ja kulumise märgid ühel ekraanil
-• Tarbimine päris vattides rakenduse kohta, tunni kohta (P = V × I, mitte hinnang)
 • Laadimiskäitumine ja tsüklite jälgimine nädalate jooksul
-• Millised rakendused tõeliselt teie akut tühjendavad
 • Aku tester kiire vs aeglase laadimise võrdluseks
 • Eksportige aku andmed CSV-sse või küsige AI-lt selgitust
 

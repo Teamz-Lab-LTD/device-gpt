@@ -11,9 +11,7 @@ Po každom skene klepnite na Spýtať sa AI a získajte okamžité riešenia cez
 🔋 AI Zdravie Batérie — Čo Android Skrýva
 Android nemá vstavanú obrazovku zdravia batérie. DeviceGPT túto medzeru zapĺňa:
 • Stav zdravia batérie, teplota a signály degradácie na jednej obrazovke
-• Spotreba v skutočných wattoch na aplikáciu, za hodinu (P = V × I, žiadny odhad)
 • Správanie pri nabíjaní a sledovanie cyklov v čase
-• Ktoré aplikácie vám naozaj vybíjajú batériu
 • Tester batérie na porovnanie rýchleho a pomalého nabíjania
 • Export dát batérie do CSV alebo sa spýtajte AI
 

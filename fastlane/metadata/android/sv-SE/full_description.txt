@@ -11,9 +11,7 @@ Efter varje skanning, tryck Fråga AI för omedelbara lösningar via ChatGPT, Ge
 🔋 AI Batterihälsa — Vad Android Inte Visar
 Android har ingen inbyggd skärm för batterihälsa. DeviceGPT fyller det tomrummet:
 • Batterihälsa, temperatur och nedslitningssignaler på en skärm
-• Strömförbrukning i riktiga watt per app, per timme (P = V × I, ingen gissning)
 • Laddningsbeteende och cykelräkning över veckor
-• Vilka appar som verkligen dränerar batteriet
 • Batteri tester för snabb vs långsam laddning
 • Exportera batteridata till CSV eller fråga AI
 

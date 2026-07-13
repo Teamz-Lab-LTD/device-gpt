@@ -11,9 +11,7 @@ Efter hver scanning kan du trykke på Spørg AI for øjeblikkelige løsninger vi
 🔋 AI Batterisundhed — Hvad Android Skjuler
 Android har ingen indbygget skærm til batterisundhed. DeviceGPT lukker hullet:
 • Batterisundhed, temperatur og nedslidningssignaler i ét overblik
-• Strømforbrug i ægte watt pr. app, pr. time (P = V × I, ikke et gæt)
 • Opladningsadfærd og cyklustracking over uger
-• Hvilke apps der virkelig dræner dit batteri
 • Batteri tester til hurtig vs langsom opladningssammenligning
 • Eksporter batteridata til CSV eller spørg AI om forklaring
 

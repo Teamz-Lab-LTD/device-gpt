@@ -1426,7 +1426,7 @@ fun CategoryInfoDialog(
                                 LeaderboardCategory.COMPONENT_OPTIMIZATION -> "Based on balanced power distribution across CPU, GPU, Display, and Network components."
                                 LeaderboardCategory.THERMAL_EFFICIENCY -> "Based on device temperature during heavy usage. Cooler devices = better rank."
                                 LeaderboardCategory.PERFORMANCE_CONSISTENCY -> "Based on frame rate stability and absence of lag. Smoother performance = better rank."
-                                LeaderboardCategory.APP_POWER_MONITORING -> "Based on per-app battery impact (%/hour). Shows which apps consume the most power."
+                                LeaderboardCategory.APP_POWER_MONITORING -> "Based on screen time from Android UsageStats. Android does not expose per-app battery draw to third-party apps, so this ranks usage, not battery."
                                 LeaderboardCategory.BEST_DEVICE -> "Based on composite score across all categories using market-research-based weights. Power Efficiency (22%), CPU Performance (18%), Thermal Efficiency (15%), Performance Consistency (14%), Health Score (12%), Component Optimization (8%), Power Trend (5%), Display Efficiency (4%), Camera Efficiency (2%)."
                             },
                             style = MaterialTheme.typography.bodySmall,
@@ -2795,7 +2795,7 @@ fun EmptyAppPowerLeaderboardCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No app power data yet",
+                text = "No app screen time data yet",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -2808,7 +2808,7 @@ fun EmptyAppPowerLeaderboardCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "💡 Enable app power monitoring to contribute data",
+                text = "💡 Enable App Screen Time to contribute data",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
