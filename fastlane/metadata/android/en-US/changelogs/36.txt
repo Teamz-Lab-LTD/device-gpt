@@ -1,6 +1,5 @@
-v3.1.17 — Ad pipeline fix + honest app power
+v3.1.17 — Ad fixes + honest app power
 
-- Fixed: the app was requesting ads it could never display, including from background tasks with no screen. Fewer wasted requests, and the launch ad now actually appears.
-- "App Power Monitor" is now "App Screen Time". Android does not report exact battery use per app, so we show what we can really measure: how long you use each app.
-- Device power in watts and the component breakdown are unchanged — those are real measurements.
+- Fixed: the app requested ads it could never show, including from background tasks with no screen. Far fewer wasted requests, and the launch ad now actually appears.
+- "App Power Monitor" is now "App Screen Time". Android does not report exact battery use per app, so we show what we can really measure.
 - Fixed: the day-after overnight battery reminder sometimes never arrived.
