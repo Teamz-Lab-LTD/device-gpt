@@ -47,6 +47,7 @@
     <!-- Tabs -->
     <string name="device_info">Device Info</string>
     <string name="network_info">Network Info</string>
+    <string name="tab_camera">Camera</string>
     <string name="health">Health</string>
     <string name="power">Power</string>
     

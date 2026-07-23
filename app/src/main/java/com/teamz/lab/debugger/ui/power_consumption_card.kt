@@ -1938,10 +1938,19 @@ private fun CameraPowerTestSection(
             }
     }
     
+    // Check camera permission - using PermissionManager
+    var hasCameraPermission by remember {
+        mutableStateOf(PermissionManager.hasCameraPermission(context))
+    }
+
     // Camera permission launcher
+    // BUG FIX (2026-07-24): hasCameraPermission was `remember { ... }` with no key, so it never
+    // recomputed after the user granted permission — the preview stayed hidden until the whole
+    // composition was torn down and rebuilt. Update the state directly from the launcher result.
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        hasCameraPermission = isGranted
         if (isGranted) {
             // Permission granted, show success message
             showPermissionDialog = true
@@ -1949,11 +1958,6 @@ private fun CameraPowerTestSection(
             // Permission denied, show error message
             showPermissionDialog = true
         }
-    }
-    
-    // Check camera permission - using PermissionManager
-    val hasCameraPermission = remember {
-        PermissionManager.hasCameraPermission(context)
     }
     
     // Detect dark mode

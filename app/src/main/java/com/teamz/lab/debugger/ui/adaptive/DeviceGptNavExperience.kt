@@ -176,6 +176,7 @@ private fun logMainTabSelectionAnalytics(tabType: TabType) {
         TabType.POWER -> AnalyticsUtils.logEvent(AnalyticsEvent.TabPowerViewed)
         TabType.DEVICE_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabDeviceInfoViewed)
         TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
+        TabType.CAMERA -> AnalyticsUtils.logEvent(AnalyticsEvent.TabCameraViewed)
     }
 }
 
@@ -928,6 +929,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             TabType.POWER -> "Power"
                                             TabType.DEVICE_INFO -> context.string(R.string.device_info)
                                             TabType.NETWORK_INFO -> context.string(R.string.network_info)
+                                            TabType.CAMERA -> context.string(R.string.tab_camera)
                                         },
                                         style = MaterialTheme.typography.labelLarge,
                                     )
@@ -1210,6 +1212,26 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         ))
                                         showRevenueCatPaywall = true
                                     }
+                                )
+                            }
+
+                            TabType.CAMERA -> {
+                                com.teamz.lab.debugger.ui.CameraTabSection(
+                                    activity = activity,
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "camera_item",
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
+                                    },
                                 )
                             }
 

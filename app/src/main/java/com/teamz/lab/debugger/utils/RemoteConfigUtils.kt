@@ -101,9 +101,16 @@ object RemoteConfigUtils {
                 "leaderboard_data_retention_days" to -1L, // -1 = keep forever, 0+ = days before removal
                 "leaderboard_data_retention_reminder_days" to 5L, // Days before removal to show reminder (only if retention > 0)
                 // Tab order configuration (IAP-optimized default)
-                // Format: comma-separated list like "leaderboard,health,power,device_info,network_info"
-                // Valid tab names: leaderboard, health, power, device_info, network_info
-                "tab_order" to "leaderboard,health,power,device_info,network_info",
+                // Format: comma-separated list like "leaderboard,health,camera,power,device_info,network_info"
+                // Valid tab names: leaderboard, health, camera, power, device_info, network_info
+                //
+                // NOTE (2026-07-24): this is the LOCAL BUNDLED default, used only until a device's
+                // first successful RC fetch — it is NOT the live production value. The live value
+                // is set in the Firebase Console and is the real kill-switch for the "camera" tab;
+                // this bundled default was updated to match TabOrderManager.getDefaultTabOrder() so
+                // a fresh install (or an offline device) sees a consistent order, not a stale one
+                // that predates the Camera tab.
+                "tab_order" to "leaderboard,health,camera,power,device_info,network_info",
                 // Review & Paywall timing configuration ("Review First, Paywall After" strategy)
                 // First launch: 15s lets user see app load, dismiss notification dialog, and browse the UI
                 // before review appears during the "honeymoon phase" (impressed but before finding issues)

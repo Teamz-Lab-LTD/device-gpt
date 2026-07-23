@@ -315,6 +315,14 @@ enum class AnalyticsEvent(val eventName: String) {
     TabHealthViewed("tab_health_viewed"),
     TabPowerViewed("tab_power_viewed"),
     TabLeaderboardViewed("tab_leaderboard_viewed"),
+    TabCameraViewed("tab_camera_viewed"),
+    // Camera + screen diagnostics (2026-07-24 — declared capabilities + user-judged checks only,
+    // never a quality/health score; see camera_health_utils.kt header)
+    CameraHealthCheckStarted("camera_health_check_started"),
+    CameraHealthCheckCompleted("camera_health_check_completed"),   // params: camera_count, all_responded
+    CameraMultiCamSupport("camera_multicam_support"),              // Phase 0.5 telemetry probe, silent
+    ScreenPixelTestStarted("screen_pixel_test_started"),
+    ScreenPixelTestCompleted("screen_pixel_test_completed"),       // param: user_reported_issue
     // Top bar actions
     TopBarRefreshClicked("top_bar_refresh_clicked"),
     TopBarSettingsClicked("top_bar_settings_clicked"),
