@@ -679,15 +679,20 @@ private fun McpClient.pythonCommand(): String = if (this == McpClient.Other) "py
     else -> "python3"
 }
 
-private fun buildMcpJsonBlock(url: String, pin: String, python: String = "python3"): String {
+internal fun buildMcpJsonBlock(url: String, pin: String, python: String = "python3"): String {
+    // JSON-escape every interpolated value. PIN is always numeric today so this is
+    // belt-and-braces, but a future refactor to alphanumeric / user-typed PINs would
+    // otherwise silently corrupt the config file the user is told to paste (see
+    // BuildMcpJsonBlockTest).
+    fun esc(v: String): String = org.json.JSONObject.quote(v).let { it.substring(1, it.length - 1) }
     return """{
   "mcpServers": {
     "devicegpt-bridge": {
-      "command": "$python",
+      "command": "${esc(python)}",
       "args": ["/absolute/path/to/server.py"],
       "env": {
-        "DEVICEGPT_BRIDGE_URL": "$url",
-        "DEVICEGPT_BRIDGE_PIN": "$pin"
+        "DEVICEGPT_BRIDGE_URL": "${esc(url)}",
+        "DEVICEGPT_BRIDGE_PIN": "${esc(pin)}"
       }
     }
   }
