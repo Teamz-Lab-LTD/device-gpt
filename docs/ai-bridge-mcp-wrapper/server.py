@@ -270,7 +270,24 @@ TOOLS: list[Tool] = [
     ),
     Tool(
         name="devicegpt_test_camera_open",
-        description="Open each camera ID and measure first-open time. Detects a physically dead / kernel-blocked camera. Does NOT capture a frame — a lens can open and still fail to stream (that check needs the user's eye).",
+        description=(
+            "Open each camera ID and measure first-open time. Detects a physically dead / "
+            "kernel-blocked camera. Does NOT capture a frame — a lens can open and still fail "
+            "to stream (that check needs the user's eye).\n\n"
+            "RESPONSE HANDLING RULES (follow these — the phone side already wrote the exact "
+            "user-facing sentences, do NOT paraphrase or invent your own):\n"
+            "  1. Top-level shape when the whole call is refused: "
+            "{ok: false, error_code: string, user_message: string}. "
+            "Relay `user_message` to the user VERBATIM, then stop. Do not retry.\n"
+            "  2. Success shape: {results: [{camera_id, opened, open_ms, error_code, user_message}, ...]}.\n"
+            "  3. For each result where `opened=true`: tell the user 'Camera <id> opened in <open_ms> ms'. "
+            "That's it — no interpretation, no invented quality score.\n"
+            "  4. For each result where `opened=false`: tell the user the value of `user_message` "
+            "VERBATIM. It already contains the recovery step. Do not add your own recovery advice.\n"
+            "  5. If `error_code` starts with `camera_disabled` — a policy blocked the open. "
+            "The user_message names the specific fix (Quick Settings toggle, foreground the app, "
+            "close another camera app). Trust it, don't guess."
+        ),
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(

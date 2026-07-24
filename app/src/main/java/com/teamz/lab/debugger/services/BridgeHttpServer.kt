@@ -763,15 +763,20 @@ class BridgeHttpServer(
      */
     private fun testCameraOpen(): JSONObject {
         // Runtime CAMERA permission check — declaring it in the manifest is not enough on API 23+.
-        // Return a clean, machine-readable error the MCP client can show the user without stack-trace.
+        // Return a clean, machine-readable AND human-readable error so the MCP client can show
+        // the user_message verbatim without paraphrasing or inventing steps.
         val cameraGranted = ContextCompat.checkSelfPermission(
             context, android.Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
         if (!cameraGranted) {
             return JSONObject()
                 .put("ok", false)
-                .put("error", "camera_permission_not_granted")
-                .put("fix", "Open DeviceGPT on the phone, grant Camera permission, then retry.")
+                .put("error_code", "camera_permission_not_granted")
+                .put("user_message",
+                    "The DeviceGPT app does not have Camera permission on this phone. " +
+                    "To fix this: open the DeviceGPT app, go to Android Settings → Apps → " +
+                    "DeviceGPT → Permissions → Camera, and allow it. Then ask me to retry."
+                )
         }
         val cm = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val results = JSONArray()
@@ -781,7 +786,8 @@ class BridgeHttpServer(
             for (id in cm.cameraIdList) {
                 val latch = CountDownLatch(1)
                 var openedMs: Long? = null
-                var errorCode: Int? = null
+                var errorCode: String? = null
+                var userMessage: String? = null
                 var device: CameraDevice? = null
                 val start = SystemClock.elapsedRealtime()
                 try {
@@ -793,19 +799,79 @@ class BridgeHttpServer(
                             latch.countDown()
                         }
                         override fun onDisconnected(camera: CameraDevice) {
-                            errorCode = -1
+                            errorCode = "camera_disconnected"
+                            userMessage = "Camera $id was disconnected while opening. " +
+                                "This can happen when another app grabs the camera mid-request. " +
+                                "Try again in a moment."
                             latch.countDown()
                             camera.close()
                         }
                         override fun onError(camera: CameraDevice, error: Int) {
-                            errorCode = error
+                            // Map CameraDevice.StateCallback error constants to plain user messages.
+                            val (code, msg) = when (error) {
+                                ERROR_CAMERA_IN_USE -> "camera_in_use" to
+                                    "Camera $id is being used by another app right now. " +
+                                    "Close your Camera / video-call / QR-scanner app and ask me to retry."
+                                ERROR_MAX_CAMERAS_IN_USE -> "max_cameras_in_use" to
+                                    "Too many cameras are already open on this phone. Close any " +
+                                    "camera or video app and ask me to retry."
+                                ERROR_CAMERA_DISABLED -> "camera_disabled_by_policy" to
+                                    "Camera $id was blocked by a device policy. Check that Camera " +
+                                    "is not disabled in Quick Settings (swipe down twice → Camera " +
+                                    "toggle) and that no work-profile / admin app is blocking cameras."
+                                ERROR_CAMERA_DEVICE -> "camera_hardware_error" to
+                                    "Camera $id reported a hardware error. This usually clears after " +
+                                    "a phone restart — if not, the camera hardware may be faulty."
+                                ERROR_CAMERA_SERVICE -> "camera_service_error" to
+                                    "The Android camera service crashed while opening camera $id. " +
+                                    "Restarting the phone almost always fixes this."
+                                else -> "camera_unknown_error_$error" to
+                                    "Camera $id could not open (Android error code $error). " +
+                                    "Try restarting the phone."
+                            }
+                            errorCode = code
+                            userMessage = msg
                             latch.countDown()
                             camera.close()
                         }
                     }, handler)
                     latch.await(2500, TimeUnit.MILLISECONDS)
+                    // Timed out with no callback = the openCamera call was accepted but neither
+                    // onOpened nor onError fired within 2.5s. Rare — treat as a soft failure.
+                    if (openedMs == null && errorCode == null) {
+                        errorCode = "timeout"
+                        userMessage = "Camera $id did not respond within 2.5 seconds. " +
+                            "The camera may be stuck — try again after restarting the phone."
+                    }
                 } catch (e: SecurityException) {
-                    errorCode = -2
+                    errorCode = "security_exception"
+                    userMessage = "Android refused the camera-open request for camera $id. " +
+                        "Check that Camera permission is granted for DeviceGPT."
+                } catch (e: android.hardware.camera2.CameraAccessException) {
+                    // CameraAccessException.reason is a DIFFERENT enum from StateCallback errors.
+                    // CAMERA_DISABLED = 1 here means "policy-blocked at connect time" (the pre-fix
+                    // symptom we hit before adding foregroundServiceType=camera).
+                    val (code, msg) = when (e.reason) {
+                        android.hardware.camera2.CameraAccessException.CAMERA_DISABLED ->
+                            "camera_disabled_at_connect" to
+                            "Android's camera service refused the open request for camera $id — " +
+                            "usually because the app isn't allowed to use the camera in the " +
+                            "background right now. Open DeviceGPT to the foreground and retry."
+                        android.hardware.camera2.CameraAccessException.CAMERA_DISCONNECTED ->
+                            "camera_disconnected_at_connect" to
+                            "Camera $id is currently disconnected. Try again in a moment."
+                        android.hardware.camera2.CameraAccessException.CAMERA_IN_USE ->
+                            "camera_in_use" to
+                            "Camera $id is being used by another app. Close it and retry."
+                        android.hardware.camera2.CameraAccessException.MAX_CAMERAS_IN_USE ->
+                            "max_cameras_in_use" to
+                            "Too many cameras are already open. Close a camera app and retry."
+                        else ->
+                            "camera_access_error_${e.reason}" to
+                            "Android could not open camera $id (reason ${e.reason}: ${e.message})."
+                    }
+                    errorCode = code
+                    userMessage = msg
                 } finally {
                     device?.close()
                 }
@@ -814,6 +880,7 @@ class BridgeHttpServer(
                     put("opened", openedMs != null)
                     put("open_ms", openedMs ?: JSONObject.NULL)
                     put("error_code", errorCode ?: JSONObject.NULL)
+                    put("user_message", userMessage ?: JSONObject.NULL)
                 })
             }
         } finally {
