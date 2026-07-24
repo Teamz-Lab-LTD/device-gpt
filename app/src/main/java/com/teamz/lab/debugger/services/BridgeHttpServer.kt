@@ -138,6 +138,9 @@ class BridgeHttpServer(
                 uri == "/share_text" && method == "POST" -> shareText(session)
                 uri == "/dial" && method == "POST" -> dial(session)
 
+                // Phase D — consent-gated capture (v2)
+                uri == "/capture_photo" && method == "POST" -> capturePhoto(session)
+
                 // Phase C — auto-runnable tests (v2)
                 uri == "/test_storage_write" && method == "POST" -> testStorageWrite(session)
                 uri == "/test_storage_read_latency" && method == "POST" -> testStorageReadLatency(session)
@@ -323,6 +326,73 @@ class BridgeHttpServer(
 
     private fun jsonError(message: String): JSONObject =
         JSONObject().put("ok", false).put("error", message)
+
+    // ─────────────────────── Phase D — consent-gated capture ───────────────────────
+
+    /**
+     * Launches the [PhotoCaptureConsentActivity] and blocks up to 30 seconds waiting for
+     * the user to tap Allow + the camera to deliver a JPEG. Timeout counts BOTH the
+     * dialog wait and the capture — 30s is generous for a phone that may need to be
+     * pulled from a pocket.
+     *
+     * Returns:
+     *   Success: {"ok":true, "jpeg_base64":"...", "width":N, "height":N, "camera_id":"0"}
+     *   Refusal / timeout / failure:
+     *     {"ok":false, "error_code":"user_denied|timeout|...", "user_message":"..."}
+     */
+    private fun capturePhoto(session: IHTTPSession): JSONObject {
+        val cameraGranted = ContextCompat.checkSelfPermission(
+            context, android.Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!cameraGranted) {
+            return JSONObject()
+                .put("ok", false)
+                .put("error_code", "camera_permission_not_granted")
+                .put("user_message",
+                    "The DeviceGPT app does not have Camera permission. Open DeviceGPT " +
+                    "on the phone, go to Android Settings → Apps → DeviceGPT → " +
+                    "Permissions → Camera, allow it, then ask me to retry."
+                )
+        }
+        val body = readBody(session)
+        val cameraId = body.optString("camera_id", "").ifBlank { null }
+
+        val pending = PhotoCaptureBridge.request(cameraId)
+        if (pending == null) {
+            return JSONObject()
+                .put("ok", false)
+                .put("error_code", "already_in_flight")
+                .put("user_message",
+                    "Another photo capture is already waiting for your Allow tap on the " +
+                    "phone. Deal with that one first, then ask me to retry."
+                )
+        }
+
+        val intent = Intent(context, PhotoCaptureConsentActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            if (cameraId != null) putExtra("camera_id", cameraId)
+        }
+        context.startActivity(intent)
+
+        val result = PhotoCaptureBridge.awaitResult(pending, timeoutMs = 30_000L)
+        return if (result.jpegBytes != null) {
+            JSONObject()
+                .put("ok", true)
+                .put("jpeg_base64", PhotoCaptureBridge.toBase64(result.jpegBytes))
+                .put("width", result.width)
+                .put("height", result.height)
+                .put("camera_id", result.cameraId ?: JSONObject.NULL)
+                .put("byte_size", result.jpegBytes.size)
+        } else {
+            JSONObject()
+                .put("ok", false)
+                .put("error_code", result.errorCode ?: "unknown")
+                .put("user_message", result.userMessage ?: JSONObject.NULL)
+                .put("camera_id", result.cameraId ?: JSONObject.NULL)
+        }
+    }
 
     // ─────────────────────── Phase A — safe info reads ───────────────────────
 

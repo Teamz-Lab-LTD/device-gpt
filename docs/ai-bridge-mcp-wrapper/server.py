@@ -45,7 +45,7 @@ try:
     import httpx
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import TextContent, Tool
+    from mcp.types import ImageContent, TextContent, Tool
 except ImportError as exc:  # pragma: no cover
     print(
         "Missing dependency. Install with: pip install mcp httpx\n"
@@ -291,6 +291,37 @@ TOOLS: list[Tool] = [
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
+        name="devicegpt_capture_photo",
+        description=(
+            "Take ONE photo with the phone's camera and return the JPEG to you inline. "
+            "The user must tap Allow on a consent dialog that pops up on the phone — nothing "
+            "captures until they do. If they tap Deny (or take longer than 30 seconds), "
+            "the call returns an error with a plain-language user_message.\n\n"
+            "USE THIS WHEN the user asks you to see something, read something written down, "
+            "identify an object in front of them, etc. — where you actually need to see the "
+            "picture. Do NOT use it for random surveillance or repeated snapshots. Ask before "
+            "you call it (the user tapping Allow is not consent that you can call it again).\n\n"
+            "RESPONSE HANDLING RULES:\n"
+            "  - On success you receive the actual JPEG inline; describe what you see the "
+            "same way you would describe an uploaded image.\n"
+            "  - On failure: relay `user_message` VERBATIM. Do not paraphrase, do not invent "
+            "your own recovery step, do not retry silently. If error_code is `user_denied`, "
+            "the user tapped Deny — accept it and stop.\n"
+            "  - Default camera is the back one. Only pass `camera_id` if the user asks for "
+            "the selfie / front camera (typically \"1\") or names a specific ID from a prior "
+            "`devicegpt_cameras` call."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "camera_id": {
+                    "type": "string",
+                    "description": "Optional. Camera ID from devicegpt_cameras. Defaults to the first back-facing lens.",
+                }
+            },
+        },
+    ),
+    Tool(
         name="devicegpt_test_battery_drain_rate",
         description="Sample battery current draw over 2 seconds. Reports raw microamps at t=0 and t=+2s plus the mean absolute mA. Sign convention (positive vs negative for discharge) is OEM-defined and NOT normalised.",
         inputSchema={"type": "object", "properties": {}},
@@ -364,6 +395,17 @@ async def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     if tool_name == "devicegpt_test_battery_drain_rate":
         return await _post("/test_battery_drain_rate", {})
 
+    # Phase D — consent-gated photo capture
+    if tool_name == "devicegpt_capture_photo":
+        body = {}
+        if "camera_id" in arguments and arguments["camera_id"]:
+            body["camera_id"] = str(arguments["camera_id"])
+        # Longer timeout — the phone side waits up to 30s for the user's Allow tap.
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            resp = await client.post(f"{BASE_URL}/capture_photo", headers=_headers(), json=body)
+        resp.raise_for_status()
+        return resp.json()
+
     return {"ok": False, "error": f"unknown tool: {tool_name}"}
 
 
@@ -375,13 +417,24 @@ async def main() -> None:
         return TOOLS
 
     @server.call_tool()
-    async def _call_tool(name: str, arguments: dict[str, Any] | None) -> list[TextContent]:
+    async def _call_tool(name: str, arguments: dict[str, Any] | None) -> list[Any]:
         try:
             result = await dispatch(name, arguments or {})
         except httpx.HTTPStatusError as exc:
             result = {"ok": False, "error": f"HTTP {exc.response.status_code}", "body": exc.response.text}
         except Exception as exc:  # pragma: no cover — surface every failure to the client
             result = {"ok": False, "error": str(exc)}
+
+        # Special case: /capture_photo returns a JPEG the AI needs to actually SEE.
+        # Peel `jpeg_base64` out of the JSON and ship it as ImageContent so Claude
+        # renders it inline instead of getting a wall of base64 text.
+        if name == "devicegpt_capture_photo" and isinstance(result, dict) and result.get("ok") and result.get("jpeg_base64"):
+            meta = {k: v for k, v in result.items() if k != "jpeg_base64"}
+            return [
+                ImageContent(type="image", data=result["jpeg_base64"], mimeType="image/jpeg"),
+                TextContent(type="text", text=json.dumps(meta, indent=2)),
+            ]
+
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
     async with stdio_server() as (read_stream, write_stream):

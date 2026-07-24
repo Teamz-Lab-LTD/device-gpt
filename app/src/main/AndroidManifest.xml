@@ -178,6 +178,15 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync|camera" />
+        <!-- Consent dialog for /capture_photo. Transparent/dialog theme, single-instance so
+             a second capture-in-flight can't stack two dialogs. Launched from BridgeService via
+             FLAG_ACTIVITY_NEW_TASK. NOT exported — only our own code launches it. -->
+        <activity
+            android:name=".services.PhotoCaptureConsentActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         
         <!-- Lock Screen Widget (Android 13+) -->
         <receiver
