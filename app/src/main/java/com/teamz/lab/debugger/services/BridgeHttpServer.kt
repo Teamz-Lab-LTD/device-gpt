@@ -762,6 +762,17 @@ class BridgeHttpServer(
      * plumbing per lens, and dead lenses often DO open but fail to stream (the eye check).
      */
     private fun testCameraOpen(): JSONObject {
+        // Runtime CAMERA permission check — declaring it in the manifest is not enough on API 23+.
+        // Return a clean, machine-readable error the MCP client can show the user without stack-trace.
+        val cameraGranted = ContextCompat.checkSelfPermission(
+            context, android.Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!cameraGranted) {
+            return JSONObject()
+                .put("ok", false)
+                .put("error", "camera_permission_not_granted")
+                .put("fix", "Open DeviceGPT on the phone, grant Camera permission, then retry.")
+        }
         val cm = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val results = JSONArray()
         val thread = HandlerThread("bridge-camera-probe").apply { start() }

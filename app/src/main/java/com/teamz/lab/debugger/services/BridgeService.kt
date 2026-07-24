@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
@@ -13,6 +14,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.teamz.lab.debugger.MainActivity
 import com.teamz.lab.debugger.R
@@ -117,7 +119,22 @@ class BridgeService : Service() {
 
         try {
             createChannel()
-            startForeground(NOTIFICATION_ID, buildNotification("Starting…", showStop = false))
+            // Declare BOTH types (dataSync for the HTTP+mDNS server, camera for /test_camera_open
+            // + future camera diagnostics). ServiceCompat picks the right overload per API level.
+            // On Android 14+ camera opens from a service REQUIRE the type mask at startForeground
+            // time — declaring in the manifest is not enough.
+            val serviceType = if (Build.VERSION.SDK_INT >= 30) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC or
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
+            } else {
+                0
+            }
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                buildNotification("Starting…", showStop = false),
+                serviceType,
+            )
         } catch (e: android.app.ForegroundServiceStartNotAllowedException) {
             _state.value = BridgeState.Error(reason = "Please open the app first, then turn the Bridge on.")
             stopSelf()
