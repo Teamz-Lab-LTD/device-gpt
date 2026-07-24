@@ -113,6 +113,7 @@ private fun ImmersiveFullBleedEffect() {
 fun ScreenTestTabSection(
     activity: Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
+    onShareClick: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: ScreenTestViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -121,6 +122,7 @@ fun ScreenTestTabSection(
         viewModel = viewModel,
         activity = activity,
         onItemAIClick = onItemAIClick,
+        onShareClick = onShareClick,
     )
 }
 
@@ -130,10 +132,22 @@ fun ScreenTestSection(
     viewModel: ScreenTestViewModel,
     activity: Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
+    onShareClick: (String) -> Unit = {},
 ) {
     val screenPixelHistory by viewModel.screenPixelHistory.collectAsState()
     val lastTouchPointCount by viewModel.lastTouchPointCount.collectAsState()
     val lastPixelResult = screenPixelHistory.lastOrNull()
+
+    // Same fix as CameraHealthSection: unblock the nav host's AI/Cert/Share FABs, which stay
+    // in FabLoading() forever until shareText moves off the "Loading…" placeholder.
+    LaunchedEffect(lastPixelResult, lastTouchPointCount) {
+        val text = if (lastPixelResult != null || lastTouchPointCount != null) {
+            CameraHealthUtils.buildScreenTestAiContext(lastPixelResult, lastTouchPointCount)
+        } else {
+            "Screen Test tab ready — run a colour, grid, or touch check for details."
+        }
+        onShareClick(text)
+    }
 
     var showColorTest by remember { mutableStateOf(false) }
     var showGridTest by remember { mutableStateOf(false) }

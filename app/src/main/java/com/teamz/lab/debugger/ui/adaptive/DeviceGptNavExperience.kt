@@ -1220,6 +1220,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             TabType.CAMERA -> {
                                 com.teamz.lab.debugger.ui.CameraTabSection(
                                     activity = activity,
+                                    onShareClick = { info -> shareText = info },
                                     onItemAIClick = { title, content ->
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
@@ -1240,6 +1241,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             TabType.SCREEN_TEST -> {
                                 com.teamz.lab.debugger.ui.ScreenTestTabSection(
                                     activity = activity,
+                                    onShareClick = { info -> shareText = info },
                                     onItemAIClick = { title, content ->
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,

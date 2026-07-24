@@ -82,6 +82,7 @@ import com.teamz.lab.debugger.utils.RevenueCatManager
 fun CameraTabSection(
     activity: Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
+    onShareClick: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: CameraHealthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -90,6 +91,7 @@ fun CameraTabSection(
         viewModel = viewModel,
         activity = activity,
         onItemAIClick = onItemAIClick,
+        onShareClick = onShareClick,
     )
 }
 
@@ -99,11 +101,24 @@ fun CameraHealthSection(
     viewModel: CameraHealthViewModel,
     activity: Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
+    onShareClick: (String) -> Unit = {},
 ) {
     val factSheet by viewModel.factSheet.collectAsState()
     val latestResult by viewModel.latestResult.collectAsState()
     val isRunning by viewModel.isCheckRunning.collectAsState()
     val capturedThumbnails by viewModel.capturedThumbnails.collectAsState()
+
+    // BUG FIX (2026-07-24, reported by user: "why are they always loading?"): the bottom FAB
+    // row (AI / Certificate / Share) only leaves its loading state once `shareText` at the nav
+    // host stops being the literal "Loading…" placeholder. Every other tab wires onShareClick;
+    // this tab never did, so those three FABs spun forever whenever Camera was open. Push a
+    // real string up as soon as we have anything to show, and again once a check completes.
+    androidx.compose.runtime.LaunchedEffect(factSheet, latestResult) {
+        val text = latestResult?.let { CameraHealthUtils.buildCameraAiContext(context, it) }
+            ?: "Camera tab ready — ${factSheet?.cameraCount ?: 0} camera(s) detected on this device. " +
+                "Run \"Check My Camera\" for full details."
+        onShareClick(text)
+    }
 
     var showDetail by remember { mutableStateOf(false) }
 
