@@ -36,7 +36,7 @@ enum class ScanCategory(val displayLabel: String) {
         fun fromTabType(type: TabType?): ScanCategory = when (type) {
             TabType.POWER -> BATTERY
             TabType.NETWORK_INFO -> NETWORK
-            TabType.DEVICE_INFO, TabType.CAMERA -> HARDWARE
+            TabType.DEVICE_INFO, TabType.CAMERA, TabType.SCREEN_TEST -> HARDWARE
             TabType.HEALTH -> PRIVACY
             TabType.LEADERBOARD, null -> AI
         }

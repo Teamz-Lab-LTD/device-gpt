@@ -316,13 +316,25 @@ enum class AnalyticsEvent(val eventName: String) {
     TabPowerViewed("tab_power_viewed"),
     TabLeaderboardViewed("tab_leaderboard_viewed"),
     TabCameraViewed("tab_camera_viewed"),
+    TabScreenTestViewed("tab_screen_test_viewed"),
     // Camera + screen diagnostics (2026-07-24 — declared capabilities + user-judged checks only,
-    // never a quality/health score; see camera_health_utils.kt header)
+    // never a quality/health score; see camera_health_utils.kt header. Split into two tabs
+    // 2026-07-24: Camera = fact sheet + liveness; Screen Test = colour/grid/touch checks.)
     CameraHealthCheckStarted("camera_health_check_started"),
     CameraHealthCheckCompleted("camera_health_check_completed"),   // params: camera_count, all_responded
     CameraMultiCamSupport("camera_multicam_support"),              // Phase 0.5 telemetry probe, silent
     ScreenPixelTestStarted("screen_pixel_test_started"),
     ScreenPixelTestCompleted("screen_pixel_test_completed"),       // param: user_reported_issue
+    ScreenGridTestViewed("screen_grid_test_viewed"),
+    ScreenTouchTestCompleted("screen_touch_test_completed"),       // param: max_touch_points
+    // params: grayscale_accessibility_on, battery_saver_on, capture_looks_monochrome
+    CameraColorCastCheckRun("camera_color_cast_check_run"),
+    CameraColorCastCheckStarted("camera_color_cast_check_started"),   // param: is_recheck
+    // Monetization + behavior funnel for the 2026-07-24 "Report a Camera Problem" AI hand-off —
+    // every step logged so future pricing/feature decisions come from real usage, not guesses.
+    CameraProblemSymptomToggled("camera_problem_symptom_toggled"),    // params: symptom, selected
+    CameraProblemReportSent("camera_problem_report_sent"),            // params: symptom_count, symptoms, has_other_text
+    CameraProblemUpsellClicked("camera_problem_upsell_clicked"),      // param: source
     // Top bar actions
     TopBarRefreshClicked("top_bar_refresh_clicked"),
     TopBarSettingsClicked("top_bar_settings_clicked"),

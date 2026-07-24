@@ -34,6 +34,24 @@ object CameraHealthAggregator {
         return raw.split("~").mapNotNull { decodeResult(it) }
     }
 
+    private fun encodePhysicalLenses(lenses: List<CameraHealthUtils.PhysicalLensSpec>): String =
+        lenses.joinToString("^") { p ->
+            listOf(p.physicalId, p.focalLengthsMm.joinToString("/"), p.aperturesF.joinToString("/"))
+                .joinToString("&")
+        }
+
+    private fun decodePhysicalLenses(raw: String): List<CameraHealthUtils.PhysicalLensSpec> {
+        if (raw.isEmpty()) return emptyList()
+        return raw.split("^").map { entry ->
+            val f = entry.split("&")
+            CameraHealthUtils.PhysicalLensSpec(
+                physicalId = f[0],
+                focalLengthsMm = if (f[1].isEmpty()) emptyList() else f[1].split("/").map { it.toFloat() },
+                aperturesF = if (f[2].isEmpty()) emptyList() else f[2].split("/").map { it.toFloat() },
+            )
+        }
+    }
+
     private fun encodeResult(result: CameraHealthUtils.CameraHealthResult): String {
         val lensesEncoded = result.factSheet.lenses.joinToString(";") { lens ->
             listOf(
@@ -47,6 +65,14 @@ object CameraHealthAggregator {
                 lens.supportsAutofocus,
                 lens.rawAvailableToThisApp,
                 lens.physicalLensCount,
+                lens.aperturesF.joinToString("/"),
+                lens.sensorSizeMm ?: "",
+                lens.isoRange ?: "",
+                lens.hasVideoStabilization,
+                encodePhysicalLenses(lens.physicalLenses),
+                lens.exposureTimeRangeSec ?: "",
+                lens.aeModes.joinToString("/"),
+                lens.jpegResolutions.joinToString("/"),
             ).joinToString(",")
         }
         val livenessEncoded = result.liveness.joinToString(";") { l ->
@@ -58,6 +84,7 @@ object CameraHealthAggregator {
                 l.autofocusConverged?.toString() ?: "null",
                 l.openToFrameMs?.toString() ?: "",
                 (l.errorReason ?: "").replace(",", " "),
+                l.activePhysicalCameraId ?: "",
             ).joinToString(",")
         }
         return "${result.timestamp}|$lensesEncoded|$livenessEncoded"
@@ -82,6 +109,18 @@ object CameraHealthAggregator {
                     supportsAutofocus = f[7].toBoolean(),
                     rawAvailableToThisApp = f[8].toBoolean(),
                     physicalLensCount = f[9].toInt(),
+                    // Fields 10-14 were added 2026-07-24 (screen-test split + enrichment pass).
+                    // Guard with bounds checks so history saved before this pass still decodes.
+                    aperturesF = f.getOrNull(10)?.takeIf { it.isNotEmpty() }
+                        ?.split("/")?.map { it.toFloat() } ?: emptyList(),
+                    sensorSizeMm = f.getOrNull(11)?.takeIf { it.isNotEmpty() },
+                    isoRange = f.getOrNull(12)?.takeIf { it.isNotEmpty() },
+                    hasVideoStabilization = f.getOrNull(13)?.toBoolean() ?: false,
+                    physicalLenses = f.getOrNull(14)?.let { decodePhysicalLenses(it) } ?: emptyList(),
+                    // Fields 15-17 added 2026-07-24 (shutter speed / AE modes / resolutions).
+                    exposureTimeRangeSec = f.getOrNull(15)?.takeIf { it.isNotEmpty() },
+                    aeModes = f.getOrNull(16)?.takeIf { it.isNotEmpty() }?.split("/") ?: emptyList(),
+                    jpegResolutions = f.getOrNull(17)?.takeIf { it.isNotEmpty() }?.split("/") ?: emptyList(),
                 )
             }
 
@@ -95,6 +134,8 @@ object CameraHealthAggregator {
                     autofocusConverged = if (f[4] == "null") null else f[4].toBoolean(),
                     openToFrameMs = f[5].takeIf { it.isNotEmpty() }?.toLong(),
                     errorReason = f[6].takeIf { it.isNotEmpty() },
+                    // Field 7 added 2026-07-24 — see the lens-row bounds-check note above.
+                    activePhysicalCameraId = f.getOrNull(7)?.takeIf { it.isNotEmpty() },
                 )
             }
 

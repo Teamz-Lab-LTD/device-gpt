@@ -27,12 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import com.teamz.lab.debugger.ui.theme.AppTheme
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.ui.theme.useThemeManager
@@ -40,6 +42,25 @@ import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.ReferralManager
 import com.teamz.lab.debugger.utils.RevenueCatManager
+
+/**
+ * Reported 2026-07-24: closing this paywall chain needed 2+ taps on the X. Root-caused via
+ * `dumpsys window` — with animator duration scale forced to 0 (common on emulators/CI, and a
+ * real developer-device setting some testers enable), a freshly shown [Dialog]'s window can get
+ * stuck with `mAnimationIsEntrance=true` because the enter-transition callback that normally
+ * flips it never fires at 0-duration. While stuck, Android routes the first touch to whatever
+ * window is underneath instead of the dialog, so the tap silently misses. Disabling the window's
+ * enter/exit animation entirely sidesteps the stuck transition instead of racing it.
+ */
+@Composable
+internal fun DisableDialogEnterAnimation() {
+    val view = LocalView.current
+    DisposableEffect(view) {
+        val window = (view.parent as? DialogWindowProvider)?.window
+        window?.setWindowAnimations(0)
+        onDispose { }
+    }
+}
 
 @Composable
 fun PaywallWithReferralFallback(
@@ -179,6 +200,7 @@ private fun PaywallDismissReasonSheet(
             dismissOnClickOutside = true
         )
     ) {
+        DisableDialogEnterAnimation()
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -192,18 +214,42 @@ private fun PaywallDismissReasonSheet(
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                Text(
-                    text = "Quick — why did you close?",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "One tap. Helps us make it better.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Quick — why did you close?",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "One tap. Helps us make it better.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    // The previous screen (ReferralFallbackScreen) has a visible X in this same
+                    // top-end spot; this sheet had none — only 5 text buttons plus invisible
+                    // tap-outside/back-press to dismiss. Reported 2026-07-24 as "won't close,
+                    // needs multiple taps": users kept tapping where the X used to be and nothing
+                    // happened. This gives every dismiss-capable dialog in the chain the same,
+                    // obvious close affordance.
+                    IconButton(
+                        onClick = { logAndFinish("sheet_dismissed") },
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 Spacer(Modifier.height(16.dp))
                 listOf(
                     "too_expensive" to "Too expensive",
@@ -280,9 +326,9 @@ private fun ReferralFallbackScreen(
             usePlatformDefaultWidth = false,
             dismissOnBackPress = true,
             dismissOnClickOutside = false,
-            decorFitsSystemWindows = false
         )
     ) {
+        DisableDialogEnterAnimation()
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

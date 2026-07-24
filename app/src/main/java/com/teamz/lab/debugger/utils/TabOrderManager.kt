@@ -11,7 +11,8 @@ enum class TabType {
     POWER,
     DEVICE_INFO,
     NETWORK_INFO,
-    CAMERA
+    CAMERA,
+    SCREEN_TEST
 }
 
 /**
@@ -51,6 +52,7 @@ object TabOrderManager {
                 "device_info", "deviceinfo" -> TabType.DEVICE_INFO
                 "network_info", "networkinfo" -> TabType.NETWORK_INFO
                 "camera" -> TabType.CAMERA
+                "screen_test", "screentest" -> TabType.SCREEN_TEST
                 else -> {
                     Log.w(TAG, "Unknown tab name in config: $tabName, skipping")
                     null
@@ -92,9 +94,11 @@ object TabOrderManager {
         
         // Core tabs in IAP-optimized order
         order.add(TabType.HEALTH)
-        // CAMERA is deliberately NOT in requiredTabs below: it must stay a safe kill-switch via
-        // RemoteConfig tab_order, since it is a newer surface than the other four (2026-07-24).
+        // CAMERA and SCREEN_TEST are deliberately NOT in requiredTabs below: they must stay a
+        // safe kill-switch via RemoteConfig tab_order, since they are newer surfaces than the
+        // other four (2026-07-24, split into two tabs 2026-07-24).
         order.add(TabType.CAMERA)
+        order.add(TabType.SCREEN_TEST)
         order.add(TabType.POWER)
         order.add(TabType.DEVICE_INFO)
         order.add(TabType.NETWORK_INFO)
@@ -148,6 +152,7 @@ object TabOrderManager {
             TabType.DEVICE_INFO -> "my_device_info.txt"
             TabType.NETWORK_INFO -> "my_network_info.txt"
             TabType.CAMERA -> "my_camera_report.txt"
+            TabType.SCREEN_TEST -> "my_screen_test_report.txt"
         }
     }
     
@@ -163,6 +168,7 @@ object TabOrderManager {
             TabType.DEVICE_INFO -> "device_info"
             TabType.NETWORK_INFO -> "network_info"
             TabType.CAMERA -> "camera"
+            TabType.SCREEN_TEST -> "screen_test"
         }
     }
 }

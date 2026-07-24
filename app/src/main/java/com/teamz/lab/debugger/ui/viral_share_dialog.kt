@@ -100,9 +100,9 @@ fun ViralShareDialog(
             usePlatformDefaultWidth = false,
             dismissOnBackPress = true,
             dismissOnClickOutside = false,
-            decorFitsSystemWindows = false
         )
     ) {
+        DisableDialogEnterAnimation()
         androidx.compose.material3.Surface(
             modifier = Modifier
                 .fillMaxSize(),

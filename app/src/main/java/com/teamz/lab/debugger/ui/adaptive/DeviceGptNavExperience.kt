@@ -177,6 +177,7 @@ private fun logMainTabSelectionAnalytics(tabType: TabType) {
         TabType.DEVICE_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabDeviceInfoViewed)
         TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
         TabType.CAMERA -> AnalyticsUtils.logEvent(AnalyticsEvent.TabCameraViewed)
+        TabType.SCREEN_TEST -> AnalyticsUtils.logEvent(AnalyticsEvent.TabScreenTestViewed)
     }
 }
 
@@ -930,6 +931,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             TabType.DEVICE_INFO -> context.string(R.string.device_info)
                                             TabType.NETWORK_INFO -> context.string(R.string.network_info)
                                             TabType.CAMERA -> context.string(R.string.tab_camera)
+                                            TabType.SCREEN_TEST -> context.string(R.string.tab_screen_test)
                                         },
                                         style = MaterialTheme.typography.labelLarge,
                                     )
@@ -1222,6 +1224,26 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
                                             activity = activity,
                                             source = "camera_item",
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
+                                    },
+                                )
+                            }
+
+                            TabType.SCREEN_TEST -> {
+                                com.teamz.lab.debugger.ui.ScreenTestTabSection(
+                                    activity = activity,
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "screen_test_item",
                                             itemTitle = title,
                                             onPaywallRequest = {
                                                 paywallAnalyticsSource = "ai_soft_gate"

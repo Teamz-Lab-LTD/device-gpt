@@ -30,6 +30,11 @@ class CameraHealthPolicyGuardTest {
         Regex("stuck.?pixel", RegexOption.IGNORE_CASE),    // screen test only; never for the camera sensor
         Regex("dark.?frame", RegexOption.IGNORE_CASE),
         Regex("\\bhealth\\s*[:=]?\\s*\\d{1,3}\\s*%", RegexOption.IGNORE_CASE),
+        // Same "impossible functionality" shape, added when the Screen Test tab shipped
+        // (2026-07-24): burn-in and display-quality detection have the same unreliable,
+        // needs-a-calibrated-reference problem as camera image-quality scoring.
+        Regex("burn.?in (test|detect|check)", RegexOption.IGNORE_CASE),
+        Regex("(screen|display) (quality|health) (score|rating)", RegexOption.IGNORE_CASE),
     )
 
     /**
@@ -73,6 +78,43 @@ class CameraHealthPolicyGuardTest {
         assertNoneOf(
             readFile("src/main/java/com/teamz/lab/debugger/ui/camera_health_card.kt"),
             "camera_health_card.kt",
+        )
+    }
+
+    @Test
+    fun `screen_test_card source contains no banned quality-score language`() {
+        assertNoneOf(
+            readFile("src/main/java/com/teamz/lab/debugger/ui/screen_test_card.kt"),
+            "screen_test_card.kt",
+        )
+    }
+
+    @Test
+    fun `the screen_test AI prompt block contains no banned quality-score language`() {
+        val full = readFile("src/main/java/com/teamz/lab/debugger/utils/ai_prompt_generator.kt")
+        // Same anchor-on-the-definition lesson as the camera_health test below — never index
+        // from the earlier dispatch call site.
+        val start = full.indexOf("private fun generateSimpleScreenTestPrompt(")
+        assertTrue("could not locate the screen_test Simple function definition", start >= 0)
+        val end = full.indexOf("private fun generateAdvancedScreenTestPrompt(", start)
+        assertTrue("could not locate the screen_test Advanced function definition", end > start)
+        val nextFn = full.indexOf("private fun generateSimpleCameraPowerTestPrompt(", end)
+        assertTrue("could not locate the end boundary after the Advanced function", nextFn > end)
+        assertNoneOf(full.substring(start, nextFn), "ai_prompt_generator.kt screen_test functions")
+    }
+
+    @Test
+    fun `Screen Test routes to its own AI category, not the generic camera branch`() {
+        val src = readFile("src/main/java/com/teamz/lab/debugger/utils/ai_prompt_generator.kt")
+        val screenTestIdx = src.indexOf("\"Screen Test\", ignoreCase = true) -> \"screen_test\"")
+        val genericCameraIdx = src.indexOf(
+            "itemTitle.contains(\"Camera\", ignoreCase = true) || itemTitle.contains(\"Mic\"",
+        )
+        assertTrue("screen_test detection branch not found", screenTestIdx >= 0)
+        assertTrue("generic camera branch not found (test is stale)", genericCameraIdx >= 0)
+        assertTrue(
+            "screen_test must be detected BEFORE the generic camera branch in the when{}",
+            screenTestIdx < genericCameraIdx,
         )
     }
 

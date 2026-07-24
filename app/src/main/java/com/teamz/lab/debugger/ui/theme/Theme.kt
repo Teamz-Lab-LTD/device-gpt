@@ -62,6 +62,7 @@ val DesignSystemDarkColorScheme = darkColorScheme(
     surfaceVariant = DesignSystemColors.DarkII,
     onSurfaceVariant = DesignSystemColors.White,
     tertiaryContainer = DesignSystemColors.NeonGreen,
+    onTertiaryContainer = DesignSystemColors.Dark,
     )
 
 // Theme enum for easy switching

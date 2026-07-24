@@ -1,6 +1,10 @@
 package com.teamz.lab.debugger.utils
 
+import android.app.ActivityManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
@@ -13,6 +17,8 @@ import android.media.ImageReader
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.PowerManager
+import android.provider.Settings
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +48,13 @@ object CameraHealthUtils {
 
     // ── Data classes ────────────────────────────────────────────────────────
 
+    /** One declared physical sub-lens behind a logical multi-camera ID. Nothing here is measured. */
+    data class PhysicalLensSpec(
+        val physicalId: String,
+        val focalLengthsMm: List<Float>,
+        val aperturesF: List<Float>,
+    )
+
     /** One physical or logical camera's declared capabilities. Nothing here is measured. */
     data class LensReport(
         val cameraId: String,
@@ -54,6 +67,16 @@ object CameraHealthUtils {
         val supportsAutofocus: Boolean,
         val rawAvailableToThisApp: Boolean,     // RAW is optional even at FULL — never inferred from level
         val physicalLensCount: Int,             // 1 if this camera exposes no physical sub-lenses
+        val aperturesF: List<Float> = emptyList(),
+        val sensorSizeMm: String? = null,       // e.g. "6.4 x 4.8" — physical sensor size, not resolution
+        val isoRange: String? = null,           // e.g. "50 - 3200" — declared sensitivity range
+        val hasVideoStabilization: Boolean = false,
+        // Populated only when physicalLensCount > 1 AND each sub-lens's characteristics are
+        // readable (many OEMs block this even when the ID list itself is non-empty).
+        val physicalLenses: List<PhysicalLensSpec> = emptyList(),
+        val exposureTimeRangeSec: String? = null,  // e.g. "1/8000s - 30s" — declared shutter range
+        val aeModes: List<String> = emptyList(),   // declared auto-exposure modes, e.g. "ON_AUTO_FLASH"
+        val jpegResolutions: List<String> = emptyList(), // e.g. "4000x3000", widest first
     )
 
     /** Declared-capability snapshot across every camera ID the OS exposes to this app. */
@@ -73,6 +96,12 @@ object CameraHealthUtils {
         val autofocusConverged: Boolean?,       // null = device has no AF to test
         val openToFrameMs: Long?,
         val errorReason: String?,               // null on success; never shown as a "verdict"
+        // A genuine read, not an inference: which physical sub-lens actually produced this
+        // frame, per CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID (API 29+, requires
+        // the device to both declare LOGICAL_MULTI_CAMERA and expose the result key — most
+        // Samsung/Xiaomi/Motorola/OnePlus devices report null here, which must render as
+        // "not reported by this device", never as "this phone has one lens".
+        val activePhysicalCameraId: String? = null,
     )
 
     data class CameraHealthResult(
@@ -84,6 +113,38 @@ object CameraHealthUtils {
         val allLensesResponded: Boolean
             get() = liveness.isNotEmpty() && liveness.all { it.opened && it.frameReceived }
     }
+
+    /**
+     * "My photos look black and white" check. Two parts, both honest about their limits:
+     * a read of the two AOSP-standard settings that cause this (never an inference — either the
+     * OS reports the flag or it doesn't), and a coarse colour-saturation read of one captured
+     * frame (a real pixel measurement, but reported as "your last photo showed almost no colour",
+     * never as a "camera health" verdict). OEM-specific mechanisms (Samsung Bedtime Mode, some
+     * Xiaomi colour toggles) are NOT exposed through any public Android API — this check cannot
+     * see those, and the UI must say so rather than imply full coverage.
+     */
+    data class ColorCastCheckResult(
+        val capturedLooksMonochrome: Boolean?,  // null = no frame was available to analyze
+        val averageSaturation: Float?,          // 0f..1f, raw signal — never shown as a percentage/score
+        val grayscaleAccessibilityOn: Boolean,
+        val batterySaverOn: Boolean,
+    )
+
+    /**
+     * Storage/RAM/thermal reads for the "Report a Camera Problem" bundle. All three are public,
+     * no-root APIs confirmed by the 2026-07-24 deep-research pass (StatFs, ActivityManager, and
+     * PowerManager.getCurrentThermalStatus). [thermalSevere] gates the one corroborated causal
+     * note this app is willing to state (severe heat can make a phone block camera access) — every
+     * other plausible cause the research checked (low storage → launch failure, low RAM → crash)
+     * was explicitly REFUTED under adversarial review and must NOT be asserted here.
+     */
+    data class CameraEnvironmentSignals(
+        val storageInfo: String,
+        val ramInfo: String,
+        val lowMemory: Boolean,
+        val thermalStatus: String,
+        val thermalSevere: Boolean,
+    )
 
     /** The phone cannot detect its own dead pixels — this is the user's own judgement, recorded. */
     data class ScreenPixelResult(
@@ -161,17 +222,71 @@ object CameraHealthUtils {
             CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW
         ) ?: false
 
+        val apertures = chars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+            ?.toList().orEmpty()
+
+        val sensorSize = chars.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)?.let {
+            "%.1f x %.1f".format(it.width, it.height)
+        }
+
+        val isoRangeChar = chars.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
+        val isoRange = isoRangeChar?.let { "${it.lower} - ${it.upper}" }
+
+        val videoStabModes =
+            chars.get(CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES)
+        val hasVideoStab = videoStabModes?.any {
+            it != CameraCharacteristics.CONTROL_VIDEO_STABILIZATION_MODE_OFF
+        } ?: false
+
+        val exposureRange = chars.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE)
+        val exposureTimeRangeSec = exposureRange?.let {
+            "${formatExposureTimeNs(it.lower)} - ${formatExposureTimeNs(it.upper)}"
+        }
+
+        val aeModeInts = chars.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES)
+        val aeModes = aeModeInts?.map { aeModeName(it) }.orEmpty()
+
+        val streamConfigMap = chars.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        val jpegResolutions = streamConfigMap?.getOutputSizes(ImageFormat.JPEG)
+            ?.sortedByDescending { it.width.toLong() * it.height }
+            ?.map { "${it.width}x${it.height}" }
+            .orEmpty()
+
         // Per-physical-lens enumeration (API 28+). Empty on most non-Pixel devices in the
         // BD/India base (Samsung/Xiaomi/Motorola/OnePlus commonly hide sub-cameras) — that is
         // expected, not an error, and must never be read as "this phone has 1 lens".
-        val physicalCount = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        val physicalIds = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
-                chars.physicalCameraIds.size.coerceAtLeast(1)
+                chars.physicalCameraIds
             } catch (e: Exception) {
-                1
+                emptySet()
             }
         } else {
-            1
+            emptySet()
+        }
+        val physicalCount = physicalIds.size.coerceAtLeast(1)
+
+        // Sub-lens specs — each physical ID's own characteristics, when the OEM allows reading
+        // them. Failure per sub-lens is expected (not every OEM exposes this), never fatal.
+        val physicalLenses = if (physicalIds.size > 1) {
+            physicalIds.mapNotNull { physicalId ->
+                try {
+                    val physChars = cameraManager.getCameraCharacteristics(physicalId)
+                    PhysicalLensSpec(
+                        physicalId = physicalId,
+                        focalLengthsMm = physChars
+                            .get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                            ?.toList().orEmpty(),
+                        aperturesF = physChars
+                            .get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+                            ?.toList().orEmpty(),
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        } else {
+            emptyList()
         }
 
         return LensReport(
@@ -185,7 +300,34 @@ object CameraHealthUtils {
             supportsAutofocus = supportsAf,
             rawAvailableToThisApp = rawAvailable,
             physicalLensCount = physicalCount,
+            aperturesF = apertures,
+            sensorSizeMm = sensorSize,
+            isoRange = isoRange,
+            hasVideoStabilization = hasVideoStab,
+            physicalLenses = physicalLenses,
+            exposureTimeRangeSec = exposureTimeRangeSec,
+            aeModes = aeModes,
+            jpegResolutions = jpegResolutions,
         )
+    }
+
+    /** "1/8000s" for sub-second shutter times, "2.5s" for slow shutter — both declared, not measured. */
+    private fun formatExposureTimeNs(ns: Long): String {
+        val seconds = ns / 1_000_000_000.0
+        return if (seconds < 1.0 && seconds > 0.0) {
+            "1/${Math.round(1.0 / seconds)}s"
+        } else {
+            "%.1fs".format(seconds)
+        }
+    }
+
+    private fun aeModeName(mode: Int): String = when (mode) {
+        CameraCharacteristics.CONTROL_AE_MODE_OFF -> "OFF"
+        CameraCharacteristics.CONTROL_AE_MODE_ON -> "ON"
+        CameraCharacteristics.CONTROL_AE_MODE_ON_AUTO_FLASH -> "ON_AUTO_FLASH"
+        CameraCharacteristics.CONTROL_AE_MODE_ON_ALWAYS_FLASH -> "ON_ALWAYS_FLASH"
+        CameraCharacteristics.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE -> "ON_AUTO_FLASH_REDEYE"
+        else -> "MODE_$mode"
     }
 
     // ── Liveness check (opens each camera, confirms a frame arrives) ───────
@@ -205,7 +347,19 @@ object CameraHealthUtils {
      * [CameraLivenessResult] with [CameraLivenessResult.opened] = false; the caller decides
      * copy, this function only reports what happened.
      */
-    suspend fun runCameraLivenessCheck(context: Context): List<CameraLivenessResult> =
+    /**
+     * @param onFrameCaptured Called with the raw JPEG bytes of the single frame this check
+     * captures per camera, so the caller can show the user what their camera actually saw — the
+     * previous version of this check proved a frame arrived but never displayed it, which is a
+     * weaker trust signal than the plan originally called for ("show the frame... let the user
+     * judge"). Not persisted anywhere: this is an ephemeral, current-session-only preview, kept
+     * out of [CameraHealthResult] entirely so history/SharedPreferences never has to hold photo
+     * bytes.
+     */
+    suspend fun runCameraLivenessCheck(
+        context: Context,
+        onFrameCaptured: ((cameraId: String, jpegBytes: ByteArray) -> Unit)? = null,
+    ): List<CameraLivenessResult> =
         withContext(Dispatchers.IO) {
             val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
                 ?: return@withContext emptyList()
@@ -218,7 +372,7 @@ object CameraHealthUtils {
                     handleError(e, context = "runCameraLivenessCheck:chars:$cameraId")
                     continue
                 }
-                results.add(checkOneCamera(cameraManager, cameraId, chars))
+                results.add(checkOneCamera(cameraManager, cameraId, chars, onFrameCaptured))
             }
             results
         }
@@ -227,6 +381,7 @@ object CameraHealthUtils {
         cameraManager: CameraManager,
         cameraId: String,
         chars: CameraCharacteristics,
+        onFrameCaptured: ((cameraId: String, jpegBytes: ByteArray) -> Unit)?,
     ): CameraLivenessResult {
         val facing = when (chars.get(CameraCharacteristics.LENS_FACING)) {
             CameraCharacteristics.LENS_FACING_BACK -> "Back"
@@ -237,20 +392,35 @@ object CameraHealthUtils {
         val afModes = chars.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
         val hasAf = afModes?.any { it != CameraCharacteristics.CONTROL_AF_MODE_OFF } ?: false
 
+        // Gate the active-physical-lens read on the device actually declaring support — reading
+        // the result key on a device that doesn't back it returns null, which must render as
+        // "not reported", never fabricated. See PhysicalLensSpec / activePhysicalCameraId KDoc.
+        val capabilities = chars.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+        val canReadActiveLens = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            capabilities?.contains(
+                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA
+            ) == true
+
         val startedAt = System.currentTimeMillis()
         val outcome = withTimeoutOrNull(LIVENESS_TIMEOUT_MS) {
-            openCaptureClose(cameraManager, cameraId, hasAf)
+            openCaptureClose(cameraManager, cameraId, hasAf, canReadActiveLens) { bytes ->
+                onFrameCaptured?.invoke(cameraId, bytes)
+            }
         }
 
         return if (outcome != null) {
             CameraLivenessResult(
                 cameraId = cameraId,
                 facing = facing,
-                opened = true,
+                opened = outcome.deviceOpened,
                 frameReceived = outcome.frameReceived,
                 autofocusConverged = if (hasAf) outcome.afConverged else null,
                 openToFrameMs = System.currentTimeMillis() - startedAt,
-                errorReason = null,
+                activePhysicalCameraId = outcome.activePhysicalCameraId,
+                // A real, plain-language reason when the device itself refused to open — e.g.
+                // another app already has this camera — instead of a generic failure. Reported
+                // 2026-07-24 as a common real-world complaint (deep-research catalog).
+                errorReason = if (!outcome.deviceOpened) cameraErrorMessage(outcome.errorCode) else null,
             )
         } else {
             CameraLivenessResult(
@@ -265,7 +435,33 @@ object CameraHealthUtils {
         }
     }
 
-    private data class OneCameraOutcome(val frameReceived: Boolean, val afConverged: Boolean)
+    private data class OneCameraOutcome(
+        val frameReceived: Boolean,
+        val afConverged: Boolean,
+        val activePhysicalCameraId: String? = null,
+        val deviceOpened: Boolean = true,
+        val errorCode: Int? = null,
+    )
+
+    /**
+     * Plain-language mapping of [CameraDevice.StateCallback]'s onError codes. "Another app is
+     * using this camera" is a genuinely common real-world cause (deep-research 2026-07-24) — the
+     * device reports this exact reason, so it is safe to state directly, not a guess.
+     */
+    private fun cameraErrorMessage(code: Int?): String = when (code) {
+        CameraDevice.StateCallback.ERROR_CAMERA_IN_USE ->
+            "Another app is currently using this camera"
+        CameraDevice.StateCallback.ERROR_MAX_CAMERAS_IN_USE ->
+            "Too many apps have a camera open at the same time"
+        CameraDevice.StateCallback.ERROR_CAMERA_DISABLED ->
+            "This camera is disabled (often a work-profile or device-policy restriction)"
+        CameraDevice.StateCallback.ERROR_CAMERA_DEVICE ->
+            "The camera reported a device-level fault"
+        CameraDevice.StateCallback.ERROR_CAMERA_SERVICE ->
+            "The phone's camera service crashed or is unavailable right now"
+        null -> "Camera did not respond in time"
+        else -> "Camera could not open (error code $code)"
+    }
 
     /**
      * Dedicated HandlerThread + Semaphore(1) open/close, matching the pattern already proven in
@@ -276,6 +472,8 @@ object CameraHealthUtils {
         cameraManager: CameraManager,
         cameraId: String,
         checkAutofocus: Boolean,
+        readActiveLens: Boolean,
+        onFrameCaptured: (ByteArray) -> Unit,
     ): OneCameraOutcome {
         val thread = HandlerThread("CameraHealthCheck-$cameraId").apply { start() }
         val handler = Handler(thread.looper)
@@ -289,6 +487,7 @@ object CameraHealthUtils {
                 return OneCameraOutcome(frameReceived = false, afConverged = false)
             }
 
+            var openErrorCode: Int? = null
             device = suspendCancellableCoroutine { cont ->
                 try {
                     @Suppress("MissingPermission")
@@ -304,6 +503,7 @@ object CameraHealthUtils {
                         }
                         override fun onError(cd: CameraDevice, error: Int) {
                             openCloseLock.release()
+                            openErrorCode = error
                             cd.close()
                             if (cont.isActive) cont.resume(null)
                         }
@@ -317,7 +517,12 @@ object CameraHealthUtils {
                     handleError(e, context = "openCaptureClose:openCamera:$cameraId")
                     if (cont.isActive) cont.resume(null)
                 }
-            } ?: return OneCameraOutcome(frameReceived = false, afConverged = false)
+            } ?: return OneCameraOutcome(
+                frameReceived = false,
+                afConverged = false,
+                deviceOpened = false,
+                errorCode = openErrorCode,
+            )
 
             val streamConfigMap = cameraManager.getCameraCharacteristics(cameraId)
                 .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
@@ -329,6 +534,7 @@ object CameraHealthUtils {
 
             var frameReceived = false
             var afConverged = false
+            var activePhysicalCameraId: String? = null
 
             session = suspendCancellableCoroutine { cont ->
                 try {
@@ -353,7 +559,19 @@ object CameraHealthUtils {
             val captured = suspendCancellableCoroutine<Boolean> { cont ->
                 var resumed = false
                 reader?.setOnImageAvailableListener({ r ->
-                    r.acquireLatestImage()?.close()
+                    val image = r.acquireLatestImage()
+                    if (image != null) {
+                        try {
+                            val buffer = image.planes[0].buffer
+                            val bytes = ByteArray(buffer.remaining())
+                            buffer.get(bytes)
+                            onFrameCaptured(bytes)
+                        } catch (e: Exception) {
+                            handleError(e, context = "openCaptureClose:readFrame:$cameraId")
+                        } finally {
+                            image.close()
+                        }
+                    }
                     if (!resumed) {
                         resumed = true
                         frameReceived = true
@@ -382,6 +600,10 @@ object CameraHealthUtils {
                                 if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED) {
                                     afConverged = true
                                 }
+                                if (readActiveLens && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                    activePhysicalCameraId =
+                                        result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)
+                                }
                             }
                             override fun onCaptureFailed(
                                 s: CameraCaptureSession,
@@ -405,7 +627,11 @@ object CameraHealthUtils {
                 }
             }
 
-            return OneCameraOutcome(frameReceived = frameReceived || captured, afConverged = afConverged)
+            return OneCameraOutcome(
+                frameReceived = frameReceived || captured,
+                afConverged = afConverged,
+                activePhysicalCameraId = activePhysicalCameraId,
+            )
         } finally {
             try {
                 session?.close()
@@ -437,9 +663,27 @@ object CameraHealthUtils {
         result.factSheet.lenses.forEach { lens ->
             sb.appendLine(
                 "- ${lens.facing} camera (id ${lens.cameraId}): hardware level ${lens.hardwareLevel}, " +
+                    "focal length ${lens.focalLengthsMm.joinToString("/").ifEmpty { "not reported" }}mm, " +
+                    "aperture f/${lens.aperturesF.joinToString("/").ifEmpty { "not reported" }}, " +
+                    "sensor size ${lens.sensorSizeMm ?: "not reported"}mm, " +
+                    "ISO range ${lens.isoRange ?: "not reported"}, " +
                     "autofocus ${if (lens.supportsAutofocus) "yes" else "no"}, " +
-                    "stabilization ${if (lens.hasOpticalStabilization) "yes" else "no"}",
+                    "stabilization ${if (lens.hasOpticalStabilization) "yes" else "no"}, " +
+                    "RAW available to this app ${if (lens.rawAvailableToThisApp) "yes" else "no"}, " +
+                    "shutter speed range ${lens.exposureTimeRangeSec ?: "not reported"}, " +
+                    "auto-exposure modes ${lens.aeModes.joinToString("/").ifEmpty { "not reported" }}, " +
+                    "max JPEG resolution ${lens.jpegResolutions.firstOrNull() ?: "not reported"} " +
+                    "(${lens.jpegResolutions.size} resolutions supported)",
             )
+            if (lens.physicalLenses.isNotEmpty()) {
+                lens.physicalLenses.forEach { phys ->
+                    sb.appendLine(
+                        "  - sub-lens ${phys.physicalId}: focal length " +
+                            "${phys.focalLengthsMm.joinToString("/").ifEmpty { "not reported" }}mm, " +
+                            "aperture f/${phys.aperturesF.joinToString("/").ifEmpty { "not reported" }}",
+                    )
+                }
+            }
         }
         sb.appendLine()
         sb.appendLine("Test results:")
@@ -450,8 +694,305 @@ object CameraHealthUtils {
                 l.autofocusConverged == false -> "took a photo but focus did not lock"
                 else -> "opened and took a photo normally"
             }
-            sb.appendLine("- ${l.facing} camera: $status")
+            sb.append("- ${l.facing} camera: $status")
+            if (l.activePhysicalCameraId != null) {
+                sb.append(" (at this zoom, the device reports it used sub-lens ${l.activePhysicalCameraId})")
+            }
+            sb.appendLine()
         }
+        return sb.toString().trim()
+    }
+
+    /**
+     * Compact AI context for the Screen Test tab. Like [buildCameraAiContext], this is a report
+     * of what the USER observed, never a measurement the app made — the phone cannot see its own
+     * screen, so there is nothing here for the app to grade.
+     */
+    fun buildScreenTestAiContext(lastPixelResult: ScreenPixelResult?, maxTouchPoints: Int?): String {
+        val sb = StringBuilder()
+        sb.appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE}")
+        sb.appendLine()
+        sb.appendLine("Screen colour / dead-pixel check (user's own eyes judged this, not the app):")
+        sb.appendLine(
+            when {
+                lastPixelResult == null -> "- Not run yet."
+                lastPixelResult.userReportedIssue ->
+                    "- The user reported seeing a bad spot while the screen showed the colour: " +
+                        "${lastPixelResult.colorShownWhenReported ?: "unknown"}."
+                else -> "- The user did not see any bad spot during the last check."
+            },
+        )
+        sb.appendLine()
+        sb.appendLine("Touch screen check:")
+        sb.appendLine(
+            if (maxTouchPoints != null) {
+                "- The screen detected $maxTouchPoints finger(s) touching at the same time."
+            } else {
+                "- Not run yet."
+            },
+        )
+        return sb.toString().trim()
+    }
+
+    // ── Colour-cast check ("my photos look black and white") ───────────────
+
+    /**
+     * Reads the two AOSP-standard causes of a system-wide black-and-white display: Accessibility
+     * colour correction set to grayscale/monochromacy simulation, and Battery Saver (which many
+     * OEM skins force grayscale under). Both are public [Settings.Secure] / [PowerManager] reads
+     * — no permission needed, nothing inferred. Returns (grayscaleOn, batterySaverOn).
+     */
+    fun readColorCastSystemSignals(context: Context): Pair<Boolean, Boolean> {
+        val grayscaleOn = try {
+            // Not exposed as public SDK constants (@hide in framework), but these are the stable,
+            // documented Settings.Secure key names used by the Accessibility app itself.
+            val enabled = Settings.Secure.getInt(
+                context.contentResolver,
+                "accessibility_display_daltonizer_enabled",
+                0,
+            ) == 1
+            // Mode 0 == AccessibilityManager.DALTONIZER_SIMULATE_MONOCHROMACY — true grayscale,
+            // as opposed to the colour-blindness-correction modes (protanomaly etc.) which keep
+            // colour.
+            val mode = Settings.Secure.getInt(
+                context.contentResolver,
+                "accessibility_display_daltonizer",
+                -1,
+            )
+            enabled && mode == 0
+        } catch (e: Exception) {
+            handleError(e, context = "readColorCastSystemSignals:grayscale")
+            false
+        }
+        val batterySaverOn = try {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            pm?.isPowerSaveMode == true
+        } catch (e: Exception) {
+            handleError(e, context = "readColorCastSystemSignals:batterySaver")
+            false
+        }
+        return grayscaleOn to batterySaverOn
+    }
+
+    /**
+     * Coarse average-saturation read of one captured JPEG frame, downsampled for speed (this is
+     * a "does this look grey" signal, not a precision colourimetry measurement). Returns null on
+     * any decode failure — the caller must treat null as "couldn't check", never as "not
+     * monochrome".
+     */
+    fun analyzeCapturedFrameForColorCast(jpegBytes: ByteArray): Float? {
+        var original: Bitmap? = null
+        var scaled: Bitmap? = null
+        return try {
+            original = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size) ?: return null
+            val sampleSize = 24
+            scaled = Bitmap.createScaledBitmap(original, sampleSize, sampleSize, false)
+            var totalSaturation = 0f
+            val hsv = FloatArray(3)
+            for (x in 0 until sampleSize) {
+                for (y in 0 until sampleSize) {
+                    Color.colorToHSV(scaled.getPixel(x, y), hsv)
+                    totalSaturation += hsv[1]
+                }
+            }
+            totalSaturation / (sampleSize * sampleSize)
+        } catch (e: Exception) {
+            handleError(e, context = "analyzeCapturedFrameForColorCast")
+            null
+        } finally {
+            if (scaled !== original) scaled?.recycle()
+            original?.recycle()
+        }
+    }
+
+    /** Combines the two reads above. [jpegBytes] is optional — pass null to skip the frame check. */
+    fun buildColorCastCheckResult(context: Context, jpegBytes: ByteArray?): ColorCastCheckResult {
+        val (grayscaleOn, batterySaverOn) = readColorCastSystemSignals(context)
+        val avgSaturation = jpegBytes?.let { analyzeCapturedFrameForColorCast(it) }
+        // Threshold picked empirically for "looks grey to a human eye", not a calibrated cutoff —
+        // framed to the user as an observation, never a pass/fail grade.
+        val looksMonochrome = avgSaturation?.let { it < 0.08f }
+        return ColorCastCheckResult(
+            capturedLooksMonochrome = looksMonochrome,
+            averageSaturation = avgSaturation,
+            grayscaleAccessibilityOn = grayscaleOn,
+            batterySaverOn = batterySaverOn,
+        )
+    }
+
+    /** Compact AI context for the colour-cast check — same "report what we found" framing. */
+    fun buildColorCastAiContext(result: ColorCastCheckResult): String {
+        val sb = StringBuilder()
+        sb.appendLine("\"My camera looks black and white\" check:")
+        sb.appendLine(
+            when (result.capturedLooksMonochrome) {
+                true -> "- The last captured photo showed almost no colour (this device reports it)."
+                false -> "- The last captured photo showed normal colour."
+                null -> "- No photo was analyzed yet."
+            },
+        )
+        sb.appendLine(
+            "- Accessibility grayscale/colour-correction: " +
+                if (result.grayscaleAccessibilityOn) "ON (this is very likely the cause)" else "off",
+        )
+        sb.appendLine(
+            "- Battery Saver: " +
+                if (result.batterySaverOn) "ON (some phones force grayscale display under this)" else "off",
+        )
+        if (!result.grayscaleAccessibilityOn && !result.batterySaverOn &&
+            result.capturedLooksMonochrome == true
+        ) {
+            sb.appendLine(
+                "- Neither known setting is on, but the photo still looks grey. This app cannot " +
+                    "see every phone brand's own grayscale feature (e.g. Samsung Bedtime Mode) — " +
+                    "suggest the user try Safe Mode, or contact the manufacturer if it persists.",
+            )
+        }
+        return sb.toString().trim()
+    }
+
+    // ── "Report a Camera Problem" — broad AI hand-off bundle ────────────────
+
+    /**
+     * Deep-research pass (2026-07-24, 104 sub-agents) found real evidence for exactly two
+     * camera-relevant causes a no-root app can genuinely read: device overheating (some phones
+     * block camera access above a thermal threshold — corroborated via Samsung/Pixel support
+     * docs) and another app already holding the camera (this app's own liveness check already
+     * surfaces that via [CameraLivenessResult.errorReason]). A long checklist of "blurry",
+     * "black screen", "green tint" etc. was explicitly investigated and could NOT be tied to any
+     * readable signal — several plausible claims (low storage → launch failure, low RAM → crash)
+     * were adversarially REFUTED. So this app does not pretend to detect those; it reads what it
+     * honestly can, and hands the rest to the user's own words for a general-purpose AI to reason
+     * about — matching the research's "structure the facts, then let the model reason" finding.
+     */
+    fun readCameraEnvironmentSignals(context: Context): CameraEnvironmentSignals {
+        val storage = try {
+            getAvailableStorage()
+        } catch (e: Exception) {
+            handleError(e, context = "readCameraEnvironmentSignals:storage")
+            "not reported"
+        }
+        val ram = try {
+            getRamUsage(context)
+        } catch (e: Exception) {
+            handleError(e, context = "readCameraEnvironmentSignals:ram")
+            "not reported"
+        }
+        val lowMemory = try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            val info = ActivityManager.MemoryInfo()
+            am?.getMemoryInfo(info)
+            info.lowMemory
+        } catch (e: Exception) {
+            handleError(e, context = "readCameraEnvironmentSignals:lowMemory")
+            false
+        }
+        val (thermalStatus, thermalSevere) = readThermalStatusPlain(context)
+        return CameraEnvironmentSignals(storage, ram, lowMemory, thermalStatus, thermalSevere)
+    }
+
+    private fun readThermalStatusPlain(context: Context): Pair<String, Boolean> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return "not reported (needs Android 10+)" to false
+        }
+        return try {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            when (pm?.currentThermalStatus) {
+                PowerManager.THERMAL_STATUS_NONE -> "normal" to false
+                PowerManager.THERMAL_STATUS_LIGHT -> "light throttling" to false
+                PowerManager.THERMAL_STATUS_MODERATE -> "moderate throttling" to false
+                PowerManager.THERMAL_STATUS_SEVERE -> "severe — running hot" to true
+                PowerManager.THERMAL_STATUS_CRITICAL -> "critical — very hot" to true
+                PowerManager.THERMAL_STATUS_EMERGENCY -> "emergency — dangerously hot" to true
+                PowerManager.THERMAL_STATUS_SHUTDOWN -> "shutdown imminent from heat" to true
+                else -> "not reported" to false
+            }
+        } catch (e: Exception) {
+            handleError(e, context = "readThermalStatusPlain")
+            "not reported" to false
+        }
+    }
+
+    /**
+     * Builds the full text handed to an external AI app (ChatGPT, Gemini, etc.) via the existing
+     * share pipeline. [selectedSymptoms] and [otherDescription] are the user's own words — this
+     * app makes no claim about what causes them, it only supplies verified facts alongside them.
+     */
+    fun buildCameraProblemReport(
+        factSheet: CameraFactSheet,
+        liveness: List<CameraLivenessResult>?,
+        colorCast: ColorCastCheckResult?,
+        environment: CameraEnvironmentSignals,
+        selectedSymptoms: List<String>,
+        otherDescription: String,
+    ): String {
+        val sb = StringBuilder()
+        sb.appendLine("A person is asking for help with a camera problem on their Android phone.")
+        sb.appendLine(
+            "Please read the facts below and suggest what is likely happening and what they " +
+                "can try — using only what is actually stated here, not guesses beyond it.",
+        )
+        sb.appendLine()
+        sb.appendLine("WHAT THEY REPORTED:")
+        selectedSymptoms.forEach { sb.appendLine("- $it") }
+        if (otherDescription.isNotBlank()) {
+            sb.appendLine("- In their own words: \"$otherDescription\"")
+        }
+        if (selectedSymptoms.isEmpty() && otherDescription.isBlank()) {
+            sb.appendLine("- (no symptom selected — general check)")
+        }
+        sb.appendLine()
+        sb.appendLine("DEVICE: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE}")
+        sb.appendLine()
+        sb.appendLine("WHAT THIS APP CAN CONFIRM RIGHT NOW:")
+        sb.appendLine("- Storage: ${environment.storageInfo}")
+        sb.appendLine(
+            "- Memory: ${environment.ramInfo}" +
+                if (environment.lowMemory) " — system reports low memory" else "",
+        )
+        sb.appendLine(
+            "- Temperature: device reports ${environment.thermalStatus}" +
+                if (environment.thermalSevere) {
+                    " — some phones block camera access to protect the battery when this hot"
+                } else "",
+        )
+        sb.appendLine()
+        sb.appendLine("CAMERA HARDWARE (declared by the device, not measured):")
+        sb.appendLine("Cameras this app can see: ${factSheet.cameraCount}")
+        factSheet.lenses.forEach { lens ->
+            sb.appendLine(
+                "- ${lens.facing} camera: hardware level ${lens.hardwareLevel}, " +
+                    "focal length ${lens.focalLengthsMm.joinToString("/").ifEmpty { "not reported" }}mm, " +
+                    "autofocus ${if (lens.supportsAutofocus) "yes" else "no"}, " +
+                    "flash ${if (lens.hasFlash) "yes" else "no"}",
+            )
+        }
+        if (liveness != null && liveness.isNotEmpty()) {
+            sb.appendLine()
+            sb.appendLine("LAST LIVE CHECK (this app opened each camera just now):")
+            liveness.forEach { l ->
+                val status = when {
+                    !l.opened -> "did not open — ${l.errorReason ?: "unknown reason"}"
+                    !l.frameReceived -> "opened but no photo came back"
+                    l.autofocusConverged == false -> "took a photo but focus did not lock"
+                    else -> "opened and took a photo normally"
+                }
+                sb.appendLine("- ${l.facing} camera: $status")
+            }
+        } else {
+            sb.appendLine()
+            sb.appendLine("LAST LIVE CHECK: not run yet.")
+        }
+        if (colorCast != null) {
+            sb.appendLine()
+            sb.appendLine(buildColorCastAiContext(colorCast))
+        }
+        sb.appendLine()
+        sb.appendLine(
+            "If none of the facts above explain the symptom, say so plainly and suggest " +
+                "general next steps (restart, check for a system update, contact the phone " +
+                "maker) rather than guessing a specific cause.",
+        )
         return sb.toString().trim()
     }
 

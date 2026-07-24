@@ -110,7 +110,7 @@ object RemoteConfigUtils {
                 // this bundled default was updated to match TabOrderManager.getDefaultTabOrder() so
                 // a fresh install (or an offline device) sees a consistent order, not a stale one
                 // that predates the Camera tab.
-                "tab_order" to "leaderboard,health,camera,power,device_info,network_info",
+                "tab_order" to "leaderboard,health,camera,screen_test,power,device_info,network_info",
                 // Review & Paywall timing configuration ("Review First, Paywall After" strategy)
                 // First launch: 15s lets user see app load, dismiss notification dialog, and browse the UI
                 // before review appears during the "honeymoon phase" (impressed but before finding issues)

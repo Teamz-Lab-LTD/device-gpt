@@ -1,6 +1,8 @@
 package com.teamz.lab.debugger.ui
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.teamz.lab.debugger.utils.AnalyticsEvent
@@ -16,7 +18,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * ViewModel for the Camera tab (fact sheet + liveness check + screen pixel test).
+ * ViewModel for the Camera tab (fact sheet + liveness check only — screen tests moved to
+ * [ScreenTestViewModel] when the Screen Test tab split out on 2026-07-24).
  * Persists across activity recreation, matching [PowerConsumptionViewModel]'s reason for
  * existing: an interstitial ad can recreate the Activity mid-test.
  */
@@ -34,13 +37,21 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
     private val _history = MutableStateFlow<List<CameraHealthUtils.CameraHealthResult>>(emptyList())
     val history: StateFlow<List<CameraHealthUtils.CameraHealthResult>> = _history.asStateFlow()
 
-    private val _screenPixelHistory =
-        MutableStateFlow<List<CameraHealthUtils.ScreenPixelResult>>(emptyList())
-    val screenPixelHistory: StateFlow<List<CameraHealthUtils.ScreenPixelResult>> =
-        _screenPixelHistory.asStateFlow()
-
     private val _showCsvDialog = MutableStateFlow(false)
     val showCsvDialog: StateFlow<Boolean> = _showCsvDialog.asStateFlow()
+
+    // What each camera actually saw during the last check, keyed by camera ID — the user's own
+    // eyes judging the photo, same as the screen test's philosophy. Deliberately NOT persisted:
+    // this is a live preview of the run that just happened, not a historical record, so it never
+    // touches CameraHealthAggregator or bloats SharedPreferences with image bytes.
+    private val _capturedThumbnails = MutableStateFlow<Map<String, Bitmap>>(emptyMap())
+    val capturedThumbnails: StateFlow<Map<String, Bitmap>> = _capturedThumbnails.asStateFlow()
+
+    private val _isColorCastCheckRunning = MutableStateFlow(false)
+    val isColorCastCheckRunning: StateFlow<Boolean> = _isColorCastCheckRunning.asStateFlow()
+
+    private val _colorCastResult = MutableStateFlow<CameraHealthUtils.ColorCastCheckResult?>(null)
+    val colorCastResult: StateFlow<CameraHealthUtils.ColorCastCheckResult?> = _colorCastResult.asStateFlow()
 
     init {
         val context = getApplication<Application>()
@@ -49,10 +60,8 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val loadedHistory = CameraHealthAggregator.loadCameraHealthHistory(context)
-                val loadedScreenHistory = CameraHealthAggregator.loadScreenPixelHistory(context)
                 _history.value = loadedHistory
                 _latestResult.value = loadedHistory.lastOrNull()
-                _screenPixelHistory.value = loadedScreenHistory
             }
         }
     }
@@ -76,8 +85,19 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
                     CameraHealthUtils.readCameraFactSheet(context)
                 }
                 _factSheet.value = sheet
+                _capturedThumbnails.value = emptyMap()
 
-                val liveness = CameraHealthUtils.runCameraLivenessCheck(context)
+                val liveness = CameraHealthUtils.runCameraLivenessCheck(context) { cameraId, jpegBytes ->
+                    val bitmap = try {
+                        BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size)
+                    } catch (e: Exception) {
+                        ErrorHandler.handleError(e, context = "CameraHealthViewModel.decodeThumbnail")
+                        null
+                    }
+                    if (bitmap != null) {
+                        _capturedThumbnails.value = _capturedThumbnails.value + (cameraId to bitmap)
+                    }
+                }
                 val result = CameraHealthUtils.CameraHealthResult(factSheet = sheet, liveness = liveness)
 
                 withContext(Dispatchers.IO) {
@@ -104,21 +124,35 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun recordScreenPixelResult(userReportedIssue: Boolean, colorShown: String?) {
+    /**
+     * "My photos look black and white" guided check. Reuses the same open/capture/close harness
+     * as [runHealthCheck] — takes the first captured frame (any camera) rather than opening a
+     * second camera session, since this check only needs one sample photo, not per-lens results.
+     */
+    fun runColorCastCheck() {
         val context = getApplication<Application>()
         viewModelScope.launch {
-            val result = CameraHealthUtils.ScreenPixelResult(
-                userReportedIssue = userReportedIssue,
-                colorShownWhenReported = colorShown,
-            )
-            withContext(Dispatchers.IO) {
-                CameraHealthAggregator.saveScreenPixelResult(context, result)
+            _isColorCastCheckRunning.value = true
+            try {
+                var capturedJpeg: ByteArray? = null
+                CameraHealthUtils.runCameraLivenessCheck(context) { _, jpegBytes ->
+                    if (capturedJpeg == null) capturedJpeg = jpegBytes
+                }
+                val result = CameraHealthUtils.buildColorCastCheckResult(context, capturedJpeg)
+                _colorCastResult.value = result
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.CameraColorCastCheckRun,
+                    mapOf(
+                        "grayscale_accessibility_on" to result.grayscaleAccessibilityOn,
+                        "battery_saver_on" to result.batterySaverOn,
+                        "capture_looks_monochrome" to (result.capturedLooksMonochrome?.toString() ?: "unknown"),
+                    ),
+                )
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e, context = "CameraHealthViewModel.runColorCastCheck")
+            } finally {
+                _isColorCastCheckRunning.value = false
             }
-            _screenPixelHistory.value = _screenPixelHistory.value + result
-            AnalyticsUtils.logEvent(
-                AnalyticsEvent.ScreenPixelTestCompleted,
-                mapOf("user_reported_issue" to userReportedIssue),
-            )
         }
     }
 }
