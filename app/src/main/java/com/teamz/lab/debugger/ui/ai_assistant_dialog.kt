@@ -4,48 +4,72 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.InstallMobile
 import androidx.compose.material.icons.filled.Lock
-import com.teamz.lab.debugger.utils.AIIcon
-import com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability
-import com.teamz.lab.debugger.ai.ondevice.PrivateAiExplainer
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import com.teamz.lab.debugger.R
-import com.teamz.lab.debugger.utils.string
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ai.ondevice.OnDeviceAiAvailability
+import com.teamz.lab.debugger.ai.ondevice.PrivateAiExplainer
+import com.teamz.lab.debugger.services.BridgeService
+import com.teamz.lab.debugger.utils.AIIcon
+import com.teamz.lab.debugger.utils.string
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+// Package name of the Claude Android app. Isolated so the "Live-ready" badge in
+// the AI-app list stays in sync with the entry in [aiApps] below without a
+// string typo becoming a silent visual regression.
+private const val CLAUDE_PACKAGE = "com.anthropic.claude"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,53 +97,21 @@ fun AIAssistantDialog(
     val onDeviceAvailable = onDeviceStatus == OnDeviceAiAvailability.Status.READY ||
         onDeviceStatus == OnDeviceAiAvailability.Status.DOWNLOADABLE
 
+    // Bridge state — surfaces MCP live-mode availability inline so the user
+    // can decide "share static text" vs "let this AI read live data".
+    val bridgeState by BridgeService.state.collectAsState()
+
     val aiApps = remember {
         listOf(
-            AIApp(
-                "ChatGPT",
-                "com.openai.chatgpt",
-                "https://play.google.com/store/apps/details?id=com.openai.chatgpt"
-            ),
-            AIApp(
-                "Gemini (formerly Bard)",
-                "com.google.android.apps.bard",
-                "https://play.google.com/store/apps/details?id=com.google.android.apps.bard"
-            ),
-            AIApp(
-                "DeepSeek",
-                "com.deepseek.chat",
-                "https://play.google.com/store/apps/details?id=com.deepseek.chat"
-            ),
-            AIApp(
-                "Microsoft Copilot (Bing AI)",
-                "com.microsoft.bing",
-                "https://play.google.com/store/apps/details?id=com.microsoft.bing"
-            ),
-            AIApp(
-                "Grok - AI Assistant",
-                "ai.x.grok",
-                "https://play.google.com/store/apps/details?id=ai.x.grok"
-            ),
-            AIApp(
-                "You.com AI Chat",
-                "com.you.browser",
-                "https://play.google.com/store/apps/details?id=com.you.browser"
-            ),
-            AIApp(
-                "Replika AI Companion",
-                "ai.replika.app",
-                "https://play.google.com/store/apps/details?id=ai.replika.app"
-            ),
-            AIApp(
-                "Claude",
-                "com.anthropic.claude",
-                "https://play.google.com/store/apps/details?id=com.anthropic.claude"
-            ),
-            AIApp(
-                "Perplexity",
-                "ai.perplexity.app.android",
-                "https://play.google.com/store/apps/details?id=ai.perplexity.app.android"
-            ),
+            AIApp("ChatGPT", "com.openai.chatgpt", "https://play.google.com/store/apps/details?id=com.openai.chatgpt"),
+            AIApp("Gemini (formerly Bard)", "com.google.android.apps.bard", "https://play.google.com/store/apps/details?id=com.google.android.apps.bard"),
+            AIApp("DeepSeek", "com.deepseek.chat", "https://play.google.com/store/apps/details?id=com.deepseek.chat"),
+            AIApp("Microsoft Copilot (Bing AI)", "com.microsoft.bing", "https://play.google.com/store/apps/details?id=com.microsoft.bing"),
+            AIApp("Grok - AI Assistant", "ai.x.grok", "https://play.google.com/store/apps/details?id=ai.x.grok"),
+            AIApp("You.com AI Chat", "com.you.browser", "https://play.google.com/store/apps/details?id=com.you.browser"),
+            AIApp("Replika AI Companion", "ai.replika.app", "https://play.google.com/store/apps/details?id=ai.replika.app"),
+            AIApp("Claude", CLAUDE_PACKAGE, "https://play.google.com/store/apps/details?id=$CLAUDE_PACKAGE"),
+            AIApp("Perplexity", "ai.perplexity.app.android", "https://play.google.com/store/apps/details?id=ai.perplexity.app.android"),
         )
     }
 
@@ -156,203 +148,378 @@ fun AIAssistantDialog(
         }
     }
 
-    AlertDialog(onDismissRequest = onDismiss, title = {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                title, style = MaterialTheme.typography.titleLarge
-            )
-            if (subtitle.isNotBlank()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(title, style = MaterialTheme.typography.titleLarge)
+                if (subtitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
-        }
-    }, text = {
-        Column(
-            modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start
-        ) {
+        },
+        text = {
+            // Cap the whole dialog body so a phone with 9 AI apps installed
+            // does not push the Cancel button off-screen on a small device.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 480.dp),
+                horizontalAlignment = Alignment.Start,
+            ) {
 
-            // Show the Simple/Advanced toggle once we know there is something to send to:
-            // a cloud app, or on-device AI. Not while the package scan is still running.
-            val hasAnyTarget = installedApps?.isNotEmpty() == true || onDeviceAvailable
-            if (installedApps != null && hasAnyTarget && showExplanationModeToggle) {
-                // Toggle for explanation mode
-                Text(
-                    "AI Explanation Mode:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+                BridgeStatusPill(bridgeState)
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                val hasAnyTarget = installedApps?.isNotEmpty() == true || onDeviceAvailable
+                if (installedApps != null && hasAnyTarget && showExplanationModeToggle) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        "AI Explanation Mode:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        RadioButton(
+                        RadioRow(
                             selected = promptMode == PromptMode.Simple,
-                            onClick = { promptMode = PromptMode.Simple })
-                        Text(context.string(R.string.simple), style = MaterialTheme.typography.bodySmall)
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        RadioButton(
+                            label = context.string(R.string.simple),
+                            onClick = { promptMode = PromptMode.Simple },
+                            modifier = Modifier.weight(1f),
+                        )
+                        RadioRow(
                             selected = promptMode == PromptMode.Advanced,
-                            onClick = { promptMode = PromptMode.Advanced })
-                        Text(context.string(R.string.advanced), style = MaterialTheme.typography.bodySmall)
+                            label = context.string(R.string.advanced),
+                            onClick = { promptMode = PromptMode.Advanced },
+                            modifier = Modifier.weight(1f),
+                        )
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            val resolved = installedApps
-            if (resolved == null) {
-                // Package scan still running on IO. Showing the empty state here would flash
-                // "No AI apps found" and hide the Private AI row on every open.
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                }
-            } else if (resolved.isEmpty() && !onDeviceAvailable) {
-                Text(
-                    "No AI apps found. Please install one of these apps:",
-                    textAlign = TextAlign.Start,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                )
-
-                LazyColumn {
-                    items(aiApps) { app ->
-                        ListItem(headlineContent = {
-                            Text(
-                                app.name, style = MaterialTheme.typography.titleMedium
-                            )
-                        }, leadingContent = {
-                            Icon(
-                                AIIcon.icon,
-                                contentDescription = null,
-                                tint = AIIcon.color()
-                            )
-                        }, trailingContent = {
-                            Icon(
-                                Icons.Default.InstallMobile,
-                                contentDescription = "Install",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }, modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, app.playStoreUrl.toUri())
-                            context.startActivity(intent)
-                        })
+                val resolved = installedApps
+                if (resolved == null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.size(12.dp))
+                        Text(
+                            "Finding installed AI apps…",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                }
-
-            } else {
-                LazyColumn {
-                    if (onDeviceAvailable) {
-                        item {
-                            val onDeviceAiApp = AIApp(
-                                name = PrivateAiExplainer.DISPLAY_NAME,
-                                packageName = PrivateAiExplainer.SYNTHETIC_PACKAGE,
-                                playStoreUrl = "",
-                            )
-                            val subtitle = when (onDeviceStatus) {
-                                OnDeviceAiAvailability.Status.READY ->
-                                    PrivateAiExplainer.TAGLINE
-                                OnDeviceAiAvailability.Status.DOWNLOADABLE ->
-                                    "One-time ~300MB download · then fully offline"
-                                else -> PrivateAiExplainer.TAGLINE
+                } else if (resolved.isEmpty() && !onDeviceAvailable) {
+                    Text(
+                        "No AI apps found. Please install one of these apps:",
+                        textAlign = TextAlign.Start,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                    )
+                    AiInstallList(apps = aiApps, context = context)
+                } else {
+                    val bridgeOn = bridgeState is BridgeService.BridgeState.On
+                    LazyColumn {
+                        if (onDeviceAvailable) {
+                            item {
+                                val onDeviceAiApp = AIApp(
+                                    name = PrivateAiExplainer.DISPLAY_NAME,
+                                    packageName = PrivateAiExplainer.SYNTHETIC_PACKAGE,
+                                    playStoreUrl = "",
+                                )
+                                val onDeviceSubtitle = when (onDeviceStatus) {
+                                    OnDeviceAiAvailability.Status.READY -> PrivateAiExplainer.TAGLINE
+                                    OnDeviceAiAvailability.Status.DOWNLOADABLE -> "One-time ~300MB download · then fully offline"
+                                    else -> PrivateAiExplainer.TAGLINE
+                                }
+                                ListItem(
+                                    headlineContent = {
+                                        Text(
+                                            onDeviceAiApp.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                    },
+                                    supportingContent = {
+                                        Text(
+                                            onDeviceSubtitle,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    },
+                                    leadingContent = {
+                                        Icon(
+                                            Icons.Default.Lock,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        val handler = onPrivateAiSelected
+                                        if (handler != null) handler(promptMode)
+                                        else onShareWithApp(onDeviceAiApp, promptMode)
+                                    },
+                                )
                             }
+                        }
+                        items(resolved) { app ->
+                            val isMcpCapable = bridgeOn && app.packageName == CLAUDE_PACKAGE
                             ListItem(
                                 headlineContent = {
-                                    Text(
-                                        onDeviceAiApp.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                    )
+                                    Text(app.name, style = MaterialTheme.typography.titleMedium)
                                 },
-                                supportingContent = {
-                                    Text(
-                                        subtitle,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                },
-                                leadingContent = {
-                                    Icon(
-                                        Icons.Default.Lock,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    val handler = onPrivateAiSelected
-                                    if (handler != null) {
-                                        handler(promptMode)
-                                    } else {
-                                        onShareWithApp(onDeviceAiApp, promptMode)
+                                supportingContent = if (isMcpCapable) {
+                                    {
+                                        Text(
+                                            "Live-ready — this AI can read live phone data via MCP",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
                                     }
+                                } else null,
+                                leadingContent = {
+                                    Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color())
                                 },
+                                trailingContent = if (isMcpCapable) {
+                                    {
+                                        Text(
+                                            "LIVE",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        )
+                                    }
+                                } else null,
+                                colors = if (isMcpCapable) {
+                                    ListItemDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                                    )
+                                } else ListItemDefaults.colors(),
+                                modifier = Modifier.clickable { onShareWithApp(app, promptMode) },
                             )
                         }
-                    }
-                    items(resolved) { app ->
-                        ListItem(headlineContent = {
-                            Text(
-                                app.name, style = MaterialTheme.typography.titleMedium
-                            )
-                        }, leadingContent = {
-                            Icon(
-                                AIIcon.icon,
-                                contentDescription = null,
-                                tint = AIIcon.color()
-                            )
-                        }, modifier = Modifier.clickable {
-                            onShareWithApp(app, promptMode)
-                        })
-                    }
-                    // On-device AI works with no cloud app installed. Still offer the installs.
-                    if (resolved.isEmpty()) {
-                        items(aiApps) { app ->
-                            ListItem(headlineContent = {
-                                Text(app.name, style = MaterialTheme.typography.titleMedium)
-                            }, leadingContent = {
-                                Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color())
-                            }, trailingContent = {
-                                Icon(
-                                    Icons.Default.InstallMobile,
-                                    contentDescription = "Install",
-                                    tint = MaterialTheme.colorScheme.primary
+                        if (resolved.isEmpty()) {
+                            items(aiApps) { app ->
+                                ListItem(
+                                    headlineContent = {
+                                        Text(app.name, style = MaterialTheme.typography.titleMedium)
+                                    },
+                                    leadingContent = {
+                                        Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color())
+                                    },
+                                    trailingContent = {
+                                        Icon(
+                                            Icons.Default.InstallMobile,
+                                            contentDescription = "Install",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, app.playStoreUrl.toUri()))
+                                    },
                                 )
-                            }, modifier = Modifier.clickable {
-                                val intent = Intent(Intent.ACTION_VIEW, app.playStoreUrl.toUri())
-                                context.startActivity(intent)
-                            })
+                            }
                         }
                     }
                 }
             }
+        },
+        // Cancel is a dismiss, not a confirm — put it in the dismiss slot so
+        // screen readers, keyboard shortcuts, and Material3 styling treat it
+        // as such.
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(context.string(R.string.cancel))
+            }
+        },
+    )
+}
+
+/**
+ * A clickable row wrapping a RadioButton so tapping the label (not just the
+ * tiny circle) selects the option. Fixes the touch-target rule that a 44dp
+ * hit region must cover the whole logical control.
+ */
+@Composable
+private fun RadioRow(
+    selected: Boolean,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .selectable(
+                selected = selected,
+                onClick = onClick,
+                role = Role.RadioButton,
+            )
+            .sizeIn(minHeight = 44.dp)
+            .padding(end = 4.dp),
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Text(label, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun AiInstallList(apps: List<AIApp>, context: Context) {
+    LazyColumn {
+        items(apps) { app ->
+            ListItem(
+                headlineContent = { Text(app.name, style = MaterialTheme.typography.titleMedium) },
+                leadingContent = { Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color()) },
+                trailingContent = {
+                    Icon(
+                        Icons.Default.InstallMobile,
+                        contentDescription = "Install",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, app.playStoreUrl.toUri()))
+                },
+            )
         }
-    }, confirmButton = {
-        TextButton(onClick = onDismiss) {
-            Text(context.string(R.string.cancel))
+    }
+}
+
+/**
+ * Inline chip that mirrors the AI Bridge tab state. When On, it shows the
+ * request counter so the user can *see* MCP calls arriving in real time
+ * without leaving this dialog. When Off, it hints at the feature — one
+ * sentence, no marketing pitch. Error/Starting states never surprise the
+ * user with a blank space.
+ */
+@Composable
+private fun BridgeStatusPill(state: BridgeService.BridgeState) {
+    when (state) {
+        is BridgeService.BridgeState.On -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(10.dp),
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.size(8.dp))
+                        Text(
+                            "AI Bridge is ON · ${state.requestCount} live request${if (state.requestCount == 1) "" else "s"} served",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                    Spacer(Modifier.size(4.dp))
+                    Text(
+                        "MCP-capable AI clients (e.g. Claude Desktop) can read live phone data. Snapshot text is a fallback for the rest.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
         }
-    })
+        is BridgeService.BridgeState.Starting -> {
+            SubtlePill(
+                icon = { CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp) },
+                text = "AI Bridge is starting…",
+            )
+        }
+        is BridgeService.BridgeState.Error -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.55f))
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.WarningAmber,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        "AI Bridge error: ${state.reason.take(80)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            }
+        }
+        is BridgeService.BridgeState.Off -> {
+            SubtlePill(
+                icon = {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
+                    )
+                },
+                text = "Tip: turn on AI Bridge (AI Bridge tab) to let Claude/Cursor read live phone data via MCP.",
+            )
+        }
+    }
+    // Consistent bottom gap regardless of state so downstream content does not shift.
+    Spacer(Modifier.size(8.dp))
+}
+
+@Composable
+private fun SubtlePill(icon: @Composable () -> Unit, text: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(18.dp), contentAlignment = Alignment.Center) { icon() }
+            Spacer(Modifier.size(8.dp))
+            Text(
+                text,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 data class AIApp(
@@ -362,5 +529,3 @@ data class AIApp(
 enum class PromptMode {
     Simple, Advanced
 }
-
-

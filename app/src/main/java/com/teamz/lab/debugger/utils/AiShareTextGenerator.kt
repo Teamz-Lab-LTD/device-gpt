@@ -37,11 +37,22 @@ object AiShareTextGenerator {
      * Builds the text-prompt string. Reads Android APIs directly — no network,
      * no HTTP round-trip through the Bridge.
      *
-     * When [bridgeUrl] + [bridgePin] are provided (Bridge is on), the prompt also
-     * includes an "optional live access" block so the receiving AI can be pointed
-     * at the MCP endpoint for follow-up questions on the same conversation.
+     * Two shapes, discriminated by whether Bridge is on:
+     *   - **Snapshot mode** (no bridgeUrl/bridgePin): the AI has no live channel,
+     *     so we dump every metric we can read. This IS the AI's only data source.
+     *   - **Live mode** (bridge on): the AI has the URL+PIN and can call
+     *     `devicegpt_*` tools for fresh data any time. Sending the metric dump
+     *     would (a) waste the AI's context, and (b) create a stale-vs-live trap
+     *     where the AI reads a 10-min-old "100%" battery instead of calling the
+     *     tool. So live mode sends only identity + the live handle + rules.
      */
     fun buildPrompt(context: Context, bridgeUrl: String? = null, bridgePin: String? = null): String {
+        val liveMode = bridgeUrl != null && bridgePin != null
+        return if (liveMode) buildLivePrompt(bridgeUrl!!, bridgePin!!)
+        else buildSnapshotPrompt(context)
+    }
+
+    private fun buildSnapshotPrompt(context: Context): String {
         val ts = SimpleDateFormat("yyyy-MM-dd HH:mm z", Locale.US).apply {
             timeZone = TimeZone.getDefault()
         }.format(Date())
@@ -79,51 +90,40 @@ object AiShareTextGenerator {
         val bootedAgoMs = SystemClock.elapsedRealtime()
         sb.append("Since last reboot: ").append(formatDuration(bootedAgoMs)).append("\n")
 
-        if (bridgeUrl != null && bridgePin != null) {
-            sb.append("\n=== Optional: live access via MCP ===\n")
-            sb.append("If you want to read live data as it changes (battery draining, apps ")
-            sb.append("launching, sensor values, etc.) instead of only this snapshot, my DeviceGPT ")
-            sb.append("app is currently running a Bridge on my WiFi:\n")
-            sb.append("  URL: ").append(bridgeUrl).append("\n")
-            sb.append("  PIN: ").append(bridgePin).append("\n")
-            sb.append("Both change every session. Setup guide is in the DeviceGPT app on my phone ")
-            sb.append("under AI Bridge → \"Set up live connection (advanced)\".\n")
-        }
-
-        sb.append("\n=== How you should behave ===\n")
-        sb.append("- FIRST: check if you have tools named `devicegpt_*` (like ")
-        sb.append("`devicegpt_battery`, `devicegpt_capture_photo`). If yes, use them for ")
-        sb.append("anything I ask beyond this snapshot — the URL + PIN above wire you to ")
-        sb.append("live data. If no, work only from the numbers above and tell me honestly ")
-        sb.append("when I'm asking for something not in the snapshot.\n")
-        sb.append("- Do NOT tell me which mode you are in unless I ask.\n")
-        sb.append("- Plain, everyday language. Short sentences. No jargon my mum couldn't read.\n")
-        sb.append("- Do NOT invent any value that is not in the numbers above (or a tool response).\n")
-        sb.append("- Do NOT rate the camera quality — that is not measurable from these APIs.\n")
-        sb.append("- If a tool response has a `user_message` field, relay it VERBATIM. Do ")
-        sb.append("not paraphrase or invent your own recovery step.\n")
-        sb.append("- If something is missing (a null or 'unknown'), just say so — don't guess.\n")
-
-        sb.append("\n=== If I say my camera is broken ===\n")
-        sb.append("Follow this checklist IN ORDER, stop when you find the cause:\n")
-        sb.append("  1. Ask which app is failing (Camera / WhatsApp / Zoom / etc.).\n")
-        sb.append("  2. Check Camera permission for that app. If MCP: call ")
-        sb.append("`devicegpt_permissions_status`. If not: tell me the exact fix path.\n")
-        sb.append("  3. If MCP: call `devicegpt_test_camera_open` — see if hardware opens.\n")
-        sb.append("  4. Check thermal state — camera auto-disables when hot.\n")
-        sb.append("  5. If MCP: call `devicegpt_apps` — look for VPNs / privacy apps / ")
-        sb.append("screen recorders that hijack the camera.\n")
-        sb.append("  6. Check storage — a full disk can make camera refuse to save.\n")
-        sb.append("  7. If MCP + steps 2-6 clear: ask me to Allow one `devicegpt_capture_photo`, ")
-        sb.append("look at the actual picture (all black? green tint? blurry? dust spot?).\n")
-        sb.append("  8. Only recommend a repair shop if step 3 or 7 shows a clear hardware signal. ")
-        sb.append("Otherwise suggest force-close + clear cache + reinstall the app.\n")
+        appendBehaviorRules(sb, liveMode = false)
+        appendCameraPlaybook(sb)
 
         sb.append("\n=== General ask ===\n")
         sb.append("Read the numbers above and tell me if anything looks unhealthy or unusual, ")
         sb.append("then end with one concrete next step I could try.\n")
 
         sb.append("\n(Snapshot generated by DeviceGPT for Android — not affiliated with any AI vendor.)\n")
+        return sb.toString()
+    }
+
+    private fun buildLivePrompt(bridgeUrl: String, bridgePin: String): String {
+        val sb = StringBuilder(1024)
+        sb.append("Please help me with my Android phone. My DeviceGPT app is running a live bridge, ")
+        sb.append("so you can read live phone data on demand — do not assume anything is static.\n\n")
+
+        sb.append("=== Phone ===\n")
+        sb.append("Model: ${Build.MANUFACTURER} ${Build.MODEL}\n")
+        sb.append("Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})\n")
+
+        sb.append("\n=== Live access via MCP ===\n")
+        sb.append("URL: ").append(bridgeUrl).append("\n")
+        sb.append("PIN: ").append(bridgePin).append("\n")
+        sb.append("Both change every session. Setup guide is in the DeviceGPT app under AI Bridge → ")
+        sb.append("\"Set up live connection (advanced)\".\n")
+
+        appendBehaviorRules(sb, liveMode = true)
+
+        sb.append("\n=== General ask ===\n")
+        sb.append("Ask me what I want help with, then use the `devicegpt_*` tools to answer with live data. ")
+        sb.append("For camera problems: check permission first, then test hardware, then thermal, then storage, ")
+        sb.append("then inspect an actual photo. Only suggest a repair shop if the hardware test or the photo shows a clear defect.\n")
+
+        sb.append("\n(Prompt generated by DeviceGPT for Android — not affiliated with any AI vendor.)\n")
         return sb.toString()
     }
 
@@ -140,6 +140,52 @@ object AiShareTextGenerator {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(chooser)
+    }
+
+    // ─────────────────────── shared blocks ───────────────────────
+
+    private fun appendBehaviorRules(sb: StringBuilder, liveMode: Boolean) {
+        sb.append("\n=== How you should behave ===\n")
+        if (liveMode) {
+            sb.append("- FIRST: check if you have tools named `devicegpt_*` (like ")
+            sb.append("`devicegpt_battery`, `devicegpt_capture_photo`). If yes, USE THEM ")
+            sb.append("for anything I ask — the URL + PIN above wire you to live data, always fresh.\n")
+            sb.append("- If you have no `devicegpt_*` tools, tell me so plainly and ask me to ")
+            sb.append("paste a static snapshot instead. Do not guess.\n")
+        } else {
+            sb.append("- Work only from the numbers above. There is no live tool access in this share.\n")
+            sb.append("- If I ask something not in the numbers above, tell me honestly you don't have it.\n")
+        }
+        sb.append("- Do NOT tell me which mode you are in unless I ask.\n")
+        sb.append("- Plain, everyday language. Short sentences. No jargon my mum couldn't read.\n")
+        sb.append("- Do NOT invent any value that is not in the data above")
+        if (liveMode) sb.append(" (or a tool response)")
+        sb.append(".\n")
+        sb.append("- Do NOT rate the camera quality — that is not measurable from these APIs.\n")
+        if (liveMode) {
+            sb.append("- If a tool response has a `user_message` field, relay it VERBATIM. Do ")
+            sb.append("not paraphrase or invent your own recovery step.\n")
+            sb.append("- If a tool returns null or 'unknown', just say so — don't guess.\n")
+        } else {
+            sb.append("- If something is missing (a null or 'unknown'), just say so — don't guess.\n")
+        }
+    }
+
+    private fun appendCameraPlaybook(sb: StringBuilder) {
+        sb.append("\n=== If I say my camera is broken ===\n")
+        sb.append("Follow this checklist IN ORDER, stop when you find the cause:\n")
+        sb.append("  1. Ask which app is failing (Camera / WhatsApp / Zoom / etc.).\n")
+        sb.append("  2. Check Camera permission for that app. If MCP: call ")
+        sb.append("`devicegpt_permissions_status`. If not: tell me the exact fix path.\n")
+        sb.append("  3. If MCP: call `devicegpt_test_camera_open` — see if hardware opens.\n")
+        sb.append("  4. Check thermal state — camera auto-disables when hot.\n")
+        sb.append("  5. If MCP: call `devicegpt_apps` — look for VPNs / privacy apps / ")
+        sb.append("screen recorders that hijack the camera.\n")
+        sb.append("  6. Check storage — a full disk can make camera refuse to save.\n")
+        sb.append("  7. If MCP + steps 2-6 clear: ask me to Allow one `devicegpt_capture_photo`, ")
+        sb.append("look at the actual picture (all black? green tint? blurry? dust spot?).\n")
+        sb.append("  8. Only recommend a repair shop if step 3 or 7 shows a clear hardware signal. ")
+        sb.append("Otherwise suggest force-close + clear cache + reinstall the app.\n")
     }
 
     // ─────────────────────── section builders ───────────────────────

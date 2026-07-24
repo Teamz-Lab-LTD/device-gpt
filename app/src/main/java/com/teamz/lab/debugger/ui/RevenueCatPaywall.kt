@@ -17,6 +17,7 @@ import com.teamz.lab.debugger.utils.AppOpenAdManager
 import com.teamz.lab.debugger.ui.NativeAdManager
 import androidx.compose.runtime.LaunchedEffect
 import com.teamz.lab.debugger.R
+import kotlinx.coroutines.delay
 
 /**
  * Reusable RevenueCat Paywall composable
@@ -80,24 +81,29 @@ fun RevenueCatPaywall(
                         // `offerings.current` is not ours. Pin, then fall back.
                         val targetOffering = offerings.getOffering(RevenueCatManager.OFFERING_ID)
                             ?: offerings.current
-                        if (targetOffering != null) {
-                            offering = targetOffering
-                        } else {
+                        if (targetOffering == null) {
                             Log.e("RevenueCatPaywall", "No offering available. IDs: ${offerings.all.keys}")
-                            AnalyticsUtils.logEvent(
-                                AnalyticsEvent.PremiumPaywallDismissed,
-                                mapOf(
-                                    "source" to analyticsSource,
-                                    "reason" to "no_offering_available"
-                                )
-                            )
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.premium_unavailable_try_later),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            onDismiss()
+                            reportOfferingUnavailable(context, analyticsSource, "no_offering_available", onDismiss)
+                            return
                         }
+                        // 2026-07-25: RC may return an offering whose packages have no local
+                        // Play Billing productDetails (product-type mismatch between RC and
+                        // Play Console — e.g. `lifetime_premium` declared as `subs` in RC
+                        // when Play has it as INAPP). In that case `Paywall(...)` renders an
+                        // empty box: the tap looks broken, no error surfaces. Detect the
+                        // empty case here and treat it exactly like "no offering" so the
+                        // user sees a toast instead of a mystery.
+                        if (targetOffering.availablePackages.isEmpty()) {
+                            Log.e(
+                                "RevenueCatPaywall",
+                                "Offering '${targetOffering.identifier}' has zero availablePackages — " +
+                                    "Play Billing productDetails lookup failed for every package. " +
+                                    "Fix product type mismatch in RC dashboard.",
+                            )
+                            reportOfferingUnavailable(context, analyticsSource, "offering_has_no_packages", onDismiss)
+                            return
+                        }
+                        offering = targetOffering
                     }
 
                     override fun onError(purchasesError: com.revenuecat.purchases.PurchasesError) {
@@ -126,6 +132,25 @@ fun RevenueCatPaywall(
     LaunchedEffect(showPaywall) {
         if (!showPaywall) {
             offering = null
+        }
+    }
+
+    // Watchdog: if the RC callback never fires (network stall, SDK stuck) OR the
+    // offering resolves but the Paywall composable does not paint because internal
+    // productDetails-lookup silently no-ops, the user sees a mystery-broken tap.
+    // Bound the wait so the user always gets feedback within ~6 seconds.
+    LaunchedEffect(showPaywall, offering) {
+        if (showPaywall && !isPremium && offering == null) {
+            delay(6_000)
+            // Re-check inside the coroutine — a fast fetch that completed during
+            // the delay flips `offering` non-null and this branch no-ops.
+            if (offering == null) {
+                Log.e(
+                    "RevenueCatPaywall",
+                    "Offering fetch did not complete within 6s — dismissing to unstick the UI",
+                )
+                reportOfferingUnavailable(context, analyticsSource, "offering_fetch_timeout", onDismiss)
+            }
         }
     }
     
@@ -250,4 +275,29 @@ fun RevenueCatPaywall(
                 .build()
         )
     }
+}
+
+/**
+ * Common shutdown path when the paywall cannot render — either the RC dashboard
+ * has no offering for this app, the offering exists but every package failed
+ * Play Billing productDetails lookup (RC/Play type mismatch), or the SDK never
+ * responded in time. In every case: log analytics with a distinct reason, toast
+ * a user-facing message, and dismiss so the caller's `showPaywall` flips back.
+ */
+private fun reportOfferingUnavailable(
+    context: Context,
+    analyticsSource: String,
+    reason: String,
+    onDismiss: () -> Unit,
+) {
+    AnalyticsUtils.logEvent(
+        AnalyticsEvent.PremiumPaywallDismissed,
+        mapOf("source" to analyticsSource, "reason" to reason),
+    )
+    Toast.makeText(
+        context,
+        context.getString(R.string.premium_unavailable_try_later),
+        Toast.LENGTH_SHORT,
+    ).show()
+    onDismiss()
 }
