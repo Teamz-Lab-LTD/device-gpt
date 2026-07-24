@@ -73,6 +73,8 @@ object CameraHealthAggregator {
                 lens.exposureTimeRangeSec ?: "",
                 lens.aeModes.joinToString("/"),
                 lens.jpegResolutions.joinToString("/"),
+                lens.videoRecordingSupported,
+                lens.maxVideoResolution ?: "",
             ).joinToString(",")
         }
         val livenessEncoded = result.liveness.joinToString(";") { l ->
@@ -121,6 +123,9 @@ object CameraHealthAggregator {
                     exposureTimeRangeSec = f.getOrNull(15)?.takeIf { it.isNotEmpty() },
                     aeModes = f.getOrNull(16)?.takeIf { it.isNotEmpty() }?.split("/") ?: emptyList(),
                     jpegResolutions = f.getOrNull(17)?.takeIf { it.isNotEmpty() }?.split("/") ?: emptyList(),
+                    // Fields 18-19 added 2026-07-24 (video recording capability).
+                    videoRecordingSupported = f.getOrNull(18)?.toBoolean() ?: false,
+                    maxVideoResolution = f.getOrNull(19)?.takeIf { it.isNotEmpty() },
                 )
             }
 

@@ -410,6 +410,7 @@ private fun CameraProblemReportCard(
             val sendAction: () -> Unit = {
                 val environment = CameraHealthUtils.readCameraEnvironmentSignals(context)
                 val report = CameraHealthUtils.buildCameraProblemReport(
+                    context = context,
                     factSheet = factSheet,
                     liveness = latestResult?.liveness,
                     colorCast = colorCastResult,
@@ -795,6 +796,16 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Text(
+                "Video recording: " +
+                    if (lens.videoRecordingSupported) {
+                        "supported" + (lens.maxVideoResolution?.let { ", up to $it" } ?: "")
+                    } else {
+                        "not reported"
+                    },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             // The one differentiator the 2026-07-24 research confirmed is a genuine read (not an
             // inference): which physical sub-lens the device says it used, at the zoom level of
             // the last check. Most devices report nothing here — that must read as "not

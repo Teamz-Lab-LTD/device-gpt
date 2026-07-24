@@ -13,12 +13,15 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
+import android.media.ExifInterface
 import android.media.ImageReader
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.PowerManager
 import android.provider.Settings
+import java.io.ByteArrayInputStream
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
@@ -77,6 +80,11 @@ object CameraHealthUtils {
         val exposureTimeRangeSec: String? = null,  // e.g. "1/8000s - 30s" — declared shutter range
         val aeModes: List<String> = emptyList(),   // declared auto-exposure modes, e.g. "ON_AUTO_FLASH"
         val jpegResolutions: List<String> = emptyList(), // e.g. "4000x3000", widest first
+        // Video path was never checked before 2026-07-24 — only photo capture was. Read from the
+        // same StreamConfigurationMap already fetched for jpegResolutions, just a different output
+        // class (MediaRecorder instead of ImageFormat.JPEG). Declared capability, not measured.
+        val videoRecordingSupported: Boolean = false,
+        val maxVideoResolution: String? = null,
     )
 
     /** Declared-capability snapshot across every camera ID the OS exposes to this app. */
@@ -128,6 +136,23 @@ object CameraHealthUtils {
         val averageSaturation: Float?,          // 0f..1f, raw signal — never shown as a percentage/score
         val grayscaleAccessibilityOn: Boolean,
         val batterySaverOn: Boolean,
+        // The photo this check captures is the only frame this app ever keeps as bytes (see
+        // runCameraLivenessCheck's onFrameCaptured doc) — reused here to read what the camera
+        // actually used to take it, straight from the file the OS wrote, no extra capture needed.
+        val exifSummary: ExifSummary? = null,
+    )
+
+    /**
+     * What the camera actually used for one real shot — read straight from the JPEG's own EXIF
+     * tags, not a declared capability. Every field is optional: not every OEM's camera HAL writes
+     * every tag, and a missing tag must render as "not reported", never as "0" or "off".
+     */
+    data class ExifSummary(
+        val isoSpeed: Int?,
+        val exposureTimeSec: String?,   // e.g. "1/60s" — already formatted, matches formatExposureTimeNs
+        val fNumber: Float?,
+        val focalLengthMm: Float?,
+        val flashFired: Boolean?,
     )
 
     /**
@@ -144,6 +169,10 @@ object CameraHealthUtils {
         val lowMemory: Boolean,
         val thermalStatus: String,
         val thermalSevere: Boolean,
+        // Free space being reported ≠ a photo can actually be saved (permission-scoped storage,
+        // a full-but-not-empty volume, or a broken MediaStore write can all block the save even
+        // when StatFs reports headroom). This is a real attempt, not a free-space inference.
+        val canSaveNewPhotos: Boolean = true,
     )
 
     /** The phone cannot detect its own dead pixels — this is the user's own judgement, recorded. */
@@ -252,6 +281,16 @@ object CameraHealthUtils {
             ?.map { "${it.width}x${it.height}" }
             .orEmpty()
 
+        val videoSizes = try {
+            streamConfigMap?.getOutputSizes(MediaRecorder::class.java)
+        } catch (e: Exception) {
+            null
+        }
+        val videoRecordingSupported = !videoSizes.isNullOrEmpty()
+        val maxVideoResolution = videoSizes
+            ?.maxByOrNull { it.width.toLong() * it.height }
+            ?.let { "${it.width}x${it.height}" }
+
         // Per-physical-lens enumeration (API 28+). Empty on most non-Pixel devices in the
         // BD/India base (Samsung/Xiaomi/Motorola/OnePlus commonly hide sub-cameras) — that is
         // expected, not an error, and must never be read as "this phone has 1 lens".
@@ -308,6 +347,8 @@ object CameraHealthUtils {
             exposureTimeRangeSec = exposureTimeRangeSec,
             aeModes = aeModes,
             jpegResolutions = jpegResolutions,
+            videoRecordingSupported = videoRecordingSupported,
+            maxVideoResolution = maxVideoResolution,
         )
     }
 
@@ -805,19 +846,76 @@ object CameraHealthUtils {
         }
     }
 
-    /** Combines the two reads above. [jpegBytes] is optional — pass null to skip the frame check. */
+    /**
+     * Reads what the camera actually used for one real photo, straight from its EXIF tags — real
+     * shutter/ISO/aperture/flash for THAT shot, not the declared range from [LensReport]. Returns
+     * null only if the JPEG has no EXIF block at all (some OEM camera HALs strip it); a present
+     * block with some tags missing still returns a result with those fields null.
+     */
+    fun readExifSummary(jpegBytes: ByteArray): ExifSummary? {
+        return try {
+            val exif = ExifInterface(ByteArrayInputStream(jpegBytes))
+            @Suppress("DEPRECATION")
+            val iso = exif.getAttributeInt(ExifInterface.TAG_ISO_SPEED_RATINGS, -1)
+                .takeIf { it > 0 }
+            // EXIF stores TAG_EXPOSURE_TIME in seconds (not ns) — convert to match
+            // formatExposureTimeNs's expected unit before reusing it.
+            val exposureSeconds = exif.getAttributeDouble(ExifInterface.TAG_EXPOSURE_TIME, -1.0)
+                .takeIf { it > 0.0 }
+            val exposureFormatted = exposureSeconds?.let {
+                formatExposureTimeNs((it * 1_000_000_000.0).toLong())
+            }
+            val fNumber = exif.getAttributeDouble(ExifInterface.TAG_F_NUMBER, -1.0)
+                .takeIf { it > 0.0 }?.toFloat()
+            val focalLength = exif.getAttributeDouble(ExifInterface.TAG_FOCAL_LENGTH, -1.0)
+                .takeIf { it > 0.0 }?.toFloat()
+            val flashInt = exif.getAttributeInt(ExifInterface.TAG_FLASH, -1)
+            // Bit 0 of the EXIF Flash tag is "flash fired" — bits above that describe mode/return
+            // light, which this app has no honest use for.
+            val flashFired = if (flashInt >= 0) (flashInt and 0x1) == 1 else null
+            ExifSummary(
+                isoSpeed = iso,
+                exposureTimeSec = exposureFormatted,
+                fNumber = fNumber,
+                focalLengthMm = focalLength,
+                flashFired = flashFired,
+            )
+        } catch (e: Exception) {
+            handleError(e, context = "readExifSummary")
+            null
+        }
+    }
+
+    /** Combines the reads above. [jpegBytes] is optional — pass null to skip the frame checks. */
     fun buildColorCastCheckResult(context: Context, jpegBytes: ByteArray?): ColorCastCheckResult {
         val (grayscaleOn, batterySaverOn) = readColorCastSystemSignals(context)
         val avgSaturation = jpegBytes?.let { analyzeCapturedFrameForColorCast(it) }
         // Threshold picked empirically for "looks grey to a human eye", not a calibrated cutoff —
         // framed to the user as an observation, never a pass/fail grade.
         val looksMonochrome = avgSaturation?.let { it < 0.08f }
+        val exifSummary = jpegBytes?.let { readExifSummary(it) }
         return ColorCastCheckResult(
             capturedLooksMonochrome = looksMonochrome,
             averageSaturation = avgSaturation,
             grayscaleAccessibilityOn = grayscaleOn,
             batterySaverOn = batterySaverOn,
+            exifSummary = exifSummary,
         )
+    }
+
+    /** Plain-language line for the EXIF read — no jargon like "ISO" or "EXIF" shown as-is. */
+    fun buildExifPlainText(exif: ExifSummary): String {
+        val parts = mutableListOf<String>()
+        exif.isoSpeed?.let { parts.add("light sensitivity setting was $it") }
+        exif.exposureTimeSec?.let { parts.add("shutter was open for $it") }
+        exif.fNumber?.let { parts.add("aperture was f/$it") }
+        exif.focalLengthMm?.let { parts.add("focal length was ${it}mm") }
+        exif.flashFired?.let { parts.add(if (it) "flash fired" else "flash did not fire") }
+        return if (parts.isEmpty()) {
+            "This photo's shot details were not saved by this phone's camera — that's normal on some devices."
+        } else {
+            "When this app took a test photo just now: ${parts.joinToString(", ")}."
+        }
     }
 
     /** Compact AI context for the colour-cast check — same "report what we found" framing. */
@@ -888,7 +986,27 @@ object CameraHealthUtils {
             false
         }
         val (thermalStatus, thermalSevere) = readThermalStatusPlain(context)
-        return CameraEnvironmentSignals(storage, ram, lowMemory, thermalStatus, thermalSevere)
+        val canSave = testCameraStorageWrite(context)
+        return CameraEnvironmentSignals(storage, ram, lowMemory, thermalStatus, thermalSevere, canSave)
+    }
+
+    /**
+     * Actually writes a tiny throwaway file where a captured photo would go, then deletes it —
+     * a real pass/fail, not an inference from free-space numbers. Uses the app's own cache dir
+     * (no storage permission needed) since the question is "can this app write a file right now",
+     * not "is the public gallery folder healthy".
+     */
+    fun testCameraStorageWrite(context: Context): Boolean {
+        return try {
+            val probe = java.io.File(context.cacheDir, "camera_write_probe_${System.currentTimeMillis()}.tmp")
+            probe.writeBytes(byteArrayOf(1, 2, 3, 4))
+            val wroteOk = probe.exists() && probe.length() == 4L
+            probe.delete()
+            wroteOk
+        } catch (e: Exception) {
+            handleError(e, context = "testCameraStorageWrite")
+            false
+        }
     }
 
     private fun readThermalStatusPlain(context: Context): Pair<String, Boolean> {
@@ -919,6 +1037,7 @@ object CameraHealthUtils {
      * app makes no claim about what causes them, it only supplies verified facts alongside them.
      */
     fun buildCameraProblemReport(
+        context: Context,
         factSheet: CameraFactSheet,
         liveness: List<CameraLivenessResult>?,
         colorCast: ColorCastCheckResult?,
@@ -956,6 +1075,31 @@ object CameraHealthUtils {
                     " — some phones block camera access to protect the battery when this hot"
                 } else "",
         )
+        sb.appendLine(
+            "- Saving a new photo right now: " +
+                if (environment.canSaveNewPhotos) {
+                    "this app was able to write a file just now, so saving should work"
+                } else {
+                    "this app just TRIED to write a file and it FAILED — this can stop photos " +
+                        "from saving even when the camera itself works fine"
+                },
+        )
+        val lastCameraCrash = try {
+            CameraCrashTracker.getLastCameraCrash(context)
+        } catch (e: Exception) {
+            null
+        }
+        sb.appendLine(
+            if (lastCameraCrash != null) {
+                val daysAgo = (System.currentTimeMillis() - lastCameraCrash.timestampMs) / 86_400_000L
+                "- This app itself crashed while touching the camera $daysAgo day(s) ago " +
+                    "(${lastCameraCrash.reason}). This is about THIS diagnostics app, not other " +
+                    "camera apps like WhatsApp or the phone's own camera app."
+            } else {
+                "- This app has not crashed on the camera recently (only tracks its own crashes, " +
+                    "not other apps')."
+            },
+        )
         sb.appendLine()
         sb.appendLine("CAMERA HARDWARE (declared by the device, not measured):")
         sb.appendLine("Cameras this app can see: ${factSheet.cameraCount}")
@@ -964,7 +1108,9 @@ object CameraHealthUtils {
                 "- ${lens.facing} camera: hardware level ${lens.hardwareLevel}, " +
                     "focal length ${lens.focalLengthsMm.joinToString("/").ifEmpty { "not reported" }}mm, " +
                     "autofocus ${if (lens.supportsAutofocus) "yes" else "no"}, " +
-                    "flash ${if (lens.hasFlash) "yes" else "no"}",
+                    "flash ${if (lens.hasFlash) "yes" else "no"}, " +
+                    "video recording ${if (lens.videoRecordingSupported) "supported" else "not reported"}" +
+                    (lens.maxVideoResolution?.let { " (up to $it)" } ?: ""),
             )
         }
         if (liveness != null && liveness.isNotEmpty()) {
@@ -986,6 +1132,9 @@ object CameraHealthUtils {
         if (colorCast != null) {
             sb.appendLine()
             sb.appendLine(buildColorCastAiContext(colorCast))
+            colorCast.exifSummary?.let {
+                sb.appendLine(buildExifPlainText(it))
+            }
         }
         sb.appendLine()
         sb.appendLine(

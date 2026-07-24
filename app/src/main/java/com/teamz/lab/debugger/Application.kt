@@ -310,6 +310,15 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
         try {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
                 try {
+                    // Local-only record for the camera problem report — Crashlytics itself
+                    // cannot be read back on-device, so this is the honest substitute. Must run
+                    // before the real crash handling below, never after (a crash in the handler
+                    // itself would skip it).
+                    com.teamz.lab.debugger.utils.CameraCrashTracker.recordIfCameraRelated(
+                        this@MyApplication,
+                        throwable,
+                    )
+
                     // Log to Crashlytics
                     ErrorHandler.handleThrowable(
                         throwable,
