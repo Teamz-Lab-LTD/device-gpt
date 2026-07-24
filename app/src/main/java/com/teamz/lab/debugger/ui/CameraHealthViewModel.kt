@@ -3,6 +3,8 @@ package com.teamz.lab.debugger.ui
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.teamz.lab.debugger.utils.AnalyticsEvent
@@ -52,6 +54,14 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
 
     private val _colorCastResult = MutableStateFlow<CameraHealthUtils.ColorCastCheckResult?>(null)
     val colorCastResult: StateFlow<CameraHealthUtils.ColorCastCheckResult?> = _colorCastResult.asStateFlow()
+
+    // The frame the color-cast check just captured, decoded and downscaled once so
+    // the UI can show the user "here's the photo I judged". Never persisted (same
+    // reasoning as _capturedThumbnails above): live preview of the run that just
+    // happened, not a historical record. Reset on each new run to avoid stale
+    // preview alongside a fresh verdict.
+    private val _colorCastPreview = MutableStateFlow<Bitmap?>(null)
+    val colorCastPreview: StateFlow<Bitmap?> = _colorCastPreview.asStateFlow()
 
     init {
         val context = getApplication<Application>()
@@ -133,6 +143,7 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
         val context = getApplication<Application>()
         viewModelScope.launch {
             _isColorCastCheckRunning.value = true
+            _colorCastPreview.value = null   // clear stale preview from the previous run
             try {
                 var capturedJpeg: ByteArray? = null
                 CameraHealthUtils.runCameraLivenessCheck(context) { _, jpegBytes ->
@@ -140,6 +151,13 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
                 }
                 val result = CameraHealthUtils.buildColorCastCheckResult(context, capturedJpeg)
                 _colorCastResult.value = result
+                // Decode + downscale once on IO — even the smallest sensor JPEG is
+                // several hundred KB decoded to a full-res Bitmap, and we only ever
+                // show it at ~200dp wide. Sampling avoids holding the full pixel
+                // buffer in the VM for the whole tab's lifetime.
+                _colorCastPreview.value = capturedJpeg?.let { bytes ->
+                    withContext(Dispatchers.IO) { decodeAndOrient(bytes) }
+                }
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.CameraColorCastCheckRun,
                     mapOf(
@@ -153,6 +171,57 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
             } finally {
                 _isColorCastCheckRunning.value = false
             }
+        }
+    }
+
+    /**
+     * Decode a captured JPEG to a downscaled, correctly-oriented Bitmap for preview.
+     *
+     * Two steps that both need to happen or the preview looks wrong:
+     * 1. `inSampleSize` downscale — even the smallest camera JPEG decodes to a
+     *    multi-MB Bitmap that we'd hold in the VM for the tab's lifetime. 1/16
+     *    the pixels is more than enough at ~200dp preview width.
+     * 2. EXIF rotation apply — the JPEG carries the correct `Orientation` tag
+     *    (baked in by the capture request's `JPEG_ORIENTATION`), but
+     *    `BitmapFactory` decodes raw pixels and does NOT auto-apply orientation.
+     *    Without this step the preview always renders in the sensor's native
+     *    landscape frame even when the phone was held portrait.
+     */
+    private fun decodeAndOrient(bytes: ByteArray): Bitmap? {
+        return try {
+            val opts = BitmapFactory.Options().apply {
+                inSampleSize = 4
+                inPreferredConfig = Bitmap.Config.RGB_565
+            }
+            val raw = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts) ?: return null
+
+            val orientation = try {
+                ExifInterface(java.io.ByteArrayInputStream(bytes))
+                    .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            } catch (_: Exception) {
+                ExifInterface.ORIENTATION_NORMAL
+            }
+            val matrix = Matrix()
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+                ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+                ExifInterface.ORIENTATION_TRANSPOSE -> { matrix.postRotate(90f); matrix.postScale(-1f, 1f) }
+                ExifInterface.ORIENTATION_TRANSVERSE -> { matrix.postRotate(270f); matrix.postScale(-1f, 1f) }
+                else -> return raw
+            }
+            try {
+                val oriented = Bitmap.createBitmap(raw, 0, 0, raw.width, raw.height, matrix, true)
+                if (oriented != raw) raw.recycle()
+                oriented
+            } catch (_: Exception) {
+                raw   // rotation failed — better a sideways preview than none
+            }
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e, context = "CameraHealthViewModel.decodeAndOrient")
+            null
         }
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -309,12 +310,6 @@ private fun CameraProblemReportCard(
     colorCastResult: CameraHealthUtils.ColorCastCheckResult?,
     onItemAIClick: ((String, String) -> Unit)?,
 ) {
-    var showUpsellPaywall by remember { mutableStateOf(false) }
-    PaywallWithReferralFallback(
-        showPaywall = showUpsellPaywall,
-        onDismiss = { showUpsellPaywall = false },
-        analyticsSource = "camera_problem_report",
-    )
     val symptomOptions = remember {
         listOf(
             "Black screen",
@@ -432,23 +427,11 @@ private fun CameraProblemReportCard(
         Text("Get AI Help With This")
     }
 
-    val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
-    val isPremium = (premiumStatus as? RevenueCatManager.PremiumStatus.Premium)?.isActive == true
-    if (!isPremium) {
-        Spacer(Modifier.size(8.dp))
-        androidx.compose.material3.TextButton(
-            onClick = {
-                AnalyticsUtils.logEvent(
-                    AnalyticsEvent.CameraProblemUpsellClicked,
-                    mapOf("source" to "camera_problem_report"),
-                )
-                showUpsellPaywall = true
-            },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Go Pro — remove ads app-wide", style = MaterialTheme.typography.labelMedium)
-        }
-    }
+    // Go Pro upsell removed 2026-07-25: RC dashboard has a product-type mismatch on
+    // `lifetime_premium` (RC says `subs`, Play has it as INAPP), so the paywall
+    // renders empty and the tap looks broken. Restore this button ONLY after the
+    // RC dashboard product type is fixed and the defensive branches in
+    // RevenueCatPaywall stop firing `offering_has_no_packages`.
 }
 
 /**
@@ -509,7 +492,8 @@ private fun ColorCastCheckCard(
 
     Spacer(Modifier.size(12.dp))
 
-    result?.let { r -> ColorCastResultCard(context, r) }
+    val preview by viewModel.colorCastPreview.collectAsState()
+    result?.let { r -> ColorCastResultCard(context, r, preview) }
 
     if (result != null) Spacer(Modifier.size(12.dp))
 
@@ -521,11 +505,12 @@ private fun ColorCastCheckCard(
             )
             if (!permissionGranted) {
                 permissionLauncher.launch(android.Manifest.permission.CAMERA)
-            } else if (activity != null) {
-                InterstitialAdManager.showAdBeforeAction(activity, "camera_color_cast_check") {
-                    viewModel.runColorCastCheck()
-                }
             } else {
+                // No interstitial here: the ad activity pauses MainActivity, which on
+                // resume tears down and rebuilds this tab's scroll state — so tapping
+                // "Check Again" jumped the viewport to the top of the page. Diagnostics
+                // are also the wrong place for a mid-flow interstitial; ads belong at
+                // natural breaks, not between "run" and "see result".
                 viewModel.runColorCastCheck()
             }
         },
@@ -547,7 +532,11 @@ private fun ColorCastCheckCard(
 }
 
 @Composable
-private fun ColorCastResultCard(context: Context, result: CameraHealthUtils.ColorCastCheckResult) {
+private fun ColorCastResultCard(
+    context: Context,
+    result: CameraHealthUtils.ColorCastCheckResult,
+    preview: android.graphics.Bitmap? = null,
+) {
     val (containerColor, contentColor, icon, headline, subtext, settingsAction) = when {
         result.grayscaleAccessibilityOn -> ColorCastVerdict(
             MaterialTheme.colorScheme.tertiaryContainer,
@@ -597,6 +586,21 @@ private fun ColorCastResultCard(context: Context, result: CameraHealthUtils.Colo
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
+            // Show what the app actually saw before the verdict — the user's own eye
+            // is the tie-breaker on "does this look grayscale to me?", and hiding the
+            // photo forces them to trust an opaque score.
+            if (preview != null) {
+                androidx.compose.foundation.Image(
+                    bitmap = preview.asImageBitmap(),
+                    contentDescription = "The photo we just took to check for colour",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 220.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                )
+                Spacer(Modifier.size(10.dp))
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = contentColor)
                 Spacer(Modifier.size(8.dp))
