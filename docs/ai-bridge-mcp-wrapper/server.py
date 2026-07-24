@@ -148,6 +148,136 @@ TOOLS: list[Tool] = [
             "required": ["package"],
         },
     ),
+
+    # ─────────────── Phase A — safe info reads ───────────────
+    Tool(
+        name="devicegpt_sensors_snapshot",
+        description="One-shot current readings of the 6 canonical sensors (accelerometer, gyroscope, magnetometer, ambient light, proximity, pressure). Values are the raw sensor units; missing sensors report null.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_wifi_scan",
+        description="List nearby WiFi networks (cached scan, does not trigger a new scan): SSID, BSSID, signal strength, frequency, capabilities. Also reports the currently connected SSID and link speed. Requires location permission on the phone.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_permissions_status",
+        description="List all Android permissions the DeviceGPT app declares, with their current runtime grant state (granted/denied). Useful for diagnosing why a scan or action returns 'permission required'.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_cpu_info",
+        description="Report CPU core count and per-core current/max/min frequency in kHz. Some cores may report null if cpufreq files are permission-denied by the OEM kernel.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_thermal_state",
+        description="Report the device thermal throttling status (none/light/moderate/severe/critical/emergency/shutdown), power-save mode, and doze/idle state. Requires Android 10+ for full data.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_memory_info",
+        description="Report total RAM, currently available RAM, low-memory threshold, and whether the OS considers the device in low-memory state.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_uptime",
+        description="Report how long since the phone was last rebooted (seconds since boot) and the build timestamp and fingerprint.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_screen_info",
+        description="Report screen resolution, DPI, density scale, refresh rate, and current rotation.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+
+    # ─────────────── Phase B — safe actions ───────────────
+    Tool(
+        name="devicegpt_notify",
+        description="Post a local notification on this phone from the AI. Uses a separate notification channel so the user can mute AI-triggered notifications independently.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Notification title"},
+                "body": {"type": "string", "description": "Notification body text"},
+            },
+            "required": ["title"],
+        },
+    ),
+    Tool(
+        name="devicegpt_copy_to_clipboard",
+        description="Copy a string to the phone's clipboard so the user can paste it into any app.",
+        inputSchema={
+            "type": "object",
+            "properties": {"text": {"type": "string", "description": "Text to copy"}},
+            "required": ["text"],
+        },
+    ),
+    Tool(
+        name="devicegpt_open_url",
+        description="Open an http/https URL in the phone's default browser. Refuses non-http(s) schemes to prevent Intent-based deep-link abuse.",
+        inputSchema={
+            "type": "object",
+            "properties": {"url": {"type": "string", "description": "Must start with http:// or https://"}},
+            "required": ["url"],
+        },
+    ),
+    Tool(
+        name="devicegpt_share_text",
+        description="Open the phone's system share chooser pre-filled with the given text.",
+        inputSchema={
+            "type": "object",
+            "properties": {"text": {"type": "string", "description": "Text to share"}},
+            "required": ["text"],
+        },
+    ),
+    Tool(
+        name="devicegpt_dial",
+        description="Open the phone dialer pre-filled with a number. The user must still tap the call button — this does NOT auto-dial.",
+        inputSchema={
+            "type": "object",
+            "properties": {"number": {"type": "string", "description": "Phone number, e.g. +14155551234"}},
+            "required": ["number"],
+        },
+    ),
+
+    # ─────────────── Phase C — auto-runnable tests ───────────────
+    Tool(
+        name="devicegpt_test_storage_write",
+        description="Measure sustained sequential-write throughput to internal storage. Writes N MB (default 10, max 100) of random bytes, reports MB/s, deletes the file.",
+        inputSchema={
+            "type": "object",
+            "properties": {"size_mb": {"type": "integer", "description": "Bytes to write, in MB (1-100)", "minimum": 1, "maximum": 100}},
+        },
+    ),
+    Tool(
+        name="devicegpt_test_storage_read_latency",
+        description="Measure random-access read latency to internal storage. Writes a 4 MB probe file, then does N random 4 KB reads (default 200), reports median / p95 / max microseconds.",
+        inputSchema={
+            "type": "object",
+            "properties": {"samples": {"type": "integer", "description": "Number of random reads (10-2000)", "minimum": 10, "maximum": 2000}},
+        },
+    ),
+    Tool(
+        name="devicegpt_test_dns_latency",
+        description="Sequentially cold-resolve 5 well-known domains (google.com, cloudflare.com, wikipedia.org, github.com, apple.com), report per-domain elapsed ms and whether the resolve succeeded.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_test_network_speed",
+        description="HTTP HEAD probe to Google's connectivity-check endpoint. Reports round-trip ms and HTTP status. Reachability + latency probe, NOT a bandwidth benchmark.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_test_camera_open",
+        description="Open each camera ID and measure first-open time. Detects a physically dead / kernel-blocked camera. Does NOT capture a frame — a lens can open and still fail to stream (that check needs the user's eye).",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="devicegpt_test_battery_drain_rate",
+        description="Sample battery current draw over 2 seconds. Reports raw microamps at t=0 and t=+2s plus the mean absolute mA. Sign convention (positive vs negative for discharge) is OEM-defined and NOT normalised.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
 ]
 
 
@@ -170,6 +300,53 @@ async def dispatch(tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         return await _post("/flashlight", {"on": bool(arguments.get("on", False))})
     if tool_name == "devicegpt_launch_app":
         return await _post("/launch_app", {"package": arguments.get("package", "")})
+
+    # Phase A — safe info reads
+    if tool_name == "devicegpt_sensors_snapshot":
+        return await _get("/sensors_snapshot")
+    if tool_name == "devicegpt_wifi_scan":
+        return await _get("/wifi_scan")
+    if tool_name == "devicegpt_permissions_status":
+        return await _get("/permissions_status")
+    if tool_name == "devicegpt_cpu_info":
+        return await _get("/cpu_info")
+    if tool_name == "devicegpt_thermal_state":
+        return await _get("/thermal_state")
+    if tool_name == "devicegpt_memory_info":
+        return await _get("/memory_info")
+    if tool_name == "devicegpt_uptime":
+        return await _get("/uptime")
+    if tool_name == "devicegpt_screen_info":
+        return await _get("/screen_info")
+
+    # Phase B — safe actions
+    if tool_name == "devicegpt_notify":
+        return await _post("/notify", {"title": arguments.get("title", ""), "body": arguments.get("body", "")})
+    if tool_name == "devicegpt_copy_to_clipboard":
+        return await _post("/copy_to_clipboard", {"text": arguments.get("text", "")})
+    if tool_name == "devicegpt_open_url":
+        return await _post("/open_url", {"url": arguments.get("url", "")})
+    if tool_name == "devicegpt_share_text":
+        return await _post("/share_text", {"text": arguments.get("text", "")})
+    if tool_name == "devicegpt_dial":
+        return await _post("/dial", {"number": arguments.get("number", "")})
+
+    # Phase C — auto-runnable tests
+    if tool_name == "devicegpt_test_storage_write":
+        body = {"size_mb": int(arguments["size_mb"])} if "size_mb" in arguments else {}
+        return await _post("/test_storage_write", body)
+    if tool_name == "devicegpt_test_storage_read_latency":
+        body = {"samples": int(arguments["samples"])} if "samples" in arguments else {}
+        return await _post("/test_storage_read_latency", body)
+    if tool_name == "devicegpt_test_dns_latency":
+        return await _post("/test_dns_latency", {})
+    if tool_name == "devicegpt_test_network_speed":
+        return await _post("/test_network_speed", {})
+    if tool_name == "devicegpt_test_camera_open":
+        return await _post("/test_camera_open", {})
+    if tool_name == "devicegpt_test_battery_drain_rate":
+        return await _post("/test_battery_drain_rate", {})
+
     return {"ok": False, "error": f"unknown tool: {tool_name}"}
 
 
