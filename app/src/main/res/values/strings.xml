@@ -80,6 +80,16 @@
     <string name="ai_bridge_guide_step3_title">3. Ask your AI a question about this phone</string>
     <string name="ai_bridge_guide_step3_body">Try: \"What is the battery like on my phone?\" or \"What cameras does my phone have?\"</string>
     <string name="ai_bridge_guide_close">Close</string>
+    <string name="ai_share_ask_ai_title">Ask any AI about my phone</string>
+    <string name="ai_share_ask_ai_subtitle">Copies a live snapshot to share with ChatGPT, Claude, Gemini, or any AI app. No setup needed.</string>
+    <string name="ai_share_ask_ai_button">Ask any AI</string>
+    <string name="ai_share_toast">Copied. Pick where to send it.</string>
+    <string name="ai_bridge_advanced_setup">Set up live connection (advanced)</string>
+    <string name="ai_bridge_setup_sheet_title">Add DeviceGPT to your AI app</string>
+    <string name="ai_bridge_setup_sheet_intro">Pick your AI app. Paste the block below into its config file, then restart the app.</string>
+    <string name="ai_bridge_setup_copy_block">Copy block</string>
+    <string name="ai_bridge_setup_copied">Config copied. Paste into your AI app.</string>
+    <string name="ai_bridge_setup_not_affiliated">Claude, Cursor, and ChatGPT are trademarks of their owners. DeviceGPT is not affiliated with any of them.</string>
     <string name="health">Health</string>
     <string name="power">Power</string>
     

@@ -57,6 +57,16 @@
     <string name="ai_bridge_guide_step3_title">৩. আপনার AI কে ফোন নিয়ে প্রশ্ন করুন</string>
     <string name="ai_bridge_guide_step3_body">যেমন: "আমার ফোনের battery কেমন?" বা "আমার ফোনে কোন কোন camera আছে?"</string>
     <string name="ai_bridge_guide_close">বন্ধ করুন</string>
+    <string name="ai_share_ask_ai_title">যেকোনো AI কে ফোনের ব্যাপারে জিজ্ঞেস করুন</string>
+    <string name="ai_share_ask_ai_subtitle">ChatGPT, Claude, Gemini বা যেকোনো AI app এ share করার জন্য live snapshot copy করে। কোনো setup লাগবে না।</string>
+    <string name="ai_share_ask_ai_button">যেকোনো AI কে জিজ্ঞেস করুন</string>
+    <string name="ai_share_toast">Copy হইছে। কোথায় পাঠাবেন select করুন।</string>
+    <string name="ai_bridge_advanced_setup">Live connection setup (advanced)</string>
+    <string name="ai_bridge_setup_sheet_title">আপনার AI app এ DeviceGPT add করুন</string>
+    <string name="ai_bridge_setup_sheet_intro">আপনার AI app select করুন। নিচের block টা তার config file এ paste করুন, তারপর app restart করুন।</string>
+    <string name="ai_bridge_setup_copy_block">Block copy করুন</string>
+    <string name="ai_bridge_setup_copied">Config copy হইছে। আপনার AI app এ paste করুন।</string>
+    <string name="ai_bridge_setup_not_affiliated">Claude, Cursor, ChatGPT — এদের trademark এদের নিজ নিজ owner এর। DeviceGPT এদের সাথে affiliated না।</string>
     
     <!-- Certificate -->
     <string name="cert">সার্ট</string>

@@ -27,12 +27,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.HighlightOff
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.SettingsEthernet
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WifiTethering
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,6 +63,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,10 +84,14 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.services.BridgeService
+import com.teamz.lab.debugger.utils.AiShareTextGenerator
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.BridgeQrCodeGenerator
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The AI Bridge tab.
@@ -117,6 +129,9 @@ fun AiBridgeTabSection(
     // the whole point is that the AI on the laptop can reach the phone even when the app
     // is not in the foreground; that's the honest expectation the toggle sets.
 
+    var showMcpSetupSheet by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -127,6 +142,46 @@ fun AiBridgeTabSection(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // Zero-setup path — copies a live device snapshot as plain text the user can paste
+        // into ANY AI (web ChatGPT, Claude web, Gemini, etc.). Deliberately ABOVE the Bridge
+        // state card because it works regardless of Bridge state and is the easier flow for
+        // non-technical users. The Bridge (live MCP) below is the advanced path.
+        AskAnyAiCard(
+            onAskAi = {
+                scope.launch {
+                    // If Bridge is Off/Error, auto-start it first so the shared prompt
+                    // can carry the live URL+PIN — lets the receiving AI optionally
+                    // upgrade to live MCP access on the same conversation. If start
+                    // times out (no WiFi etc.), we still fall through and share the
+                    // device-snapshot text without URL+PIN — no dead-end path.
+                    val current = BridgeService.state.value
+                    if (current !is BridgeService.BridgeState.On) {
+                        BridgeService.start(context)
+                        Toast.makeText(context, "Turning bridge on…", Toast.LENGTH_SHORT).show()
+                        withTimeoutOrNull(5000) {
+                            BridgeService.state.first { it is BridgeService.BridgeState.On }
+                        }
+                    }
+                    val liveState = BridgeService.state.value as? BridgeService.BridgeState.On
+                    val prompt = AiShareTextGenerator.buildPrompt(
+                        context,
+                        bridgeUrl = liveState?.urlDisplay,
+                        bridgePin = liveState?.pin,
+                    )
+                    AiShareTextGenerator.copyAndShare(context, prompt)
+                    Toast.makeText(context, context.getString(R.string.ai_share_toast), Toast.LENGTH_SHORT).show()
+                    AnalyticsUtils.logEvent(
+                        AnalyticsEvent.AiBridgeGuideOpened,
+                        mapOf(
+                            "from" to "ask_any_ai",
+                            "bridge_was_on" to (current is BridgeService.BridgeState.On),
+                            "bridge_ready" to (liveState != null),
+                        ),
+                    )
+                }
+            },
+        )
+
         when (val s = state) {
             is BridgeService.BridgeState.Off -> OffCard(onTurnOn = {
                 BridgeService.start(context)
@@ -148,6 +203,10 @@ fun AiBridgeTabSection(
                     copyToClipboard(context, label, value)
                     Toast.makeText(context, context.getString(R.string.ai_bridge_copied), Toast.LENGTH_SHORT).show()
                 },
+                onOpenMcpSetup = {
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AiBridgeGuideOpened, mapOf("from" to "mcp_setup_sheet"))
+                    showMcpSetupSheet = true
+                },
             )
 
             is BridgeService.BridgeState.Error -> ErrorCard(reason = s.reason, onRetry = {
@@ -164,6 +223,18 @@ fun AiBridgeTabSection(
 
     if (showGuide) {
         SetupGuideSheet(onDismiss = { showGuide = false })
+    }
+    if (showMcpSetupSheet) {
+        val liveState = (state as? BridgeService.BridgeState.On)
+        McpSetupSheet(
+            urlOrPlaceholder = liveState?.urlDisplay ?: "http://YOUR_PHONE_IP:8787",
+            pinOrPlaceholder = liveState?.pin ?: "PIN_FROM_APP",
+            onDismiss = { showMcpSetupSheet = false },
+            onCopy = { label, block ->
+                copyToClipboard(context, label, block)
+                Toast.makeText(context, context.getString(R.string.ai_bridge_setup_copied), Toast.LENGTH_SHORT).show()
+            },
+        )
     }
 }
 
@@ -248,6 +319,7 @@ private fun OnCard(
     onTurnOff: () -> Unit,
     onOpenGuide: () -> Unit,
     onCopy: (label: String, value: String) -> Unit,
+    onOpenMcpSetup: () -> Unit,
 ) {
     val qrPayload = remember(state.urlDisplay, state.pin) {
         BridgeQrCodeGenerator.buildPayload(state.urlDisplay, state.pin)
@@ -338,6 +410,17 @@ private fun OnCard(
                 Icon(Icons.Default.HighlightOff, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.ai_bridge_turn_off), fontSize = 16.sp)
+            }
+            // Secondary action: open the per-AI-client setup sheet with the current
+            // URL + PIN pre-filled. Only shown when the Bridge is On because the sheet
+            // needs live values; from Off state the user tap Turn On first.
+            TextButton(
+                onClick = onOpenMcpSetup,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.SettingsEthernet, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.ai_bridge_advanced_setup))
             }
             TextButton(
                 onClick = onOpenGuide,
@@ -499,4 +582,249 @@ private fun formatMmSs(ms: Long): String {
     val m = totalSeconds / 60
     val s = totalSeconds % 60
     return "%d:%02d".format(m, s)
+}
+
+// ────────────────────────── zero-setup Ask-any-AI card ──────────────────────────
+
+/**
+ * Zero-setup path: one tap copies a live device snapshot as plain text and opens the
+ * system share chooser. Works with ANY AI (web ChatGPT, Claude web, Gemini, etc.) —
+ * no MCP, no Python, no config file.
+ *
+ * Sits ABOVE the Bridge state card because it works regardless of Bridge state and is
+ * the friendlier flow for non-technical users. The Bridge (live MCP) is the advanced
+ * follow-up below it.
+ */
+@Composable
+private fun AskAnyAiCard(onAskAi: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(28.dp),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = stringResource(R.string.ai_share_ask_ai_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+            Text(
+                text = stringResource(R.string.ai_share_ask_ai_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Button(
+                onClick = onAskAi,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                Icon(Icons.Default.ContentCopy, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.ai_share_ask_ai_button), fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+// ────────────────────────── per-client MCP setup sheet ──────────────────────────
+
+private data class McpClientTab(val label: String, val icon: ImageVector)
+
+private enum class McpClient(val tab: McpClientTab) {
+    // Short labels — 4 tabs in a 1080px row already fit tight; the full names
+    // ("Claude Desktop", "ChatGPT Desktop", "Any MCP client") wrapped and
+    // truncated the second line on Pixel 8a. Full name is still in the
+    // config-path hint below the tab strip.
+    //
+    // Icons are Material generics (Psychology, Chat, Code, Extension) —
+    // deliberately NOT the official brand marks. Anthropic / OpenAI / Cursor
+    // each have separate brand-kit rules; shipping their marks in-app without
+    // a per-brand review is trademark risk. Generics are always safe and
+    // still give each tab a distinct visual anchor.
+    ClaudeDesktop(McpClientTab("Claude", Icons.Default.Psychology)),
+    Cursor(McpClientTab("Cursor", Icons.Default.Code)),
+    ChatGpt(McpClientTab("ChatGPT", Icons.Default.Chat)),
+    Other(McpClientTab("Other", Icons.Default.Extension)),
+}
+
+private fun McpClient.configPath(): String = when (this) {
+    McpClient.ClaudeDesktop -> "~/Library/Application Support/Claude/claude_desktop_config.json  (macOS)\n%APPDATA%\\Claude\\claude_desktop_config.json  (Windows)\n~/.config/Claude/claude_desktop_config.json  (Linux)"
+    McpClient.Cursor -> "~/.cursor/mcp.json  (all OS)\nOr: Cmd/Ctrl+Shift+P → \"Open MCP settings\""
+    McpClient.ChatGpt -> "ChatGPT Desktop → Settings → Model Context Protocol → Add server"
+    McpClient.Other -> "Any client that supports MCP-over-stdio uses the same JSON shape"
+}
+
+private fun McpClient.pythonCommand(): String = if (this == McpClient.Other) "python3" else when (this) {
+    McpClient.ClaudeDesktop, McpClient.Cursor, McpClient.ChatGpt -> "python3"
+    else -> "python3"
+}
+
+private fun buildMcpJsonBlock(url: String, pin: String, python: String = "python3"): String {
+    return """{
+  "mcpServers": {
+    "devicegpt-bridge": {
+      "command": "$python",
+      "args": ["/absolute/path/to/server.py"],
+      "env": {
+        "DEVICEGPT_BRIDGE_URL": "$url",
+        "DEVICEGPT_BRIDGE_PIN": "$pin"
+      }
+    }
+  }
+}"""
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun McpSetupSheet(
+    urlOrPlaceholder: String,
+    pinOrPlaceholder: String,
+    onDismiss: () -> Unit,
+    onCopy: (label: String, block: String) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selected by remember { mutableStateOf(McpClient.ClaudeDesktop) }
+    val jsonBlock = buildMcpJsonBlock(urlOrPlaceholder, pinOrPlaceholder, selected.pythonCommand())
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.ai_bridge_setup_sheet_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = stringResource(R.string.ai_bridge_setup_sheet_intro),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            // Client picker — icon-above-label pill per tab. Icons are Material
+            // generics (see McpClient docstring above), text single-line at 12sp.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                for (client in McpClient.values()) {
+                    val isSel = client == selected
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        onClick = { selected = client },
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                imageVector = client.tab.icon,
+                                contentDescription = null,
+                                tint = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(22.dp),
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = client.tab.label,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                color = if (isSel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Config path
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Config file path", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Text(
+                        text = selected.configPath(),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
+
+            // JSON block
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Paste this block", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Text(
+                        text = jsonBlock,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
+
+            Button(
+                onClick = { onCopy("mcp_config_${selected.name}", jsonBlock) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+            ) {
+                Icon(Icons.Default.ContentCopy, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.ai_bridge_setup_copy_block), fontSize = 16.sp)
+            }
+
+            Text(
+                text = stringResource(R.string.ai_bridge_setup_not_affiliated),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(16.dp))
+        }
+    }
 }
