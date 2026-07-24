@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "devicegpt-bridge": {
+      "command": "python3",
+      "args": ["/REPLACE/WITH/ABSOLUTE/PATH/TO/server.py"],
+      "env": {
+        "DEVICEGPT_BRIDGE_URL": "http://192.168.1.42:8787",
+        "DEVICEGPT_BRIDGE_PIN": "483920"
+      }
+    }
+  }
+}

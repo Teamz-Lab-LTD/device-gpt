@@ -161,6 +161,18 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+        <!-- AI Bridge foreground service: runs a LAN-only HTTP server so external MCP clients
+             (Claude Desktop, ChatGPT, etc.) can read this device's info while the toggle is on.
+             Uses dataSync (not connectedDevice) — connectedDevice requires a runtime-granted
+             BLUETOOTH_CONNECT/UWB/USB permission the app does not have and does not need. dataSync
+             is the same FGS type SystemMonitorService already uses in this app. Justification for
+             Play review: the service syncs live device-state over the local network on the user's
+             explicit tap; it stops itself after 10 min of no request. -->
+        <service
+            android:name=".services.BridgeService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         
         <!-- Lock Screen Widget (Android 13+) -->
         <receiver

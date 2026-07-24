@@ -317,6 +317,15 @@ enum class AnalyticsEvent(val eventName: String) {
     TabLeaderboardViewed("tab_leaderboard_viewed"),
     TabCameraViewed("tab_camera_viewed"),
     TabScreenTestViewed("tab_screen_test_viewed"),
+    TabAiBridgeViewed("tab_ai_bridge_viewed"),
+    // AI Bridge (2026-07-24) — full funnel so future adoption/pricing decisions come from real usage.
+    // `toggled` fires on both on and off (param `on`: bool). `client_connected` fires for every
+    // authorised endpoint hit (param `endpoint`). `auto_shutdown` fires when the 10min idle-timer
+    // expires. `guide_opened` fires when the user taps "How does this work?".
+    AiBridgeToggled("ai_bridge_toggled"),
+    AiBridgeClientConnected("ai_bridge_client_connected"),
+    AiBridgeAutoShutdown("ai_bridge_auto_shutdown"),
+    AiBridgeGuideOpened("ai_bridge_guide_opened"),
     // Camera + screen diagnostics (2026-07-24 — declared capabilities + user-judged checks only,
     // never a quality/health score; see camera_health_utils.kt header. Split into two tabs
     // 2026-07-24: Camera = fact sheet + liveness; Screen Test = colour/grid/touch checks.)

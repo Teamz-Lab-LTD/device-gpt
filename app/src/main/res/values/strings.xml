@@ -49,6 +49,37 @@
     <string name="network_info">Network Info</string>
     <string name="tab_camera">Camera</string>
     <string name="tab_screen_test">Screen Test</string>
+    <string name="tab_ai_bridge">AI Bridge</string>
+
+    <!-- AI Bridge -->
+    <string name="ai_bridge_title">AI Bridge</string>
+    <string name="ai_bridge_subtitle_off">Let the AI on your laptop read info from this phone. Only works on the same WiFi.</string>
+    <string name="ai_bridge_turn_on">Turn on AI Bridge</string>
+    <string name="ai_bridge_turn_off">Turn off</string>
+    <string name="ai_bridge_starting">Starting…</string>
+    <string name="ai_bridge_state_on">AI Bridge is on</string>
+    <string name="ai_bridge_add_this_on_laptop">On your laptop, add this:</string>
+    <string name="ai_bridge_address">Address</string>
+    <string name="ai_bridge_pin">PIN</string>
+    <string name="ai_bridge_auto_off_prefix">Turns off in</string>
+    <string name="ai_bridge_auto_off_suffix">if no activity</string>
+    <string name="ai_bridge_open_guide">How does this work?</string>
+    <string name="ai_bridge_setup_guide">Setup guide</string>
+    <string name="ai_bridge_copy">Copy</string>
+    <string name="ai_bridge_copied">Copied</string>
+    <string name="ai_bridge_notification_title">AI Bridge is running</string>
+    <string name="ai_bridge_notification_stop">Turn off</string>
+    <string name="ai_bridge_channel_name">AI Bridge</string>
+    <string name="ai_bridge_channel_description">Shown while the AI Bridge is on so you know your device is sharing info on the local network.</string>
+    <string name="ai_bridge_error_no_wifi">Please connect to WiFi, then try again.</string>
+    <string name="ai_bridge_privacy_note">This shares device info with your AI. It cannot change your settings or take screenshots.</string>
+    <string name="ai_bridge_guide_step1_title">1. Install a compatible AI app on your laptop</string>
+    <string name="ai_bridge_guide_step1_body">Claude Desktop, ChatGPT Desktop, Cursor, or any other MCP-compatible tool works.</string>
+    <string name="ai_bridge_guide_step2_title">2. Add the Bridge to your AI app</string>
+    <string name="ai_bridge_guide_step2_body">Open your AI app\'s Developer or MCP settings. Add a new MCP server with the address and PIN from this screen.</string>
+    <string name="ai_bridge_guide_step3_title">3. Ask your AI a question about this phone</string>
+    <string name="ai_bridge_guide_step3_body">Try: \"What is the battery like on my phone?\" or \"What cameras does my phone have?\"</string>
+    <string name="ai_bridge_guide_close">Close</string>
     <string name="health">Health</string>
     <string name="power">Power</string>
     

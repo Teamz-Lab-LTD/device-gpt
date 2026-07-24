@@ -1,6 +1,7 @@
 package com.teamz.lab.debugger.utils
 
 import android.util.Log
+import com.teamz.lab.debugger.BuildConfig
 
 /**
  * Tab identifiers for configuration
@@ -12,7 +13,8 @@ enum class TabType {
     DEVICE_INFO,
     NETWORK_INFO,
     CAMERA,
-    SCREEN_TEST
+    SCREEN_TEST,
+    AI_BRIDGE,
 }
 
 /**
@@ -53,6 +55,7 @@ object TabOrderManager {
                 "network_info", "networkinfo" -> TabType.NETWORK_INFO
                 "camera" -> TabType.CAMERA
                 "screen_test", "screentest" -> TabType.SCREEN_TEST
+                "ai_bridge", "aibridge", "bridge" -> TabType.AI_BRIDGE
                 else -> {
                     Log.w(TAG, "Unknown tab name in config: $tabName, skipping")
                     null
@@ -77,6 +80,15 @@ object TabOrderManager {
             return getDefaultTabOrder()
         }
         
+        // Owner call 2026-07-24: ship AI_BRIDGE to users without a Firebase RC push. If the RC
+        // `tab_order` value predates this tab (as prod's still does), append it at the end.
+        // Trade-off accepted on the record: this drops the RC kill-switch — if AI Bridge misbehaves
+        // in the wild, only a new APK release can hide it. Not a mistake, a deliberate choice.
+        if (TabType.AI_BRIDGE !in tabOrder) {
+            tabOrder.add(TabType.AI_BRIDGE)
+            Log.d(TAG, "Appended AI_BRIDGE (not in RC config)")
+        }
+
         Log.d(TAG, "Tab order from config: ${tabOrder.map { it.name }}")
         return tabOrder
     }
@@ -94,15 +106,16 @@ object TabOrderManager {
         
         // Core tabs in IAP-optimized order
         order.add(TabType.HEALTH)
-        // CAMERA and SCREEN_TEST are deliberately NOT in requiredTabs below: they must stay a
-        // safe kill-switch via RemoteConfig tab_order, since they are newer surfaces than the
-        // other four (2026-07-24, split into two tabs 2026-07-24).
+        // CAMERA, SCREEN_TEST, and AI_BRIDGE are deliberately NOT in requiredTabs below: they
+        // must stay safe kill-switches via RemoteConfig tab_order, since they are newer surfaces
+        // than the other four (CAMERA + SCREEN_TEST split 2026-07-24; AI_BRIDGE added 2026-07-24).
         order.add(TabType.CAMERA)
         order.add(TabType.SCREEN_TEST)
+        order.add(TabType.AI_BRIDGE)
         order.add(TabType.POWER)
         order.add(TabType.DEVICE_INFO)
         order.add(TabType.NETWORK_INFO)
-        
+
         return order
     }
     
@@ -153,9 +166,13 @@ object TabOrderManager {
             TabType.NETWORK_INFO -> "my_network_info.txt"
             TabType.CAMERA -> "my_camera_report.txt"
             TabType.SCREEN_TEST -> "my_screen_test_report.txt"
+            // AI_BRIDGE has no shareable text report (nothing to write to a file); the parent
+            // hides the Send FAB on this tab. Filename left generic in case a future change
+            // wires a share flow.
+            TabType.AI_BRIDGE -> "my_ai_bridge_info.txt"
         }
     }
-    
+
     /**
      * Get tab name for analytics based on tab index
      */
@@ -169,6 +186,7 @@ object TabOrderManager {
             TabType.NETWORK_INFO -> "network_info"
             TabType.CAMERA -> "camera"
             TabType.SCREEN_TEST -> "screen_test"
+            TabType.AI_BRIDGE -> "ai_bridge"
         }
     }
 }

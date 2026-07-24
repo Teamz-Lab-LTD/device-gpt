@@ -26,6 +26,37 @@
     <!-- Developer Options -->
     <string name="developer_options">ডেভেলপার অপশন</string>
     <string name="open_developer_options">ডেভেলপার অপশন খুলুন</string>
+
+    <!-- AI Bridge -->
+    <string name="tab_ai_bridge">AI Bridge</string>
+    <string name="ai_bridge_title">AI Bridge</string>
+    <string name="ai_bridge_subtitle_off">আপনার laptop এর AI কে এই ফোনের তথ্য পড়তে দিন। শুধু একই WiFi এ কাজ করবে।</string>
+    <string name="ai_bridge_turn_on">AI Bridge চালু করুন</string>
+    <string name="ai_bridge_turn_off">বন্ধ করুন</string>
+    <string name="ai_bridge_starting">চালু হচ্ছে…</string>
+    <string name="ai_bridge_state_on">AI Bridge চালু আছে</string>
+    <string name="ai_bridge_add_this_on_laptop">Laptop এ এইটা add করুন:</string>
+    <string name="ai_bridge_address">Address</string>
+    <string name="ai_bridge_pin">PIN</string>
+    <string name="ai_bridge_auto_off_prefix">এতক্ষণ কেউ না ব্যবহার করলে বন্ধ হবে:</string>
+    <string name="ai_bridge_auto_off_suffix"></string>
+    <string name="ai_bridge_open_guide">এইটা কীভাবে কাজ করে?</string>
+    <string name="ai_bridge_setup_guide">Setup গাইড</string>
+    <string name="ai_bridge_copy">Copy</string>
+    <string name="ai_bridge_copied">Copy হয়েছে</string>
+    <string name="ai_bridge_notification_title">AI Bridge চালু আছে</string>
+    <string name="ai_bridge_notification_stop">বন্ধ করুন</string>
+    <string name="ai_bridge_channel_name">AI Bridge</string>
+    <string name="ai_bridge_channel_description">AI Bridge on থাকলে দেখানো হয়, যাতে বুঝতে পারেন আপনার ফোন local network এ তথ্য share করতেছে।</string>
+    <string name="ai_bridge_error_no_wifi">আগে WiFi এ connect করুন, তারপর আবার চেষ্টা করুন।</string>
+    <string name="ai_bridge_privacy_note">এইটা AI কে ডিভাইসের তথ্য দেয়। AI আপনার settings পাল্টাতে পারে না, screenshot ও নিতে পারে না।</string>
+    <string name="ai_bridge_guide_step1_title">১. Laptop এ একটা compatible AI app install করুন</string>
+    <string name="ai_bridge_guide_step1_body">Claude Desktop, ChatGPT Desktop, Cursor, বা যেকোনো MCP-compatible tool কাজ করে।</string>
+    <string name="ai_bridge_guide_step2_title">২. AI app এ Bridge add করুন</string>
+    <string name="ai_bridge_guide_step2_body">আপনার AI app এর Developer বা MCP settings খুলুন। এই screen এর address আর PIN দিয়ে একটা নতুন MCP server add করুন।</string>
+    <string name="ai_bridge_guide_step3_title">৩. আপনার AI কে ফোন নিয়ে প্রশ্ন করুন</string>
+    <string name="ai_bridge_guide_step3_body">যেমন: "আমার ফোনের battery কেমন?" বা "আমার ফোনে কোন কোন camera আছে?"</string>
+    <string name="ai_bridge_guide_close">বন্ধ করুন</string>
     
     <!-- Certificate -->
     <string name="cert">সার্ট</string>

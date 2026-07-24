@@ -38,7 +38,8 @@ enum class ScanCategory(val displayLabel: String) {
             TabType.NETWORK_INFO -> NETWORK
             TabType.DEVICE_INFO, TabType.CAMERA, TabType.SCREEN_TEST -> HARDWARE
             TabType.HEALTH -> PRIVACY
-            TabType.LEADERBOARD, null -> AI
+            // AI_BRIDGE genuinely belongs under AI — it exposes device state to an external AI client.
+            TabType.LEADERBOARD, TabType.AI_BRIDGE, null -> AI
         }
     }
 }

@@ -31,6 +31,9 @@ object AIPromptGenerator {
             // Screen Test is entirely user-judged (the phone cannot see its own screen) — there
             // is no scan result to hand the main-tab AI FAB either.
             TabType.SCREEN_TEST -> ""
+            // AI Bridge exposes device state to an EXTERNAL AI over HTTP; there is no in-app
+            // prompt to build here. The parent nav hides the AI FAB on this tab anyway.
+            TabType.AI_BRIDGE -> ""
             null -> ""
         }
     }

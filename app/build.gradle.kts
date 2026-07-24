@@ -205,6 +205,12 @@ dependencies {
     implementation(libs.mlkit.genai.summarization)
     implementation(libs.mlkit.genai.rewriting)
 
+    // AI Bridge (2026-07-24) — local HTTP server + QR pairing for the AI Bridge tab.
+    // NanoHTTPD (~50KB) chosen over Ktor (~2MB) to keep AAB size and cold-start unaffected.
+    // ZXing core generates the pairing QR bitmap; no network involved.
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+    implementation("com.google.zxing:core:3.5.3")
+
     // Adaptive layout for Desktop Mode / freeform windowing (Android 16 QPR3 / Android 17).
     implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.adaptive.layout)

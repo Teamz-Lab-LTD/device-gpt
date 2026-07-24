@@ -178,6 +178,7 @@ private fun logMainTabSelectionAnalytics(tabType: TabType) {
         TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
         TabType.CAMERA -> AnalyticsUtils.logEvent(AnalyticsEvent.TabCameraViewed)
         TabType.SCREEN_TEST -> AnalyticsUtils.logEvent(AnalyticsEvent.TabScreenTestViewed)
+        TabType.AI_BRIDGE -> AnalyticsUtils.logEvent(AnalyticsEvent.TabAiBridgeViewed)
     }
 }
 
@@ -545,8 +546,12 @@ fun DeviceGptNavExperience(
             // Hide FABs when leaderboard tab is selected
             val leaderboardTabIndex = remember { TabOrderManager.getLeaderboardIndex() }
             val isLeaderboardTabSelected = leaderboardTabIndex != null && selectedTab == leaderboardTabIndex
-            
-            if (!isLeaderboardTabSelected) {
+            // Also hide FABs on the AI Bridge tab — it has its own big Turn on/off primary CTA
+            // and produces no shareable text report; the Send / AI FABs would visually compete.
+            val currentTabType = TabOrderManager.getTabTypeAt(selectedTab)
+            val hideFabs = isLeaderboardTabSelected || currentTabType == TabType.AI_BRIDGE
+
+            if (!hideFabs) {
                 val certTooltipState = rememberTooltipState()
                 val aiTooltipState = rememberTooltipState()
                 val premiumTooltipState = rememberTooltipState()
@@ -932,6 +937,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             TabType.NETWORK_INFO -> context.string(R.string.network_info)
                                             TabType.CAMERA -> context.string(R.string.tab_camera)
                                             TabType.SCREEN_TEST -> context.string(R.string.tab_screen_test)
+                                            TabType.AI_BRIDGE -> context.string(R.string.tab_ai_bridge)
                                         },
                                         style = MaterialTheme.typography.labelLarge,
                                     )
@@ -1256,6 +1262,13 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             showItemAIDialog = true
                                         }
                                     },
+                                )
+                            }
+
+                            TabType.AI_BRIDGE -> {
+                                com.teamz.lab.debugger.ui.AiBridgeTabSection(
+                                    activity = activity,
+                                    onShareClick = { info -> shareText = info },
                                 )
                             }
 
