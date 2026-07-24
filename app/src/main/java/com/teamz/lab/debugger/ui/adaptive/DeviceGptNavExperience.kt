@@ -211,6 +211,9 @@ fun DeviceGptNavExperience(
             navigateToTab.equals("device_info", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.DEVICE_INFO)
             navigateToTab.equals("network_info", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.NETWORK_INFO)
             navigateToTab.equals("leaderboard", ignoreCase = true) -> TabOrderManager.getLeaderboardIndex() ?: -1
+            navigateToTab.equals("camera", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.CAMERA)
+            navigateToTab.equals("screen_test", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.SCREEN_TEST)
+            navigateToTab.equals("ai_bridge", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.AI_BRIDGE)
             // Old index-based navigation (backward compatibility)
             navigateToSection >= 0 -> navigateToSection
             else -> -1
