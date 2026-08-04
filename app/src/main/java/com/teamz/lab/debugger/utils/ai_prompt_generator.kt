@@ -47,21 +47,15 @@ object AIPromptGenerator {
         Hi! I'm using **$appName** to check if my phone is working well. I'm not very technical, so please explain things simply!
 
         📱 **What $appName Found:**
-        (The detailed technical data is below - but here's what I understand so far)
-
-        🧠 **Phone Performance:** Running normally (like a car engine - seems fine)  
-        🔋 **Battery:** Health is decent, but phone feels a bit warm (like when you use it a lot)  
-        💾 **Storage:** Almost full (like a closet that's getting crowded)  
-        👁️ **Camera/Mic:** Used recently (apps accessed these features)  
-        👣 **Motion:** Phone moved while locked (maybe I bumped it, or someone touched it?)  
-        🔐 **Security:** No major risks found (seems safe)
+        The real numbers from my phone's scan are included below this message —
+        please read those, not a guess, and base your answer only on what's actually there.
 
         **What I Need Help With:**
         • Can you explain what each of these means in simple, everyday language?  
         • Is my phone healthy overall, or should I be worried?  
         • What are 1-2 easy things I can do right now to make it better?  
-        • Should I delete apps or photos to free up space?  
-        • Is the warm battery normal or a problem?
+        • Should I delete apps or photos to free up space?
+        • Is anything running hot or draining fast, based on the real numbers below?
 
         **Please talk to me like you're explaining to a friend who doesn't know much about phones!** 😊
 

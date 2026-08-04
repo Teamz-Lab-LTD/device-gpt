@@ -58,7 +58,6 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.CameraHealthUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.PermissionManager
-import com.teamz.lab.debugger.utils.RevenueCatManager
 
 /**
  * Camera tab: fact sheet + per-lens liveness check. Screen tests moved to their own tab
@@ -427,11 +426,14 @@ private fun CameraProblemReportCard(
         Text("Get AI Help With This")
     }
 
-    // Go Pro upsell removed 2026-07-25: RC dashboard has a product-type mismatch on
-    // `lifetime_premium` (RC says `subs`, Play has it as INAPP), so the paywall
-    // renders empty and the tap looks broken. Restore this button ONLY after the
-    // RC dashboard product type is fixed and the defensive branches in
-    // RevenueCatPaywall stop firing `offering_has_no_packages`.
+    // Go Pro upsell removed 2026-07-25 after the button appeared to do nothing on tap.
+    // ORIGINAL THEORY (WRONG, retracted 2026-07-25): a RC/Play product-type mismatch on
+    // `lifetime_premium`. Checked directly via the RC v2 API + Play Developer API the same
+    // day: RC has it as `one_time` (non-consumable), Play has it as an active one-time
+    // product available in 173 regions incl. BD, and the offering → package → product chain
+    // (device-gpt-offering → DeviceGPT Lifetime Access → lifetime_premium) is wired correctly.
+    // No mismatch exists. The real cause of the empty/broken tap is UNCONFIRMED — restore
+    // this button only after reproducing the failure with live logcat during an actual tap.
 }
 
 /**

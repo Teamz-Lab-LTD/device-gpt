@@ -821,6 +821,36 @@ private fun McpSetupSheet(
                 Text(stringResource(R.string.ai_bridge_setup_copy_block), fontSize = 16.sp)
             }
 
+            // Alternative to copy/paste: open this URL directly on the PC's browser. The page
+            // does the same JSON-building locally (with a PIN box), no phone->PC transfer step.
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "Or skip copying: open this on your PC's browser",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Text(
+                        text = "$urlOrPlaceholder/setup",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+                TextButton(
+                    onClick = { onCopy("setup_url", "$urlOrPlaceholder/setup") },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Copy setup URL")
+                }
+            }
+
             Text(
                 text = stringResource(R.string.ai_bridge_setup_not_affiliated),
                 style = MaterialTheme.typography.labelSmall,

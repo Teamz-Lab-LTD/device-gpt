@@ -20,6 +20,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Semaphore
@@ -48,6 +49,13 @@ import kotlin.coroutines.resume
 object CameraHealthUtils {
     private const val TAG = "CameraHealthUtils"
     private const val LIVENESS_TIMEOUT_MS = 4_000L
+
+    // AE (auto-exposure) warmup window before the still capture fires — see openCaptureClose.
+    // MIN: never fire on the very first preview frame, even if it happens to already report
+    // converged. MAX: hard ceiling for hardware that never reports CONTROL_AE_STATE at all, so
+    // one slow/silent device can't eat the whole LIVENESS_TIMEOUT_MS budget by itself.
+    private const val AE_WARMUP_MIN_MS = 250L
+    private const val AE_WARMUP_MAX_MS = 1_200L
 
     // ── Data classes ────────────────────────────────────────────────────────
 
@@ -607,12 +615,12 @@ object CameraHealthUtils {
 
             val captured = suspendCancellableCoroutine<Boolean> { cont ->
                 var resumed = false
-                // Two-phase capture: (1) a brief repeating preview request drives the
-                // camera's auto-exposure and auto-white-balance loops so a single-shot
-                // isn't taken cold; (2) the actual still capture is fired once AE has
-                // had time to settle. Without phase 1, the first JPEG from a freshly
-                // opened camera comes out very dark — worst on the back camera whose
-                // AE target is calibrated for a wider dynamic range.
+                // Two-phase capture: (1) a repeating preview request drives the camera's
+                // auto-exposure and auto-white-balance loops so a single-shot isn't taken
+                // cold; (2) the actual still capture fires once AE has converged. Without
+                // phase 1, the first JPEG from a freshly opened camera comes out very dark —
+                // worst on the back camera whose AE target is calibrated for a wider dynamic
+                // range.
                 var keepNextFrame = false
                 reader?.setOnImageAvailableListener({ r ->
                     val image = r.acquireLatestImage() ?: return@setOnImageAvailableListener
@@ -639,6 +647,75 @@ object CameraHealthUtils {
                     }
                 }, handler)
 
+                // Fires the still capture exactly once — from whichever trigger reaches it
+                // first: real AE convergence, or the timeout fallback for hardware that never
+                // reports CONTROL_AE_STATE (LEGACY-level devices commonly don't). Declared
+                // ahead of the warmup request below because Kotlin resolves local `fun`
+                // declarations across the whole enclosing block, not just top-to-bottom, so
+                // this forward reference from inside the warmup's CaptureCallback is safe.
+                var warmupComplete = false
+                fun fireStillCapture() {
+                    if (warmupComplete) return
+                    warmupComplete = true
+                    try {
+                        session?.stopRepeating()
+                    } catch (_: Exception) { /* session may already be closing */ }
+
+                    val stillBuilder = device.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
+                        addTarget(reader!!.surface)
+                        set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+                        set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+                        set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO)
+                        set(CaptureRequest.JPEG_ORIENTATION, sensorOrientation)
+                        set(CaptureRequest.JPEG_QUALITY, 90.toByte())
+                        if (checkAutofocus) {
+                            set(
+                                CaptureRequest.CONTROL_AF_TRIGGER,
+                                CaptureRequest.CONTROL_AF_TRIGGER_START,
+                            )
+                        }
+                    }
+                    keepNextFrame = true
+                    try {
+                        session?.capture(
+                            stillBuilder.build(),
+                            object : CameraCaptureSession.CaptureCallback() {
+                                override fun onCaptureCompleted(
+                                    s: CameraCaptureSession,
+                                    r: CaptureRequest,
+                                    result: TotalCaptureResult,
+                                ) {
+                                    val afState = result.get(CaptureResult.CONTROL_AF_STATE)
+                                    if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED) {
+                                        afConverged = true
+                                    }
+                                    if (readActiveLens && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                        activePhysicalCameraId =
+                                            result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)
+                                    }
+                                }
+                                override fun onCaptureFailed(
+                                    s: CameraCaptureSession,
+                                    r: CaptureRequest,
+                                    failure: android.hardware.camera2.CaptureFailure,
+                                ) {
+                                    if (!resumed) {
+                                        resumed = true
+                                        if (cont.isActive) cont.resume(false)
+                                    }
+                                }
+                            },
+                            handler,
+                        )
+                    } catch (e: Exception) {
+                        handleError(e, context = "openCaptureClose:capture:$cameraId")
+                        if (!resumed) {
+                            resumed = true
+                            if (cont.isActive) cont.resume(false)
+                        }
+                    }
+                }
+
                 try {
                     // Phase 1 — warmup. Repeating preview to drive AE + AWB + AF loops.
                     val previewBuilder = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
@@ -653,72 +730,41 @@ object CameraHealthUtils {
                             )
                         }
                     }
-                    session?.setRepeatingRequest(previewBuilder.build(), null, handler)
-
-                    // Wait for AE / AWB to settle. 700ms was the shortest value at which
-                    // the back camera stopped producing near-black frames on the Pixel 8a
-                    // in real-device testing (2026-07-25). Longer helps quality, but this
-                    // is also on the user's critical path — do not push past ~1s.
-                    handler.postDelayed({
-                        try {
-                            session?.stopRepeating()
-                        } catch (_: Exception) { /* session may already be closing */ }
-
-                        // Phase 2 — the frame we actually keep.
-                        val stillBuilder = device.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
-                            addTarget(reader!!.surface)
-                            set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
-                            set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
-                            set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO)
-                            set(CaptureRequest.JPEG_ORIENTATION, sensorOrientation)
-                            set(CaptureRequest.JPEG_QUALITY, 90.toByte())
-                            if (checkAutofocus) {
-                                set(
-                                    CaptureRequest.CONTROL_AF_TRIGGER,
-                                    CaptureRequest.CONTROL_AF_TRIGGER_START,
-                                )
+                    // 2026-07-25: was a hardcoded 700ms fixed delay, tuned by hand on ONE
+                    // device (Pixel 8a). That number has no reason to be right on other
+                    // hardware — AE convergence speed varies a lot across OEM camera HALs.
+                    // Now waits for the device's OWN reported CONTROL_AE_STATE instead of a
+                    // guessed timer, with a floor (don't fire on the very first frame even if
+                    // it happens to report converged) and a ceiling (devices that never report
+                    // AE state at all — common on LEGACY hardware level — must not hang).
+                    val warmupStartMs = SystemClock.elapsedRealtime()
+                    session?.setRepeatingRequest(
+                        previewBuilder.build(),
+                        object : CameraCaptureSession.CaptureCallback() {
+                            override fun onCaptureCompleted(
+                                s: CameraCaptureSession,
+                                r: CaptureRequest,
+                                result: TotalCaptureResult,
+                            ) {
+                                if (warmupComplete) return
+                                val elapsed = SystemClock.elapsedRealtime() - warmupStartMs
+                                if (elapsed < AE_WARMUP_MIN_MS) return
+                                val aeState = result.get(CaptureResult.CONTROL_AE_STATE)
+                                if (aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED ||
+                                    aeState == CaptureResult.CONTROL_AE_STATE_FLASH_REQUIRED
+                                ) {
+                                    handler.post { fireStillCapture() }
+                                }
                             }
-                        }
-                        keepNextFrame = true
-                        try {
-                            session?.capture(
-                                stillBuilder.build(),
-                                object : CameraCaptureSession.CaptureCallback() {
-                                    override fun onCaptureCompleted(
-                                        s: CameraCaptureSession,
-                                        r: CaptureRequest,
-                                        result: TotalCaptureResult,
-                                    ) {
-                                        val afState = result.get(CaptureResult.CONTROL_AF_STATE)
-                                        if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED) {
-                                            afConverged = true
-                                        }
-                                        if (readActiveLens && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                            activePhysicalCameraId =
-                                                result.get(CaptureResult.LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID)
-                                        }
-                                    }
-                                    override fun onCaptureFailed(
-                                        s: CameraCaptureSession,
-                                        r: CaptureRequest,
-                                        failure: android.hardware.camera2.CaptureFailure,
-                                    ) {
-                                        if (!resumed) {
-                                            resumed = true
-                                            if (cont.isActive) cont.resume(false)
-                                        }
-                                    }
-                                },
-                                handler,
-                            )
-                        } catch (e: Exception) {
-                            handleError(e, context = "openCaptureClose:capture:$cameraId")
-                            if (!resumed) {
-                                resumed = true
-                                if (cont.isActive) cont.resume(false)
-                            }
-                        }
-                    }, 700)
+                        },
+                        handler,
+                    )
+
+                    // Ceiling fallback — fires regardless of AE state once the max warmup
+                    // window has passed, so hardware that never reports CONTROL_AE_STATE
+                    // (or converges unusually slowly) still gets a photo instead of hanging
+                    // until the outer 4s liveness timeout kills the whole check.
+                    handler.postDelayed({ fireStillCapture() }, AE_WARMUP_MAX_MS)
                 } catch (e: Exception) {
                     handleError(e, context = "openCaptureClose:warmup:$cameraId")
                     if (!resumed) {

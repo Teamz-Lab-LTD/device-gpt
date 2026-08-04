@@ -187,7 +187,8 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
      *    Without this step the preview always renders in the sensor's native
      *    landscape frame even when the phone was held portrait.
      */
-    private fun decodeAndOrient(bytes: ByteArray): Bitmap? {
+    @androidx.annotation.VisibleForTesting
+    internal fun decodeAndOrient(bytes: ByteArray): Bitmap? {
         return try {
             val opts = BitmapFactory.Options().apply {
                 inSampleSize = 4

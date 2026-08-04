@@ -86,13 +86,16 @@ fun RevenueCatPaywall(
                             reportOfferingUnavailable(context, analyticsSource, "no_offering_available", onDismiss)
                             return
                         }
-                        // 2026-07-25: RC may return an offering whose packages have no local
-                        // Play Billing productDetails (product-type mismatch between RC and
-                        // Play Console — e.g. `lifetime_premium` declared as `subs` in RC
-                        // when Play has it as INAPP). In that case `Paywall(...)` renders an
-                        // empty box: the tap looks broken, no error surfaces. Detect the
-                        // empty case here and treat it exactly like "no offering" so the
-                        // user sees a toast instead of a mystery.
+                        // 2026-07-25: RC can return an offering whose packages have no local
+                        // Play Billing productDetails, which makes `Paywall(...)` render an
+                        // empty box — the tap looks broken, no error surfaces. Originally
+                        // attributed this to a RC/Play product-type mismatch on
+                        // `lifetime_premium`; that theory was checked directly against the RC
+                        // v2 API and Play Developer API the same day and is WRONG — both sides
+                        // agree it's a one-time product, correctly wired into the offering. The
+                        // actual trigger for empty productDetails is still unconfirmed. This
+                        // defensive check stays regardless of cause: an empty package list must
+                        // never render a silent broken box.
                         if (targetOffering.availablePackages.isEmpty()) {
                             Log.e(
                                 "RevenueCatPaywall",

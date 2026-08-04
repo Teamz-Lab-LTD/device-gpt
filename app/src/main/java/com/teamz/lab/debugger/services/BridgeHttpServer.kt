@@ -69,7 +69,7 @@ import kotlin.random.Random
  */
 class BridgeHttpServer(
     private val context: Context,
-    port: Int,
+    private val port: Int,
     private val expectedPin: String,
     private val onRequestServed: (endpoint: String) -> Unit,
 ) : NanoHTTPD(port) {
@@ -93,7 +93,7 @@ class BridgeHttpServer(
             return json(Response.Status.FORBIDDEN, jsonError("non-LAN source address rejected"))
         }
 
-        // `/health` is intentionally the only unauthenticated endpoint — the MCP wrapper
+        // `/health` is intentionally the only unauthenticated JSON endpoint — the MCP wrapper
         // uses it to confirm reachability before prompting the user for the PIN.
         if (uri == "/health" && method == "GET") {
             onRequestServed(uri)
@@ -101,6 +101,18 @@ class BridgeHttpServer(
                 put("ok", true)
                 put("version", VERSION)
             })
+        }
+
+        // `/setup` is the second and last unauthenticated endpoint — a human-readable setup
+        // page so the PC side can be reached by opening a URL instead of copy/pasting a JSON
+        // block off the phone. It deliberately does NOT know or embed the PIN: the page ships
+        // a JS-only template and a PIN input box, so the actual PIN value is typed straight
+        // from the phone screen into the browser and never travels over this endpoint. Every
+        // other endpoint still requires the PIN header — this page only ever teaches the human
+        // how to configure their own client, it grants nothing on its own.
+        if (uri == "/setup" && method == "GET") {
+            onRequestServed(uri)
+            return newFixedLengthResponse(Response.Status.OK, "text/html; charset=utf-8", setupPageHtml())
         }
 
         val pin = session.headers?.get(PIN_HEADER)
@@ -326,6 +338,83 @@ class BridgeHttpServer(
 
     private fun jsonError(message: String): JSONObject =
         JSONObject().put("ok", false).put("error", message)
+
+    /**
+     * Self-contained HTML — no external CSS/JS/fonts, this is served over plain LAN http.
+     * Uses `document.execCommand('copy')` via a hidden textarea rather than the Clipboard API:
+     * `navigator.clipboard.writeText` requires a secure context (https or localhost) in Chrome
+     * and Firefox, which a `http://192.168.x.x:8787` origin is not — the modern API would
+     * silently fail here.
+     */
+    private fun setupPageHtml(): String {
+        val displayUrl = "http://${LanIpResolver.getLanIpv4() ?: "YOUR_PHONE_IP"}:$port"
+        return """<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeviceGPT Bridge Setup</title>
+<style>
+body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:32px auto;padding:0 16px;color:#1a1a1a}
+h1{font-size:20px}p{color:#444;line-height:1.5}
+.tabs{display:flex;gap:8px;margin:16px 0}
+.tab{flex:1;padding:10px;text-align:center;border:1px solid #ccc;border-radius:8px;cursor:pointer;background:#f5f5f5}
+.tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+input[type=text]{width:100%;box-sizing:border-box;padding:10px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin:8px 0}
+textarea{width:100%;box-sizing:border-box;height:220px;font-family:monospace;font-size:13px;padding:10px;border:1px solid #ccc;border-radius:8px}
+button{padding:10px 16px;font-size:15px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer;margin-top:8px}
+.path{background:#f5f5f5;padding:10px;border-radius:8px;font-family:monospace;font-size:12px;white-space:pre-wrap}
+</style></head>
+<body>
+<h1>DeviceGPT Bridge Setup</h1>
+<p>Pick your AI client, type the PIN shown on your phone's AI Bridge screen, then copy the config below into the file path shown.</p>
+<div class="tabs" id="tabs"></div>
+<div class="path" id="path"></div>
+<input type="text" id="pin" placeholder="PIN shown on your phone" inputmode="numeric">
+<textarea id="json" readonly></textarea>
+<button onclick="copyJson()">Copy config</button>
+<p id="copied" style="color:green;display:none">Copied.</p>
+<script>
+var URL = ${jsQuote(displayUrl)};
+var CLIENTS = {
+  claude: {label:"Claude Desktop", path:"~/Library/Application Support/Claude/claude_desktop_config.json  (macOS)\n%APPDATA%\\Claude\\claude_desktop_config.json  (Windows)\n~/.config/Claude/claude_desktop_config.json  (Linux)"},
+  cursor: {label:"Cursor", path:"~/.cursor/mcp.json  (all OS)\nOr: Cmd/Ctrl+Shift+P -> \"Open MCP settings\""},
+  chatgpt: {label:"ChatGPT Desktop", path:"ChatGPT Desktop -> Settings -> Model Context Protocol -> Add server"},
+  other: {label:"Other", path:"Any client that supports MCP-over-stdio uses the same JSON shape"}
+};
+var selected = "claude";
+function render() {
+  var tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  Object.keys(CLIENTS).forEach(function(key) {
+    var d = document.createElement("div");
+    d.className = "tab" + (key === selected ? " active" : "");
+    d.textContent = CLIENTS[key].label;
+    d.onclick = function() { selected = key; render(); };
+    tabs.appendChild(d);
+  });
+  document.getElementById("path").textContent = CLIENTS[selected].path;
+  var pin = document.getElementById("pin").value || "PASTE_PIN_FROM_PHONE_HERE";
+  document.getElementById("json").value = JSON.stringify({
+    mcpServers: { "devicegpt-bridge": {
+      command: "python3",
+      args: ["/absolute/path/to/server.py"],
+      env: { DEVICEGPT_BRIDGE_URL: URL, DEVICEGPT_BRIDGE_PIN: pin }
+    }}
+  }, null, 2);
+}
+document.getElementById("pin").oninput = render;
+function copyJson() {
+  var ta = document.getElementById("json");
+  ta.select();
+  ta.setSelectionRange(0, 999999);
+  document.execCommand("copy");
+  document.getElementById("copied").style.display = "block";
+}
+render();
+</script>
+</body></html>"""
+    }
+
+    private fun jsQuote(v: String): String =
+        JSONObject.quote(v)
 
     // ─────────────────────── Phase D — consent-gated capture ───────────────────────
 

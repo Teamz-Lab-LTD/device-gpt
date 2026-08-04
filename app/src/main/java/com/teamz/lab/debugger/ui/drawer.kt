@@ -222,8 +222,22 @@ fun DrawerContent(
                 startStatService()
                 // ✅ Re-check usage stats permission
                 val currentGranted = PermissionManager.hasUsageStatsPermission(context)
+                val previouslyGranted = permissionStates[Manifest.permission.PACKAGE_USAGE_STATS]
                 permissionStates[Manifest.permission.PACKAGE_USAGE_STATS] = currentGranted
-                onPermissionChanged?.invoke(Manifest.permission.PACKAGE_USAGE_STATS, currentGranted)
+                // BUG FIX (2026-07-25, reported by user: granting the CAMERA permission on the
+                // Camera tab jumped the whole tab back to its top scroll position). Root cause:
+                // this ON_RESUME observer fires on EVERY app resume — including the resume that
+                // follows ANY runtime permission dialog, not just usage-stats — and previously
+                // called onPermissionChanged() unconditionally. That callback increments
+                // DeviceGptNavExperience's `refreshTrigger`, which is a `key(refreshTrigger)`
+                // wrapping the ENTIRE tab content — so every resume silently remounted the
+                // active tab from scratch (fresh rememberScrollState() at 0, confirmed via
+                // logcat identity-hash tracing on a real device). Only fire the callback — and
+                // only pay the full-tab remount cost — when usage-stats permission itself
+                // actually changed.
+                if (previouslyGranted != currentGranted) {
+                    onPermissionChanged?.invoke(Manifest.permission.PACKAGE_USAGE_STATS, currentGranted)
+                }
                 coroutineScope.launch {
                     drawerState.close()
                 }
