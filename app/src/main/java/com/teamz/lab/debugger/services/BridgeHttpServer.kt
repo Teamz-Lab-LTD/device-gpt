@@ -789,7 +789,13 @@ render();
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
-        return JSONObject().put("ok", true).put("dialer_prefilled", clean)
+        // Never echo the number back in the response — Play's Data Safety scanner
+        // treats a phone number round-tripping over this socket as "collected and
+        // transmitted off device," even though it's the caller's own input being
+        // reflected, not a value read from the SIM. Rejected v37 (2026-08-08) for
+        // exactly this. A boolean confirms the dial without the digits leaving the
+        // process boundary at all.
+        return JSONObject().put("ok", true).put("dialer_prefilled", true)
     }
 
     // ─────────────────────── Phase C — auto-runnable tests ───────────────────────
