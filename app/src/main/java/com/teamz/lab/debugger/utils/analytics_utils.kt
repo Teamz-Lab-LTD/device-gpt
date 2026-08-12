@@ -280,6 +280,13 @@ enum class AnalyticsEvent(val eventName: String) {
     UserEngagementSignificantAction("user_engagement_significant_action"),
     // v3.1.11 Week 1 retention milestone events
     D1OvernightDrainScheduled("d1_overnight_drain_scheduled"),
+    // 2026-08-11: diagnostic-only. doWork() only ever logged on the gate-pass path, so
+    // "scheduled=104, pushed=7" could mean either "the RC gate resolved false 93% of the
+    // time" or "the WorkManager job never executed at all" (Doze / OEM battery killers —
+    // the request has zero constraints and fires 20h out). This event fires unconditionally
+    // the instant doWork() starts, before the RC gate, so the funnel can finally tell those
+    // two failure modes apart. See project_devicegpt_10k_dau_goal.md.
+    D1OvernightDrainWorkerFired("d1_overnight_drain_worker_fired"),
     D1OvernightDrainPushed("d1_overnight_drain_pushed"),
     D1OvernightDrainCancelled("d1_overnight_drain_cancelled"),
     D1OvernightDrainOpened("d1_overnight_drain_opened"),

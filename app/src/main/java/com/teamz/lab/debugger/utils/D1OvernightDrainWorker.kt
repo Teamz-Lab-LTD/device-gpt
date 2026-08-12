@@ -188,10 +188,24 @@ object D1OvernightDrainWorker {
             // read 0), and set RC defaults before the gate reads the flag.
             AnalyticsUtils.init(ctx)
             RemoteConfigUtils.init()
+            // Diagnostic (2026-08-11): fires unconditionally the moment doWork() actually
+            // runs — everything below this line only logs on the gate-pass path, so
+            // "scheduled 104, pushed 7" was unable to tell "job never ran (Doze/OEM kill —
+            // zero constraints, fires 20h out)" apart from "job ran, RC gate said false".
+            // This event settles which one it is: if worker_fired << scheduled, WorkManager
+            // reliability is the bug (needs setConstraints/retry, not an RC fix). If
+            // worker_fired ≈ scheduled but pushed stays low, the gate itself is still broken.
+            val gateResult = RemoteConfigUtils.awaitD1OvernightDrainEnabled()
+            try {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.D1OvernightDrainWorkerFired,
+                    mapOf("gate_result" to gateResult)
+                )
+            } catch (_: Throwable) { /* analytics not critical */ }
             // Await a fresh fetch+activate before gating — a plain getBoolean() in this
             // background process falls back to the bundled default (false) and the push
             // silently never fires (prod: scheduled 124, pushed 0).
-            if (!RemoteConfigUtils.awaitD1OvernightDrainEnabled()) {
+            if (!gateResult) {
                 Log.d(TAG, "D1 flag false at fire time (A/B off or RC disabled) — skipping")
                 return Result.success()
             }
