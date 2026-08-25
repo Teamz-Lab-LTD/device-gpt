@@ -70,9 +70,27 @@ object PaywallPolicy {
         return cooldownOk && suppressionClear(context)
     }
 
+    /**
+     * True when no suppression window is currently in force.
+     *
+     * Reads BOTH windows. Until 2026-08-26 this consulted only KEY_SUPPRESS_UNTIL, so the
+     * 7-day cooldown written by RouteAction.COOLDOWN_7D (line ~121) was a dead write —
+     * nothing anywhere read that key except debugReset(), which deletes it. The practical
+     * effect: a user who picked "not now" was telling the app to back off for a week, and
+     * the app forgot immediately. "Not now" is the most likely choice on that sheet, so the
+     * most common dismissal was also the one that did nothing.
+     *
+     * Note this only becomes observable once RC `paywall_reason_routing_enabled` is true;
+     * while that flag is false, onDismissReason() returns before writing either key.
+     */
     private fun suppressionClear(context: Context): Boolean {
-        val until = prefs(context).getLong(KEY_SUPPRESS_UNTIL, 0L)
-        return until == 0L || System.currentTimeMillis() >= until
+        val p = prefs(context)
+        val now = System.currentTimeMillis()
+        val suppressUntil = p.getLong(KEY_SUPPRESS_UNTIL, 0L)
+        val cooldownUntil = p.getLong(KEY_COOLDOWN_UNTIL, 0L)
+        val blocked = (suppressUntil != 0L && now < suppressUntil) ||
+            (cooldownUntil != 0L && now < cooldownUntil)
+        return !blocked
     }
 
     // ---- 2. Dismiss-reason routing --------------------------------------------

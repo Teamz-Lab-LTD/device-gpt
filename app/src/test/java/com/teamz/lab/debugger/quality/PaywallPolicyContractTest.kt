@@ -18,6 +18,45 @@ import java.io.File
  */
 class PaywallPolicyContractTest {
 
+    // ---- Suppression windows must both be READ, not just written ---------------
+
+    @Test
+    fun `the 7-day cooldown key is actually consulted, not just written`() {
+        // The bug this pins: COOLDOWN_7D wrote policy_cooldown_until, and
+        // suppressionClear() only ever read policy_suppress_until. Nothing anywhere
+        // read the cooldown key except debugReset(), which deletes it. So a user who
+        // chose "not now" — the most likely answer on that sheet — asked the app to
+        // back off for a week and it forgot instantly. Source-text guard, because the
+        // read path needs a Context and SharedPreferences to exercise directly.
+        val src = File("src/main/java/com/teamz/lab/debugger/utils/PaywallPolicy.kt")
+            .let { if (it.exists()) it else File("app/src/main/java/com/teamz/lab/debugger/utils/PaywallPolicy.kt") }
+        assertTrue("PaywallPolicy.kt not found", src.exists())
+        val body = src.readText()
+
+        val fn = body.substringAfter("private fun suppressionClear").substringBefore("\n    }")
+        assertTrue(
+            "suppressionClear() must read KEY_SUPPRESS_UNTIL",
+            fn.contains("KEY_SUPPRESS_UNTIL")
+        )
+        assertTrue(
+            "suppressionClear() must ALSO read KEY_COOLDOWN_UNTIL — writing a cooldown " +
+                "nothing reads means 'not now' silently does nothing",
+            fn.contains("KEY_COOLDOWN_UNTIL")
+        )
+    }
+
+    @Test
+    fun `every suppression key that is written is also read somewhere`() {
+        val src = File("src/main/java/com/teamz/lab/debugger/utils/PaywallPolicy.kt")
+            .let { if (it.exists()) it else File("app/src/main/java/com/teamz/lab/debugger/utils/PaywallPolicy.kt") }
+        val body = src.readText()
+        for (key in listOf("KEY_SUPPRESS_UNTIL", "KEY_COOLDOWN_UNTIL")) {
+            val written = body.contains("putLong($key")
+            val read = body.contains("getLong($key")
+            assertTrue("$key is written but never read — a dead write", !written || read)
+        }
+    }
+
     // ---- Pure routing table ----------------------------------------------------
 
     @Test
