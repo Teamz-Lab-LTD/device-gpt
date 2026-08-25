@@ -58,6 +58,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun CustomDomainProbeCard(
+    activity: android.app.Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
     onReportChanged: (String) -> Unit = {},
 ) {
@@ -265,7 +266,16 @@ fun CustomDomainProbeCard(
             Spacer(Modifier.height(12.dp))
 
             Button(
-                onClick = { run() },
+                onClick = {
+                    val act = activity
+                    if (act != null) {
+                        com.teamz.lab.debugger.utils.InterstitialAdManager.showAdBeforeAction(
+                            act, "app_doctor_probe"
+                        ) { run() }
+                    } else {
+                        run()
+                    }
+                },
                 enabled = !isRunning && input.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()

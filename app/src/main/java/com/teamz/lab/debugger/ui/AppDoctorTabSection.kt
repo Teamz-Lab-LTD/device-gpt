@@ -27,6 +27,7 @@ import com.teamz.lab.debugger.R
  */
 @Composable
 fun AppDoctorTabSection(
+    activity: android.app.Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
     onShareClick: (String) -> Unit = {},
 ) {
@@ -66,6 +67,7 @@ fun AppDoctorTabSection(
         )
 
         CustomDomainProbeCard(
+            activity = activity,
             onItemAIClick = onItemAIClick,
             onReportChanged = onShareClick,
         )

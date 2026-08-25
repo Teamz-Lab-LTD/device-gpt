@@ -1252,6 +1252,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
 
                             TabType.APP_DOCTOR -> {
                                 com.teamz.lab.debugger.ui.AppDoctorTabSection(
+                                    activity = activity,
                                     onShareClick = { info -> shareText = info },
                                     onItemAIClick = { title, content ->
                                         com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(

@@ -135,6 +135,7 @@ fun ScreenTestTabSection(
         // Mic first. The app TITLE is "Battery, Mic Test: DeviceGPT" — the feature the
         // title leads with must not be the last thing on the screen.
         MicTestCard(
+            activity = activity,
             onItemAIClick = onItemAIClick,
             onResultChanged = { r ->
                 micReport = r

@@ -49,6 +49,7 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun MicTestCard(
+    activity: android.app.Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
     onResultChanged: (String) -> Unit = {},
 ) {
@@ -292,6 +293,15 @@ fun MicTestCard(
                                 AnalyticsEvent.MicTestPlaybackAnswered,
                                 mapOf("heard" to yes)
                             )
+                            // AFTER the test, never before: an interstitial plays audio,
+                            // and this test opens by asking the user to stay silent while
+                            // the room's noise floor is measured. An ad first would bleed
+                            // into that measurement and contradict the on-screen
+                            // instruction. Completion is the honest break point.
+                            activity?.let { act ->
+                                com.teamz.lab.debugger.utils.InterstitialAdManager
+                                    .showAdBeforeAction(act, "mic_test_complete") { }
+                            }
                         }
                     )
                 }

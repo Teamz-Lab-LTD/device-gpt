@@ -133,6 +133,40 @@ class CustomDomainProbeGuardTest {
     }
 
     @Test
+    fun `both new features are monetized, and the mic ad fires AFTER the test`() {
+        // The new tabs shipped in v40 with ZERO ad hooks while every other
+        // test-running surface wires showAdBeforeAction (power 9 sites, health 3,
+        // leaderboard 2, camera 1). That is revenue left on the floor on the two
+        // newest surfaces.
+        val probe = cardSrc
+        assertTrue(
+            "App Doctor probe has no interstitial hook",
+            probe.contains("showAdBeforeAction") && probe.contains("app_doctor_probe")
+        )
+
+        val mic = locate("src/main/java/com/teamz/lab/debugger/ui/MicTestCard.kt").readText()
+        assertTrue(
+            "Mic test has no interstitial hook",
+            mic.contains("showAdBeforeAction") && mic.contains("mic_test_complete")
+        )
+        // Ordering is load-bearing, not stylistic: an interstitial plays AUDIO, and
+        // the mic test opens by telling the user to stay silent while it measures the
+        // room noise floor. An ad before the test would bleed into that measurement
+        // and contradict the on-screen instruction.
+        val adIdx = mic.indexOf("mic_test_complete")
+        val startIdx = mic.indexOf("fun runTest()")
+        assertTrue("could not locate runTest() — file drifted", startIdx > 0)
+        assertTrue(
+            "the mic interstitial must sit in the completion handler, not before capture",
+            adIdx > startIdx
+        )
+        assertFalse(
+            "an ad must never wrap the capture call itself",
+            Regex("showAdBeforeAction[\\s\\S]{0,120}runTest\\(\\)").containsMatchIn(mic)
+        )
+    }
+
+    @Test
     fun `the probe card has exactly one home`() {
         // It previously lived on Network Info as well; two copies double-fire the
         // custom_domain_probe_* events and give one feature two places to look for it.
