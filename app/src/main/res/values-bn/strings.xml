@@ -219,4 +219,35 @@
     
     <!-- Notification -->
     <string name="notification_watching_over">ব্যাটারি, গতি এবং আরও অনেক কিছু দেখছে ⚙</string>
+
+    <!-- Website reachability probe (App Doctor release 1, 2026-08-18) -->
+    <string name="probe_custom_title">একটা website check করুন</string>
+    <string name="probe_custom_subtitle">এই ফোন থেকে ওটায় ঢোকা যায় কিনা দেখুন</string>
+    <string name="probe_custom_hint">example.com</string>
+    <string name="probe_custom_button">Check করুন</string>
+    <string name="probe_checking">দেখছি… %2$d এর %1$d</string>
+    <string name="probe_invalid_domain">এটা website address এর মতো লাগছে না। example.com এভাবে লিখুন</string>
+    <string name="probe_verdict_all_ok">এই ফোন থেকে website টা ঠিকঠাক কাজ করছে</string>
+    <string name="probe_verdict_intermittent">website টা মাঝে মাঝে কাজ করে, মাঝে মাঝে করে না</string>
+    <string name="probe_verdict_intermittent_why">%2$d বারের মধ্যে %1$d বার fail করেছে। একবার check করলে এই সমস্যা ধরা পড়ে না।</string>
+    <string name="probe_verdict_dns_blocked">এই ফোন website টার address খুঁজে পাচ্ছে না</string>
+    <string name="probe_verdict_dns_why">নাম খুঁজে পায়নি। সাধারণত DNS, Private DNS বা VPN setting এর কারণে হয়।</string>
+    <string name="probe_verdict_tls_blocked">secure connection টা আটকে দেওয়া হচ্ছে</string>
+    <string name="probe_verdict_tcp_blocked">address পেয়েছে, কিন্তু connection নেয়নি</string>
+    <string name="probe_verdict_unreachable">এই ফোন থেকে website টায় ঢোকা যাচ্ছে না</string>
+    <string name="probe_verdict_ok_detail">%1$d বারই কাজ করেছে, প্রতিবার প্রায় %2$d ms।</string>
+    <string name="probe_context_private_dns">Private DNS on আছে</string>
+    <string name="probe_context_vpn">VPN on আছে</string>
+    <string name="probe_context_captive">এই network এ আগে sign in করতে হবে</string>
+    <string name="probe_fix_private_dns">Private DNS settings খুলুন</string>
+    <string name="probe_fix_vpn">VPN settings খুলুন</string>
+    <string name="probe_fix_wifi">Wi-Fi settings খুলুন</string>
+    <string name="probe_show_details">বিস্তারিত দেখুন</string>
+    <string name="probe_hide_details">বিস্তারিত লুকান</string>
+    <string name="probe_copy_report">পুরা report copy করুন</string>
+    <string name="probe_copied">Report copy হয়েছে</string>
+    <string name="probe_attempt_label">চেষ্টা %1$d</string>
+    <string name="probe_detail_dns">DNS</string>
+    <string name="probe_detail_https">HTTPS</string>
+    <string name="probe_detail_servers">DNS server</string>
 </resources>

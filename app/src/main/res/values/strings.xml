@@ -237,4 +237,35 @@
     <!-- Google Sign-In -->
     <!-- OAuth Client ID is set from local_config.properties at build time via resValue -->
     <string name="default_web_client_id">YOUR_OAUTH_CLIENT_ID</string>
+
+    <!-- Website reachability probe (App Doctor release 1, 2026-08-18) -->
+    <string name="probe_custom_title">Check a website</string>
+    <string name="probe_custom_subtitle">See if this phone can reach it</string>
+    <string name="probe_custom_hint">example.com</string>
+    <string name="probe_custom_button">Check</string>
+    <string name="probe_checking">Checking… %1$d of %2$d</string>
+    <string name="probe_invalid_domain">That does not look like a website address. Try something like example.com</string>
+    <string name="probe_verdict_all_ok">This website works from this phone</string>
+    <string name="probe_verdict_intermittent">This website works only sometimes</string>
+    <string name="probe_verdict_intermittent_why">It failed %1$d out of %2$d tries. A problem like this looks fine if you only check once.</string>
+    <string name="probe_verdict_dns_blocked">This phone cannot find this website’s address</string>
+    <string name="probe_verdict_dns_why">The name lookup failed. This is usually a DNS, Private DNS or VPN setting.</string>
+    <string name="probe_verdict_tls_blocked">The secure connection is being blocked</string>
+    <string name="probe_verdict_tcp_blocked">This phone found the address but the connection was refused</string>
+    <string name="probe_verdict_unreachable">This phone cannot reach this website</string>
+    <string name="probe_verdict_ok_detail">All %1$d tries succeeded, about %2$d ms each.</string>
+    <string name="probe_context_private_dns">Private DNS is on</string>
+    <string name="probe_context_vpn">A VPN is on</string>
+    <string name="probe_context_captive">This network wants you to sign in first</string>
+    <string name="probe_fix_private_dns">Open Private DNS settings</string>
+    <string name="probe_fix_vpn">Open VPN settings</string>
+    <string name="probe_fix_wifi">Open Wi-Fi settings</string>
+    <string name="probe_show_details">Show details</string>
+    <string name="probe_hide_details">Hide details</string>
+    <string name="probe_copy_report">Copy full report</string>
+    <string name="probe_copied">Report copied</string>
+    <string name="probe_attempt_label">Try %1$d</string>
+    <string name="probe_detail_dns">DNS</string>
+    <string name="probe_detail_https">HTTPS</string>
+    <string name="probe_detail_servers">DNS servers</string>
 </resources>

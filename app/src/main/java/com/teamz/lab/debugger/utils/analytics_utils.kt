@@ -458,6 +458,14 @@ enum class AnalyticsEvent(val eventName: String) {
     ReachabilityTestCompleted("reachability_test_completed"),
     ReachabilityResultShared("reachability_result_shared"),
     ReachabilityAIClicked("reachability_ai_clicked"),
+    // Custom website probe (App Doctor release 1, 2026-08-18).
+    // Params carry the OUTCOME SHAPE only — success_count, attempts, intermittent,
+    // status. The domain the user typed is never a param: it is user-supplied content
+    // and putting it in an analytics payload would make it "collected and transmitted
+    // off device" for Data Safety purposes, which is exactly what got vc37 and vc39
+    // rejected.
+    CustomDomainProbeStarted("custom_domain_probe_started"),
+    CustomDomainProbeCompleted("custom_domain_probe_completed"),
     // Zero Trust Dashboard events
     ZeroTrustScanStarted("zero_trust_scan_started"),
     ZeroTrustScanCompleted("zero_trust_scan_completed"),

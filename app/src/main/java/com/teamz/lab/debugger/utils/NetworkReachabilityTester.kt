@@ -42,6 +42,41 @@ data class DomainProbeResult(
     val errorDetail: String?
 )
 
+/**
+ * Outcome of probing one domain several times.
+ *
+ * Exists because the faults worth finding are intermittent. A site that fails one
+ * request in five looks perfectly healthy to a single probe — which is exactly how
+ * the 2026-08-25 InterviewBoss incident stayed invisible while ~20% of users were
+ * affected. Never collapse this to a green tick; show the pass count.
+ */
+data class RepeatedProbeResult(
+    val domain: String,
+    val category: String,
+    val attempts: Int,
+    val successCount: Int,
+    /** Mean round-trip (DNS + HTTPS) across SUCCESSFUL attempts only. 0 if none passed. */
+    val avgLatencyMs: Long,
+    val minLatencyMs: Long,
+    val maxLatencyMs: Long,
+    val overallStatus: ReachabilityStatus,
+    val perAttempt: List<DomainProbeResult>,
+    val errorDetail: String?
+) {
+    /** Some passed, some failed — the case a single probe would have missed entirely. */
+    val isIntermittent: Boolean get() = successCount in 1 until attempts
+
+    val allFailed: Boolean get() = attempts > 0 && successCount == 0
+
+    /** e.g. "3/4 OK, avg 240ms" — the honest headline, never a bare tick. */
+    val summaryLine: String
+        get() = when {
+            attempts == 0 -> "Not tested"
+            successCount == 0 -> "0/$attempts OK"
+            else -> "$successCount/$attempts OK, avg ${avgLatencyMs}ms"
+        }
+}
+
 data class QuicHintResult(
     val domain: String,
     val udpOpen: Boolean,
@@ -68,19 +103,24 @@ data class ReachabilityReport(
  */
 object NetworkReachabilityTester {
 
-    // Fixed test list -- safe, non-political, well-known services
-    private val TEST_DOMAINS = listOf(
-        "Search" to "www.google.com",
-        "Video" to "www.youtube.com",
-        "Messaging" to "web.whatsapp.com",
-        "Messaging" to "telegram.org",
-        "Social" to "www.instagram.com",
-        "Developer" to "github.com",
-        "Cloud" to "drive.google.com",
-        "DNS" to "dns.google",
-        "DNS" to "one.one.one.one",
-        "CDN" to "speed.cloudflare.com"
-    )
+    /**
+     * Probe list, now Remote-Config driven (2026-08-18). The previously-hardcoded set
+     * is the bundled default in RemoteConfigUtils, so behaviour is unchanged until
+     * someone edits the console. Curation rule is unchanged: safe, well-known,
+     * non-political services only.
+     *
+     * Read through a function, not a `val`: a `val` would snapshot the list at class-init
+     * (which on a cold start happens before the first RC fetch completes) and the app
+     * would keep probing the stale list for the rest of the process lifetime.
+     */
+    private fun testDomains(): List<Pair<String, String>> =
+        RemoteConfigUtils.getReachabilityTestDomains()
+
+    /** Attempts per domain for the repeated/user-entered probe. See probeDomainRepeated. */
+    const val DEFAULT_PROBE_ATTEMPTS = 4
+
+    /** Gap between attempts. Long enough that a connection is not simply reused. */
+    private const val ATTEMPT_GAP_MS = 350L
 
     private const val DNS_TIMEOUT_MS = 5000L
     private const val HTTPS_CONNECT_TIMEOUT_MS = 5000
@@ -91,7 +131,7 @@ object NetworkReachabilityTester {
      */
     suspend fun runReachabilityTest(context: Context): ReachabilityReport = coroutineScope {
         // Run domain probes in parallel
-        val probeJobs = TEST_DOMAINS.map { (category, domain) ->
+        val probeJobs = testDomains().map { (category, domain) ->
             async(Dispatchers.IO) { probeDomain(domain, category) }
         }
 
@@ -131,6 +171,98 @@ object NetworkReachabilityTester {
             opennessScore = opennessScore,
             restrictionLevel = restrictionLevel,
             timestamp = System.currentTimeMillis()
+        )
+    }
+
+    // --- Repeated / user-entered probe ---
+
+    /**
+     * Normalise whatever the user typed into a bare hostname, or null if it cannot be
+     * one. Accepts "https://example.com/path", "example.com:8443", " Example.COM ".
+     *
+     * Pure and defensive on purpose: this value is about to be sent off the device as a
+     * DNS query and a TLS SNI, so it must be a hostname and nothing else. It is never
+     * logged, never sent to analytics, and never persisted by the probe path.
+     */
+    fun normaliseUserDomain(input: String): String? {
+        var s = input.trim().lowercase()
+        if (s.isEmpty()) return null
+        s = s.removePrefix("https://").removePrefix("http://")
+        s = s.substringBefore('/')          // drop path
+        s = s.substringBefore('?')          // drop query
+        s = s.substringBefore('#')          // drop fragment
+        s = s.substringBefore(':')          // drop port
+        s = s.substringAfter('@')           // drop any userinfo
+        s = s.trim().trimEnd('.')           // tolerate a trailing root dot
+        if (s.isEmpty() || s.length > 253) return null
+        if (!s.matches(USER_HOSTNAME_REGEX)) return null
+        return s
+    }
+
+    private val USER_HOSTNAME_REGEX =
+        Regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
+
+    /**
+     * Probe one domain [attempts] times and aggregate.
+     *
+     * Deliberately SEQUENTIAL with a gap, not parallel: parallel attempts share the DNS
+     * cache and the HTTP connection pool, so attempts 2..n measure the pool rather than
+     * the network and an intermittent fault reads as uniformly healthy. Sequential is
+     * slower and is the entire point.
+     */
+    suspend fun probeDomainRepeated(
+        domain: String,
+        category: String = "Custom",
+        attempts: Int = DEFAULT_PROBE_ATTEMPTS
+    ): RepeatedProbeResult = withContext(Dispatchers.IO) {
+        val safeAttempts = attempts.coerceIn(1, 10)
+        val results = ArrayList<DomainProbeResult>(safeAttempts)
+        repeat(safeAttempts) { i ->
+            results.add(probeDomain(domain, category))
+            if (i < safeAttempts - 1) kotlinx.coroutines.delay(ATTEMPT_GAP_MS)
+        }
+        aggregateAttempts(domain, category, results)
+    }
+
+    /**
+     * Pure aggregation, split out so the 4-attempt maths is unit-testable without a
+     * network. Visible for testing.
+     */
+    fun aggregateAttempts(
+        domain: String,
+        category: String,
+        results: List<DomainProbeResult>
+    ): RepeatedProbeResult {
+        val successes = results.filter { it.overallStatus == ReachabilityStatus.REACHABLE }
+        val latencies = successes.map { it.dnsLatencyMs + it.httpsLatencyMs }
+
+        // Representative status: if nothing passed, report the most common failure mode
+        // rather than an arbitrary first-one-wins, so a single odd error does not
+        // mislabel a consistently blocked domain.
+        val status = when {
+            results.isEmpty() -> ReachabilityStatus.NOT_TESTED
+            successes.isNotEmpty() -> ReachabilityStatus.REACHABLE
+            else -> results.groupingBy { it.overallStatus }.eachCount()
+                .maxByOrNull { it.value }?.key ?: ReachabilityStatus.NETWORK_ERROR
+        }
+
+        // Surface an error string whenever ANY attempt failed — including the
+        // partial-success case, where the failure is the interesting part.
+        val errorDetail = results.firstOrNull {
+            it.overallStatus != ReachabilityStatus.REACHABLE && it.errorDetail != null
+        }?.errorDetail
+
+        return RepeatedProbeResult(
+            domain = domain,
+            category = category,
+            attempts = results.size,
+            successCount = successes.size,
+            avgLatencyMs = if (latencies.isEmpty()) 0L else latencies.sum() / latencies.size,
+            minLatencyMs = latencies.minOrNull() ?: 0L,
+            maxLatencyMs = latencies.maxOrNull() ?: 0L,
+            overallStatus = status,
+            perAttempt = results,
+            errorDetail = errorDetail
         )
     }
 

@@ -151,6 +151,22 @@ object RemoteConfigUtils {
                 // Suppression saves zero revenue (these earn $0) but removes ~22,800 wasted requests
                 // that hurt AdMob global match rate signal.
                 "ad_suppressed_country_codes" to "IR,RU,IQ,SG,YE,ET,SE",
+                // Reachability probe list. Format: "Category|domain,Category|domain".
+                // Bundled default is the list that used to be hardcoded in
+                // NetworkReachabilityTester.TEST_DOMAINS. Made RC-driven 2026-08-18 so a
+                // live incident (e.g. InterviewBoss failing for ~20% of users, 2026-08-25)
+                // is a console change, not a Play release + review + staged rollout.
+                // Curation rule is unchanged and NOT optional: safe, well-known,
+                // non-political services only. This list ships in the APK and is visible
+                // to anyone who unzips it — a politically-sensitive domain here reads as
+                // a censorship-detection tool, which is a different app category and a
+                // different policy conversation.
+                "reachability_test_domains" to
+                    "Search|www.google.com,Video|www.youtube.com," +
+                    "Messaging|web.whatsapp.com,Messaging|telegram.org," +
+                    "Social|www.instagram.com,Developer|github.com," +
+                    "Cloud|drive.google.com,DNS|dns.google," +
+                    "DNS|one.one.one.one,CDN|speed.cloudflare.com",
                 // v3.1.11 Week 1 retention milestone — explicit bundled defaults.
                 // First-install cold start reads bundled values BEFORE server fetch
                 // completes (~5 min). Without these here, getBoolean falls back to
@@ -377,6 +393,53 @@ object RemoteConfigUtils {
     fun getTabOrderConfig(): String {
         return remoteConfig.getString("tab_order")
     }
+
+    /**
+     * Reachability probe list, RC-driven with the previously-hardcoded set as the
+     * bundled default. Returns (category, domain) pairs.
+     *
+     * Falls back to the bundled default whenever the server value is absent, blank,
+     * or unparseable — a malformed console entry must never leave the reachability
+     * test with zero domains to probe, which would render a 0% "openness score" and
+     * read to the user as "your whole network is blocked".
+     *
+     * Entries are `Category|domain`, comma-separated. Malformed individual entries are
+     * skipped rather than failing the whole list.
+     */
+    fun getReachabilityTestDomains(): List<Pair<String, String>> {
+        val raw = remoteConfig.getString("reachability_test_domains")
+        val parsed = parseReachabilityDomains(raw)
+        return parsed.ifEmpty { parseReachabilityDomains(DEFAULT_REACHABILITY_DOMAINS) }
+    }
+
+    /**
+     * Pure parser, split out so it is unit-testable without a live RemoteConfig.
+     * Visible for testing.
+     */
+    fun parseReachabilityDomains(raw: String): List<Pair<String, String>> =
+        raw.split(',')
+            .mapNotNull { entry ->
+                val parts = entry.split('|')
+                if (parts.size != 2) return@mapNotNull null
+                val category = parts[0].trim()
+                val domain = parts[1].trim().lowercase()
+                if (category.isEmpty() || domain.isEmpty()) return@mapNotNull null
+                // Reject anything that is not plausibly a hostname. A stray scheme,
+                // path or space in a console entry would otherwise be probed verbatim
+                // and always fail, which looks like a network fault rather than a typo.
+                if (!domain.matches(HOSTNAME_REGEX)) return@mapNotNull null
+                category to domain
+            }
+
+    private val HOSTNAME_REGEX = Regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
+
+    /** Kept in sync with the bundled default above; used as the last-resort fallback. */
+    private const val DEFAULT_REACHABILITY_DOMAINS =
+        "Search|www.google.com,Video|www.youtube.com," +
+        "Messaging|web.whatsapp.com,Messaging|telegram.org," +
+        "Social|www.instagram.com,Developer|github.com," +
+        "Cloud|drive.google.com,DNS|dns.google," +
+        "DNS|one.one.one.one,CDN|speed.cloudflare.com"
 
     // === Review & Paywall timing (configurable via Firebase console) ===
 
