@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -30,6 +31,10 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.AppTheme
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.ui.theme.useThemeManager
+import com.teamz.lab.debugger.utils.AIIcon
+import com.teamz.lab.debugger.utils.AppDoctorContext
+import com.teamz.lab.debugger.utils.AppDoctorReportHolder
+import com.teamz.lab.debugger.utils.WebViewStackProbe
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.NetworkReachabilityTester
@@ -52,7 +57,10 @@ import kotlinx.coroutines.launch
  * (pass count, status) — never the domain itself.
  */
 @Composable
-fun CustomDomainProbeCard() {
+fun CustomDomainProbeCard(
+    onItemAIClick: ((String, String) -> Unit)? = null,
+    onReportChanged: (String) -> Unit = {},
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
@@ -64,6 +72,21 @@ fun CustomDomainProbeCard() {
     var isRunning by remember { mutableStateOf(false) }
     var invalid by remember { mutableStateOf(false) }
     var showDetails by remember { mutableStateOf(false) }
+    // Device-wide network context, captured at probe time. These are the settings that
+    // actually explain a failure ("DNS blocked" means little without knowing Private DNS
+    // is on), and they were the exact unknowns during the 2026-08-25 incident.
+    var dnsServers by remember { mutableStateOf<String?>(null) }
+    var privateDns by remember { mutableStateOf<Boolean?>(null) }
+    var vpnOn by remember { mutableStateOf<Boolean?>(null) }
+    // Captive portal: cafe/hotel/office wifi that wants a sign-in first. A very common
+    // cause of "the site is down" that has nothing to do with the site.
+    var captivePortal by remember { mutableStateOf<Boolean?>(null) }
+    // Chromium-stack result. Kept separate from `result` on purpose: the two rows must
+    // be shown side by side, because their DISAGREEMENT is the diagnosis.
+    var webResult by remember { mutableStateOf<WebViewStackProbe.Aggregate?>(null) }
+    var webPackage by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var transportLabel by remember { mutableStateOf<String?>(null) }
+    var phase by remember { mutableStateOf(0) }   // 0 idle, 1 java, 2 webview
 
     val attempts = NetworkReachabilityTester.DEFAULT_PROBE_ATTEMPTS
 
@@ -80,7 +103,9 @@ fun CustomDomainProbeCard() {
         scope.launch {
             isRunning = true
             attemptProgress = 0
+            phase = 1
             result = null
+            webResult = null
             AnalyticsUtils.logEvent(AnalyticsEvent.CustomDomainProbeStarted)
             try {
                 // Sequential on purpose — see probeDomainRepeated's KDoc. Progress is
@@ -96,6 +121,44 @@ fun CustomDomainProbeCard() {
                 }
                 val agg = NetworkReachabilityTester.aggregateAttempts(domain, "Custom", perAttempt)
                 result = agg
+                dnsServers = try {
+                    com.teamz.lab.debugger.utils.getDnsServers(context)
+                } catch (_: Exception) { null }
+                privateDns = try {
+                    NetworkReachabilityTester.isPrivateDnsEnabled(context)
+                } catch (_: Exception) { null }
+                vpnOn = try {
+                    NetworkReachabilityTester.isVpnActive(context)
+                } catch (_: Exception) { null }
+                captivePortal = try {
+                    NetworkReachabilityTester.checkCaptivePortalPublic()
+                } catch (_: Exception) { null }
+                transportLabel = try {
+                    AppDoctorContext.readTransport(context).label
+                } catch (_: Exception) { null }
+                webPackage = WebViewStackProbe.currentWebViewPackage()
+
+                // Second stack. Chromium has its own resolver, socket pool and TLS —
+                // a Java-stack pass does NOT mean a WebView-shell app can load the site.
+                phase = 2
+                val web = try {
+                    WebViewStackProbe.probeRepeated(context, domain)
+                } catch (_: Exception) { null }
+                webResult = web
+
+                val report = NetworkReachabilityTester.buildProbeReport(
+                    agg, dnsServers, privateDns, vpnOn,
+                    webView = web,
+                    webViewPackage = webPackage,
+                    transportLabel = transportLabel,
+                    captivePortal = captivePortal
+                )
+                // Hand the report up. The nav host's Share / AI / Cert FABs sit in
+                // FabLoading() until shareText moves off the "Loading…" placeholder — the
+                // same trap documented in ScreenTestSection. Without this the FABs render
+                // as three blank squares forever. Also feeds the global AI export.
+                AppDoctorReportHolder.latest = report
+                onReportChanged(report)
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.CustomDomainProbeCompleted,
                     mapOf(
@@ -111,6 +174,7 @@ fun CustomDomainProbeCard() {
             } finally {
                 isRunning = false
                 attemptProgress = 0
+                phase = 0
             }
         }
     }
@@ -130,7 +194,7 @@ fun CustomDomainProbeCard() {
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(12.dp))
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text(
                         stringResource(R.string.probe_custom_title),
                         fontSize = 16.sp,
@@ -142,6 +206,33 @@ fun CustomDomainProbeCard() {
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                // Per-item AI hand-off, same shape as ScreenTestSection. Only offered once
+                // there is a result — an "Ask AI" with nothing to ask about is a dead button.
+                result?.let { r ->
+                    if (onItemAIClick != null) {
+                        IconButton(
+                            modifier = Modifier.size(40.dp),
+                            onClick = {
+                                onItemAIClick(
+                                    "Website Check",
+                                    NetworkReachabilityTester.buildProbeReport(
+                                        r, dnsServers, privateDns, vpnOn,
+                                        webView = webResult,
+                                        webViewPackage = webPackage,
+                                        transportLabel = transportLabel,
+                                        captivePortal = captivePortal
+                                    )
+                                )
+                            }
+                        ) {
+                            Icon(
+                                AIIcon.icon,
+                                contentDescription = "Ask AI",
+                                tint = AIIcon.color()
+                            )
+                        }
+                    }
                 }
             }
 
@@ -188,7 +279,8 @@ fun CustomDomainProbeCard() {
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        stringResource(R.string.probe_checking, attemptProgress, attempts),
+                        if (phase == 2) stringResource(R.string.probe_checking_webview)
+                        else stringResource(R.string.probe_checking, attemptProgress, attempts),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
@@ -204,6 +296,15 @@ fun CustomDomainProbeCard() {
                 ProbeVerdict(r, isDark)
 
                 Spacer(Modifier.height(12.dp))
+                StackComparisonRows(r, webResult)
+
+                Spacer(Modifier.height(8.dp))
+                ProbeNetworkContext(
+                    dnsServers, privateDns, vpnOn, captivePortal,
+                    transportLabel, webPackage
+                )
+
+                Spacer(Modifier.height(4.dp))
                 TextButton(onClick = { showDetails = !showDetails }) {
                     Text(
                         stringResource(
@@ -215,6 +316,44 @@ fun CustomDomainProbeCard() {
 
                 AnimatedVisibility(visible = showDetails) {
                     ProbeDetails(r)
+                }
+
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        val report = NetworkReachabilityTester.buildProbeReport(
+                            r, dnsServers, privateDns, vpnOn,
+                            webView = webResult,
+                            webViewPackage = webPackage,
+                            transportLabel = transportLabel,
+                            captivePortal = captivePortal
+                        )
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                            as? android.content.ClipboardManager
+                        cm?.setPrimaryClip(
+                            android.content.ClipData.newPlainText("DeviceGPT website check", report)
+                        )
+                        // Android 13+ shows its own copy confirmation; a second toast there
+                        // would be a duplicate the user has to dismiss.
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                            android.widget.Toast.makeText(
+                                context,
+                                context.getString(R.string.probe_copied),
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.probe_copy_report))
                 }
 
                 ProbeFixActions(context, r)
@@ -307,7 +446,161 @@ private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
     }
 }
 
-/** Advanced panel — raw values, monospace, exact numbers and units. */
+/**
+ * The two stacks, side by side.
+ *
+ * This is the point of the whole feature. The Java row and the Chromium row can and do
+ * disagree, and the disagreement is the finding — a WebView-shell app failing while
+ * every other check on the phone reports the site as healthy. Showing only the Java row
+ * would present a green result and hide the exact bug this was built to catch.
+ */
+@Composable
+private fun StackComparisonRows(
+    java: RepeatedProbeResult,
+    web: WebViewStackProbe.Aggregate?
+) {
+    val verdict = AppDoctorContext.compareStacks(java.successCount, web?.successCount)
+    Column(Modifier.fillMaxWidth()) {
+        StackRow(stringResource(R.string.probe_stack_java), java.summaryLine, java.successCount > 0)
+        StackRow(
+            stringResource(R.string.probe_stack_webview),
+            web?.summaryLine ?: "—",
+            web != null && web.successCount > 0
+        )
+        if (verdict == AppDoctorContext.StackVerdict.WEBVIEW_ONLY_FAILS) {
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.Top) {
+                Icon(
+                    Icons.Filled.WarningAmber,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.probe_stack_disagree),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StackRow(label: String, value: String, ok: Boolean) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon + text, never colour alone — the accessibility rule this codebase follows.
+        Icon(
+            if (ok) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
+            contentDescription = null,
+            tint = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            label,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            value,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.End,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1.6f)
+        )
+    }
+}
+
+/**
+ * Device-wide network context. Shown with every result, not only failures: "4/4 OK"
+ * still leaves "…but through which DNS, and is a VPN in the path?" unanswered, and
+ * those were the exact unknowns nobody could resolve during the 2026-08-25 incident.
+ *
+ * Values are device-wide by definition — Android exposes no per-app DNS.
+ */
+@Composable
+private fun ProbeNetworkContext(
+    dnsServers: String?,
+    privateDns: Boolean?,
+    vpnOn: Boolean?,
+    captivePortal: Boolean?,
+    transportLabel: String?,
+    webPackage: Pair<String, String>?
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        ContextRow(
+            stringResource(R.string.probe_context_transport),
+            transportLabel ?: "unknown"
+        )
+        ContextRow(stringResource(R.string.probe_detail_servers), dnsServers ?: "unknown")
+        // The System WebView build is THE field for a web-view-shell app: a stale or
+        // swapped provider explains failures that otherwise look like server problems.
+        ContextRow(
+            stringResource(R.string.probe_context_webview),
+            webPackage?.let { "${it.second}" } ?: "unknown"
+        )
+        privateDns?.let {
+            ContextRow(
+                stringResource(R.string.probe_context_private_dns),
+                if (it) "on" else "off"
+            )
+        }
+        vpnOn?.let {
+            ContextRow(stringResource(R.string.probe_context_vpn), if (it) "on" else "off")
+        }
+        // Only surfaced when true: "captive portal: no" on every normal network is noise
+        // that trains the reader to skip the whole block.
+        if (captivePortal == true) {
+            ContextRow(stringResource(R.string.probe_context_captive), "yes")
+        }
+    }
+}
+
+@Composable
+private fun ContextRow(label: String, value: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+    ) {
+        Text(
+            label,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            value,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.4f)
+        )
+    }
+}
+
+/**
+ * Advanced panel — raw values, monospace, exact numbers and units.
+ *
+ * One compact line per attempt. An earlier version used a fixed-width label column plus
+ * a long value string, which wrapped mid-value on a real screen and left "HTTP 200"
+ * orphaned on its own line, misaligned with its own label. Abbreviated and single-line
+ * is the fix; the full unabbreviated values live in "Copy full report".
+ */
 @Composable
 private fun ProbeDetails(r: RepeatedProbeResult) {
     Column(
@@ -316,35 +609,37 @@ private fun ProbeDetails(r: RepeatedProbeResult) {
             .padding(top = 4.dp)
     ) {
         r.perAttempt.forEachIndexed { i, a ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 3.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    stringResource(R.string.probe_attempt_label, i + 1),
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.width(64.dp)
-                )
-                Text(
-                    buildString {
-                        append(a.overallStatus.name)
-                        append("  ")
-                        append(stringResource(R.string.probe_detail_dns))
-                        append(' ').append(a.dnsLatencyMs).append("ms")
-                        append("  ")
-                        append(stringResource(R.string.probe_detail_https))
-                        append(' ').append(a.httpsLatencyMs).append("ms")
-                        a.httpsResponseCode?.let { append("  HTTP ").append(it) }
-                        a.errorDetail?.let { append("  ").append(it) }
-                    },
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            val ok = a.overallStatus == ReachabilityStatus.REACHABLE
+            val line = buildString {
+                append(i + 1).append("  ")
+                append(if (ok) "OK  " else "FAIL")
+                append("  dns ").append(a.dnsLatencyMs).append("ms")
+                if (ok) {
+                    append("  tls ").append(a.httpsLatencyMs).append("ms")
+                    a.httpsResponseCode?.let { append("  ").append(it) }
+                }
+            }
+            Text(
+                line,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace,
+                maxLines = 1,
+                color = if (ok) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(vertical = 3.dp)
+            )
+            // The failure reason gets its own wrapping line — it is the one value here
+            // worth reading in full, so it must never be truncated to fit a column.
+            if (!ok) {
+                a.errorDetail?.let {
+                    Text(
+                        "     $it",
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 3.dp)
+                    )
+                }
             }
         }
     }

@@ -1251,7 +1251,23 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             }
 
                             TabType.APP_DOCTOR -> {
-                                com.teamz.lab.debugger.ui.AppDoctorTabSection()
+                                com.teamz.lab.debugger.ui.AppDoctorTabSection(
+                                    onShareClick = { info -> shareText = info },
+                                    onItemAIClick = { title, content ->
+                                        com.teamz.lab.debugger.utils.AIClickHandler.handleAIClick(
+                                            activity = activity,
+                                            source = "app_doctor_item",
+                                            itemTitle = title,
+                                            onPaywallRequest = {
+                                                paywallAnalyticsSource = "ai_soft_gate"
+                                                showRevenueCatPaywall = true
+                                            }
+                                        ) {
+                                            selectedItemForAI = Pair(title, content)
+                                            showItemAIDialog = true
+                                        }
+                                    },
+                                )
                             }
 
                             TabType.SCREEN_TEST -> {

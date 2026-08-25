@@ -91,6 +91,48 @@ class CustomDomainProbeGuardTest {
     }
 
     @Test
+    fun `no probe string is declared but never rendered`() {
+        // This exact gap shipped once: probe_copy_report, probe_copied,
+        // probe_detail_servers and the three probe_context_* lines were all defined in
+        // strings.xml while the copy button and the network-context rows were never
+        // written. The strings file looked complete and the feature was not.
+        val xml = locate("src/main/res/values/strings.xml").readText()
+        // Sidestep escaped quotes entirely: a char literal needs no escaping and
+        // cannot be mangled by the next person editing this file.
+        val dq = '"'
+        val declared = xml.split("name=" + dq).drop(1)
+            .map { it.substringBefore(dq) }
+            .filter { it.startsWith("probe_") }
+            .toSortedSet()
+        assertTrue("no probe_* strings declared - regex drifted", declared.isNotEmpty())
+
+        val usage = cardSrc +
+            locate("src/main/java/com/teamz/lab/debugger/ui/AppDoctorTabSection.kt").readText()
+        val unused = declared.filterNot { usage.contains("R.string.$it") }
+        assertTrue(
+            "declared in strings.xml but never rendered: $unused - either wire them up " +
+                "or delete them; a half-built feature must not look finished",
+            unused.isEmpty()
+        )
+    }
+
+    @Test
+    fun `the tab publishes a report so the host FABs unblock`() {
+        // The nav host keeps Share/AI/Cert in FabLoading() until shareText leaves the
+        // "Loading..." placeholder. A tab that never calls onShareClick renders three
+        // permanently blank squares, which is what shipped in the first cut.
+        val src = locate("src/main/java/com/teamz/lab/debugger/ui/AppDoctorTabSection.kt").readText()
+        assertTrue(
+            "AppDoctorTabSection must call onShareClick on entry",
+            src.contains("LaunchedEffect") && src.contains("onShareClick(")
+        )
+        assertTrue(
+            "the probe result must flow back out via onReportChanged",
+            src.contains("onReportChanged = onShareClick")
+        )
+    }
+
+    @Test
     fun `the probe card has exactly one home`() {
         // It previously lived on Network Info as well; two copies double-fire the
         // custom_domain_probe_* events and give one feature two places to look for it.
@@ -98,7 +140,7 @@ class CustomDomainProbeGuardTest {
             "src/main/java/com/teamz/lab/debugger/ui/network_ui.kt",
             "src/main/java/com/teamz/lab/debugger/ui/AppDoctorTabSection.kt"
         )
-        val callers = roots.filter { locate(it).exists() && locate(it).readText().contains("CustomDomainProbeCard()") }
+        val callers = roots.filter { locate(it).exists() && locate(it).readText().contains("CustomDomainProbeCard(") }
         assertEquals("CustomDomainProbeCard() must be mounted exactly once", 1, callers.size)
     }
 

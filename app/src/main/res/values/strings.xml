@@ -254,9 +254,9 @@
     <string name="probe_verdict_tcp_blocked">This phone found the address but the connection was refused</string>
     <string name="probe_verdict_unreachable">This phone cannot reach this website</string>
     <string name="probe_verdict_ok_detail">All %1$d tries succeeded, about %2$d ms each.</string>
-    <string name="probe_context_private_dns">Private DNS is on</string>
-    <string name="probe_context_vpn">A VPN is on</string>
-    <string name="probe_context_captive">This network wants you to sign in first</string>
+    <string name="probe_context_private_dns">Private DNS</string>
+    <string name="probe_context_vpn">VPN</string>
+    <string name="probe_context_captive">Sign-in required first</string>
     <string name="probe_fix_private_dns">Open Private DNS settings</string>
     <string name="probe_fix_vpn">Open VPN settings</string>
     <string name="probe_fix_wifi">Open Wi-Fi settings</string>
@@ -264,11 +264,14 @@
     <string name="probe_hide_details">Hide details</string>
     <string name="probe_copy_report">Copy full report</string>
     <string name="probe_copied">Report copied</string>
-    <string name="probe_attempt_label">Try %1$d</string>
-    <string name="probe_detail_dns">DNS</string>
-    <string name="probe_detail_https">HTTPS</string>
     <string name="probe_detail_servers">DNS servers</string>
     <string name="tab_app_doctor">App Doctor</string>
     <string name="app_doctor_intro_title">Is the problem this phone, or the website?</string>
     <string name="app_doctor_intro_body">Type a website address and this checks it four times from this phone. Checking once is not enough — a website that fails one time in five looks fine if you only try once.</string>
+    <string name="probe_checking_webview">Now testing through the app browser…</string>
+    <string name="probe_stack_java">Normal check</string>
+    <string name="probe_stack_webview">In-app browser</string>
+    <string name="probe_stack_disagree">The site loads normally, but not inside an app browser. Apps built on a web view will fail even though everything else says the site is fine.</string>
+    <string name="probe_context_transport">Connection</string>
+    <string name="probe_context_webview">App browser version</string>
 </resources>

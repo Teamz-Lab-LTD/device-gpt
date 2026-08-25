@@ -34,10 +34,11 @@ object AIPromptGenerator {
             // AI Bridge exposes device state to an EXTERNAL AI over HTTP; there is no in-app
             // prompt to build here. The parent nav hides the AI FAB on this tab anyway.
             TabType.AI_BRIDGE -> ""
-            // App Doctor's result lives in the probe card's own state, which this
-            // dispatcher cannot reach (it takes no Context and no result). Same shape as
-            // CAMERA above: the per-item "Ask AI" path carries the actual findings.
-            TabType.APP_DOCTOR -> ""
+            // App Doctor publishes its last report to AppDoctorReportHolder so the
+            // GLOBAL export carries it too — previously this returned "" and the finding
+            // was silently dropped from the one report a user actually sends us.
+            TabType.APP_DOCTOR -> AppDoctorReportHolder.latest
+                ?: "App Doctor: no website has been checked yet in this session." 
             null -> ""
         }
     }

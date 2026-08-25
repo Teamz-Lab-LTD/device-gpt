@@ -266,6 +266,97 @@ object NetworkReachabilityTester {
         )
     }
 
+    /**
+     * Plain-text report for the clipboard and for the AI hand-off.
+     *
+     * Pure and Context-free so it is unit-testable, and so the caller decides what
+     * device context to include — this function never reaches for anything itself.
+     * Matches the AiShareTextGenerator house style: a labelled block a human can read
+     * and an AI can parse, no JSON, no markdown tables.
+     */
+    fun buildProbeReport(
+        r: RepeatedProbeResult,
+        dnsServers: String?,
+        privateDnsEnabled: Boolean?,
+        vpnActive: Boolean?,
+        webView: WebViewStackProbe.Aggregate? = null,
+        webViewPackage: Pair<String, String>? = null,
+        transportLabel: String? = null,
+        captivePortal: Boolean? = null
+    ): String = buildString {
+        appendLine("WEBSITE REACHABILITY CHECK")
+        appendLine("Site: ${r.domain}")
+        appendLine("Result: ${r.summaryLine}")
+        appendLine("Status: ${r.overallStatus.name}")
+        if (r.isIntermittent) {
+            appendLine(
+                "NOTE: INTERMITTENT — succeeded ${r.successCount} of ${r.attempts} tries. " +
+                    "A single check would likely have reported this as healthy."
+            )
+        }
+        r.errorDetail?.let { appendLine("Error seen: $it") }
+        if (r.successCount > 0) {
+            appendLine("Latency (successful tries): avg ${r.avgLatencyMs}ms, " +
+                "min ${r.minLatencyMs}ms, max ${r.maxLatencyMs}ms")
+        }
+        appendLine()
+        appendLine("PER ATTEMPT")
+        r.perAttempt.forEachIndexed { i, a ->
+            append("  ${i + 1}. ${a.overallStatus.name}")
+            append("  dns=${a.dnsLatencyMs}ms")
+            a.dnsResolvedIp?.let { append(" ip=$it") }
+            append("  https=${a.httpsLatencyMs}ms")
+            a.httpsResponseCode?.let { append(" http=$it") }
+            a.errorDetail?.let { append("  err=$it") }
+            appendLine()
+        }
+        appendLine()
+        appendLine("STACK COMPARISON")
+        appendLine("  Java stack (this report above): ${r.summaryLine}")
+        if (webView == null) {
+            appendLine("  WebView stack: not measured")
+        } else {
+            appendLine("  WebView stack (Chromium): ${webView.summaryLine}")
+            webView.firstFailure?.let { f ->
+                appendLine("    first failure: ${f.outcome}" +
+                    (f.errorCode?.let { c -> " code=$c" } ?: "") +
+                    (f.description?.let { d -> " \"$d\"" } ?: ""))
+            }
+            val verdict = AppDoctorContext.compareStacks(r.successCount, webView.successCount)
+            appendLine("  Verdict: $verdict")
+            if (verdict == AppDoctorContext.StackVerdict.WEBVIEW_ONLY_FAILS) {
+                appendLine(
+                    "    ^ THIS IS THE INTERESTING CASE. Chromium does not use the Java " +
+                        "DNS resolver or HttpsURLConnection, so an app built on a WebView " +
+                        "can fail while every other check on the phone says the site is up."
+                )
+            }
+        }
+        appendLine()
+        appendLine("DEVICE NETWORK CONTEXT")
+        appendLine("  Transport: ${transportLabel ?: "unknown"}")
+        appendLine("  DNS servers: ${dnsServers ?: "unknown"}")
+        appendLine("  Private DNS: ${boolLabel(privateDnsEnabled)}")
+        appendLine("  VPN active: ${boolLabel(vpnActive)}")
+        appendLine("  Captive portal (sign-in wall): ${boolLabel(captivePortal)}")
+        appendLine(
+            "  System WebView: " +
+                (webViewPackage?.let { "${it.first} ${it.second}" } ?: "unknown")
+        )
+        appendLine()
+        appendLine(
+            "Note: the first attempt is a cold lookup; later attempts reuse the OS DNS " +
+                "cache, so attempt 1 is normally the slowest. Judge blocking by the pass " +
+                "count, not by attempt 1's latency."
+        )
+    }
+
+    private fun boolLabel(v: Boolean?): String = when (v) {
+        true -> "on"
+        false -> "off"
+        null -> "unknown"
+    }
+
     // --- Individual probe ---
 
     private suspend fun probeDomain(domain: String, category: String): DomainProbeResult {
@@ -376,6 +467,9 @@ object NetworkReachabilityTester {
 
     // --- Context checks ---
 
+    /** Public so the App Doctor card can show the same context alongside a probe result. */
+    suspend fun checkCaptivePortalPublic(): Boolean = checkCaptivePortal()
+
     private fun checkCaptivePortal(): Boolean {
         return try {
             val url = URL("https://clients3.google.com/generate_204")
@@ -392,7 +486,8 @@ object NetworkReachabilityTester {
         }
     }
 
-    private fun isPrivateDnsEnabled(context: Context): Boolean {
+    /** Public so the App Doctor card can show the same context alongside a probe result. */
+    fun isPrivateDnsEnabled(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -403,7 +498,8 @@ object NetworkReachabilityTester {
         }
     }
 
-    private fun isVpnActive(context: Context): Boolean {
+    /** Public so the App Doctor card can show the same context alongside a probe result. */
+    fun isVpnActive(context: Context): Boolean {
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val caps = cm.activeNetwork?.let { cm.getNetworkCapabilities(it) }

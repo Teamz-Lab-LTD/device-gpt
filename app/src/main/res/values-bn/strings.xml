@@ -236,9 +236,9 @@
     <string name="probe_verdict_tcp_blocked">address পেয়েছে, কিন্তু connection নেয়নি</string>
     <string name="probe_verdict_unreachable">এই ফোন থেকে website টায় ঢোকা যাচ্ছে না</string>
     <string name="probe_verdict_ok_detail">%1$d বারই কাজ করেছে, প্রতিবার প্রায় %2$d ms।</string>
-    <string name="probe_context_private_dns">Private DNS on আছে</string>
-    <string name="probe_context_vpn">VPN on আছে</string>
-    <string name="probe_context_captive">এই network এ আগে sign in করতে হবে</string>
+    <string name="probe_context_private_dns">Private DNS</string>
+    <string name="probe_context_vpn">VPN</string>
+    <string name="probe_context_captive">আগে sign in লাগবে</string>
     <string name="probe_fix_private_dns">Private DNS settings খুলুন</string>
     <string name="probe_fix_vpn">VPN settings খুলুন</string>
     <string name="probe_fix_wifi">Wi-Fi settings খুলুন</string>
@@ -246,11 +246,14 @@
     <string name="probe_hide_details">বিস্তারিত লুকান</string>
     <string name="probe_copy_report">পুরা report copy করুন</string>
     <string name="probe_copied">Report copy হয়েছে</string>
-    <string name="probe_attempt_label">চেষ্টা %1$d</string>
-    <string name="probe_detail_dns">DNS</string>
-    <string name="probe_detail_https">HTTPS</string>
     <string name="probe_detail_servers">DNS server</string>
     <string name="tab_app_doctor">App Doctor</string>
     <string name="app_doctor_intro_title">সমস্যাটা এই ফোনে, নাকি website এ?</string>
     <string name="app_doctor_intro_body">একটা website address লিখুন, এই ফোন থেকে চার বার check করা হবে। একবার check করলে হয় না — যে website পাঁচ বারে একবার fail করে, একবার দেখলে ওটা ঠিকই মনে হয়।</string>
+    <string name="probe_checking_webview">এখন app browser দিয়ে test করছি…</string>
+    <string name="probe_stack_java">সাধারণ check</string>
+    <string name="probe_stack_webview">App browser</string>
+    <string name="probe_stack_disagree">Site টা সাধারণভাবে খোলে, কিন্তু app browser এ খোলে না। যেসব app web view দিয়ে বানানো, সেগুলা fail করবে — যদিও বাকি সব check বলবে site ঠিক আছে।</string>
+    <string name="probe_context_transport">Connection</string>
+    <string name="probe_context_webview">App browser version</string>
 </resources>
