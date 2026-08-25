@@ -256,4 +256,31 @@
     <string name="probe_stack_disagree">Site টা সাধারণভাবে খোলে, কিন্তু app browser এ খোলে না। যেসব app web view দিয়ে বানানো, সেগুলা fail করবে — যদিও বাকি সব check বলবে site ঠিক আছে।</string>
     <string name="probe_context_transport">Connection</string>
     <string name="probe_context_webview">App browser version</string>
+
+    <!-- Microphone test (2026-08-26) -->
+    <string name="mic_test_title">Microphone test</string>
+    <string name="mic_test_subtitle">আপনার mic record আর playback করে কিনা দেখুন</string>
+    <string name="mic_test_step_ready">৫ সেকেন্ডের মতো লাগবে। প্রথমে চুপ থাকুন, তারপর কিছু বলুন, তারপর শুনুন।</string>
+    <string name="mic_test_step_quiet">চুপ থাকুন — room এর শব্দ মাপছি…</string>
+    <string name="mic_test_step_speak">এবার কিছু বলুন, স্বাভাবিক গলায়…</string>
+    <string name="mic_test_step_playback">Playback হচ্ছে — শুনুন…</string>
+    <string name="mic_test_step_confirm">নিজের গলা শুনতে পেলেন?</string>
+    <string name="mic_test_start">Mic test শুরু করুন</string>
+    <string name="mic_test_again">আবার test করুন</string>
+    <string name="mic_test_replay">আবার play করুন</string>
+    <string name="mic_test_heard_yes">হ্যাঁ, শুনেছি</string>
+    <string name="mic_test_heard_no">না, কিছু না</string>
+    <string name="mic_test_room">Room এর শব্দ</string>
+    <string name="mic_test_voice">আপনার গলা (সবচেয়ে জোরে)</string>
+    <string name="mic_test_headroom">Room এর চেয়ে কতটা বেশি</string>
+    <string name="mic_test_clipping">আপনার গলা mic এর জন্য বেশি জোরে ছিল, তাই কেটে গেছে। একটু দূরে সরে আবার test করুন।</string>
+    <string name="mic_test_verdict_ok">আপনার mic record করেছে আর playback ও হয়েছে। কাজ করছে।</string>
+    <string name="mic_test_verdict_not_heard">কিছু শুনতে পাননি। সমস্যা mic এ হতে পারে, speaker এ হতে পারে, আবার volume ও হতে পারে — volume বাড়ায়ে দেখুন, তারপর speaker test টা করেন।</string>
+    <string name="mic_test_perm_needed">Mic test করতে হলে record করার permission লাগবে। Recording টা এই ফোনেই থাকে, কোথাও save বা send হয় না।</string>
+    <string name="mic_test_perm_blocked">Microphone permission বন্ধ করা আছে। Android আর জিজ্ঞাসা করবে না, তাই Settings এ গিয়ে on করতে হবে।</string>
+    <string name="mic_test_grant">Microphone allow করুন</string>
+    <string name="mic_test_open_settings">App settings খুলুন</string>
+    <string name="mic_test_unavailable">Mic খোলা গেল না। অন্য কোনো app বা call ওটা use করতেছে হয়তো। বাকি app বন্ধ করে আবার try করুন।</string>
+    <string name="mic_test_retry">আবার try করুন</string>
+    <string name="tab_screen_test">Mic &amp; Screen</string>
 </resources>

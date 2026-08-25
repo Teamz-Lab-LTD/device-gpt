@@ -325,6 +325,13 @@ enum class AnalyticsEvent(val eventName: String) {
     TabCameraViewed("tab_camera_viewed"),
     TabScreenTestViewed("tab_screen_test_viewed"),
     TabAppDoctorViewed("tab_app_doctor_viewed"),
+    // Mic test (2026-08-26). The listing and the app TITLE have promised a mic test
+    // since launch while no AudioRecord existed in the codebase; these events measure
+    // the feature that finally makes the claim true.
+    MicTestStarted("mic_test_started"),
+    MicTestCompleted("mic_test_completed"),
+    MicTestFailed("mic_test_failed"),
+    MicTestPlaybackAnswered("mic_test_playback_answered"),
     TabAiBridgeViewed("tab_ai_bridge_viewed"),
     // AI Bridge (2026-07-24) — full funnel so future adoption/pricing decisions come from real usage.
     // `toggled` fires on both on and off (param `on`: bool). `client_connected` fires for every

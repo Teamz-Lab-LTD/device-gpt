@@ -117,13 +117,44 @@ fun ScreenTestTabSection(
 ) {
     val context = LocalContext.current
     val viewModel: ScreenTestViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-    ScreenTestSection(
-        context = context,
-        viewModel = viewModel,
-        activity = activity,
-        onItemAIClick = onItemAIClick,
-        onShareClick = onShareClick,
-    )
+    var micReport by remember { mutableStateOf<String?>(null) }
+
+    // The tab now owns the scroll so the mic card can sit as a SIBLING above the
+    // screen checks. ScreenTestSection keeps its own scroll for any other caller;
+    // nesting two same-direction scrollables here would fight each other.
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp)
+            .padding(top = 12.dp)
+            // Clear the floating action buttons; without this the last control sits
+            // behind them and reads as truncated.
+            .padding(bottom = 120.dp)
+    ) {
+        // Mic first. The app TITLE is "Battery, Mic Test: DeviceGPT" — the feature the
+        // title leads with must not be the last thing on the screen.
+        MicTestCard(
+            onItemAIClick = onItemAIClick,
+            onResultChanged = { r ->
+                micReport = r
+                onShareClick(r)
+            },
+        )
+
+        ScreenTestSection(
+            context = context,
+            viewModel = viewModel,
+            activity = activity,
+            onItemAIClick = onItemAIClick,
+            onShareClick = { screenInfo ->
+                // Keep whichever report the user actually produced. The mic result
+                // must not be wiped by the screen section's idle placeholder.
+                onShareClick(micReport?.let { "$it\n\n$screenInfo" } ?: screenInfo)
+            },
+            ownScroll = false,
+        )
+    }
 }
 
 @Composable
@@ -133,6 +164,8 @@ fun ScreenTestSection(
     activity: Activity? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
     onShareClick: (String) -> Unit = {},
+    /** False when a parent already scrolls; two same-direction scrollables conflict. */
+    ownScroll: Boolean = true,
 ) {
     val screenPixelHistory by viewModel.screenPixelHistory.collectAsState()
     val lastTouchPointCount by viewModel.lastTouchPointCount.collectAsState()
@@ -166,7 +199,10 @@ fun ScreenTestSection(
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .then(
+                    if (ownScroll) Modifier.verticalScroll(rememberScrollState())
+                    else Modifier
+                ),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Icon(

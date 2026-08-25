@@ -48,7 +48,7 @@
     <string name="device_info">Device Info</string>
     <string name="network_info">Network Info</string>
     <string name="tab_camera">Camera</string>
-    <string name="tab_screen_test">Screen Test</string>
+    <string name="tab_screen_test">Mic &amp; Screen</string>
     <string name="tab_ai_bridge">AI Bridge</string>
 
     <!-- AI Bridge -->
@@ -274,4 +274,30 @@
     <string name="probe_stack_disagree">The site loads normally, but not inside an app browser. Apps built on a web view will fail even though everything else says the site is fine.</string>
     <string name="probe_context_transport">Connection</string>
     <string name="probe_context_webview">App browser version</string>
+
+    <!-- Microphone test (2026-08-26) -->
+    <string name="mic_test_title">Microphone test</string>
+    <string name="mic_test_subtitle">Check your mic records and plays back</string>
+    <string name="mic_test_step_ready">This takes about 5 seconds. First stay quiet, then say something, then listen.</string>
+    <string name="mic_test_step_quiet">Stay quiet — measuring the room…</string>
+    <string name="mic_test_step_speak">Now say something, normal voice…</string>
+    <string name="mic_test_step_playback">Playing it back — listen…</string>
+    <string name="mic_test_step_confirm">Did you hear your own voice?</string>
+    <string name="mic_test_start">Start mic test</string>
+    <string name="mic_test_again">Test again</string>
+    <string name="mic_test_replay">Play it again</string>
+    <string name="mic_test_heard_yes">Yes, I heard it</string>
+    <string name="mic_test_heard_no">No, nothing</string>
+    <string name="mic_test_room">Room noise</string>
+    <string name="mic_test_voice">Your voice (loudest)</string>
+    <string name="mic_test_headroom">Rise above the room</string>
+    <string name="mic_test_clipping">Your voice was too loud for the mic and got cut off. Move back a little and test again.</string>
+    <string name="mic_test_verdict_ok">Your mic recorded and played back. It works.</string>
+    <string name="mic_test_verdict_not_heard">You heard nothing. The mic, the speaker, or the volume could be the problem — try the speaker test next, and check the volume is up.</string>
+    <string name="mic_test_perm_needed">To test the mic, this app needs permission to record. The recording stays on this phone and is never saved or sent anywhere.</string>
+    <string name="mic_test_perm_blocked">Microphone permission was turned off. Android will not ask again, so it has to be switched on in Settings.</string>
+    <string name="mic_test_grant">Allow microphone</string>
+    <string name="mic_test_open_settings">Open app settings</string>
+    <string name="mic_test_unavailable">The mic could not be opened. Another app or a phone call may be using it. Close other apps and try again.</string>
+    <string name="mic_test_retry">Try again</string>
 </resources>
