@@ -35,7 +35,8 @@ enum class ScanCategory(val displayLabel: String) {
     companion object {
         fun fromTabType(type: TabType?): ScanCategory = when (type) {
             TabType.POWER -> BATTERY
-            TabType.NETWORK_INFO -> NETWORK
+            // App Doctor is a network-reachability surface, not a hardware one.
+            TabType.NETWORK_INFO, TabType.APP_DOCTOR -> NETWORK
             TabType.DEVICE_INFO, TabType.CAMERA, TabType.SCREEN_TEST -> HARDWARE
             TabType.HEALTH -> PRIVACY
             // AI_BRIDGE genuinely belongs under AI — it exposes device state to an external AI client.

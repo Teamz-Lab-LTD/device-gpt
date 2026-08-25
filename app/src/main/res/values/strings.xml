@@ -268,4 +268,7 @@
     <string name="probe_detail_dns">DNS</string>
     <string name="probe_detail_https">HTTPS</string>
     <string name="probe_detail_servers">DNS servers</string>
+    <string name="tab_app_doctor">App Doctor</string>
+    <string name="app_doctor_intro_title">Is the problem this phone, or the website?</string>
+    <string name="app_doctor_intro_body">Type a website address and this checks it four times from this phone. Checking once is not enough — a website that fails one time in five looks fine if you only try once.</string>
 </resources>

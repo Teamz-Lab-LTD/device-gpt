@@ -178,6 +178,7 @@ private fun logMainTabSelectionAnalytics(tabType: TabType) {
         TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
         TabType.CAMERA -> AnalyticsUtils.logEvent(AnalyticsEvent.TabCameraViewed)
         TabType.SCREEN_TEST -> AnalyticsUtils.logEvent(AnalyticsEvent.TabScreenTestViewed)
+        TabType.APP_DOCTOR -> AnalyticsUtils.logEvent(AnalyticsEvent.TabAppDoctorViewed)
         TabType.AI_BRIDGE -> AnalyticsUtils.logEvent(AnalyticsEvent.TabAiBridgeViewed)
     }
 }
@@ -213,6 +214,7 @@ fun DeviceGptNavExperience(
             navigateToTab.equals("leaderboard", ignoreCase = true) -> TabOrderManager.getLeaderboardIndex() ?: -1
             navigateToTab.equals("camera", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.CAMERA)
             navigateToTab.equals("screen_test", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.SCREEN_TEST)
+            navigateToTab.equals("app_doctor", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.APP_DOCTOR)
             navigateToTab.equals("ai_bridge", ignoreCase = true) -> TabOrderManager.getTabIndex(TabType.AI_BRIDGE)
             // Old index-based navigation (backward compatibility)
             navigateToSection >= 0 -> navigateToSection
@@ -941,6 +943,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             TabType.CAMERA -> context.string(R.string.tab_camera)
                                             TabType.SCREEN_TEST -> context.string(R.string.tab_screen_test)
                                             TabType.AI_BRIDGE -> context.string(R.string.tab_ai_bridge)
+                                            TabType.APP_DOCTOR -> context.string(R.string.tab_app_doctor)
                                         },
                                         style = MaterialTheme.typography.labelLarge,
                                     )
@@ -1245,6 +1248,10 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         }
                                     },
                                 )
+                            }
+
+                            TabType.APP_DOCTOR -> {
+                                com.teamz.lab.debugger.ui.AppDoctorTabSection()
                             }
 
                             TabType.SCREEN_TEST -> {

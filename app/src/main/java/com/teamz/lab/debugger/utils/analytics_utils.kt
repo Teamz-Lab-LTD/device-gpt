@@ -324,6 +324,7 @@ enum class AnalyticsEvent(val eventName: String) {
     TabLeaderboardViewed("tab_leaderboard_viewed"),
     TabCameraViewed("tab_camera_viewed"),
     TabScreenTestViewed("tab_screen_test_viewed"),
+    TabAppDoctorViewed("tab_app_doctor_viewed"),
     TabAiBridgeViewed("tab_ai_bridge_viewed"),
     // AI Bridge (2026-07-24) — full funnel so future adoption/pricing decisions come from real usage.
     // `toggled` fires on both on and off (param `on`: bool). `client_connected` fires for every

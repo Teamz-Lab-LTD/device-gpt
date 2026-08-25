@@ -318,12 +318,6 @@ fun NetworkInfoSection(
             NetworkReachabilityCard(
                 onAIClick = onItemAIClick
             )
-            // "Check a website" — App Doctor release 1 (2026-08-18). Sits directly
-            // under the reachability test because it answers the follow-up question
-            // that test always provokes: "fine, but is MY site reachable?". Probes
-            // four times, so an intermittent fault (the 2026-08-25 InterviewBoss
-            // case) cannot hide behind a single lucky request.
-            CustomDomainProbeCard()
             NetworkPrivacyReportCard(
                 onShareClick = { /* Sharing handled internally via ViralShareDialog */ },
                 onAIClick = onItemAIClick

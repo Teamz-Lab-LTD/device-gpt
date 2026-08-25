@@ -250,4 +250,7 @@
     <string name="probe_detail_dns">DNS</string>
     <string name="probe_detail_https">HTTPS</string>
     <string name="probe_detail_servers">DNS server</string>
+    <string name="tab_app_doctor">App Doctor</string>
+    <string name="app_doctor_intro_title">সমস্যাটা এই ফোনে, নাকি website এ?</string>
+    <string name="app_doctor_intro_body">একটা website address লিখুন, এই ফোন থেকে চার বার check করা হবে। একবার check করলে হয় না — যে website পাঁচ বারে একবার fail করে, একবার দেখলে ওটা ঠিকই মনে হয়।</string>
 </resources>
