@@ -71,6 +71,13 @@ object EngagementTracker {
             } catch (t: Throwable) {
                 Log.w(TAG, "cancelIfPendingOrganicReturn failed: ${t.message}")
             }
+            // Names the installs that neither cancelled nor fired (11 of 36 on
+            // 3.1.20). No-ops until the 20h delay has elapsed, and only once.
+            try {
+                D1OvernightDrainWorker.reportDeliveryPostMortem(context)
+            } catch (t: Throwable) {
+                Log.w(TAG, "reportDeliveryPostMortem failed: ${t.message}")
+            }
         }
         trackSession(context)
     }

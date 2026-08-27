@@ -204,5 +204,18 @@
             </intent-filter>
         </receiver>
 
-    </application>
+    
+        <!-- Redundant D1 delivery path. AlarmManager sits on a different subsystem
+             from the JobScheduler WorkManager uses, so an OEM battery policy that
+             drops one may not drop the other. Not exported: only our own alarm
+             fires it. -->
+        <receiver
+            android:name=".utils.D1OvernightDrainWorker$AlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.teamz.lab.debugger.D1_OVERNIGHT_DRAIN" />
+            </intent-filter>
+        </receiver>
+
+</application>
 </manifest>

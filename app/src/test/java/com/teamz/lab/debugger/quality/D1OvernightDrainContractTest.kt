@@ -163,12 +163,19 @@ class D1OvernightDrainContractTest {
         // (false) and the push never fires. The gate MUST await a bounded fetch first.
         val doWorkStart = workerSrc.indexOf("override suspend fun doWork()")
         assertTrue("doWork() not found", doWorkStart >= 0)
-        val doWorkBody = workerSrc.substring(doWorkStart)
+        // 2026-08-27: the gate moved into the shared deliver() (called by both the
+        // worker and the alarm receiver) and the call was renamed to
+        // awaitD1OvernightDrainFetched(), which reports fetch SUCCESS separately from
+        // the flag value. Scan from deliver() instead of doWork(); the invariant —
+        // a bounded fetch+activate before the flag is read — is unchanged.
+        val deliverIdx = workerSrc.indexOf("internal suspend fun deliver(")
+        assertTrue("deliver() not found", deliverIdx >= 0)
+        val doWorkBody = workerSrc.substring(deliverIdx)
         assertTrue(
-            "doWork() must gate on awaitD1OvernightDrainEnabled() — the bounded fetch+activate " +
+            "deliver() must gate on awaitD1OvernightDrainFetched() — the bounded fetch+activate " +
                 "path. A bare isD1OvernightDrainEnabled() reads the bundled default (false) in " +
                 "the cold background worker process and the push silently never fires.",
-            doWorkBody.contains("awaitD1OvernightDrainEnabled(")
+            doWorkBody.contains("awaitD1OvernightDrainFetched(")
         )
     }
 
@@ -177,13 +184,20 @@ class D1OvernightDrainContractTest {
         // Secondary failure mode: if the push DOES fire but AnalyticsUtils was never
         // initialized in this background process, logEvent no-ops (appContext == null)
         // and the funnel still reads 0. Init must happen before the gate/post.
-        val doWorkStart = workerSrc.indexOf("override suspend fun doWork()")
-        val postIdx = workerSrc.indexOf("postNotification(ctx", doWorkStart)
-        val initIdx = workerSrc.indexOf("AnalyticsUtils.init(", doWorkStart)
+        // 2026-08-27: doWork() delegates to the shared deliver(), which both the
+        // WorkManager path and the AlarmManager path call. The invariant is unchanged
+        // — init must still precede the post — it just lives one call deeper now.
+        val deliverStart = workerSrc.indexOf("internal suspend fun deliver(")
+        val postIdx = workerSrc.indexOf("postNotification(ctx", deliverStart)
+        val initIdx = workerSrc.indexOf("AnalyticsUtils.init(", deliverStart)
         assertTrue(
-            "doWork() must call AnalyticsUtils.init(ctx) so the pushed event logs from the " +
-                "cold worker process.",
-            initIdx in (doWorkStart + 1) until postIdx
+            "deliver() must call AnalyticsUtils.init(ctx) so the pushed event logs from the " +
+                "cold worker/receiver process.",
+            deliverStart >= 0 && initIdx in (deliverStart + 1) until postIdx
+        )
+        assertTrue(
+            "doWork() must route through deliver() so the two delivery paths cannot drift.",
+            workerSrc.substringAfter("override suspend fun doWork()").contains("deliver(applicationContext")
         )
     }
 

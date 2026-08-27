@@ -289,6 +289,8 @@ enum class AnalyticsEvent(val eventName: String) {
     D1OvernightDrainWorkerFired("d1_overnight_drain_worker_fired"),
     D1OvernightDrainPushed("d1_overnight_drain_pushed"),
     D1OvernightDrainCancelled("d1_overnight_drain_cancelled"),
+    /** WorkManager's own view of the unique work, sampled once per install after the 20h delay. */
+    D1OvernightDrainPostMortem("d1_overnight_drain_post_mortem"),
     D1OvernightDrainOpened("d1_overnight_drain_opened"),
     FirstScanCompleted("first_scan_completed"),
     FirstScanShareTapped("first_scan_share_tapped"),

@@ -611,6 +611,24 @@ object RemoteConfigUtils {
      * the gate a live value at fire time. A failed/timed-out fetch keeps the previous
      * activated value (or the bundled false) — same safe default as before, never worse.
      */
+    /**
+     * Forces a bounded fetch+activate and reports whether it SUCCEEDED, separately
+     * from what the flag then says. awaitD1OvernightDrainEnabled() below collapses
+     * both into one boolean, which made a network failure indistinguishable from
+     * "the A/B put this user in the control arm" — the caller then treated a
+     * timeout as a deliberate false and dropped the push for good.
+     */
+    suspend fun awaitD1OvernightDrainFetched(timeoutSeconds: Long = 8L): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                Tasks.await(remoteConfig.fetchAndActivate(), timeoutSeconds, TimeUnit.SECONDS)
+                true
+            } catch (t: Throwable) {
+                AppLog.d("RemoteConfigUtils", "awaitD1OvernightDrainFetched failed: ${t.message}")
+                false
+            }
+        }
+
     suspend fun awaitD1OvernightDrainEnabled(timeoutSeconds: Long = 8L): Boolean =
         withContext(Dispatchers.IO) {
             try {

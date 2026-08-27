@@ -1,8 +1,10 @@
 package com.teamz.lab.debugger.utils
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -12,11 +14,16 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
+import androidx.work.BackoffPolicy
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.teamz.lab.debugger.MainActivity
 import com.teamz.lab.debugger.R
 import java.util.concurrent.TimeUnit
@@ -52,6 +59,16 @@ object D1OvernightDrainWorker {
     private const val KEY_BASELINE_BATTERY_PCT = "baseline_battery_pct"
     private const val KEY_BASELINE_TS = "baseline_ts"
     private const val KEY_WORK_SCHEDULED = "work_scheduled"
+    /**
+     * Set the moment either path posts (or deliberately skips) the push, so the
+     * WorkManager job and the AlarmManager broadcast can both be armed without
+     * any risk of the user seeing the notification twice.
+     */
+    private const val KEY_OUTCOME_RECORDED = "outcome_recorded"
+    /** One-shot guard so the WorkInfo post-mortem is reported once per install. */
+    private const val KEY_POSTMORTEM_SENT = "postmortem_sent"
+    private const val ALARM_REQUEST_CODE = 2027
+    const val ACTION_D1_ALARM = "com.teamz.lab.debugger.D1_OVERNIGHT_DRAIN"
     private const val WORK_NAME = "d1_overnight_drain"
     private const val CHANNEL_ID = "d1_overnight_drain"
     private const val NOTIFICATION_ID = 2026
@@ -91,9 +108,17 @@ object D1OvernightDrainWorker {
 
         val request = OneTimeWorkRequestBuilder<Worker>()
             .setInitialDelay(INITIAL_DELAY_HOURS, TimeUnit.HOURS)
+            // No content constraints on purpose: a constraint can only make the
+            // job LESS likely to run, and the measured problem is that it does not
+            // run at all. Backoff is set so a doWork() that returns retry() (RC
+            // fetch timed out) comes back instead of resolving to "flag false"
+            // forever, which is how the July fix could look applied and still
+            // never push.
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
             .build()
         WorkManager.getInstance(context)
             .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.KEEP, request)
+        armAlarmFallback(context)
 
         Log.i(TAG, "Scheduled D1 overnight-drain push for +${INITIAL_DELAY_HOURS}h " +
             "(baseline=$baselinePct%; RC gate evaluated at fire time)")
@@ -119,6 +144,7 @@ object D1OvernightDrainWorker {
         val ageMs = System.currentTimeMillis() - baselineTs
         if (ageMs > INITIAL_DELAY_HOURS * 60 * 60 * 1000L) return
         WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+        cancelAlarmFallback(context)
         p.edit { putBoolean(KEY_WORK_SCHEDULED, false) }
         Log.i(TAG, "Cancelled D1 push — user returned organically at ${ageMs / 1000 / 60} min")
         try {
@@ -151,6 +177,219 @@ object D1OvernightDrainWorker {
         Log.i(TAG, "D1 push OPENED at +${timeFromInstallMin}min from install")
     }
 
+    // ---------------------------------------------------------------------
+    // Redundant delivery path.
+    //
+    // Measured 2026-08-27 on 3.1.20 (GA4 481224245, the only cohort both past the
+    // 20h delay and able to log worker_fired):
+    //
+    //     scheduled 36 = cancelled 20 + worker_fired 5 + UNACCOUNTED 11
+    //
+    // The 20 cancellations are correct — those users came back on their own. Of the
+    // 16 jobs that were still eligible to run, only 5 ran. AlarmManager is a
+    // different subsystem from the JobScheduler that WorkManager sits on, so an OEM
+    // battery policy that drops one may not drop the other. Both are armed; the
+    // first to arrive posts, the other no-ops on KEY_OUTCOME_RECORDED.
+    //
+    // setAndAllowWhileIdle, not setExactAndAllowWhileIdle: exact alarms need
+    // SCHEDULE_EXACT_ALARM on Android 12+, which Play scrutinises and this app does
+    // not need — "roughly 20 hours later" tolerates a Doze maintenance window.
+    //
+    // Deliberately NOT persisted across reboot: that needs RECEIVE_BOOT_COMPLETED,
+    // and adding a permission to an app with two live Data Safety rejections is a
+    // bad trade. WorkManager already survives reboot, so the two paths cover
+    // different failure modes rather than the same one.
+    // ---------------------------------------------------------------------
+
+    private fun alarmIntent(context: Context): PendingIntent =
+        PendingIntent.getBroadcast(
+            context,
+            ALARM_REQUEST_CODE,
+            Intent(context, AlarmReceiver::class.java).setAction(ACTION_D1_ALARM),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+    private fun armAlarmFallback(context: Context) {
+        try {
+            val am = context.getSystemService<AlarmManager>() ?: return
+            val triggerAt = System.currentTimeMillis() + INITIAL_DELAY_HOURS * 60 * 60 * 1000L
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, alarmIntent(context))
+            Log.i(TAG, "Armed AlarmManager fallback for +${INITIAL_DELAY_HOURS}h")
+        } catch (t: Throwable) {
+            Log.w(TAG, "armAlarmFallback failed: ${t.message}")
+        }
+    }
+
+    private fun cancelAlarmFallback(context: Context) {
+        try {
+            context.getSystemService<AlarmManager>()?.cancel(alarmIntent(context))
+        } catch (t: Throwable) {
+            Log.w(TAG, "cancelAlarmFallback failed: ${t.message}")
+        }
+    }
+
+    /**
+     * Claim the single delivery slot. Returns true exactly once per install; every
+     * later caller — the other delivery path — gets false and must do nothing.
+     */
+    private fun claimOutcome(context: Context): Boolean {
+        val p = prefs(context)
+        synchronized(this) {
+            if (p.getBoolean(KEY_OUTCOME_RECORDED, false)) return false
+            p.edit { putBoolean(KEY_OUTCOME_RECORDED, true) }
+            return true
+        }
+    }
+
+    /**
+     * The whole decide-and-post sequence, shared by the WorkManager worker and the
+     * AlarmManager receiver so the two paths cannot drift apart.
+     *
+     * @return true if it ran to completion, false if the RC fetch failed and the
+     *         caller should retry (WorkManager only — the alarm has no retry).
+     */
+    internal suspend fun deliver(ctx: Context, source: String, canRetry: Boolean): Boolean {
+        AnalyticsUtils.init(ctx)
+        RemoteConfigUtils.init()
+
+        val fetched = RemoteConfigUtils.awaitD1OvernightDrainFetched()
+        val gateResult = RemoteConfigUtils.isD1OvernightDrainEnabled()
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.D1OvernightDrainWorkerFired,
+                mapOf("gate_result" to gateResult, "source" to source, "rc_fetched" to fetched)
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
+
+        // A failed fetch used to fall through to the bundled default (false) and
+        // return success, so the push was lost for good on one flaky network moment.
+        if (!fetched && canRetry) {
+            Log.w(TAG, "RC fetch failed — asking WorkManager to retry rather than defaulting to false")
+            return false
+        }
+        if (!claimOutcome(ctx)) {
+            Log.d(TAG, "Outcome already recorded by the other path — skipping ($source)")
+            return true
+        }
+        if (!gateResult) {
+            Log.d(TAG, "D1 flag false at fire time (A/B off or RC disabled) — skipping")
+            return true
+        }
+
+        val p = prefs(ctx)
+        val baseline = p.getInt(KEY_BASELINE_BATTERY_PCT, -1)
+        if (baseline < 0) {
+            Log.w(TAG, "Baseline missing — skipping")
+            return true
+        }
+        val current = readBatteryPctSafe(ctx) ?: return true
+        val drainPct = (baseline - current).coerceAtLeast(0)
+        val text = if (drainPct >= 1) {
+            "Your battery used $drainPct% in the last 20 hours — tap to see what drained it."
+        } else {
+            "Your battery is steady overnight — tap to see today's device health score."
+        }
+        postNotification(ctx, text)
+        try {
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.D1OvernightDrainPushed,
+                mapOf(
+                    "baseline_pct" to baseline,
+                    "current_pct" to current,
+                    "drain_pct" to drainPct,
+                    "source" to source
+                )
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
+        return true
+    }
+
+    /**
+     * Reports what WorkManager thinks happened to the unique work, once per install,
+     * on the next app open after the delay has elapsed. `worker_fired` can only tell
+     * us the job DID run; nothing today explains the 11 installs that neither
+     * cancelled nor fired. This names them — CANCELLED, ENQUEUED (still waiting),
+     * FAILED, or absent entirely (OEM force-stop wiped the JobScheduler entry).
+     */
+    fun reportDeliveryPostMortem(context: Context) {
+        val p = prefs(context)
+        if (p.getBoolean(KEY_POSTMORTEM_SENT, false)) return
+        val baselineTs = p.getLong(KEY_BASELINE_TS, 0L)
+        if (baselineTs <= 0L) return
+        val ageMs = System.currentTimeMillis() - baselineTs
+        if (ageMs < INITIAL_DELAY_HOURS * 60 * 60 * 1000L) return  // delay not elapsed yet
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val state = try {
+                WorkManager.getInstance(context)
+                    .getWorkInfosForUniqueWork(WORK_NAME).get()
+                    .firstOrNull()?.state?.name ?: "ABSENT"
+            } catch (t: Throwable) {
+                "LOOKUP_FAILED"
+            }
+            try {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.D1OvernightDrainPostMortem,
+                    mapOf(
+                        "work_state" to state,
+                        "outcome_recorded" to p.getBoolean(KEY_OUTCOME_RECORDED, false),
+                        "age_hours" to (ageMs / 1000 / 60 / 60).toInt()
+                    )
+                )
+            } catch (_: Throwable) { /* analytics not critical */ }
+            p.edit { putBoolean(KEY_POSTMORTEM_SENT, true) }
+            Log.i(TAG, "D1 post-mortem: workState=$state age=${ageMs / 1000 / 60 / 60}h")
+        }
+    }
+
+    /**
+     * AlarmManager arm of the redundant delivery path. Uses goAsync() because the
+     * Remote Config fetch inside deliver() can take seconds and onReceive() would
+     * otherwise be torn down at the end of its synchronous body.
+     */
+    class AlarmReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != ACTION_D1_ALARM) return
+            val pending = goAsync()
+            val ctx = context.applicationContext
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    deliver(ctx, source = "alarm", canRetry = false)
+                } catch (t: Throwable) {
+                    Log.w(TAG, "AlarmReceiver deliver failed: ${t.message}")
+                } finally {
+                    pending.finish()
+                }
+            }
+        }
+    }
+
+    private fun postNotification(ctx: Context, text: String) {
+        ensureChannel(ctx)
+        val openIntent = Intent(ctx, MainActivity::class.java).apply {
+            putExtra("from", "d1_overnight_drain")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pi = PendingIntent.getActivity(
+            ctx, NOTIFICATION_ID, openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val n = NotificationCompat.Builder(ctx, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("DeviceGPT")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+        try {
+            NotificationManagerCompatShim.notify(ctx, NOTIFICATION_ID, n)
+        } catch (t: Throwable) {
+            Log.w(TAG, "postNotification failed: ${t.message}")
+        }
+    }
+
     private fun readBatteryPctSafe(context: Context): Int? = try {
         val bm = context.getSystemService<BatteryManager>() ?: return null
         bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).takeIf { it in 1..100 }
@@ -181,89 +420,20 @@ object D1OvernightDrainWorker {
         CoroutineWorker(appContext, params) {
 
         override suspend fun doWork(): Result {
-            val ctx = applicationContext
-            // This worker runs in a cold BACKGROUND process; neither analytics nor
-            // Remote Config are guaranteed to be initialized here. Init analytics so
-            // the pushed/failed events actually log (was a suspected reason the funnel
-            // read 0), and set RC defaults before the gate reads the flag.
-            AnalyticsUtils.init(ctx)
-            RemoteConfigUtils.init()
-            // Diagnostic (2026-08-11): fires unconditionally the moment doWork() actually
-            // runs — everything below this line only logs on the gate-pass path, so
-            // "scheduled 104, pushed 7" was unable to tell "job never ran (Doze/OEM kill —
-            // zero constraints, fires 20h out)" apart from "job ran, RC gate said false".
-            // This event settles which one it is: if worker_fired << scheduled, WorkManager
-            // reliability is the bug (needs setConstraints/retry, not an RC fix). If
-            // worker_fired ≈ scheduled but pushed stays low, the gate itself is still broken.
-            val gateResult = RemoteConfigUtils.awaitD1OvernightDrainEnabled()
-            try {
-                AnalyticsUtils.logEvent(
-                    AnalyticsEvent.D1OvernightDrainWorkerFired,
-                    mapOf("gate_result" to gateResult)
-                )
-            } catch (_: Throwable) { /* analytics not critical */ }
-            // Await a fresh fetch+activate before gating — a plain getBoolean() in this
-            // background process falls back to the bundled default (false) and the push
-            // silently never fires (prod: scheduled 124, pushed 0).
-            if (!gateResult) {
-                Log.d(TAG, "D1 flag false at fire time (A/B off or RC disabled) — skipping")
-                return Result.success()
-            }
-            val p = prefs(ctx)
-            val baseline = p.getInt(KEY_BASELINE_BATTERY_PCT, -1)
-            if (baseline < 0) {
-                Log.w(TAG, "Baseline missing — skipping")
-                return Result.success()
-            }
-            val current = readBatteryPctSafe(ctx) ?: return Result.success()
-            val drainPct = (baseline - current).coerceAtLeast(0)
-
-            val text = if (drainPct >= 1) {
-                "Your battery used $drainPct% in the last 20 hours — tap to see what drained it."
-            } else {
-                "Your battery is steady overnight — tap to see today's device health score."
-            }
-            postNotification(ctx, text)
-
-            try {
-                AnalyticsUtils.logEvent(
-                    AnalyticsEvent.D1OvernightDrainPushed,
-                    mapOf(
-                        "baseline_pct" to baseline,
-                        "current_pct" to current,
-                        "drain_pct" to drainPct
-                    )
-                )
-            } catch (_: Throwable) { /* analytics not critical */ }
-
-            return Result.success()
-        }
-
-        private fun postNotification(ctx: Context, text: String) {
-            ensureChannel(ctx)
-            val openIntent = Intent(ctx, MainActivity::class.java).apply {
-                putExtra("from", "d1_overnight_drain")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val pi = PendingIntent.getActivity(
-                ctx, NOTIFICATION_ID, openIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            val n = NotificationCompat.Builder(ctx, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("DeviceGPT")
-                .setContentText(text)
-                .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-                .setContentIntent(pi)
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .build()
-            try {
-                NotificationManagerCompatShim.notify(ctx, NOTIFICATION_ID, n)
+            // Everything lives in the shared deliver() so this path and the
+            // AlarmManager path cannot drift. Returning retry() on a failed RC
+            // fetch is the behaviour change: the old code fell through to the
+            // bundled default (false) and returned success, losing the push
+            // permanently on a single bad network moment.
+            val ok = try {
+                deliver(applicationContext, source = "worker", canRetry = runAttemptCount < 3)
             } catch (t: Throwable) {
-                Log.w(TAG, "postNotification failed: ${t.message}")
+                Log.w(TAG, "deliver failed: ${t.message}")
+                true
             }
+            return if (ok) Result.success() else Result.retry()
         }
+
     }
 }
 

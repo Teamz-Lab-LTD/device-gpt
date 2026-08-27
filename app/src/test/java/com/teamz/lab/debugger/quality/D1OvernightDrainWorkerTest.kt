@@ -93,7 +93,11 @@ class D1OvernightDrainWorkerTest {
         // read the bundled default (false) and the push silently never fired. Production
         // proof (GA4, 28d to 2026-07-11): scheduled = 124 users, pushed = 0. The gate must
         // therefore AWAIT a bounded fetch+activate before reading the flag.
-        val checks = Regex("RemoteConfigUtils\\.awaitD1OvernightDrainEnabled\\(").findAll(workerSrc).count()
+        // See D1OvernightDrainContractTest: the fetch call was renamed to
+        // awaitD1OvernightDrainFetched() so a failed fetch can be told apart from a
+        // deliberate false and retried instead of dropping the push permanently.
+        val checks = Regex("RemoteConfigUtils\\.awaitD1OvernightDrain(Enabled|Fetched)\\(")
+            .findAll(workerSrc).count()
         assertTrue(
             "Worker must gate on awaitD1OvernightDrainEnabled() at LEAST ONCE (at fire time). " +
                 "Found $checks. Zero means either no RC gate at all, or a bare getBoolean() " +
