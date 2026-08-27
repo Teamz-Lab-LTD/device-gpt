@@ -18,6 +18,7 @@ import com.teamz.lab.debugger.ui.NativeAdManager
 import androidx.compose.runtime.LaunchedEffect
 import com.teamz.lab.debugger.R
 import kotlinx.coroutines.delay
+import com.teamz.lab.debugger.utils.PaywallPolicy
 
 /**
  * Reusable RevenueCat Paywall composable
@@ -56,6 +57,9 @@ fun RevenueCatPaywall(
     // Track paywall shown
     LaunchedEffect(showPaywall) {
         if (showPaywall && !isPremium) {
+            // Counts toward paywall_max_per_session. Placed at the same point as the
+            // funnel event so the cap and premium_paywall_shown can never disagree.
+            PaywallPolicy.recordShown(context)
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.PremiumPaywallShown,
                 mapOf(

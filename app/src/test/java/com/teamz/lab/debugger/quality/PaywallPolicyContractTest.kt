@@ -61,15 +61,36 @@ class PaywallPolicyContractTest {
 
     @Test
     fun `routing table matches the pre-registered decision table`() {
+        // REVISED 2026-08-28 on production evidence. The original table left everything
+        // except three reasons on LOG_ONLY, with a good argument for too_expensive:
+        // "never route to vaporware" — there was no downsell tier to send them to.
+        //
+        // That argument was sound for a DOWNSELL. It was never an argument for continuing
+        // to show the sheet. GA4 481224245, 28d to 2026-08-26:
+        //
+        //   premium_paywall_shown      717   over 418 sessions
+        //   premium_purchase_completed   0
+        //   dismissals 165 -> no_response 68, sheet_dismissed 61, other 12, not_now 9,
+        //                     closed_by_mistake 7, too_expensive 6, no_value_seen 2
+        //
+        // 78% of dismissals are "did not engage at all", and those were exactly the ones
+        // LOG_ONLY ignored. So the two biggest buckets told the app nothing and the app
+        // kept asking. Backing off is now the DEFAULT, and a reason has to earn the right
+        // to re-show rather than the other way round.
         assertEquals(PaywallPolicy.RouteAction.RESHOW_ONCE, PaywallPolicy.routeForReason("closed_by_mistake"))
-        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("not_now"))
         assertEquals(PaywallPolicy.RouteAction.SUPPRESS_30D, PaywallPolicy.routeForReason("no_value_seen"))
-        // too_expensive stays LOG_ONLY until the Tier-B/weekly downsell target
-        // exists (Phase 2) — never route to vaporware.
-        assertEquals(PaywallPolicy.RouteAction.LOG_ONLY, PaywallPolicy.routeForReason("too_expensive"))
-        assertEquals(PaywallPolicy.RouteAction.LOG_ONLY, PaywallPolicy.routeForReason("other"))
-        assertEquals(PaywallPolicy.RouteAction.LOG_ONLY, PaywallPolicy.routeForReason("no_response"))
-        assertEquals(PaywallPolicy.RouteAction.LOG_ONLY, PaywallPolicy.routeForReason("anything_unknown"))
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("not_now"))
+        // The two buckets that were the whole problem.
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("no_response"))
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("sheet_dismissed"))
+        // Still no downsell tier, so this is a back-off, NOT a re-pitch. If a Tier-B or
+        // weekly product ever ships, this is the line to revisit.
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("too_expensive"))
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("other"))
+        // Unknown reasons back off too. A future reason string that genuinely means
+        // "wants to buy" would need an explicit branch — defaulting to quiet is the
+        // conservative direction to be wrong in.
+        assertEquals(PaywallPolicy.RouteAction.COOLDOWN_7D, PaywallPolicy.routeForReason("anything_unknown"))
     }
 
     // ---- Source-text wiring guards ------------------------------------------------

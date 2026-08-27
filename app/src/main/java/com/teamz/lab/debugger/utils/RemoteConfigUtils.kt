@@ -194,6 +194,11 @@ object RemoteConfigUtils {
                 "paywall_delay_enabled" to false,            // true = gate cold-open paywall on session>=min + first scan
                 "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall (when gate on)
                 "paywall_reason_routing_enabled" to false,   // Dismiss-reason routing (Phase 1 = log-only)
+                // Hard cap on paywall impressions per session. Measured 2026-08-27: 1.72
+                // per session over 418 sessions, in a 155-second average session, for 0
+                // purchases in 28 days. 1 is the ceiling; set 0 to switch the paywall off
+                // entirely without a release.
+                "paywall_max_per_session" to 1L,
                 "ads_grace_sessions" to 0L,                  // >0 = no interstitial/app-open ads in sessions 1..N
                 "post_delight_ad_quiet_ms" to 15000L,        // No fullscreen ad within Xms after a delight moment
                 "widget_v2_enabled" to false,                // R3 delta-first widget layout
@@ -491,6 +496,12 @@ object RemoteConfigUtils {
 
     /** Dismiss-reason routing. false = Phase 1 log-only. Default: false */
     fun isPaywallReasonRoutingEnabled(): Boolean = remoteConfig.getBoolean("paywall_reason_routing_enabled")
+
+    /** Max paywall impressions per session. Default 1; 0 disables the paywall entirely. */
+    fun getPaywallMaxPerSession(): Long {
+        val value = remoteConfig.getLong("paywall_max_per_session")
+        return if (value < 0L) 1L else value
+    }
 
     /** No interstitial/app-open ads in sessions 1..N. Default: 2 */
     fun getAdsGraceSessions(): Int = remoteConfig.getLong("ads_grace_sessions").toInt()

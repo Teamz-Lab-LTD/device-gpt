@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.ui
 
+import com.teamz.lab.debugger.utils.PaywallPolicy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -125,6 +126,9 @@ fun PaywallWithReferralFallback(
         ReferralFallbackScreen(
             analyticsSource = analyticsSource,
             onShareClick = {
+                // Counts toward paywall_max_per_session. Placed at the same point as the
+                // funnel event so the cap and premium_paywall_shown can never disagree.
+                PaywallPolicy.recordShown(context)
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.PremiumPaywallShown,
                     mapOf(
@@ -286,6 +290,9 @@ private fun ReferralFallbackScreen(
     val referralsToNext = remember { ReferralManager.getReferralsToNextTier(context) }
 
     LaunchedEffect(Unit) {
+        // Counts toward paywall_max_per_session. Placed at the same point as the
+        // funnel event so the cap and premium_paywall_shown can never disagree.
+        PaywallPolicy.recordShown(context)
         AnalyticsUtils.logEvent(
             AnalyticsEvent.PremiumPaywallShown,
             mapOf(

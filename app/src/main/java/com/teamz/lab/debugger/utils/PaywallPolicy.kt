@@ -35,6 +35,16 @@ object PaywallPolicy {
     private const val KEY_RESHOW_CREDIT = "policy_reshow_credit"
     private const val KEY_SUPPRESS_UNTIL = "policy_suppress_until"
     private const val KEY_COOLDOWN_UNTIL = "policy_cooldown_until"
+    /**
+     * Per-session show counter. Measured 2026-08-27 (GA4 481224245, 28d): 717 paywall
+     * impressions across 418 sessions = 1.72 per session, in an average new-user session
+     * of 155 seconds — and 0 purchases. There was no per-session cap because there is no
+     * single show site: three call sites in DeviceGptNavExperience each wrote
+     * `last_paywall_shown_time` independently, so nothing could count them together.
+     * recordShown() is that missing chokepoint.
+     */
+    private const val KEY_SESSION_SHOWN_COUNT = "policy_session_shown_count"
+    private const val KEY_SESSION_STAMP = "policy_session_stamp"
     private const val DAY_MS = 24L * 60 * 60 * 1000
 
     enum class RouteAction { RESHOW_ONCE, COOLDOWN_7D, SUPPRESS_30D, LOG_ONLY }
@@ -50,6 +60,7 @@ object PaywallPolicy {
      * [delightTriggerAllowed] instead — they carry their own value context.
      */
     fun coldTriggerAllowed(context: Context): Boolean {
+        if (!sessionCapClear(context)) return false
         if (!RemoteConfigUtils.isPaywallDelayEnabled()) return suppressionClear(context)
         val sessions = EngagementTracker.getSessionCount(context)
         val scanned = FirstScanGate.hasCompletedScan(context)
@@ -67,7 +78,44 @@ object PaywallPolicy {
         val last = p.getLong("last_paywall_shown_time", 0L)
         val repeatMs = RemoteConfigUtils.getPaywallRepeatIntervalDays() * DAY_MS
         val cooldownOk = last == 0L || System.currentTimeMillis() - last >= repeatMs
-        return cooldownOk && suppressionClear(context)
+        return cooldownOk && suppressionClear(context) && sessionCapClear(context)
+    }
+
+    /**
+     * True while this session is still under `paywall_max_per_session` (default 1).
+     *
+     * The counter is keyed on EngagementTracker's session number, so it resets by itself
+     * when a new session starts — no lifecycle hook to forget to call, and no timer that
+     * could leave a stale count behind after a process death.
+     */
+    private fun sessionCapClear(context: Context): Boolean {
+        val max = RemoteConfigUtils.getPaywallMaxPerSession()
+        if (max <= 0L) return false          // 0 = paywall fully off, a usable kill switch
+        return shownThisSession(context) < max
+    }
+
+    private fun shownThisSession(context: Context): Int {
+        val p = prefs(context)
+        val current = EngagementTracker.getSessionCount(context)
+        if (p.getInt(KEY_SESSION_STAMP, -1) != current) return 0
+        return p.getInt(KEY_SESSION_SHOWN_COUNT, 0)
+    }
+
+    /**
+     * Call at the moment the paywall actually reaches the screen — the same place
+     * `AnalyticsEvent.PremiumPaywallShown` is logged, so the counter and the funnel can
+     * never disagree about what a "show" is.
+     */
+    fun recordShown(context: Context) {
+        val p = prefs(context)
+        val current = EngagementTracker.getSessionCount(context)
+        val n = if (p.getInt(KEY_SESSION_STAMP, -1) == current) {
+            p.getInt(KEY_SESSION_SHOWN_COUNT, 0)
+        } else 0
+        p.edit()
+            .putInt(KEY_SESSION_STAMP, current)
+            .putInt(KEY_SESSION_SHOWN_COUNT, n + 1)
+            .apply()
     }
 
     /**
@@ -97,9 +145,16 @@ object PaywallPolicy {
 
     fun routeForReason(reason: String): RouteAction = when (reason) {
         "closed_by_mistake" -> RouteAction.RESHOW_ONCE
-        "not_now" -> RouteAction.COOLDOWN_7D
         "no_value_seen" -> RouteAction.SUPPRESS_30D
-        else -> RouteAction.LOG_ONLY // too_expensive (Phase 2), other, no_response
+        // Everything else backs off for a week. Until 2026-08-28 only three reasons were
+        // routed and the rest fell to LOG_ONLY — which covered the two LARGEST buckets:
+        // of 165 dismissals, no_response 68 + sheet_dismissed 61 = 78%. Those users were
+        // ignoring the sheet entirely and the app kept showing it. Price rejection is
+        // rare by comparison (too_expensive 6, no_value_seen 2), so "did not engage" is
+        // the signal worth acting on, not "said no to the price".
+        "not_now", "no_response", "sheet_dismissed", "too_expensive", "other" ->
+            RouteAction.COOLDOWN_7D
+        else -> RouteAction.COOLDOWN_7D
     }
 
     /**
