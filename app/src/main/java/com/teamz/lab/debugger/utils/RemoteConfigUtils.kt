@@ -44,6 +44,12 @@ object RemoteConfigUtils {
     /** Must mirror the "show_app_open_ads" entry in init()'s setDefaultsAsync map. */
     private const val DEFAULT_SHOW_APP_OPEN_ADS = true
 
+    /**
+     * Bundled default for the first-scan gate, referenced by BOTH the defaults map and the
+     * pre-defaults answer below so the two cannot drift apart.
+     */
+    private const val DEFAULT_FIRST_SCAN_GATE_ENABLED = true
+
     /** Returns true if the device's country is in the RC-driven suppression list. */
     fun isCountrySuppressed(): Boolean {
         val code = cachedCountryCode
@@ -183,7 +189,7 @@ object RemoteConfigUtils {
                 // value below. Defaulting to false there means a fresh user never sees the
                 // honest scan we advertise. Older builds ship their own `false` default, so
                 // this cannot resurrect the fake scan anywhere.
-                "first_scan_gate_enabled" to true,
+                "first_scan_gate_enabled" to DEFAULT_FIRST_SCAN_GATE_ENABLED,
                 // v3.2.0 growth program (2026-07-10 synthesis) — dark-shipped features.
                 // ALL default OFF/conservative: existing users see zero change until
                 // each flag is flipped in Firebase Console per the gate schedule.
@@ -651,10 +657,26 @@ object RemoteConfigUtils {
         }
 
     /**
-     * v3.1.11 Week 1 retention milestone — First-launch 10s auto-scan + Device Score gate.
-     * Default false. Set true in Firebase console to enable on next-install A/B test.
+     * First-launch scan + Device Score gate. Bundled default TRUE since `44675ae`
+     * (2026-07-10) so an empty Remote Config cannot hide the app's first value moment.
+     *
+     * The `defaultsApplied` guard is the same one `shouldShowAppOpenAds()` above carries,
+     * and it is here for the same reason: `setDefaultsAsync()` is ASYNC, so until it
+     * completes `getBoolean()` on an unset key returns Firebase's static FALSE rather than
+     * our bundled TRUE. MainActivity reads `FirstScanGate.currentState()` about 0.1s after
+     * `Application.onCreate` starts that call, and on a fresh install — no cached config,
+     * i.e. exactly the new users this gate exists for — it lost the race. The gate reported
+     * NOT_GATED, the full tab UI composed, and a 500ms poll then flipped the state up to
+     * ten seconds later, replacing the screen the user was already reading.
+     *
+     * Without the guard the failure is invisible in testing: any device with a cached
+     * config answers correctly, so it only ever hurt first-time users.
      */
     fun isFirstScanGateEnabled(): Boolean {
+        if (!defaultsApplied) {
+            AppLog.d("RemoteConfigUtils", "isFirstScanGateEnabled() - defaults not applied yet, using bundled default")
+            return DEFAULT_FIRST_SCAN_GATE_ENABLED
+        }
         return remoteConfig.getBoolean("first_scan_gate_enabled")
     }
 }

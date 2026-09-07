@@ -150,7 +150,8 @@ class D1OvernightDrainContractTest {
             "RemoteConfigUtils.init() must bundle an explicit default for " +
                 "\"first_scan_gate_enabled\". Without one the RC SDK falls back to " +
                 "unknown->false, which is implementation-defined behaviour.",
-            Regex("\"first_scan_gate_enabled\"\\s+to\\s+(true|false)").containsMatchIn(rcSrcText)
+            Regex("\"first_scan_gate_enabled\"\\s+to\\s+(true|false|DEFAULT_FIRST_SCAN_GATE_ENABLED)")
+                .containsMatchIn(rcSrcText)
         )
     }
 

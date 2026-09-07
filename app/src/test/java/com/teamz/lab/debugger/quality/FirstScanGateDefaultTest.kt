@@ -29,10 +29,18 @@ class FirstScanGateDefaultTest {
     @Test
     fun `first scan gate defaults to true so an empty Remote Config cannot hide it`() {
         val src = read("app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt")
+        // 2026-09-08: the literal moved into a named constant so the defaults map and the
+        // pre-defaults answer in isFirstScanGateEnabled() cannot drift apart. Accept either
+        // spelling, but keep the guard's strength — if the constant form is used, its VALUE
+        // is still asserted true below, so setting it false fails here exactly as before.
+        val literalTrue = Regex("\"first_scan_gate_enabled\"\\s+to\\s+true").containsMatchIn(src)
+        val viaConstant = Regex("\"first_scan_gate_enabled\"\\s+to\\s+DEFAULT_FIRST_SCAN_GATE_ENABLED")
+            .containsMatchIn(src) &&
+            Regex("DEFAULT_FIRST_SCAN_GATE_ENABLED\\s*=\\s*true").containsMatchIn(src)
         assertTrue(
             "first_scan_gate_enabled must default to true — an empty RC fetch would otherwise " +
                 "hide the honest scan that the store listing advertises",
-            Regex("\"first_scan_gate_enabled\"\\s+to\\s+true").containsMatchIn(src)
+            literalTrue || viaConstant
         )
     }
 
