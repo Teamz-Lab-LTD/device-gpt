@@ -160,6 +160,12 @@ class MainActivity : ComponentActivity() {
                                                 mapOf("score" to score, "used_card" to usedCard)
                                             )
                                         } catch (_: Throwable) { /* analytics not critical */ }
+                                        // Name the destination. Falling through to
+                                        // initialTab lands on whatever tab_order starts
+                                        // with — which is why a CTA labelled "See details"
+                                        // showed no details: the score card, the insight
+                                        // and the Timeline all render on Health.
+                                        intent.putExtra("navigate_to_tab", "health")
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
                                         // One beat later: widget pin prompt (self-guarded,
@@ -167,6 +173,12 @@ class MainActivity : ComponentActivity() {
                                         com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
                                     },
                                     onDismiss = {
+                                        // Name the destination. Falling through to
+                                        // initialTab lands on whatever tab_order starts
+                                        // with — which is why a CTA labelled "See details"
+                                        // showed no details: the score card, the insight
+                                        // and the Timeline all render on Health.
+                                        intent.putExtra("navigate_to_tab", "health")
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
                                         com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
