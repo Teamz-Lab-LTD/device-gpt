@@ -92,6 +92,22 @@ object AnalyticsUtils {
      * - Airplane Mode
      * - Doze Mode (deep sleep)
      */
+    /**
+     * logEvent + the caller's EngagementTracker session number as `session_count`.
+     *
+     * Use this for anything whose correctness depends on WHICH session it fired in —
+     * ads, the paywall, the review prompt. Before 2026-09-08 there was no way to prove
+     * "no ads in sessions 1-2" actually held, because no event carried the session.
+     */
+    fun logEventWithSession(context: android.content.Context, event: AnalyticsEvent, params: Map<String, Any?> = emptyMap()) {
+        val session = try {
+            EngagementTracker.getSessionCount(context)
+        } catch (_: Throwable) {
+            -1
+        }
+        logEvent(event, params + mapOf("session_count" to session))
+    }
+
     fun logEvent(event: AnalyticsEvent, params: Map<String, Any?> = emptyMap()) {
         // Snapshot the inputs synchronously (caller's thread may release the map
         // before the background handler runs), then defer all blocking work
@@ -321,6 +337,12 @@ enum class AnalyticsEvent(val eventName: String) {
     // Tab navigation events
     TabDeviceInfoViewed("tab_device_info_viewed"),
     TabNetworkInfoViewed("tab_network_info_viewed"),
+    /** GA4 screen_view with a screen_name param. The app is single-Activity, so Firebase
+     *  auto-collection reports one screen forever and unifiedScreenName is 100% "(not set)". */
+    ScreenViewed("screen_view"),
+    /** Fires when the share sheet is actually launched. first_scan_share_tapped alone measured
+     *  intent, not outcome — 49 taps, unknown result. */
+    FirstScanShareCompleted("first_scan_share_completed"),
     TabHealthViewed("tab_health_viewed"),
     TabPowerViewed("tab_power_viewed"),
     TabLeaderboardViewed("tab_leaderboard_viewed"),

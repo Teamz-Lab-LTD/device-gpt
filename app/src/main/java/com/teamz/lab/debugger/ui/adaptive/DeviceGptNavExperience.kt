@@ -169,7 +169,30 @@ import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIP
 import java.io.File
 import kotlinx.coroutines.launch
 
+/**
+ * GA4 screen name per tab. Kept next to the analytics call so a new TabType cannot be
+ * added without a name — the `when` below is exhaustive and will not compile otherwise.
+ */
+private fun screenNameFor(tabType: TabType): String = when (tabType) {
+    TabType.LEADERBOARD -> "leaderboard"
+    TabType.HEALTH -> "health"
+    TabType.POWER -> "power"
+    TabType.DEVICE_INFO -> "device_info"
+    TabType.NETWORK_INFO -> "network_info"
+    TabType.CAMERA -> "camera"
+    TabType.SCREEN_TEST -> "screen_test"
+    TabType.APP_DOCTOR -> "app_doctor"
+    TabType.AI_BRIDGE -> "ai_bridge"
+}
+
 private fun logMainTabSelectionAnalytics(tabType: TabType) {
+    // The app is a single Activity, so Firebase auto-collection reports one screen for the
+    // whole product and unifiedScreenName reads 100% "(not set)". Without this event there
+    // is no way to answer "which screen do new users leave from".
+    AnalyticsUtils.logEvent(
+        AnalyticsEvent.ScreenViewed,
+        mapOf("screen_name" to screenNameFor(tabType))
+    )
     when (tabType) {
         TabType.LEADERBOARD -> AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
         TabType.HEALTH -> AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed)

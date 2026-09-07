@@ -217,5 +217,16 @@
             </intent-filter>
         </receiver>
 
+
+        <!-- Success callback for requestPinAppWidget. Not exported: only the launcher's
+             own PendingIntent, created by us, can fire it. -->
+        <receiver
+            android:name=".utils.WidgetPinResultReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.teamz.lab.debugger.WIDGET_PIN_SUCCESS" />
+            </intent-filter>
+        </receiver>
+
 </application>
 </manifest>

@@ -150,6 +150,16 @@ class MainActivity : ComponentActivity() {
                                                 android.content.Intent.createChooser(sendIntent, "Share your Device Score")
                                             )
                                         }
+                                        // Completion, not intent. first_scan_share_tapped alone
+                                        // recorded 49 taps whose outcome was unknowable, because
+                                        // FirstScanGate logs the tap and leaves the dialog to the
+                                        // caller. This is the caller.
+                                        try {
+                                            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                                com.teamz.lab.debugger.utils.AnalyticsEvent.FirstScanShareCompleted,
+                                                mapOf("score" to score, "used_card" to usedCard)
+                                            )
+                                        } catch (_: Throwable) { /* analytics not critical */ }
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
                                         // One beat later: widget pin prompt (self-guarded,

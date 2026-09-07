@@ -1,5 +1,7 @@
 package com.teamz.lab.debugger.utils
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -22,6 +24,10 @@ import com.teamz.lab.debugger.widgets.LockScreenMonitorWidget
  *   - Once per install, ever
  */
 object WidgetPinPrompt {
+
+    const val ACTION_WIDGET_PIN_SUCCESS = "com.teamz.lab.debugger.WIDGET_PIN_SUCCESS"
+    private const val PIN_SUCCESS_REQUEST_CODE = 2028
+
 
     private const val PREFS = "widget_pin_prompt"
     private const val KEY_PROMPTED = "prompted_once"
@@ -50,7 +56,18 @@ object WidgetPinPrompt {
             }
 
             p.edit { putBoolean(KEY_PROMPTED, true) } // one shot, regardless of outcome
-            val requested = awm.requestPinAppWidget(component, null, null)
+            // The third argument is the OS success callback. It was null until 2026-09-08,
+            // which made widget_add_to_home_screen_success structurally impossible to fire —
+            // "18 prompts, 0 successes" measured nothing at all. Supplying a PendingIntent is
+            // the only way the launcher can tell us the widget was really pinned.
+            val successIntent = PendingIntent.getBroadcast(
+                context,
+                PIN_SUCCESS_REQUEST_CODE,
+                Intent(context, WidgetPinResultReceiver::class.java)
+                    .setAction(ACTION_WIDGET_PIN_SUCCESS),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val requested = awm.requestPinAppWidget(component, null, successIntent)
             log(if (requested) "shown" else "request_rejected")
             return requested
         } catch (t: Throwable) {
@@ -66,5 +83,22 @@ object WidgetPinPrompt {
                 mapOf("result" to result)
             )
         } catch (_: Throwable) { }
+    }
+}
+
+/**
+ * Fires when the launcher confirms the widget was actually pinned. This is the other half of
+ * the PendingIntent handed to requestPinAppWidget — without it the pin funnel ends at "asked".
+ */
+class WidgetPinResultReceiver : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != WidgetPinPrompt.ACTION_WIDGET_PIN_SUCCESS) return
+        try {
+            AnalyticsUtils.init(context.applicationContext)
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.WidgetAddToHomeScreenSuccess,
+                mapOf("source" to "pin_prompt")
+            )
+        } catch (_: Throwable) { /* analytics not critical */ }
     }
 }
