@@ -202,11 +202,20 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
                 )
             }
 
-            // requestPermission will show the native Android notification permission prompt.
-            // NOTE: It's recommended to use a OneSignal In-App Message to prompt instead.
-            CoroutineScope(Dispatchers.IO).launch {
-                OneSignal.Notifications.requestPermission(false)
-            }
+            // 2026-09-08: REMOVED the startup notification-permission ask.
+            //
+            // This fired from Application.onCreate — before a single pixel of the app had
+            // been drawn. A brand-new user's first interaction with DeviceGPT was a system
+            // dialog asking for notifications, for an app they had not yet seen.
+            //
+            // It was also the FIRST of two asks: HandleSystemMonitorAutoStart in
+            // DeviceGptNavExperience shows a rationale dialog and requests the same
+            // permission again on first tab composition. Two prompts for one permission.
+            //
+            // The contextual one survives. OneSignal's own guidance (the note this replaces)
+            // says to prompt from an In-App Message rather than at init, for this reason.
+            // Permission state is unchanged for existing users — this only stops asking
+            // unprompted at launch.
             
             // Initialize automatic background notification scheduling for retention
             // OneSignal handles promotional notifications from backend

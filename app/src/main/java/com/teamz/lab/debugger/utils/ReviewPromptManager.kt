@@ -105,7 +105,20 @@ object ReviewPromptManager {
             Log.d(TAG, "trackAppOpenAndMaybeShowReview() - First launch detected")
             
             // Show review on first launch if enabled (with configurable delay to let user see the app)
-            if (ENABLE_FIRST_LAUNCH_REVIEW && !context.userHasAlreadyReviewed()) {
+            //
+            // 2026-09-08: added the completed-scan condition. The "review first, paywall
+            // after" strategy above is kept deliberately — 4.7 stars from 80 ratings is
+            // doing real work on a 28.5% store-listing conversion, and gutting it would
+            // cost acquisition. What changed is WHEN: the sheet used to land ~15s into the
+            // very first session, among five other modal interruptions, before the user had
+            // been shown anything. Now it waits for the one moment the app has actually
+            // delivered something — the device score. Value first, then the ask.
+            val scanDone = try {
+                com.teamz.lab.debugger.ui.FirstScanGate.hasCompletedScan(context)
+            } catch (_: Throwable) {
+                true // never let a prefs read failure suppress the prompt entirely
+            }
+            if (ENABLE_FIRST_LAUNCH_REVIEW && scanDone && !context.userHasAlreadyReviewed()) {
                 val firstLaunchDelay = RemoteConfigUtils.getReviewDelayFirstLaunchMs()
                 Log.d(TAG, "trackAppOpenAndMaybeShowReview() - Will show review on first launch after ${firstLaunchDelay}ms")
                 CoroutineScope(Dispatchers.Main).launch {

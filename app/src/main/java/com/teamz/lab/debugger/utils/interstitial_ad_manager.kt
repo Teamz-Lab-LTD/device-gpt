@@ -393,6 +393,21 @@ object InterstitialAdManager {
      * @param onAdClosed Callback to execute after ad is dismissed or if no ad is available
      */
     fun showAdIfAvailable(activity: Activity, onAdClosed: () -> Unit) {
+        // v3.2.0 ad-grace, applied here too as of 2026-09-08. showAdBeforeAction has
+        // carried this check since July; this entry point did not — and this is the one
+        // ai_click_handler uses, so tapping the app's headline feature in session 1 opened
+        // a fullscreen ad. A grace window honoured by one of two entry points is advisory,
+        // not a rule. Ads are the only complaint repeated in the 1-star reviews.
+        val graceSessions = RemoteConfigUtils.getAdsGraceSessions()
+        if (graceSessions > 0) {
+            val sessionCount = EngagementTracker.getSessionCount(activity)
+            if (sessionCount in 1..graceSessions) {
+                AppLog.d(TAG, "Ad-grace window (session $sessionCount) — skipping interstitial")
+                onAdClosed()
+                return
+            }
+        }
+
         // REVENUE OPTIMIZATION: Always try to load ad if not loaded (even if throttled)
         // This ensures ads are ready when throttling expires
         if (interstitialAd == null && !isLoading && RemoteConfigUtils.shouldShowInterstitialAds()) {

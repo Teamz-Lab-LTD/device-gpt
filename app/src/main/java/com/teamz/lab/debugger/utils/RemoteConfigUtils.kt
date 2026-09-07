@@ -205,7 +205,11 @@ object RemoteConfigUtils {
                 // purchases in 28 days. 1 is the ceiling; set 0 to switch the paywall off
                 // entirely without a release.
                 "paywall_max_per_session" to 1L,
-                "ads_grace_sessions" to 0L,                  // >0 = no interstitial/app-open ads in sessions 1..N
+                // 2 = sessions 1-2 are interstitial-free. Shipped as 0L in 04973e2 (2026-07-10)
+                // as a dark flag and never lit, so the July plan's "No ads in sessions 1-2"
+                // was documented and never enforced. The live RC has no key, so this bundled
+                // value is what actually governs a fresh install.
+                "ads_grace_sessions" to 2L,
                 "post_delight_ad_quiet_ms" to 15000L,        // No fullscreen ad within Xms after a delight moment
                 "widget_v2_enabled" to false,                // R3 delta-first widget layout
                 "charge_summary_enabled" to false,           // R2 charge report ritual
