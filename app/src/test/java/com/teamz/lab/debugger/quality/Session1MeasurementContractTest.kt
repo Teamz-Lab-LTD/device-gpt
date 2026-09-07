@@ -38,15 +38,21 @@ class Session1MeasurementContractTest {
 
     @Test
     fun `every tab logs a screen_name, so unifiedScreenName stops being (not set)`() {
+        // Verified on a Pixel 8a 2026-09-08: logMainTabSelectionAnalytics is reachable ONLY
+        // from Tab.onClick, so putting screen_view there missed the tab the user LANDS on —
+        // the single most important screen for "where do they leave". It must be driven by
+        // the selected tab instead, so the landing tab and every change are both covered.
+        assertTrue(
+            "screen_view must be logged from a LaunchedEffect keyed on the selected tab, " +
+                "not from the click handler — the landing tab is never clicked",
+            Regex("LaunchedEffect\\(selectedTab[^)]*\\)").containsMatchIn(nav)
+        )
+        val effect = nav.substringAfter("LaunchedEffect(selectedTab").substringBefore("tabOrder.forEachIndexed")
+        assertTrue("the effect must log ScreenViewed", effect.contains("ScreenViewed"))
+        assertTrue("the screen view must carry a screen_name param", effect.contains("screen_name"))
+
         val fn = nav.substringAfter("fun logMainTabSelectionAnalytics")
             .substringBefore("@OptIn")
-        assertTrue(
-            "logMainTabSelectionAnalytics is the exhaustive when over TabType and therefore the " +
-                "one chokepoint where a screen name can be attached to every tab. It must log a " +
-                "screen view — without it GA4 cannot answer where users drop off.",
-            fn.contains("ScreenViewed") || fn.contains("SCREEN_VIEW")
-        )
-        assertTrue("the screen view must carry a screen_name param", fn.contains("screen_name"))
 
         // Every TabType must be reachable in that when — a new tab added without a branch
         // would silently have no screen name.

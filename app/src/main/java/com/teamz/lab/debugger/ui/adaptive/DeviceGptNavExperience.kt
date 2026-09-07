@@ -186,13 +186,6 @@ private fun screenNameFor(tabType: TabType): String = when (tabType) {
 }
 
 private fun logMainTabSelectionAnalytics(tabType: TabType) {
-    // The app is a single Activity, so Firebase auto-collection reports one screen for the
-    // whole product and unifiedScreenName reads 100% "(not set)". Without this event there
-    // is no way to answer "which screen do new users leave from".
-    AnalyticsUtils.logEvent(
-        AnalyticsEvent.ScreenViewed,
-        mapOf("screen_name" to screenNameFor(tabType))
-    )
     when (tabType) {
         TabType.LEADERBOARD -> AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
         TabType.HEALTH -> AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed)
@@ -947,6 +940,22 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         modifier = Modifier.fillMaxWidth(),
                         edgePadding = 0.dp,
                     ) {
+                        // screen_view is driven by SELECTION, not by the click handler.
+                        // Verified on a Pixel 8a 2026-09-08: logMainTabSelectionAnalytics is
+                        // only reachable from Tab.onClick, so the tab a user LANDS on — the
+                        // one that matters most for "where do they leave" — emitted nothing.
+                        // Keyed on selectedTab so it covers the landing tab and every change.
+                        //
+                        // tab_*_viewed deliberately stays click-only: it has months of history
+                        // as a click metric and moving it here would silently rebase it.
+                        androidx.compose.runtime.LaunchedEffect(selectedTab, tabOrder) {
+                            tabOrder.getOrNull(selectedTab)?.let { landed ->
+                                AnalyticsUtils.logEvent(
+                                    AnalyticsEvent.ScreenViewed,
+                                    mapOf("screen_name" to screenNameFor(landed))
+                                )
+                            }
+                        }
                         tabOrder.forEachIndexed { index, tabType ->
                             Tab(
                                 selected = selectedTab == index,
