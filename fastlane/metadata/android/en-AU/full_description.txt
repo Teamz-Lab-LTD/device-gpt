@@ -22,12 +22,11 @@ Connected to Wi-Fi but nothing loads? App Doctor finds out why:
 • Export battery data to CSV or Ask AI for explanation
 
 🎤 Mic Test, Camera Test, Screen Test
-• Mic test — measures the room noise floor, your voice level, and plays the recording straight back so you hear what callers hear. The recording never leaves your phone
-• Camera test — front and rear camera check, focus, and colour cast diagnosis
+• Mic test / microphone test — measures the room noise floor, your voice level, and plays the recording straight back so you hear what callers hear. The recording never leaves your phone
+• Camera test — camera not working? Front and rear check, focus, colour cast
 • Screen test — dead pixel test and stuck pixel test with 9 full-screen colours plus a grid for scratches. Your phone cannot detect its own dead pixels, so you look and DeviceGPT records your answer — never a guessed score
-• Phone hardware test: touchscreen, speakers, GPS, accelerometer
+• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
 • FPS monitoring and frame drop detection (Choreographer API)
-• Charging test — speed, temperature, current draw
 
 🛡️ Zero Trust Dashboard — Phone Security Audit
 A three-section audit scoring your device 0–100:
@@ -35,15 +34,15 @@ A three-section audit scoring your device 0–100:
 • Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
 • Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
 
+🔌 AI Bridge — Let Claude or Cursor Read Your Phone
+Pair a desktop AI client over your local network with a PIN or QR code. It reads live device data through MCP — no cloud, no account.
+
 🤖 AI Explains Your Phone in Plain English
-Other diagnostics apps show numbers. DeviceGPT explains them:
 "Battery is overheating — close background apps."
 "Wi-Fi jitter may affect gaming — restart router."
-We prefill a smart, context-aware prompt for your AI of choice.
 
 📱 Phone Health Check — One Scan
-• Phone health score covering battery, storage, RAM, temperature, sensors
-• Device info: specs, system details, build info
+• Health score across battery, storage, RAM, temperature, sensors, plus full device info
 
 📊 Phone Condition Check & Resale Report
 Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (ECDSA P-256, Android KeyStore) with tamper detection and a shareable verification code.
