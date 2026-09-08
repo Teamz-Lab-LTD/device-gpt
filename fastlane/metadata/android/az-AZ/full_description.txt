@@ -43,7 +43,7 @@ Seçdiyiniz AI üçün ağıllı, kontekstual prompt artıq hazırdır.
 • Komponent təcrid testi: kamera, ekran, CPU, şəbəkə gücü
 
 📊 Telefon Vəziyyət Yoxlanışı və Yenidən Satış Hesabatı
-Yenidən satış, dəstək biletləri və ya vəziyyət sübutu üçün sertifikatlı telefon hesabatı yaradın. Kriptoqrafik olaraq imzalanıb (RSA, Android KeyStore) — manipulyasiya aşkarlanması və paylaşıla bilən doğrulama kodu daxildir.
+Yenidən satış, dəstək biletləri və ya vəziyyət sübutu üçün sertifikatlı telefon hesabatı yaradın. Kriptoqrafik olaraq imzalanıb (ECDSA P-256, Android KeyStore) — manipulyasiya aşkarlanması və paylaşıla bilən doğrulama kodu daxildir.
 
 🏆 Liderlər Cədvəli və Nailiyyətlər
 • 10 qlobal kateqoriya: Batareya Qənaətçisi, Sürət, Termal, Güc, Sağlamlıq, Sabitlik, Ekran, Kamera, CPU, Tətbiq Gücü

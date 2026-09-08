@@ -43,7 +43,7 @@ Nutikas, konteksti tundlik prompt on valmis teie valitud AI jaoks.
 • Komponendi isolatsiooni test: kaamera, ekraan, CPU, võrgu võimsus
 
 📊 Telefoni Seisukorra Kontroll ja Edasimüügi Aruanne
-Genereerige sertifitseeritud telefoni aruanne edasimüügiks, tugitaotlusteks või seisukorra tõendiks. Krüptograafiliselt allkirjastatud (RSA, Android KeyStore) manipulatsiooni tuvastamisega ja jagatava kinnituskoodiga.
+Genereerige sertifitseeritud telefoni aruanne edasimüügiks, tugitaotlusteks või seisukorra tõendiks. Krüptograafiliselt allkirjastatud (ECDSA P-256, Android KeyStore) manipulatsiooni tuvastamisega ja jagatava kinnituskoodiga.
 
 🏆 Edetabel ja Saavutused
 • 10 globaalset kategooriat: Aku Säästja, Kiirus, Termiline, Võimsus, Tervis, Stabiilsus, Ekraan, Kaamera, CPU, Rakenduse Võimsus

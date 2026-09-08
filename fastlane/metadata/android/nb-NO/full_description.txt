@@ -43,7 +43,7 @@ En smart, kontekstbevisst prompt står klar for den AI du velger.
 • Komponent isolasjon test for kamera, skjerm, CPU, nettverksstrøm
 
 📊 Telefon Tilstandssjekk & Videresalgsrapport
-Generer en sertifisert telefonrapport for videresalg, support saker eller bevis på tilstand. Kryptografisk signert (RSA, Android KeyStore) med manipulasjonsdeteksjon og en delbar verifikasjonskode.
+Generer en sertifisert telefonrapport for videresalg, support saker eller bevis på tilstand. Kryptografisk signert (ECDSA P-256, Android KeyStore) med manipulasjonsdeteksjon og en delbar verifikasjonskode.
 
 🏆 Leaderboard & Achievements
 • 10 globale kategorier: Batteri Sparer, Hastighet, Termisk, Strøm, Helse, Konsistens, Skjerm, Kamera, CPU, App Strøm

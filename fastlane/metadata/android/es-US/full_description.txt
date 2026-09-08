@@ -43,7 +43,7 @@ Un prompt inteligente y contextual ya esta listo para la IA que elijas.
 • Prueba aislada de componentes: camara, pantalla, CPU, red
 
 📊 Chequeo de Condicion del Telefono y Reporte para Reventa
-Genera un reporte certificado del telefono para reventa, tickets de soporte o prueba de condicion. Firmado criptograficamente (RSA, Android KeyStore) con deteccion de manipulacion y codigo de verificacion compartible.
+Genera un reporte certificado del telefono para reventa, tickets de soporte o prueba de condicion. Firmado criptograficamente (ECDSA P-256, Android KeyStore) con deteccion de manipulacion y codigo de verificacion compartible.
 
 🏆 Tabla de Lideres y Logros
 • 10 categorias globales: Ahorro de Bateria, Velocidad, Termica, Potencia, Salud, Consistencia, Pantalla, Camara, CPU, Potencia de Apps

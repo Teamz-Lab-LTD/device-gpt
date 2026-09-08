@@ -43,7 +43,7 @@ Um prompt inteligente e contextual já está pronto para a IA que escolheres.
 • Teste isolado de componentes: câmara, ecrã, CPU, rede
 
 📊 Verificar Estado e Relatório para Revenda
-Gera um relatório certificado para revenda, tickets de suporte ou prova de estado. Assinado criptograficamente (RSA, Android KeyStore) com deteção de manipulação e código de verificação partilhável.
+Gera um relatório certificado para revenda, tickets de suporte ou prova de estado. Assinado criptograficamente (ECDSA P-256, Android KeyStore) com deteção de manipulação e código de verificação partilhável.
 
 🏆 Classificação e Conquistas
 • 10 categorias globais: Poupança de Bateria, Velocidade, Térmico, Potência, Saúde, Consistência, Ecrã, Câmara, CPU, Potência de Apps

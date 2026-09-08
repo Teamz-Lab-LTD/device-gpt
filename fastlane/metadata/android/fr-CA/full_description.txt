@@ -43,7 +43,7 @@ Un prompt intelligent et contextuel est déjà prêt pour l'IA de ton choix.
 • Test isolé des composants : caméra, écran, CPU, puissance réseau
 
 📊 Vérification de Condition & Rapport de Revente
-Génère un rapport téléphone certifié pour la revente, les tickets de support ou la preuve de condition. Signé cryptographiquement (RSA, Android KeyStore) avec détection de manipulation et code de vérification partageable.
+Génère un rapport téléphone certifié pour la revente, les tickets de support ou la preuve de condition. Signé cryptographiquement (ECDSA P-256, Android KeyStore) avec détection de manipulation et code de vérification partageable.
 
 🏆 Classement et Achievements
 • 10 catégories mondiales : Économie de Batterie, Vitesse, Thermique, Puissance, Santé, Constance, Écran, Caméra, CPU, Puissance d'Apps

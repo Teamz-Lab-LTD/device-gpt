@@ -43,7 +43,7 @@ Un prompt inteligent și contextual este deja pregătit pentru IA aleasă de tin
 • Test izolat componente: cameră, ecran, CPU, putere rețea
 
 📊 Verificare Stare Telefon & Raport pentru Revânzare
-Generează un raport telefon certificat pentru revânzare, tickete de suport sau dovada stării. Semnat criptografic (RSA, Android KeyStore) cu detectare manipulare și cod verificare partajabil.
+Generează un raport telefon certificat pentru revânzare, tickete de suport sau dovada stării. Semnat criptografic (ECDSA P-256, Android KeyStore) cu detectare manipulare și cod verificare partajabil.
 
 🏆 Clasament și Realizări
 • 10 categorii globale: Economisire Baterie, Viteză, Termică, Putere, Sănătate, Consistență, Ecran, Cameră, CPU, Putere Aplicații

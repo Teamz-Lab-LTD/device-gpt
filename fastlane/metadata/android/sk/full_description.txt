@@ -43,7 +43,7 @@ Inteligentný, kontextový prompt máme pripravený pre AI podľa vášho výber
 • Izolované testovanie komponentov: kamera, displej, CPU, sieťový výkon
 
 📊 Kontrola Stavu Telefónu & Správa pre Predaj
-Vygenerujte certifikovanú správu o telefóne pre ďalší predaj, support tickety alebo dôkaz stavu. Kryptograficky podpísané (RSA, Android KeyStore) s detekciou manipulácie a zdieľateľným overovacím kódom.
+Vygenerujte certifikovanú správu o telefóne pre ďalší predaj, support tickety alebo dôkaz stavu. Kryptograficky podpísané (ECDSA P-256, Android KeyStore) s detekciou manipulácie a zdieľateľným overovacím kódom.
 
 🏆 Rebríček a Úspechy
 • 10 globálnych kategórií: Šetrič Batérie, Rýchlosť, Tepelná, Výkon, Zdravie, Konzistencia, Displej, Kamera, CPU, Výkon Aplikácií

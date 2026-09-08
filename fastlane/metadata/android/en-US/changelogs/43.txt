@@ -1,0 +1,7 @@
+v3.1.24 — A calmer first run
+
+- Fixed: the first scan could take over the screen seconds after you started reading. It now decides before anything is drawn.
+- "See details" opened the Leaderboard, not your score. Now it opens your score, insight and timeline.
+- Ads no longer appear during your first two sessions, on any path.
+- We no longer ask for notification permission before showing you anything.
+- The review request waits until your first scan is done.

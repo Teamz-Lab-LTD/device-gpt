@@ -43,7 +43,7 @@ En smart, kontextmedveten prompt står redo för den AI du väljer.
 • Komponent isolation test för kamera, skärm, CPU, nätverksström
 
 📊 Telefonkontroll & Återförsäljningsrapport
-Generera en certifierad telefonrapport för återförsäljning, supportärenden eller tillståndsbevis. Kryptografiskt signerad (RSA, Android KeyStore) med manipulationsdetektion och delbar verifieringskod.
+Generera en certifierad telefonrapport för återförsäljning, supportärenden eller tillståndsbevis. Kryptografiskt signerad (ECDSA P-256, Android KeyStore) med manipulationsdetektion och delbar verifieringskod.
 
 🏆 Topplista & Achievements
 • 10 globala kategorier: Batterisparare, Hastighet, Termisk, Effekt, Hälsa, Konsistens, Skärm, Kamera, CPU, App-effekt

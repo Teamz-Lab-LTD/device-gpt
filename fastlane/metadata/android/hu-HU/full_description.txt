@@ -43,7 +43,7 @@ Egy okos, kontextusra szabott prompt már készen áll a választott AI-hoz.
 • Komponens izolációs teszt: kamera, kijelző, CPU, hálózati teljesítmény
 
 📊 Telefon Állapot Ellenőrzés és Viszonteladói Jelentés
-Generálj tanúsított telefon jelentést viszonteladáshoz, support jegyekhez vagy állapot bizonyítékhoz. Kriptográfiailag aláírva (RSA, Android KeyStore) manipuláció észleléssel és megosztható ellenőrzési kóddal.
+Generálj tanúsított telefon jelentést viszonteladáshoz, support jegyekhez vagy állapot bizonyítékhoz. Kriptográfiailag aláírva (ECDSA P-256, Android KeyStore) manipuláció észleléssel és megosztható ellenőrzési kóddal.
 
 🏆 Ranglista és Eredmények
 • 10 globális kategória: Akkumulátor Spóroló, Sebesség, Termikus, Teljesítmény, Egészség, Konzisztencia, Kijelző, Kamera, CPU, App Teljesítmény

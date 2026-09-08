@@ -43,7 +43,7 @@ Muut diagnostiikkasovellukset näyttävät vain numeroita. DeviceGPT selittää 
 • Komponentin eristystesti: kamera, näyttö, CPU, verkon virta
 
 📊 Puhelimen Kuntotarkistus & Jälleenmyyntiraportti
-Luo sertifioitu puhelinraportti jälleenmyyntiä, tukipyyntöjä tai kuntotodistusta varten. Kryptografisesti allekirjoitettu (RSA, Android KeyStore) manipulaatiotunnistuksella ja jaettavalla vahvistuskoodilla.
+Luo sertifioitu puhelinraportti jälleenmyyntiä, tukipyyntöjä tai kuntotodistusta varten. Kryptografisesti allekirjoitettu (ECDSA P-256, Android KeyStore) manipulaatiotunnistuksella ja jaettavalla vahvistuskoodilla.
 
 🏆 Tulostaulu ja Saavutukset
 • 10 globaalia kategoriaa: Akkusäästäjä, Nopeus, Terminen, Teho, Terveys, Johdonmukaisuus, Näyttö, Kamera, CPU, Sovellusten Teho

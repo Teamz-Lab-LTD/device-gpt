@@ -43,7 +43,7 @@ En smart, kontekstbevidst prompt står klar til din valgte AI.
 • Komponent isolation test til kamera, skærm, CPU og netværksstrøm
 
 📊 Telefon Tilstandscheck & Videresalgsrapport
-Lav en certificeret telefonrapport til videresalg, support sager eller bevis på tilstand. Kryptografisk underskrevet (RSA, Android KeyStore) med manipulationsdetektion og en delbar verifikationskode.
+Lav en certificeret telefonrapport til videresalg, support sager eller bevis på tilstand. Kryptografisk underskrevet (ECDSA P-256, Android KeyStore) med manipulationsdetektion og en delbar verifikationskode.
 
 🏆 Leaderboard & Achievements
 • 10 globale kategorier: Batteri Sparer, Hastighed, Termisk, Strøm, Sundhed, Konsistens, Skærm, Kamera, CPU, App Strøm

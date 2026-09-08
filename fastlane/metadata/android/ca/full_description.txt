@@ -43,7 +43,7 @@ Un prompt intel·ligent i contextual ja està preparat per a la IA que triïs.
 • Test aïllat de components: càmera, pantalla, CPU, xarxa
 
 📊 Comprovació d'Estat i Informe de Revenda
-Genera un informe certificat per a revenda, tickets de suport o prova d'estat. Signat criptogràficament (RSA, Android KeyStore) amb detecció de manipulació i codi de verificació compartible.
+Genera un informe certificat per a revenda, tickets de suport o prova d'estat. Signat criptogràficament (ECDSA P-256, Android KeyStore) amb detecció de manipulació i codi de verificació compartible.
 
 🏆 Classificació i Assoliments
 • 10 categories globals: Estalvi de Bateria, Velocitat, Tèrmica, Potència, Salut, Consistència, Pantalla, Càmera, CPU, Potència d'Apps

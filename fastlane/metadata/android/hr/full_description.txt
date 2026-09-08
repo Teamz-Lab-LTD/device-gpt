@@ -43,7 +43,7 @@ Pametan, kontekstualni prompt već je spreman za AI po vašem izboru.
 • Izolirano testiranje komponenti: kamera, zaslon, CPU, mrežna snaga
 
 📊 Provjera Stanja Telefona i Izvještaj za Preprodaju
-Generirajte certificirani izvještaj o telefonu za preprodaju, tickete za podršku ili dokaz stanja. Kriptografski potpisano (RSA, Android KeyStore) s detekcijom manipulacije i dijeljivim verifikacijskim kodom.
+Generirajte certificirani izvještaj o telefonu za preprodaju, tickete za podršku ili dokaz stanja. Kriptografski potpisano (ECDSA P-256, Android KeyStore) s detekcijom manipulacije i dijeljivim verifikacijskim kodom.
 
 🏆 Ljestvica i Postignuća
 • 10 globalnih kategorija: Štedljivac Baterije, Brzina, Termička, Snaga, Zdravlje, Konzistencija, Zaslon, Kamera, CPU, Snaga Aplikacija

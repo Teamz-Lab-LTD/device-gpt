@@ -43,7 +43,7 @@ Een slimme, context-aware prompt staat klaar voor de AI van jouw keuze.
 • Component isolatie testen voor camera, scherm, CPU en netwerk vermogen
 
 📊 Telefoon Conditie Check & Verkoop Rapport
-Maak een gecertificeerd telefoon rapport voor doorverkoop, support tickets of bewijs van conditie. Cryptografisch ondertekend (RSA, Android KeyStore) met sabotagedetectie en een deelbare verificatiecode.
+Maak een gecertificeerd telefoon rapport voor doorverkoop, support tickets of bewijs van conditie. Cryptografisch ondertekend (ECDSA P-256, Android KeyStore) met sabotagedetectie en een deelbare verificatiecode.
 
 🏆 Leaderboard & Achievements
 • 10 wereldwijde categorieën: Batterij Spaarder, Snelheid, Thermisch, Vermogen, Gezondheid, Consistentie, Scherm, Camera, CPU, App Vermogen

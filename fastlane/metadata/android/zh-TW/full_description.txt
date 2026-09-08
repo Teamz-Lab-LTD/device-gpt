@@ -46,7 +46,7 @@ We prefill a smart, context-aware prompt for your AI of choice.
 • Component isolation testing for camera, display, CPU, network power
 
 📊 Phone Condition Check & Resale Report
-Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (RSA, Android KeyStore) with tamper detection and a shareable verification code.
+Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (ECDSA P-256, Android KeyStore) with tamper detection and a shareable verification code.
 
 🏆 Leaderboard & Achievements
 • 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
