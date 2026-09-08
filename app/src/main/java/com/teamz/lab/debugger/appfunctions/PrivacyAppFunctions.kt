@@ -58,8 +58,12 @@ class PrivacyAppFunctions {
     }
 
     /**
-     * Checks for known keylogger / spyware packages installed on the device.
-     * DeviceGPT queries against a hardcoded list declared in AndroidManifest.
+     * Checks the ways an app could actually watch this device: keyboards that receive every
+     * keystroke, accessibility services that can read screen content or intercept key presses,
+     * and installed apps that have no launcher icon.
+     *
+     * Reports capabilities, not verdicts — a third-party keyboard and a screen reader both show
+     * up here and neither is spyware.
      *
      * Use this for: "check for spyware", "keylogger detector", "is there a spy app?".
      */
@@ -74,13 +78,13 @@ class PrivacyAppFunctions {
         val hiddenResult = runCatching { detectHiddenApps(context) }.getOrDefault("")
 
         val combinedFindings = listOf(
-            "Keylogger scan" to keyloggerResult,
-            "Screen recorders" to screenRecResult,
+            "Keystroke exposure" to keyloggerResult,
+            "Screen content access" to screenRecResult,
             "Hidden apps" to hiddenResult,
         ).filter { it.second.isNotBlank() }
 
         val summary = if (combinedFindings.isEmpty()) {
-            "No known spyware packages detected."
+            "Nothing on this device can read your keystrokes or screen."
         } else {
             combinedFindings.joinToString(" · ") { (label, r) -> "$label: $r" }
         }

@@ -30,7 +30,7 @@ Connected to Wi-Fi but nothing loads? App Doctor finds out why:
 
 🛡️ Zero Trust Dashboard — Phone Security Audit
 A three-section audit scoring your device 0–100:
-• App Privacy Risk (35%): keylogger detection, screen-recording apps, hidden apps, on-device malware scan, mic/camera abuse, ad tracker detection
+• App Privacy Risk (35%): keyboards and accessibility services that can read your screen or keystrokes, apps reading your advertising ID, apps holding mic/camera/SMS, live mic use, sideloaded apps
 • Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
 • Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
 
@@ -48,7 +48,7 @@ Pair a desktop AI client over your local network with a PIN or QR code. It reads
 Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (ECDSA P-256, Android KeyStore) with tamper detection and a shareable verification code.
 
 🏆 Leaderboard & Achievements
-• 10 global categories: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
+• 10 global categories: battery, speed, thermal, display, camera, CPU
 
 🚀 Also Includes
 • Lock screen widget (Android 13+): health score, battery, temperature

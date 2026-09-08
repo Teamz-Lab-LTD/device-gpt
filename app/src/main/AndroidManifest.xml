@@ -62,24 +62,13 @@
             <action android:name="android.settings.SETTINGS" />
         </intent>
 
-        <package android:name="com.android.keylogger" />
-        <package android:name="com.refog.keylogger" />
-        <package android:name="com.spy.keylogger" />
-        <package android:name="com.mocana.keylogger" />
-        <package android:name="com.km.keylogger" />
-        <package android:name="com.smart.keylogger" />
-        <package android:name="com.keylogger.recorder" />
-
-        <!-- Detect Screen Recorder Apps -->
-        <package android:name="com.android.systemui.screenrecord" />
-        <package android:name="com.duapps.recorder" />
-        <package android:name="com.mobzapp.recme" />
-        <package android:name="com.kimcy929.screenrecorder" />
-        <package android:name="com.hecorat.screenrecorder.free" />
-        <package android:name="com.iwobanas.screenrecorder" />
-        <package android:name="com.recorder.hidden" />
-        <package android:name="com.nll.screenrecorder" />
-        <package android:name="com.axndx.screenrecorder" />
+        <!-- The keylogger and screen-recorder <package> entries that used to sit here were
+             removed 2026-09-09. They existed so a hardcoded list of package ids could be
+             queried, but the ids were invented (com.spy.keylogger, com.hidden.screenrecorder)
+             and real monitoring software does not ship under them. Detection now works off
+             capabilities — enabled input methods, accessibility service capabilities, held
+             permissions — which the system services report without any <queries> declaration
+             and without Android 11 visibility filtering. See PrivacyExposureModel.kt. -->
 
         <!-- AI Assistant Apps -->
         <package android:name="com.openai.chatgpt" />

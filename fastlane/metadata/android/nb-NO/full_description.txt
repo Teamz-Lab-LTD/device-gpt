@@ -24,7 +24,7 @@ Android har ingen innebygd skjerm for batterihelse. DeviceGPT fyller det tomromm
 
 🛡️ Zero Trust Dashboard — Telefon Sikkerhetsaudit
 En audit i tre deler som scorer enheten fra 0 til 100:
-• App Personvernrisiko (35%): keylogger deteksjon, skjermopptak apper, skjulte apper, on-device malware scanner, mikrofon/kamera misbruk, ad tracker deteksjon
+• App Personvernrisiko (35%): skjermopptak apper, skjulte apper, mikrofon/kamera misbruk, ad tracker deteksjon
 • Nettverkstillit (35%): DNS manipulasjon, SSL kapring (MITM), transparent proxy, deep packet inspection, ISP tracking, privat DNS
 • Enhetsintegritet (30%): root status, bootloader, sideloading, utviklermodus, overlay tillatelser
 

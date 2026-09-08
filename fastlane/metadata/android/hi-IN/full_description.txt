@@ -30,7 +30,7 @@ Wi-Fi लगा है फिर भी कुछ नहीं खुलता? 
 
 🛡️ Zero Trust Dashboard — फ़ोन का security audit
 तीन हिस्सों का audit, 0–100 स्कोर:
-• App Privacy Risk (35%): keylogger, screen-recording app, छिपे app, on-device malware scan, mic/camera का दुरुपयोग, ad tracker
+• App Privacy Risk (35%): screen-recording app, छिपे app, mic/camera का दुरुपयोग, ad tracker
 • Network Trust (35%): DNS हेराफेरी, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
 • Device Integrity (30%): root, bootloader, sideloading, developer mode, overlay permission, notification listener
 

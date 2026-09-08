@@ -24,7 +24,7 @@ Android nemá vestavěnou obrazovku zdraví baterie. DeviceGPT tu mezeru vyplňu
 
 🛡️ Zero Trust Dashboard — Bezpečnostní Audit Telefonu
 Třídílný audit, který oboduje vaše zařízení od 0 do 100:
-• Riziko Soukromí Aplikací (35%): detekce keyloggeru, aplikace nahrávající obrazovku, skryté aplikace, on-device skener malware, zneužití mikrofonu/kamery, detekce reklamních trackerů
+• Riziko Soukromí Aplikací (35%): aplikace nahrávající obrazovku, skryté aplikace, zneužití mikrofonu/kamery, detekce reklamních trackerů
 • Důvěra Sítě (35%): manipulace DNS, SSL únos (MITM), transparentní proxy, hloubková inspekce paketů, sledování ISP, privátní DNS
 • Integrita Zařízení (30%): stav rootu, bootloader, sideloading, vývojářský režim, oprávnění overlay, posluchače oznámení
 

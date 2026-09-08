@@ -30,7 +30,7 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 
 🛡️ Zero Trust Dashboard — ফোনের security audit
 তিন ভাগের audit, ০–১০০ স্কোর:
-• App Privacy Risk (৩৫%): keylogger, screen-recording app, লুকানো app, on-device malware scan, mic/camera এর অপব্যবহার, ad tracker
+• App Privacy Risk (৩৫%): screen-recording app, লুকানো app, mic/camera এর অপব্যবহার, ad tracker
 • Network Trust (৩৫%): DNS কারসাজি, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
 • Device Integrity (৩০%): root, bootloader, sideloading, developer mode, overlay permission, notification listener
 

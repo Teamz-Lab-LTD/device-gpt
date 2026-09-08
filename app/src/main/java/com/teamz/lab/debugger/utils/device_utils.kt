@@ -1255,69 +1255,27 @@ fun detectClipboardAccess(): String {
     }
 }
 
-fun detectOfflineMalware(context: Context): String {
-    val knownMalwarePackages = listOf(
-        "com.spy.fakeapp", "com.sneaky.keylogger", "com.hidden.sniffer"
-    )
-    val installed = getInstalledApps(context)
-    val matches = knownMalwarePackages.filter { installed.contains(it) }
-
-    return if (matches.isEmpty()) {
-        "✅ No known malicious apps found (offline scan)"
-    } else {
-        "🚨 Malware Signatures Detected:\n${matches.joinToString("\n")}"
-    }
-}
+/**
+ * Where your apps came from.
+ *
+ * Replaces an "offline malware signature scan" whose entire corpus was three invented package
+ * ids: com.spy.fakeapp, com.sneaky.keylogger, com.hidden.sniffer. It reported a clean device
+ * unconditionally. DeviceGPT has no malware corpus and will not claim signature detection;
+ * install source is a real, checkable signal in the same neighbourhood.
+ */
+fun detectOfflineMalware(context: Context): String =
+    PrivacyExposureScanner.installSourceExposure(context).render()
 
 
+/**
+ * Per-app permission radar.
+ *
+ * Carried the same defect as detectDangerousPermissions — checkSelfPermission(context, perm)
+ * inside a loop over apps, so all 50 sampled apps were reported as holding DeviceGPT's own
+ * camera, microphone and location grants. Now delegates to the one correct implementation.
+ */
 suspend fun getPermissionHeatmap(context: Context): String = withContext(Dispatchers.IO) {
-    val pm = context.packageManager
-    val dangerousPermissions = listOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.READ_CONTACTS,
-        Manifest.permission.READ_SMS
-    )
-
-    val flaggedApps = mutableMapOf<String, MutableList<String>>()
-    val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-
-    // Limit to first 50 apps to prevent ANR on devices with many apps
-    // Permission checks are expensive (Binder transactions)
-    val appsToCheck = installedApps.take(50)
-
-    for (app in appsToCheck) {
-        val appName = app.loadLabel(pm).toString()
-        val granted = mutableListOf<String>()
-
-        for (perm in dangerousPermissions) {
-            // Yield periodically to prevent blocking
-            if (granted.size % 10 == 0) {
-                yield()
-            }
-            
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    perm
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                granted.add(perm.substringAfterLast('.'))
-            }
-        }
-
-        if (granted.isNotEmpty()) {
-            flaggedApps[appName] = granted
-        }
-    }
-
-    if (flaggedApps.isEmpty()) {
-        "✅ No apps with sensitive permissions detected."
-    } else {
-        flaggedApps.entries.joinToString("\n\n") { (app, perms) ->
-            "📱 $app\n🔐 Permissions: ${perms.joinToString(", ")}"
-        }
-    }
+    PrivacyExposureScanner.sensitivePermissionExposure(context).render()
 }
 
 
@@ -1826,80 +1784,42 @@ fun isDeviceBeingMonitored(context: Context): String {
 }
 
 /** ⌨️ Detect Keylogger Apps */
-fun detectKeylogger(context: Context): String {
-    val keyloggerApps = listOf(
-        "com.android.keylogger",
-        "com.refog.keylogger",
-        "com.spy.keylogger",
-        "com.mocana.keylogger",
-        "com.km.keylogger",
-        "com.smart.keylogger",
-        "com.keylogger.recorder",
-        "com.advanced.keylogger",
-        "com.secretlogger.spy",
-        "com.keystroke.logger",
-        "com.silent.keylogger",
-        "com.hiddenlogger.spy",
-        "com.spyware.keylogger"
-    )
-
-    val installedApps = getInstalledApps(context)
-    val detectedKeyloggers = keyloggerApps.filter { installedApps.contains(it) }
-    return if (detectedKeyloggers.isNotEmpty()) "Keyloggers Detected: ${detectedKeyloggers.joinToString()}" else "No Keyloggers Found"
-}
+/**
+ * Who can read your keystrokes. Mechanism, not package names.
+ *
+ * The list this replaces held thirteen invented ids — com.spy.keylogger, com.silent.keylogger,
+ * com.hiddenlogger.spy — matched against getInstalledApps(), which on Android 11+ returns only
+ * apps with a launcher icon. So it searched a set that excludes anything that hid itself for
+ * names no real software uses: guaranteed "No Keyloggers Found" on every device, while the
+ * store listing sold keylogger detection.
+ *
+ * See PrivacyExposureModel.assessKeystrokeExposure for what replaced it and why.
+ */
+fun detectKeylogger(context: Context): String =
+    PrivacyExposureScanner.keystrokeExposure(context).render()
 
 
 /** 🎥 Detect Screen Recording Apps */
-fun detectScreenRecordingApps(context: Context): String {
-    context.packageManager
-    val knownScreenRecorders = listOf(
-        "com.android.systemui.screenrecord",
-        "com.duapps.recorder",
-        "com.mobzapp.recme",
-        "com.kimcy929.screenrecorder",
-        "com.hecorat.screenrecorder.free",
-        "com.iwobanas.screenrecorder",
-        "com.recorder.hidden",
-        "com.nll.screenrecorder",
-        "com.axndx.screenrecorder",
-        "com.apowersoft.screenrecorder",
-        "com.vidma.screenrecorder",
-        "com.hidden.screenrecorder",
-        "com.spy.screenrecorder"
-    )
-
-
-    val installedApps = getInstalledApps(context)
-    val detectedApps = knownScreenRecorders.filter { installedApps.contains(it) }
-
-    return if (detectedApps.isNotEmpty()) "Found: ${detectedApps.joinToString()}" else "None Detected"
-}
+/**
+ * Who can see your screen. Replaces a hardcoded list of thirteen recorder package names, most
+ * of them invented (com.spy.screenrecorder, com.hidden.screenrecorder), matched against
+ * launcher-visible apps only.
+ */
+fun detectScreenRecordingApps(context: Context): String =
+    PrivacyExposureScanner.screenCaptureExposure(context).render()
 
 /** 📲 Detect Apps Misusing Dangerous Permissions */
-fun detectDangerousPermissions(context: Context): String {
-    val dangerousPermissions = listOf(
-        Manifest.permission.READ_SMS,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.READ_CALL_LOG,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    )
-
-    context.packageManager
-    val installedApps = getInstalledApps(context) // ✅ Uses the updated installed apps method
-    val appsWithPermissions = installedApps.filter { _ ->
-        dangerousPermissions.any { permission ->
-            ContextCompat.checkSelfPermission(
-                context, permission
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    return if (appsWithPermissions.isNotEmpty()) {
-        "🚨 Apps Using Sensitive Permissions:\n${appsWithPermissions.joinToString("\n")}"
-    } else {
-        "✅ No Apps Misusing Permissions"
-    }
-}
+/**
+ * Apps that actually hold sensitive permissions.
+ *
+ * The version this replaces called ContextCompat.checkSelfPermission(context, permission)
+ * inside a loop over installed apps. That call has no package parameter — it answers for the
+ * CALLING app. DeviceGPT holds RECORD_AUDIO, CAMERA and ACCESS_FINE_LOCATION, so the condition
+ * was true for every iteration and the function returned EVERY installed app as a permission
+ * abuser, on every device. It accused the user's whole phone.
+ */
+fun detectDangerousPermissions(context: Context): String =
+    PrivacyExposureScanner.sensitivePermissionExposure(context).render()
 
 
 fun getInstalledApps(context: Context): List<String> {
@@ -1920,11 +1840,38 @@ fun getInstalledApps(context: Context): List<String> {
 
 
 /** 🕵️ Detect Suspicious Accessibility Services */
+/**
+ * Accessibility services that are enabled, and what each can actually do.
+ *
+ * The version this replaces returned "Suspicious Services Found" whenever the
+ * ENABLED_ACCESSIBILITY_SERVICES setting was non-empty. That flags TalkBack, Switch Access,
+ * Live Caption and every other assistive tool as spyware — telling a blind user their screen
+ * reader is suspicious. It also named nothing, so there was no way to act on it.
+ */
 fun detectSuspiciousAccessibilityServices(context: Context): String {
-    val settings = Settings.Secure.getString(
-        context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-    )
-    return if (!settings.isNullOrBlank()) "Suspicious Services Found" else "No Suspicious Services"
+    val services = PrivacyExposureScanner.collectAccessibilityServices(context)
+    if (services.isEmpty()) return "✅ No accessibility services are enabled."
+
+    val thirdParty = services.filter { !it.isSystem }
+    val lines = services.map { s ->
+        val caps = buildList {
+            if (s.canRetrieveWindowContent) add("reads screen content")
+            if (s.canTakeScreenshot) add("can screenshot")
+            if (s.canFilterKeyEvents) add("sees key presses")
+        }.ifEmpty { listOf("no content access") }
+        val name = if (s.label.isBlank()) s.packageName else "${s.label} (${s.packageName})"
+        val origin = if (s.isSystem) "built in" else "installed by you or someone with the phone"
+        "• $name — ${caps.joinToString(", ")} · $origin"
+    }
+    val header = if (thirdParty.isEmpty()) {
+        "ℹ️ ${services.size} accessibility service(s) enabled, all built into the system."
+    } else {
+        "⚠️ ${thirdParty.size} of ${services.size} enabled accessibility service(s) did not " +
+            "ship with your phone. A service with screen access can read anything you see."
+    }
+    val advice = if (thirdParty.isEmpty()) "" else
+        "\nReview them in Settings → Accessibility → Installed services."
+    return header + "\n" + lines.joinToString("\n") + advice
 }
 
 
@@ -2143,17 +2090,46 @@ fun detectSensorSpoofing(context: Context): String {
     }
 }
 
+/**
+ * Apps installed on this device that do NOT appear in the app drawer.
+ *
+ * This used to filter on `loadLabel().isNullOrEmpty()` — apps with no display NAME. That
+ * is a rare packaging edge case and has nothing to do with what a person means by "hidden".
+ * Stalkerware keeps a perfectly normal label; what it removes is its launcher icon. So the
+ * old check returned "no hidden apps detected" on essentially every phone, whatever was
+ * installed, while the store listing advertised hidden-app detection. A weak proxy presented
+ * as the real measurement is the same shape as the per-app battery claim that drew a Play
+ * Deceptive Behavior rejection in a44b84b.
+ *
+ * The real signal is the absence of a launcher intent: `getLaunchIntentForPackage()` returns
+ * null when nothing in the manifest answers ACTION_MAIN/CATEGORY_LAUNCHER, which is exactly
+ * how an app removes itself from the drawer.
+ *
+ * Deliberately NOT called malware. Plenty of legitimate packages have no launcher icon —
+ * keyboards, device-admin agents, carrier services, wallpaper and widget providers. The honest
+ * output is "here is what has no icon, look at it", not a verdict this cannot support.
+ */
 fun detectHiddenApps(context: Context): String {
-    val apps = context.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-    val hiddenApps = apps.filter {
-        (it.flags and ApplicationInfo.FLAG_SYSTEM == 0) && it.loadLabel(context.packageManager)
-            .isNullOrEmpty()
+    val pm = context.packageManager
+    val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+    val hiddenApps = apps.filter { app ->
+        val isUserApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0 &&
+            (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0
+        if (!isUserApp || app.packageName == context.packageName) return@filter false
+        runCatching { pm.getLaunchIntentForPackage(app.packageName) == null }.getOrDefault(false)
     }
 
     return if (hiddenApps.isNotEmpty()) {
-        "🔍 Hidden apps found: ${hiddenApps.joinToString { it.packageName }}"
+        val names = hiddenApps.joinToString(", ") { app ->
+            val label = runCatching { app.loadLabel(pm).toString() }.getOrDefault("")
+            if (label.isBlank() || label == app.packageName) app.packageName
+            else "$label (${app.packageName})"
+        }
+        "🔍 ${hiddenApps.size} installed app(s) with no app-drawer icon: $names\n" +
+            "Not proof of spyware — keyboards, device-admin and carrier services are " +
+            "legitimately iconless. Anything here you do not recognise is worth checking."
     } else {
-        "✅ No hidden or stealth apps detected."
+        "✅ Every installed app shows an icon in your app drawer."
     }
 }
 
@@ -2192,19 +2168,18 @@ fun detectAiVoiceCloneRisk(context: Context): String {
     }
 }
 
-fun detectAdTrackingApps(context: Context): String {
-    val knownAdSDKs = listOf("com.google.ads", "com.facebook.ads", "com.mopub", "com.unity3d.ads")
-    val installed = getInstalledApps(context)
-    val suspectApps = installed.filter { pkg ->
-        knownAdSDKs.any { pkg.contains(it) }
-    }
-
-    return if (suspectApps.isNotEmpty()) {
-        "👁️ Ad SDKs found in ${suspectApps.size} apps:\n" + suspectApps.joinToString("\n")
-    } else {
-        "✅ No major ad tracking SDKs found in your apps."
-    }
-}
+/**
+ * Cross-app ad tracking, measured.
+ *
+ * The version this replaces tested `pkg.contains("com.google.ads")` against installed package
+ * NAMES. A package name never contains the id of an SDK compiled inside it, so this returned
+ * "no ad tracking SDKs found" on every device — and device_info_ui truncated that empty result
+ * behind a premium teaser promising "full list of SDKs tracking you & how to stop them".
+ *
+ * The observable fact is the AD_ID permission. See assessAdTrackingExposure.
+ */
+fun detectAdTrackingApps(context: Context): String =
+    PrivacyExposureScanner.adTrackingExposure(context).render()
 
 fun detectMotionWhileLocked(context: Context): String {
     val accelFile = File("/sys/class/input") // Simulated for illustration

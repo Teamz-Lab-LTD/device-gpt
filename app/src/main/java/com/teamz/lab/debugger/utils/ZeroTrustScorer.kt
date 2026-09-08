@@ -80,44 +80,66 @@ object ZeroTrustScorer {
 
     // ==================== Section 1: App Privacy Risk ====================
 
+    /**
+     * Section 1 rebuilt 2026-09-09. Five of the six checks here could not produce a true
+     * finding: keylogger, screen-recorder and malware each compared installed packages against
+     * a short list of invented ids, permission abuse asked whether OUR app held a permission
+     * and so flagged every app on the device, and the accessibility check called TalkBack
+     * suspicious. Worse, the scorer's own string matching disagreed with the strings it was
+     * matching — `perms.contains("⚠") || perms.contains("found")` never matched
+     * "🚨 Apps Using Sensitive Permissions:", so the FAIL case scored as a PASS.
+     *
+     * Two things changed. Checks now detect capabilities rather than package names (see
+     * PrivacyExposureModel), and they hand back a typed ExposureFinding instead of a sentence
+     * to grep, which removes the whole class of bug where a copy edit silently flips a verdict.
+     *
+     * Scoring rule, deliberate: INFORMATIONAL does not cost points. A third-party keyboard, an
+     * app holding the advertising id, a sideloaded APK — these are the normal state of a normal
+     * phone. Docking them would give every user a bad grade and make the score meaningless,
+     * which is the same failure as a false accusation, just quieter. Only ELEVATED — a
+     * capability that is rare outside monitoring software — fails a check.
+     */
     private suspend fun evaluateAppPrivacy(context: Context): TrustSection {
+        // Collect once. Each of these is a binder query; the previous version re-ran them per
+        // check and still read the results wrong.
+        val keyboards = withContext(Dispatchers.IO) {
+            PrivacyExposureScanner.collectKeyboards(context)
+        }
+        val accessibility = withContext(Dispatchers.IO) {
+            PrivacyExposureScanner.collectAccessibilityServices(context)
+        }
+        val appPerms = withContext(Dispatchers.IO) {
+            PrivacyExposureScanner.collectAppPermissions(context)
+        }
+
         val checks = mutableListOf<TrustCheckResult>()
 
-        // 1. Keylogger detection
-        val keylogger = withContext(Dispatchers.IO) { detectKeylogger(context) }
-        checks.add(TrustCheckResult(
-            name = "keylogger",
-            displayName = "Keylogger Detection",
-            status = if (keylogger.contains("No")) TrustCheckStatus.PASS else TrustCheckStatus.FAIL,
-            detail = if (keylogger.contains("No")) "No keylogger apps detected"
-            else "Potential keylogger app found",
-            recommendation = if (!keylogger.contains("No")) "Check installed apps and remove suspicious ones" else null
-        ))
+        fun add(name: String, displayName: String, f: ExposureFinding) {
+            checks.add(TrustCheckResult(
+                name = name,
+                displayName = displayName,
+                status = when (f.level) {
+                    ExposureLevel.NONE, ExposureLevel.INFORMATIONAL -> TrustCheckStatus.PASS
+                    ExposureLevel.ELEVATED -> TrustCheckStatus.FAIL
+                },
+                detail = f.headline + if (f.items.isEmpty()) "" else
+                    ": " + f.items.joinToString("; "),
+                recommendation = f.recommendation.takeIf { f.level != ExposureLevel.NONE },
+            ))
+        }
 
-        // 2. Screen recorder detection
-        val screenRec = withContext(Dispatchers.IO) { detectScreenRecordingApps(context) }
-        checks.add(TrustCheckResult(
-            name = "screen_recorder",
-            displayName = "Screen Recorder Apps",
-            status = if (screenRec.contains("No")) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
-            detail = if (screenRec.contains("No")) "No suspicious screen recorders found"
-            else "Screen recording app detected",
-            recommendation = if (!screenRec.contains("No")) "Review screen recording apps in Settings > Apps" else null
-        ))
+        // 1. Keystroke exposure — enabled keyboards, plus accessibility key-event filtering
+        add("keylogger", "Keystroke Exposure", assessKeystrokeExposure(keyboards, accessibility))
 
-        // 3. Dangerous permissions
-        val perms = withContext(Dispatchers.IO) { detectDangerousPermissions(context) }
-        val hasDangerousPerms = perms.contains("⚠") || perms.contains("found")
-        checks.add(TrustCheckResult(
-            name = "dangerous_permissions",
-            displayName = "App Permissions Abuse",
-            status = if (!hasDangerousPerms) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
-            detail = if (!hasDangerousPerms) "No concerning permission patterns detected"
-            else "Some apps hold sensitive permissions",
-            recommendation = if (hasDangerousPerms) "Review app permissions in Settings > Apps > Permissions" else null
-        ))
+        // 2. Screen content access — accessibility window/screenshot capability, media projection
+        add("screen_recorder", "Screen Content Access",
+            assessScreenCaptureExposure(accessibility, appPerms))
 
-        // 4. Camera/mic currently active
+        // 3. Sensitive permissions actually granted, per app
+        add("dangerous_permissions", "Sensitive Permissions",
+            assessSensitivePermissionExposure(appPerms))
+
+        // 4. Camera/mic currently active — unchanged, this one was already real (AppOps)
         val camMicActive = withContext(Dispatchers.IO) { isCameraOrMicActive(context) }
         val isActive = camMicActive.contains("Active") || camMicActive.contains("🎤") || camMicActive.contains("📷")
         checks.add(TrustCheckResult(
@@ -129,29 +151,28 @@ object ZeroTrustScorer {
             recommendation = if (isActive) "Check which app is using your camera/microphone" else null
         ))
 
-        // 5. Suspicious accessibility services
-        val accessServices = withContext(Dispatchers.IO) { detectSuspiciousAccessibilityServices(context) }
-        val hasSuspiciousAccess = accessServices.contains("Found") || accessServices.contains("Suspicious")
+        // 5. Accessibility services, named and described rather than blanket-flagged
+        val thirdPartyAccess = accessibility.filter { !it.isSystem }
         checks.add(TrustCheckResult(
             name = "accessibility_services",
             displayName = "Accessibility Services",
-            status = if (!hasSuspiciousAccess) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
-            detail = if (!hasSuspiciousAccess) "No suspicious accessibility services enabled"
-            else "Accessibility services are enabled -- these can monitor all screen content",
-            recommendation = if (hasSuspiciousAccess) "Review: Settings > Accessibility > Installed services" else null
+            status = if (thirdPartyAccess.isEmpty()) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
+            detail = when {
+                accessibility.isEmpty() -> "No accessibility services are enabled"
+                thirdPartyAccess.isEmpty() ->
+                    "${accessibility.size} enabled, all built into the system"
+                else -> "${thirdPartyAccess.size} service(s) that did not ship with your phone " +
+                    "are enabled: " + thirdPartyAccess.joinToString("; ") {
+                        if (it.label.isBlank()) it.packageName else it.label
+                    }
+            },
+            recommendation = if (thirdPartyAccess.isEmpty()) null
+            else "Review: Settings → Accessibility → Installed services"
         ))
 
-        // 6. Malware scan
-        val malware = withContext(Dispatchers.IO) { detectOfflineMalware(context) }
-        val hasMalware = malware.contains("Detected") || malware.contains("⚠") || malware.contains("🚨")
-        checks.add(TrustCheckResult(
-            name = "malware_scan",
-            displayName = "Malware Signatures",
-            status = if (!hasMalware) TrustCheckStatus.PASS else TrustCheckStatus.FAIL,
-            detail = if (!hasMalware) "No known malware signatures found"
-            else "Potential malware detected on device",
-            recommendation = if (hasMalware) "Run Google Play Protect and remove suspicious apps" else null
-        ))
+        // 6. Install source — replaces the three-package "malware signature" list
+        add("malware_scan", "App Install Source",
+            withContext(Dispatchers.IO) { PrivacyExposureScanner.installSourceExposure(context) })
 
         val score = calculateSectionScore(checks, mapOf(
             "keylogger" to 20, "screen_recorder" to 15, "dangerous_permissions" to 20,

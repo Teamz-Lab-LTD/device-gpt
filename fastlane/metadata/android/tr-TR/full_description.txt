@@ -26,7 +26,7 @@ Wi-Fi bağlı ama hiçbir şey açılmıyor mu? App Doctor nedenini bulur:
 
 🛡️ Zero Trust Dashboard — telefon güvenlik denetimi
 Üç bölümlü denetim, 0–100 puan:
-• Uygulama gizlilik riski (35%): keylogger, ekran kaydeden uygulamalar, gizli uygulamalar, cihazda kötü amaçlı yazılım taraması, mikrofon/kamera kötüye kullanımı, reklam izleyicileri
+• Uygulama gizlilik riski (35%): ekran kaydeden uygulamalar, gizli uygulamalar, mikrofon/kamera kötüye kullanımı, reklam izleyicileri
 • Ağ güveni (35%): DNS oynaması, SSL ele geçirme (MITM), şeffaf proxy, derin paket incelemesi, ISS takibi
 • Cihaz bütünlüğü (30%): root, bootloader, yandan yükleme, geliştirici modu, yer paylaşımı izinleri
 
