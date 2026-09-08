@@ -1,1 +1,1 @@
-Mic & Camera Test: DeviceGPT
+Camera Test & Mic: DeviceGPT
