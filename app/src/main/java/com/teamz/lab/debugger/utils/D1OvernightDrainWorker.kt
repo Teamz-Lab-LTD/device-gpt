@@ -232,6 +232,27 @@ object D1OvernightDrainWorker {
      * Claim the single delivery slot. Returns true exactly once per install; every
      * later caller — the other delivery path — gets false and must do nothing.
      */
+    /** What `deliver` should do once it knows whether Remote Config actually fetched. */
+    internal enum class DeliveryDecision {
+        /** Fetch failed and this path can retry — hand it back to WorkManager. */
+        RETRY,
+        /**
+         * Fetch failed on a path with no retry. It must NOT claim the outcome slot: the
+         * decision would rest on the bundled default rather than on the real flag, and
+         * claiming it would lock the retrying path out of ever delivering.
+         */
+        BAIL_WITHOUT_CLAIMING,
+        /** Config is trustworthy — claim the slot and act on it. */
+        PROCEED,
+    }
+
+    /** Pure, so the interaction between the two delivery paths is testable without a device. */
+    internal fun decideDelivery(fetched: Boolean, canRetry: Boolean): DeliveryDecision = when {
+        fetched -> DeliveryDecision.PROCEED
+        canRetry -> DeliveryDecision.RETRY
+        else -> DeliveryDecision.BAIL_WITHOUT_CLAIMING
+    }
+
     private fun claimOutcome(context: Context): Boolean {
         val p = prefs(context)
         synchronized(this) {
@@ -263,9 +284,23 @@ object D1OvernightDrainWorker {
 
         // A failed fetch used to fall through to the bundled default (false) and
         // return success, so the push was lost for good on one flaky network moment.
-        if (!fetched && canRetry) {
-            Log.w(TAG, "RC fetch failed — asking WorkManager to retry rather than defaulting to false")
-            return false
+        //
+        // 2026-09-09: the redundant alarm path defeated the retry that shipped beside it
+        // in 295c533. With canRetry=false and a failed fetch it skipped the branch below,
+        // CLAIMED the single outcome slot, read the bundled false, and posted nothing —
+        // after which the worker's later successful fetch found the slot taken and
+        // no-opped. Two delivery paths, and the unreliable one silently won.
+        when (decideDelivery(fetched, canRetry)) {
+            DeliveryDecision.RETRY -> {
+                Log.w(TAG, "RC fetch failed — asking WorkManager to retry rather than defaulting to false")
+                return false
+            }
+            DeliveryDecision.BAIL_WITHOUT_CLAIMING -> {
+                Log.w(TAG, "RC fetch failed on a path that cannot retry ($source) — leaving the " +
+                    "outcome slot unclaimed so the retrying path can still deliver")
+                return true
+            }
+            DeliveryDecision.PROCEED -> Unit
         }
         if (!claimOutcome(ctx)) {
             Log.d(TAG, "Outcome already recorded by the other path — skipping ($source)")

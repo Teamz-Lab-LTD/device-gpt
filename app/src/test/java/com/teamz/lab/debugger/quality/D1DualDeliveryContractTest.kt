@@ -84,9 +84,23 @@ class D1DualDeliveryContractTest {
                 "is indistinguishable from the control arm of the A/B",
             deliver.contains("awaitD1OvernightDrainFetched()")
         )
+        // Widened, NOT weakened. The branch is now a `when (decideDelivery(fetched, canRetry))`
+        // so the alarm path can bail WITHOUT claiming the outcome slot — the old form skipped
+        // the retry branch, claimed the slot, read the bundled false and posted nothing, after
+        // which the worker's later successful fetch found the slot taken. Accept either
+        // spelling, and where it is the new one, require that the no-retry case is handled
+        // distinctly rather than falling into PROCEED.
+        val oldForm = deliver.contains("if (!fetched && canRetry)")
+        val newForm = deliver.contains("decideDelivery(fetched, canRetry)")
         assertTrue(
             "a failed fetch must not fall through to the bundled default",
-            deliver.contains("if (!fetched && canRetry)")
+            oldForm || newForm
+        )
+        assertTrue(
+            "the new form must handle the no-retry path explicitly — a failed fetch on the " +
+                "alarm must leave the outcome slot unclaimed, not consume it. Behaviour is " +
+                "pinned directly in D1DeliveryDecisionTest.",
+            !newForm || deliver.contains("BAIL_WITHOUT_CLAIMING")
         )
         val doWork = worker.substringAfter("override suspend fun doWork()")
         assertTrue(
