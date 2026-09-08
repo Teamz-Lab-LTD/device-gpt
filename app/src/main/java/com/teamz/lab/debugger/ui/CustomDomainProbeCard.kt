@@ -109,18 +109,16 @@ fun CustomDomainProbeCard(
             webResult = null
             AnalyticsUtils.logEvent(AnalyticsEvent.CustomDomainProbeStarted)
             try {
-                // Sequential on purpose — see probeDomainRepeated's KDoc. Progress is
-                // driven per attempt so a 4x-slower test still feels alive.
-                val perAttempt = mutableListOf<com.teamz.lab.debugger.utils.DomainProbeResult>()
-                repeat(attempts) { i ->
-                    attemptProgress = i + 1
-                    perAttempt.add(
-                        NetworkReachabilityTester.probeDomainRepeated(
-                            domain = domain, category = "Custom", attempts = 1
-                        ).perAttempt.first()
-                    )
-                }
-                val agg = NetworkReachabilityTester.aggregateAttempts(domain, "Custom", perAttempt)
+                // Sequential on purpose — see probeDomainRepeated's KDoc. Progress comes from
+                // its onAttempt callback: driving it from an outer repeat() loop of
+                // attempts = 1 calls, as this did until 2026-09-09, skipped ATTEMPT_GAP_MS
+                // entirely and left attempts 2..4 measuring the connection pool.
+                val agg = NetworkReachabilityTester.probeDomainRepeated(
+                    domain = domain,
+                    category = "Custom",
+                    attempts = attempts,
+                    onAttempt = { n -> attemptProgress = n },
+                )
                 result = agg
                 dnsServers = try {
                     com.teamz.lab.debugger.utils.getDnsServers(context)

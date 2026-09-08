@@ -119,7 +119,20 @@ object NetworkReachabilityTester {
     /** Attempts per domain for the repeated/user-entered probe. See probeDomainRepeated. */
     const val DEFAULT_PROBE_ATTEMPTS = 4
 
-    /** Gap between attempts. Long enough that a connection is not simply reused. */
+    /**
+     * Gap between attempts. Long enough that a connection is not simply reused.
+     *
+     * This was dead in the only place it mattered. CustomDomainProbeCard wanted a per-attempt
+     * progress indicator, so instead of calling probeDomainRepeated(attempts = 4) it ran its
+     * own `repeat(4)` loop calling probeDomainRepeated(attempts = 1) — and with one attempt the
+     * `i < safeAttempts - 1` guard below never fires, so no gap was ever taken. Attempts 2..4
+     * ran back to back against a warm DNS cache and a live connection in the pool, which is
+     * precisely the failure probeDomainRepeated's KDoc says sequential probing exists to avoid:
+     * an intermittent fault reads as uniformly healthy. The store listing sells this as "tests
+     * it 4 times — a site that fails only sometimes cannot hide behind one lucky check".
+     *
+     * Hence `onAttempt`: progress reporting no longer requires bypassing the pacing.
+     */
     private const val ATTEMPT_GAP_MS = 350L
 
     private const val DNS_TIMEOUT_MS = 5000L
@@ -213,11 +226,13 @@ object NetworkReachabilityTester {
     suspend fun probeDomainRepeated(
         domain: String,
         category: String = "Custom",
-        attempts: Int = DEFAULT_PROBE_ATTEMPTS
+        attempts: Int = DEFAULT_PROBE_ATTEMPTS,
+        onAttempt: ((Int) -> Unit)? = null,
     ): RepeatedProbeResult = withContext(Dispatchers.IO) {
         val safeAttempts = attempts.coerceIn(1, 10)
         val results = ArrayList<DomainProbeResult>(safeAttempts)
         repeat(safeAttempts) { i ->
+            onAttempt?.invoke(i + 1)
             results.add(probeDomain(domain, category))
             if (i < safeAttempts - 1) kotlinx.coroutines.delay(ATTEMPT_GAP_MS)
         }

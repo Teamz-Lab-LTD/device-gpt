@@ -185,18 +185,29 @@ private fun screenNameFor(tabType: TabType): String = when (tabType) {
     TabType.AI_BRIDGE -> "ai_bridge"
 }
 
+/**
+ * One mapping, used by every caller.
+ *
+ * The widget-navigation path used to hardcode AnalyticsEvent.TabHealthViewed for whichever tab
+ * the widget opened, passing the real tab only as a `tab_name` parameter. So every widget tap
+ * to Power, Camera, App Doctor or AI Bridge was counted as a Health view: health looked like
+ * the most-used tab in the app and the others looked dead, in the exact report you would read
+ * to decide which tab deserves work.
+ */
+internal fun tabViewedEvent(tabType: TabType): AnalyticsEvent = when (tabType) {
+    TabType.LEADERBOARD -> AnalyticsEvent.TabLeaderboardViewed
+    TabType.HEALTH -> AnalyticsEvent.TabHealthViewed
+    TabType.POWER -> AnalyticsEvent.TabPowerViewed
+    TabType.DEVICE_INFO -> AnalyticsEvent.TabDeviceInfoViewed
+    TabType.NETWORK_INFO -> AnalyticsEvent.TabNetworkInfoViewed
+    TabType.CAMERA -> AnalyticsEvent.TabCameraViewed
+    TabType.SCREEN_TEST -> AnalyticsEvent.TabScreenTestViewed
+    TabType.APP_DOCTOR -> AnalyticsEvent.TabAppDoctorViewed
+    TabType.AI_BRIDGE -> AnalyticsEvent.TabAiBridgeViewed
+}
+
 private fun logMainTabSelectionAnalytics(tabType: TabType) {
-    when (tabType) {
-        TabType.LEADERBOARD -> AnalyticsUtils.logEvent(AnalyticsEvent.TabLeaderboardViewed)
-        TabType.HEALTH -> AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed)
-        TabType.POWER -> AnalyticsUtils.logEvent(AnalyticsEvent.TabPowerViewed)
-        TabType.DEVICE_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabDeviceInfoViewed)
-        TabType.NETWORK_INFO -> AnalyticsUtils.logEvent(AnalyticsEvent.TabNetworkInfoViewed)
-        TabType.CAMERA -> AnalyticsUtils.logEvent(AnalyticsEvent.TabCameraViewed)
-        TabType.SCREEN_TEST -> AnalyticsUtils.logEvent(AnalyticsEvent.TabScreenTestViewed)
-        TabType.APP_DOCTOR -> AnalyticsUtils.logEvent(AnalyticsEvent.TabAppDoctorViewed)
-        TabType.AI_BRIDGE -> AnalyticsUtils.logEvent(AnalyticsEvent.TabAiBridgeViewed)
-    }
+    AnalyticsUtils.logEvent(tabViewedEvent(tabType))
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPreviewRevenueCatUIPurchasesAPI::class)
@@ -246,12 +257,15 @@ fun DeviceGptNavExperience(
                     "navigation_method" to if (navigateToTab.isNotEmpty()) "name_based" else "index_based"
                 ))
             }
-            // Also log tab view for consistency
+            // Log the view for the tab that was actually opened, not always Health.
             val tabName = TabOrderManager.getTabNameForAnalytics(targetTab)
-            AnalyticsUtils.logEvent(AnalyticsEvent.TabHealthViewed, mapOf(
-                "source" to source,
-                "tab_name" to tabName
-            ))
+            val openedTab = TabOrderManager.getTabTypeAt(targetTab)
+            if (openedTab != null) {
+                AnalyticsUtils.logEvent(tabViewedEvent(openedTab), mapOf(
+                    "source" to source,
+                    "tab_name" to tabName
+                ))
+            }
             targetTab
         } else {
             // Default to first tab (usually Leaderboard if enabled)

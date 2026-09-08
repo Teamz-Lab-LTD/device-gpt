@@ -25,6 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AIIcon
 import com.teamz.lab.debugger.utils.AnalyticsEvent
@@ -68,13 +72,45 @@ fun MicTestCard(
     var micUnavailable by remember { mutableStateOf(false) }
     var heard by remember { mutableStateOf<Boolean?>(null) }
 
+    val permissionHost = activity ?: context as? android.app.Activity
+
     val permLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         hasPermission = granted
-        // A second denial on Android means the system dialog will not appear again;
-        // sending the user to a button that does nothing is worse than saying so.
-        if (!granted) permanentlyDenied = true
+        if (!granted) {
+            // This used to be `permanentlyDenied = true` on the FIRST denial, which sent a
+            // user who tapped Deny once to a Settings deep link when tapping Allow again
+            // would have worked. Android's own signal is shouldShowRequestPermissionRationale:
+            // still true after one denial, false once the user has denied twice.
+            val canShowRationale = permissionHost?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    it, Manifest.permission.RECORD_AUDIO
+                )
+            }
+            permanentlyDenied = MicTestUtils.permissionNextStep(false, canShowRationale) ==
+                MicTestUtils.PermissionNextStep.OPEN_SETTINGS
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.MicTestFailed,
+                mapOf("reason" to if (permanentlyDenied) "permission_blocked" else "permission_denied")
+            )
+        }
+    }
+
+    // The Settings deep link below is this card's own recovery path, and a permission read
+    // captured once by remember() cannot see the grant the user just made there — so the card
+    // kept saying "open Settings" after they already had. Re-read on every resume.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val granted = PermissionManager.hasAudioPermission(context)
+                hasPermission = granted
+                if (granted) permanentlyDenied = false
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     fun buildReport(r: MicTestUtils.MicTestResult, userHeard: Boolean?): String = buildString {
@@ -137,6 +173,13 @@ fun MicTestCard(
             if (spoken == null) {
                 micUnavailable = true
                 phase = MicPhase.IDLE
+                // The noise-floor failure above logs MicTestFailed and this one did not, so a
+                // mic taken mid-test — incoming call, another app grabbing it — was invisible.
+                // It is also the likelier of the two to fail: 3000ms of capture against 1500ms.
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.MicTestFailed,
+                    mapOf("reason" to "record_unavailable_while_speaking")
+                )
                 return@launch
             }
             pcm = spoken.first

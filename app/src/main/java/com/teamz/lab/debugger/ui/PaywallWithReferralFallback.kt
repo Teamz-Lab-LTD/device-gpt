@@ -1,6 +1,5 @@
 package com.teamz.lab.debugger.ui
 
-import com.teamz.lab.debugger.utils.PaywallPolicy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -126,15 +125,11 @@ fun PaywallWithReferralFallback(
         ReferralFallbackScreen(
             analyticsSource = analyticsSource,
             onShareClick = {
-                // Counts toward paywall_max_per_session. Placed at the same point as the
-                // funnel event so the cap and premium_paywall_shown can never disagree.
-                PaywallPolicy.recordShown(context)
+                // Tapping share is an ACTION on the fallback, not a paywall being shown, and
+                // it must not charge paywall_max_per_session a second time for one journey.
                 AnalyticsUtils.logEvent(
-                    AnalyticsEvent.PremiumPaywallShown,
-                    mapOf(
-                        "source" to "referral_fallback_${analyticsSource}",
-                        "action" to "share_tapped"
-                    )
+                    AnalyticsEvent.ReferralFallbackShareTapped,
+                    mapOf("source" to "referral_fallback_${analyticsSource}")
                 )
                 showFullShareDialog = true
             },
@@ -290,14 +285,13 @@ private fun ReferralFallbackScreen(
     val referralsToNext = remember { ReferralManager.getReferralsToNextTier(context) }
 
     LaunchedEffect(Unit) {
-        // Counts toward paywall_max_per_session. Placed at the same point as the
-        // funnel event so the cap and premium_paywall_shown can never disagree.
-        PaywallPolicy.recordShown(context)
+        // No recordShown here. This screen is only reachable from handleRcDismiss, so the
+        // RevenueCat paywall has already charged paywall_max_per_session for this journey;
+        // charging again spent the session's single allowance twice on one interaction.
         AnalyticsUtils.logEvent(
-            AnalyticsEvent.PremiumPaywallShown,
+            AnalyticsEvent.ReferralFallbackShown,
             mapOf(
                 "source" to "referral_fallback_${analyticsSource}",
-                "action" to "modal_shown",
                 "current_referrals" to referralCount,
                 "next_tier_required" to (nextTier?.requiredReferrals ?: 0),
                 "next_tier_reward_hours" to (nextTier?.adFreeHours ?: 0L)

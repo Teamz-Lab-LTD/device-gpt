@@ -438,6 +438,13 @@ enum class AnalyticsEvent(val eventName: String) {
     WidgetDisplayed("widget_displayed"),
     // Premium events
     PremiumPaywallShown("premium_paywall_shown"),
+
+    // The referral fallback is what the user sees AFTER dismissing the paywall — part of the
+    // same journey, not a second paywall. Both of these used to log premium_paywall_shown, so
+    // one dismissal-then-share produced three of that event and inflated the funnel's
+    // denominator threefold; any paywall -> purchase rate read at about a third of reality.
+    ReferralFallbackShown("referral_fallback_shown"),
+    ReferralFallbackShareTapped("referral_fallback_share_tapped"),
     PremiumPaywallDismissed("premium_paywall_dismissed"),
     // v3.1.11 W3 user-behavior insight — capture WHY users dismiss paywall.
     // Param `reason`: too_expensive | not_now | no_value_seen | closed_by_mistake | other

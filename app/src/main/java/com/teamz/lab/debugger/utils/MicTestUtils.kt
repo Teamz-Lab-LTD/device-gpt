@@ -103,6 +103,28 @@ object MicTestUtils {
      * [headroomDb] is what decides SILENT vs quiet: a dead mic in a noisy room can
      * still show a high absolute level, so absolute dBFS alone would call it working.
      */
+    /** What the mic card should offer the user next, once permission state is known. */
+    enum class PermissionNextStep { RUN_TEST, ASK_AGAIN, OPEN_SETTINGS }
+
+    /**
+     * The line between "tap the button again" and "only Settings can grant this now".
+     *
+     * MicTestCard used to set permanentlyDenied on the FIRST denial, so one tap of Deny sent
+     * the user to a Settings deep link when tapping Allow again would have worked — on the
+     * feature the app title leads with, in session one. Android's own signal for this is
+     * shouldShowRequestPermissionRationale: true after a first denial, false once the user has
+     * denied twice (Android 11+ treats the second denial as "don't ask again").
+     *
+     * @param canShowRationale null when there is no Activity to ask. Unknown resolves to
+     *   OPEN_SETTINGS on purpose: Settings always works, whereas a re-prompt that Android
+     *   silently refuses is a button that does nothing — the worse of the two failures.
+     */
+    fun permissionNextStep(granted: Boolean, canShowRationale: Boolean?): PermissionNextStep = when {
+        granted -> PermissionNextStep.RUN_TEST
+        canShowRationale == true -> PermissionNextStep.ASK_AGAIN
+        else -> PermissionNextStep.OPEN_SETTINGS
+    }
+
     fun classify(peakDbfs: Double, headroomDb: Double, clipped: Boolean): Verdict = when {
         clipped -> Verdict.CLIPPING
         // Nothing rose above the room. Either the mic is dead or it is fully muted.

@@ -51,8 +51,12 @@ class Session1MeasurementContractTest {
         assertTrue("the effect must log ScreenViewed", effect.contains("ScreenViewed"))
         assertTrue("the screen view must carry a screen_name param", effect.contains("screen_name"))
 
-        val fn = nav.substringAfter("fun logMainTabSelectionAnalytics")
-            .substringBefore("@OptIn")
+        // The branches moved out of logMainTabSelectionAnalytics into tabViewedEvent on
+        // 2026-09-09, because the widget-navigation path had its own hardcoded copy that always
+        // logged TabHealthViewed. One mapping, one place to add a tab. The requirement this
+        // guard encodes is unchanged: no TabType may be missing from it.
+        val fn = nav.substringAfter("fun tabViewedEvent")
+            .substringBefore("private fun logMainTabSelectionAnalytics")
 
         // Every TabType must be reachable in that when — a new tab added without a branch
         // would silently have no screen name.
