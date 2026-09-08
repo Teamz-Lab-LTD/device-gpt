@@ -1,52 +1,50 @@
-Pengecek kesehatan ponsel AI untuk Android — pahami kondisi ponsel dengan bahasa sederhana.
-DeviceGPT memindai baterai, performa, privasi, dan jaringan, lalu membuat laporan jelas yang bisa Anda bagikan ke aplikasi asisten AI untuk penjelasan yang mudah dan langkah perbaikan.
-Pantau skor kesehatan dan lihat peringkat di global phone leaderboard.
+🔍 Mic test, camera test, screen test, dead pixel test, battery health, AI phone diagnostics — sekali tap di Android. DeviceGPT memindai ponsel Anda dan menjelaskan hasilnya dengan bahasa sederhana. Tanpa root.
 
-🤖 Analisis berbasis AI (fitur utama)
+Setelah setiap scan, tekan Ask AI untuk solusi lewat ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, atau Replika. Sembilan platform AI. Hasil scan tetap di ponsel Anda kecuali Anda membagikannya.
 
-Buat ringkasan sekali tap dan bagikan ke aplikasi AI melalui Share
+🎤 Mic test, camera test, screen test
+• Mic test / microphone test — mengukur noise floor ruangan dan level suara Anda, lalu memutar rekamannya agar Anda tahu bagaimana lawan bicara mendengar Anda. Rekaman tidak keluar dari ponsel
+• Camera test — kamera tidak berfungsi? Kamera depan dan belakang, focus, warna melenceng
+• Screen test — dead pixel test dan stuck pixel test dengan 9 warna layar penuh serta grid untuk goresan. Ponsel tidak bisa mendeteksi dead pixel-nya sendiri, jadi Anda yang melihat dan DeviceGPT mencatat jawaban Anda — bukan skor tebakan
+• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• FPS monitoring dan deteksi frame drop (Choreographer API)
 
-Mode ringkas atau detail
+🩺 App Doctor — "WiFi tersambung tapi tidak ada internet"
+Wi-Fi tersambung tapi tidak ada yang terbuka? App Doctor mencari sebabnya:
+• Ketik website apa pun, DeviceGPT mengujinya 4 kali — situs yang kadang gagal tidak bisa bersembunyi di balik satu percobaan yang kebetulan berhasil
+• Menguji lewat koneksi biasa dan browser dalam aplikasi, jadi terlihat kapan masalahnya di Android System WebView sementara Chrome baik-baik saja
+• Menampilkan server DNS, apakah Private DNS atau VPN aktif, dan apakah jaringan menahan Anda di halaman masuk (captive portal)
+• Melaporkan jumlah percobaan berhasil dan rata-rata latency, bukan sekadar centang hijau
 
-Saran sesuai hasil pemindaian
+🔋 AI Battery Health — yang tidak ditampilkan Android
+• Kondisi baterai, suhu, tanda penurunan kualitas
+• Konsumsi daya saat ini dalam watt (fisika sungguhan: P = V × I)
+• Rincian per komponen: display, cellular, RAM, Wi-Fi
+• App screen time — Android tidak melaporkan pemakaian baterai per aplikasi, jadi ini peringkat waktu layar, bukan baterai
+• Perilaku pengisian, cycle tracking, perbandingan isi cepat dan lambat
+• WiFi speed test dan network speed test: download, upload, ping, jitter
 
-📱 Phone diagnostic AI + performa
+🛡️ Zero Trust Dashboard — audit keamanan ponsel
+Audit tiga bagian dengan skor 0–100:
+• App Privacy Risk (35%): keylogger, perekam layar, aplikasi tersembunyi, pemindaian malware, penyalahgunaan mic/camera, ad tracker
+• Network Trust (35%): manipulasi DNS, SSL hijack (MITM), transparent proxy, deep packet inspection, pelacakan ISP
+• Device Integrity (30%): root, bootloader, sideloading, developer mode, izin overlay, notification listener
 
-Indikator CPU, RAM, tekanan penyimpanan, suhu, dan stabilitas
+🔌 AI Bridge — biarkan Claude atau Cursor membaca ponsel Anda
+Pasangkan klien AI desktop lewat jaringan lokal dengan PIN atau QR code. Ia membaca data perangkat langsung melalui MCP — tanpa cloud, tanpa akun.
 
-Insight FPS/kelancaran (tergantung perangkat)
+📱 Phone health check — satu kali scan
+• Health score dari baterai, penyimpanan, RAM, suhu, sensor, plus info perangkat lengkap
+• Laporan bersertifikat untuk jual kembali, ditandatangani (ECDSA P-256, Android KeyStore) dengan deteksi perubahan
 
-Info perangkat + status keamanan, tanpa root
+🏆 Leaderboard: 10 kategori global — Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 
-🔐 Privacy scanner Android
+🚀 Termasuk juga
+• Lock screen widget (Android 13+): health score, baterai, suhu
+• 15+ bahasa
+• Sebagian besar scan berjalan offline (Ask AI butuh jaringan)
+• Tanpa pendaftaran. Tanpa root.
 
-Riwayat akses mikrofon/kamera dan review izin
+💎 DeviceGPT Premium (pembelian dalam aplikasi): menghapus iklan dan mendukung pengembangan.
 
-Status root, opsi pengembang, USB debugging
-
-Sinyal anomali GPS/sensor (tergantung perangkat)
-
-🌐 Diagnostik jaringan
-
-Uji kecepatan nyata dan stabilitas koneksi
-
-Sinyal DNS/kualitas koneksi
-
-⚡ Power consumption monitor
-
-Tren konsumsi daya dan pemakaian tertinggi
-
-Riwayat + ekspor CSV (jika tersedia)
-
-🏆 Sistem peringkat perangkat
-Bandingkan ponsel Anda secara global untuk efisiensi panas, kelancaran, dan kesehatan.
-
-🔏 Privasi
-
-Bisa digunakan anonim
-
-Anda yang mengontrol berbagi/ekspor
-
-Banyak fitur bisa offline (tergantung perangkat)
-
-✅ Jalankan scan dan tingkatkan kesehatan ponsel Anda hari ini.
+📥 Unduh DeviceGPT — aplikasi mic test, camera test, screen test dan battery health untuk Android. Pasang dan jalankan scan pertama dalam 30 detik.

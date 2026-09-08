@@ -1,31 +1,61 @@
-DeviceGPT: AI Phone Health هو تطبيق تشخيص هاتف أندرويد وفحص خصوصية يساعدك على فهم مشاكل البطارية، السخونة، بطء الأداء، ضغط التخزين، إشارات الأمان، وجودة الشبكة — ثم ينشئ تقريرًا واضحًا يمكنك مشاركته (اختياريًا) عبر قائمة المشاركة للحصول على شرح مبسّط من تطبيقات الذكاء الاصطناعي.
+🔍 WiFi speed test، camera test، mic test، battery health، AI phone diagnostics — بنقرة واحدة على Android. يفحص DeviceGPT جهازك ويشرح النتيجة بلغة بسيطة. بدون root.
 
-ما الذي يمكنك فحصه؟
+بعد كل فحص، اضغط Ask AI للحصول على حلول عبر ChatGPT أو Gemini أو Claude أو DeepSeek أو Perplexity أو Copilot أو Grok أو You.com أو Replika. تسع منصات AI. يبقى الفحص على جهازك ما لم تشاركه بنفسك.
 
-البطارية والحرارة: مؤشرات السخونة، سلوك الشحن، إشارات استنزاف البطارية
+🩺 App Doctor — "الواي فاي متصل لكن لا يوجد إنترنت"
+متصل بـ Wi-Fi ولا شيء يفتح؟ App Doctor يجد السبب:
+• اكتب أي website وسيختبره DeviceGPT أربع مرات — الموقع الذي يفشل أحيانًا لا يمكنه الاختباء خلف محاولة واحدة ناجحة
+• يختبر عبر الاتصال العادي وعبر متصفح التطبيق معًا، فتعرف متى تكون المشكلة في Android System WebView بينما Chrome سليم
+• يعرض خوادم DNS لديك، وهل Private DNS أو VPN مفعّل، وهل تحتجزك الشبكة في صفحة تسجيل دخول (captive portal)
+• يذكر عدد المحاولات الناجحة ومتوسط latency، لا مجرد علامة خضراء
 
-الأداء والتخزين: ضغط الذاكرة/التخزين وأسباب البطء
+🚀 WiFi speed test و network speed test
+• WiFi speed test — download، upload، ping، jitter
+• Network speed test للبيانات الخلوية و Wi-Fi
 
-الخصوصية: سجل استخدام الميكروفون/الكاميرا ومراجعة الأذونات
+🔋 AI Battery Health — ما لا يعرضه Android
+• حالة البطارية ودرجة الحرارة ومؤشرات التآكل
+• استهلاك الطاقة الآن بالواط (فيزياء حقيقية: P = V × I)
+• توزيع الاستهلاك: display، cellular، RAM، Wi-Fi
+• App screen time — لا يبلّغ Android عن استهلاك البطارية لكل تطبيق، لذا هذا ترتيب لوقت الشاشة وليس للبطارية
+• سلوك الشحن، cycle tracking، ومقارنة الشحن السريع بالبطيء
+• صدّر بيانات البطارية إلى CSV أو اطلب شرحًا من Ask AI
 
-إشارات الأمان: حالة الروت، خيارات المطور، USB debugging
+🎤 Mic test و camera test و screen test
+• Mic test / microphone test — يقيس ضجيج الغرفة ومستوى صوتك، ثم يعيد تشغيل التسجيل فورًا لتسمع كيف يسمعك المتصلون. التسجيل لا يغادر هاتفك
+• Camera test — الكاميرا لا تعمل؟ فحص الكاميرا الأمامية والخلفية، focus، وميل الألوان
+• Screen test — dead pixel test و stuck pixel test بتسعة ألوان بملء الشاشة وشبكة لكشف الخدوش. لا يستطيع هاتفك اكتشاف بكسلاته الميتة بنفسه، لذا أنت تنظر و DeviceGPT يسجّل إجابتك — ولا يخمّن درجة أبدًا
+• Phone hardware test: touch screen test، speaker test، GPS test، accelerometer
+• FPS monitoring وكشف تقطّع الإطارات (Choreographer API)
 
-تشخيص الشبكة: السرعة، الاستقرار، DNS وجودة الاتصال
+🛡️ Zero Trust Dashboard — تدقيق أمان الهاتف
+تدقيق من ثلاثة أقسام بدرجة من 0 إلى 100:
+• App Privacy Risk (35%): keylogger، تطبيقات تسجيل الشاشة، التطبيقات المخفية، فحص malware على الجهاز، إساءة استخدام mic/camera، ad tracker
+• Network Trust (35%): تلاعب DNS، SSL hijack (MITM)، transparent proxy، deep packet inspection، تتبّع ISP، private DNS
+• Device Integrity (30%): root، bootloader، sideloading، developer mode، أذونات overlay، notification listener
 
-جاهزية الذكاء الاصطناعي على الجهاز: مؤشرات التوافق (حسب الجهاز)
+🔌 AI Bridge — دع Claude أو Cursor يقرأ هاتفك
+اربط عميل AI على سطح المكتب عبر شبكتك المحلية بـ PIN أو QR code. يقرأ بيانات الجهاز الحيّة عبر MCP — بلا سحابة وبلا حساب.
 
-الحركة أثناء القفل: كشف النشاط (إذا كان الجهاز يدعم ذلك)
+🤖 يشرح AI هاتفك بلغة بسيطة
+"البطارية ترتفع حرارتها — أغلق تطبيقات الخلفية."
+"قد يؤثر Wi-Fi jitter على الألعاب — أعد تشغيل الراوتر."
 
-اسأل الذكاء الاصطناعي (اختياري)
-بعد الفحص اضغط Ask the AI واختر تطبيقًا من قائمة المشاركة. سيُنشئ التطبيق وصفًا واضحًا لنتائجك لتسهيل الحصول على نصائح.
+📱 Phone health check — بفحص واحد
+• Health score يجمع البطارية والتخزين و RAM والحرارة والمستشعرات، مع معلومات الجهاز كاملة
 
-الخصوصية
+📊 حالة الهاتف وتقرير إعادة البيع
+أنشئ تقريرًا موثقًا لإعادة البيع أو لتذاكر الدعم أو كإثبات للحالة. موقّع تشفيريًا (ECDSA P-256، Android KeyStore) مع كشف التلاعب ورمز تحقق قابل للمشاركة.
 
-لا حاجة لحساب
+🏆 Leaderboard والإنجازات
+• 10 فئات عالمية: Battery Saver، Speed، Thermal، Power، Health، Consistency، Display، Camera، CPU، App Power
 
-لا يتم رفع البيانات تلقائيًا — أنت من يقرر ما يتم مشاركته
+🚀 يتضمن أيضًا
+• Lock screen widget (Android 13+): health score، البطارية، الحرارة
+• أكثر من 15 لغة
+• تعمل معظم الفحوصات دون اتصال (يحتاج Ask AI إلى شبكة)
+• بلا تسجيل. بلا root.
 
-العديد من الفحوصات تعمل محليًا/بدون إنترنت (حسب الجهاز)
+💎 DeviceGPT Premium (شراء داخل التطبيق): يزيل الإعلانات ويدعم استمرار التطوير.
 
-ملاحظة
-يوفّر التطبيق مؤشرات وتشخيصًا عامًا ولا يغني عن فحص الصيانة المتخصص.
+📥 حمّل DeviceGPT — تطبيق AI phone diagnostics و WiFi speed test و camera test و battery health لـ Android. ثبّته وشغّل أول فحص خلال 30 ثانية.

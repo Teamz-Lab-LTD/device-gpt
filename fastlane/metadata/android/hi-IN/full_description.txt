@@ -1,53 +1,61 @@
-Android के लिए AI फोन हेल्थ चेकर — अपने फोन की हालत आसान भाषा में समझें।
-DeviceGPT आपके फोन की बैटरी, परफॉर्मेंस, प्राइवेसी और नेटवर्क स्कैन करता है और एक साफ रिपोर्ट बनाता है जिसे आप AI असिस्टेंट ऐप में शेयर करके सरल एक्सप्लेन और अगला कदम पा सकते हैं।
-अपने फोन हेल्थ स्कोर को ट्रैक करें और ग्लोबल फोन लीडरबोर्ड पर रैंक देखें।
+🔍 WiFi speed test, camera test, mic test, battery health, AI phone diagnostics — Android पर एक टैप में। DeviceGPT आपका फ़ोन scan करता है और नतीजा आसान भाषा में समझाता है। Root की ज़रूरत नहीं।
 
-🤖 AI-पावर्ड समझ (मुख्य फीचर)
+हर scan के बाद Ask AI दबाइए और ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com या Replika से हल पाइए। नौ AI platform। जब तक आप ख़ुद share न करें, scan आपके फ़ोन में ही रहता है।
 
-एक टैप में AI-सम्मरी बनाएं और AI ऐप में शेयर करें
+🩺 App Doctor — "WiFi चालू है पर इंटरनेट नहीं"
+Wi-Fi लगा है फिर भी कुछ नहीं खुलता? App Doctor वजह ढूँढता है:
+• कोई भी website लिखिए, DeviceGPT उसे 4 बार test करता है — जो site कभी-कभी fail होती है वह एक बार की क़िस्मत के पीछे नहीं छिप सकती
+• आम connection और app के अंदर वाले browser, दोनों से test करता है — इससे पता चलता है कि असली दिक़्क़त Android System WebView में है और Chrome ठीक है
+• आपके DNS server दिखाता है, Private DNS या VPN चालू है या नहीं, और network आपको sign-in पेज पर रोक रहा है या नहीं (captive portal)
+• कितनी बार pass हुआ और औसत latency कितनी — सिर्फ़ एक हरा टिक नहीं
 
-सरल या डिटेल्ड मोड
+🚀 WiFi speed test और network speed test
+• WiFi speed test — download, upload, ping, jitter
+• Cellular और Wi-Fi दोनों के लिए network speed test
 
-स्कैन के आधार पर संदर्भ-समझ सुझाव
+🔋 AI Battery Health — जो Android नहीं दिखाता
+• Battery health, temperature, घिसाव के संकेत
+• अभी की power draw watt में (असली भौतिकी: P = V × I)
+• कौन सा हिस्सा कितना खाता है: display, cellular, RAM, Wi-Fi
+• App screen time — Android per-app battery use नहीं बताता, इसलिए यह screen time की गिनती है, battery की नहीं
+• Charging का तरीक़ा, cycle tracking, तेज़ बनाम धीमी charge की तुलना
+• Battery data CSV में export कीजिए या Ask AI से समझिए
 
-📱 फोन डायग्नोस्टिक AI + परफॉर्मेंस
+🎤 Mic test, camera test, screen test
+• Mic test / microphone test — कमरे का noise floor और आपकी आवाज़ का level मापता है, फिर recording तुरंत बजाकर सुनाता है ताकि आप जान सकें सामने वाला आपको कैसा सुनता है। Recording फ़ोन से बाहर नहीं जाती
+• Camera test — camera काम नहीं कर रहा? आगे और पीछे का camera, focus, रंग की गड़बड़
+• Screen test — dead pixel test और stuck pixel test, 9 full-screen रंग और खरोंच देखने का grid। फ़ोन अपने dead pixel ख़ुद नहीं पकड़ सकता, इसलिए आप देखते हैं और DeviceGPT आपका जवाब दर्ज करता है — अंदाज़े से score नहीं देता
+• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• FPS monitoring और frame drop detection (Choreographer API)
 
-CPU, RAM, स्टोरेज प्रेशर, तापमान, स्थिरता संकेत
+🛡️ Zero Trust Dashboard — फ़ोन का security audit
+तीन हिस्सों का audit, 0–100 स्कोर:
+• App Privacy Risk (35%): keylogger, screen-recording app, छिपे app, on-device malware scan, mic/camera का दुरुपयोग, ad tracker
+• Network Trust (35%): DNS हेराफेरी, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
+• Device Integrity (30%): root, bootloader, sideloading, developer mode, overlay permission, notification listener
 
-FPS/स्मूदनेस इनसाइट्स (डिवाइस पर निर्भर)
+🔌 AI Bridge — Claude या Cursor को फ़ोन पढ़ने दीजिए
+अपने local network पर PIN या QR code से desktop का AI client जोड़िए। MCP के ज़रिए वह live device data पढ़ता है — न cloud, न account।
 
-हार्डवेयर और सिक्योरिटी स्टेटस, रूट की जरूरत नहीं
+🤖 AI आसान भाषा में समझाता है
+"Battery गरम हो रही है — background app बंद कीजिए।"
+"Wi-Fi jitter gaming में दिक़्क़त कर सकता है — router restart कीजिए।"
 
-🔐 Privacy scanner Android + सुरक्षा
+📱 Phone health check — एक scan में
+• Battery, storage, RAM, temperature, sensor मिलाकर health score, साथ में पूरी device info
 
-माइक्रोफोन/कैमरा एक्सेस हिस्ट्री और परमिशन रिव्यू
+📊 फ़ोन की हालत और resale report
+बेचने, support ticket या हालत के सबूत के लिए certified report बनाइए। Cryptographically signed (ECDSA P-256, Android KeyStore), साथ में tamper detection और share करने लायक़ verification code।
 
-रूट, डेवलपर ऑप्शंस, USB डिबगिंग स्टेटस
+🏆 Leaderboard और achievements
+• 10 global category: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 
-GPS/सेंसर अनोमली संकेत (डिवाइस पर निर्भर)
+🚀 और भी
+• Lock screen widget (Android 13+): health score, battery, temperature
+• 15+ भाषाएँ
+• ज़्यादातर scan offline चलते हैं (Ask AI को network चाहिए)
+• Signup नहीं। Root नहीं।
 
-🌐 नेटवर्क डायग्नोस्टिक
+💎 DeviceGPT Premium (in-app purchase): ad हटाता है और काम जारी रखने में मदद करता है।
 
-रियल स्पीड टेस्ट और कनेक्शन स्थिरता
-
-DNS/कनेक्शन क्वालिटी संकेत
-
-⚡ Power consumption monitor
-
-पावर यूसेज ट्रेंड्स और भारी उपभोक्ता
-
-हिस्ट्री + CSV एक्सपोर्ट (जहां उपलब्ध)
-
-🏆 Device ranking system
-
-थर्मल, स्मूदनेस, पावर एफिशिएंसी और हेल्थ में ग्लोबल तुलना
-
-🔏 प्राइवेसी
-
-बिना अकाउंट भी उपयोग संभव
-
-आप तय करते हैं क्या शेयर/एक्सपोर्ट होगा
-
-कई फीचर ऑफलाइन (डिवाइस पर निर्भर)
-
-✅ अभी स्कैन करें और अपने फोन की हेल्थ सुधारें।
+📥 DeviceGPT डाउनलोड कीजिए — Android का AI phone diagnostics, WiFi speed test, camera test और battery health app। Install करके 30 सेकंड में पहला scan चलाइए।

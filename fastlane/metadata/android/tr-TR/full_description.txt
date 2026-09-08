@@ -1,52 +1,50 @@
-Android için AI phone health checker — telefonunuzu anlaşılır şekilde değerlendirin.
-DeviceGPT pil, performans, gizlilik ve ağ durumunu tarar, net bir rapor oluşturur ve isterseniz bir AI asistan uygulamasına paylaşarak kolay açıklama ve uygulanabilir adımlar almanızı sağlar.
-Sağlık skorunuzu takip edin ve global phone leaderboard içinde sıralamanızı görün.
+🔍 Mikrofon testi, kamera testi, ekran testi, ölü piksel testi, pil sağlığı ve yapay zekâ destekli telefon tanılama — Android'de tek dokunuşla. DeviceGPT cihazınızı tarar ve sonucu sade bir dille anlatır. Root gerekmez.
 
-🤖 AI destekli açıklama (ana özellik)
+Her taramadan sonra Ask AI'ye dokunun; ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com veya Replika üzerinden çözüm alın. Dokuz yapay zekâ platformu. Siz paylaşmadıkça tarama telefonunuzda kalır.
 
-Tek dokunuşla özet üretip paylaşma
+🎤 Mikrofon testi, kamera testi, ekran testi
+• Mikrofon testi — odanın gürültü tabanını ve ses seviyenizi ölçer, ardından kaydı hemen çalar; böylece karşıdakinin sizi nasıl duyduğunu duyarsınız. Kayıt telefondan çıkmaz
+• Kamera testi — kamera çalışmıyor mu? Ön ve arka kamera kontrolü, odak ve renk sapması
+• Ekran testi — ölü piksel testi ve takılı piksel testi; 9 tam ekran renk ve çizikler için bir ızgara. Telefon kendi ölü pikselini bulamaz, bu yüzden siz bakarsınız ve DeviceGPT cevabınızı kaydeder — asla tahmini bir puan vermez
+• Donanım testi: dokunmatik ekran, hoparlör, GPS, ivmeölçer
+• FPS izleme ve kare atlama tespiti (Choreographer API)
 
-Basit veya ayrıntılı mod
+🩺 App Doctor — "Wi-Fi bağlı ama internet yok"
+Wi-Fi bağlı ama hiçbir şey açılmıyor mu? App Doctor nedenini bulur:
+• Herhangi bir siteyi yazın, DeviceGPT onu 4 kez dener — ara sıra hata veren bir site tek şanslı denemenin arkasına saklanamaz
+• Hem normal bağlantı hem uygulama içi tarayıcı üzerinden dener; böylece sorunun Android System WebView'da olduğunu, Chrome'un iyi durumda olduğunu görürsünüz
+• DNS sunucularınızı, Private DNS veya VPN açık mı, ağın sizi giriş sayfasında tutup tutmadığını gösterir (captive portal)
+• Kaç denemenin geçtiğini ve ortalama gecikmeyi bildirir, yalnızca yeşil bir tik değil
 
-Tarama sonuçlarına göre öneriler
+🔋 Yapay zekâ ile pil sağlığı — Android'in göstermediği
+• Pil durumu, sıcaklık, yıpranma işaretleri
+• Anlık güç tüketimi watt cinsinden (gerçek fizik: P = V × I)
+• Bileşen bazında dağılım: ekran, hücresel, RAM, Wi-Fi
+• Uygulama ekran süresi — Android uygulama başına pil tüketimini bildirmez, bu yüzden bu ekran süresi sıralamasıdır, pil değil
+• Şarj davranışı, döngü takibi, hızlı ve yavaş şarj karşılaştırması
+• Wi-Fi hız testi ve ağ hız testi: indirme, yükleme, ping, jitter
 
-📱 Phone diagnostic AI + performans
+🛡️ Zero Trust Dashboard — telefon güvenlik denetimi
+Üç bölümlü denetim, 0–100 puan:
+• Uygulama gizlilik riski (35%): keylogger, ekran kaydeden uygulamalar, gizli uygulamalar, cihazda kötü amaçlı yazılım taraması, mikrofon/kamera kötüye kullanımı, reklam izleyicileri
+• Ağ güveni (35%): DNS oynaması, SSL ele geçirme (MITM), şeffaf proxy, derin paket incelemesi, ISS takibi
+• Cihaz bütünlüğü (30%): root, bootloader, yandan yükleme, geliştirici modu, yer paylaşımı izinleri
 
-CPU, RAM, depolama baskısı, sıcaklık ve stabilite göstergeleri
+🔌 AI Bridge — Claude veya Cursor telefonunuzu okusun
+Masaüstündeki yapay zekâ istemcisini yerel ağınız üzerinden PIN veya QR kodla eşleyin. MCP ile canlı cihaz verisini okur — bulut yok, hesap yok.
 
-FPS/akıcı kullanım içgörüleri (cihaza bağlı)
+📱 Telefon sağlık kontrolü — tek tarama
+• Pil, depolama, RAM, sıcaklık ve sensörleri birleştiren sağlık puanı, ayrıca tam cihaz bilgisi
+• Satış için sertifikalı rapor; ECDSA P-256 ve Android KeyStore ile imzalı, kurcalama tespitiyle
 
-Donanım bilgileri ve güvenlik durumu, root gerekmez
+🏆 Liderlik tablosu: 10 küresel kategori — pil, hız, termal, güç, sağlık, tutarlılık, ekran, kamera, CPU, uygulama gücü
 
-🔐 Privacy scanner Android + güvenlik
+🚀 Ayrıca
+• Kilit ekranı widget'ı (Android 13+): sağlık puanı, pil, sıcaklık
+• 15'ten fazla dil
+• Taramaların çoğu çevrimdışı çalışır (Ask AI ağ ister)
+• Kayıt yok. Root yok.
 
-Mikrofon/kamera erişim geçmişi ve izin kontrolü
+💎 DeviceGPT Premium (uygulama içi satın alma): reklamları kaldırır ve geliştirmeyi destekler.
 
-Root durumu, geliştirici seçenekleri, USB hata ayıklama
-
-GPS/sensör anomali sinyalleri (cihaza bağlı)
-
-🌐 Ağ teşhisi
-
-Gerçek hız testi ve bağlantı kararlılığı
-
-DNS ve bağlantı kalitesi sinyalleri
-
-⚡ Power consumption monitor
-
-Güç tüketimi trendleri ve en çok tüketenler
-
-Geçmiş + CSV dışa aktarma (varsa)
-
-🏆 Device ranking system
-Isı verimliliği, akıcılık, enerji verimliliği ve genel sağlıkta küresel karşılaştırma.
-
-🔏 Gizlilik
-
-Anonim kullanım mümkün
-
-Paylaşım/dışa aktarma sizin kontrolünüzde
-
-Birçok özellik çevrimdışı çalışır (cihaza bağlı)
-
-✅ Tarama yapın ve telefon sağlığınızı bugün iyileştirin.
+📥 DeviceGPT'yi indirin — Android için mikrofon testi, kamera testi, ekran testi ve pil sağlığı uygulaması. Kurun ve ilk taramayı 30 saniyede çalıştırın.
