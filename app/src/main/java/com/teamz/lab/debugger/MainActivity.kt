@@ -211,16 +211,37 @@ class MainActivity : ComponentActivity() {
                 ReferralManager.onReferredUserAppOpen(this@MainActivity)
                 EngagementTracker.init(this@MainActivity)
                 RemoteConfigUtils.captureCountryCode(this@MainActivity)
-                // UMP / GDPR / PDPA consent flow. Required for SE / SG / EU / BR / CH ad fill.
-                // No-op for non-regulated geos. Runs ad network re-init internally when ready.
-                com.teamz.lab.debugger.utils.UmpConsentManager.ensureConsent(this@MainActivity) {
-                    android.util.Log.d("MainActivity", "✅ UMP consent resolved, ads can request now")
+                // v3.1.25: both of these used to run unconditionally here, and they were
+                // the last two modals that could reach a user who had not yet seen a
+                // single screen — UMP's consent sheet at ~T+0.4s and Play's FLEXIBLE
+                // update sheet at ~T+0.5s. The 2026-09-08 device pass did not catch them
+                // and could not have: UMP renders nothing outside EU/BR/CH/SE/SG, and the
+                // update sheet needs a newer build on Play, which a sideloaded APK never
+                // has. Silence there was absence of evidence, not evidence of absence.
+                //
+                // Brazil is this app's #4 market by installs, so the UMP sheet is a real
+                // first-impression cost, not a theoretical one.
+                //
+                // Deferred to the one moment session 1 already treats as "the app has
+                // delivered something" — the same signal the review prompt waits for.
+                // Deferring UMP is safe because ads_grace_sessions = 2 blocks every ad
+                // path in sessions 1-2, so no ad request can outrun consent in the gap.
+                // Neither is dropped: consent is legally required before ad fill in those
+                // geos, and the update still offers itself from the next session on.
+                if (com.teamz.lab.debugger.ui.FirstScanGate.hasCompletedScan(this@MainActivity)) {
+                    // UMP / GDPR / PDPA consent flow. Required for SE / SG / EU / BR / CH ad fill.
+                    // No-op for non-regulated geos. Runs ad network re-init internally when ready.
+                    com.teamz.lab.debugger.utils.UmpConsentManager.ensureConsent(this@MainActivity) {
+                        android.util.Log.d("MainActivity", "✅ UMP consent resolved, ads can request now")
+                    }
                 }
                 handleChargeSummaryDeepLink(intent)
 
                 DeviceSleepTracker.initializeState(this@MainActivity)
 
-                checkForAppUpdate(this@MainActivity)
+                if (com.teamz.lab.debugger.ui.FirstScanGate.hasCompletedScan(this@MainActivity)) {
+                    checkForAppUpdate(this@MainActivity)
+                }
             }
         } catch (e: Exception) {
             ErrorHandler.handleFatalError(

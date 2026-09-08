@@ -1,0 +1,4 @@
+v3.1.25 — Nothing interrupts your first scan
+
+- The consent notice and the update prompt no longer appear before you have used the app. They wait until your first scan is finished.
+- Together with 3.1.24, the first run now shows nothing before your device score — not an ad, not a permission request, not a review request, not an update sheet.
