@@ -39,7 +39,18 @@ object LeaderboardManager {
     private const val KEY_DATA_RETENTION_REMINDER_SHOWN = "data_retention_reminder_shown"
     
     private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+
+    /**
+     * Lazy on purpose. As an eager object property this ran in <clinit> — the moment anything
+     * first touched LeaderboardManager, which is Application.onCreate line ~143, on the main
+     * thread. FirebaseFirestore.getInstance() builds the client and opens local persistence,
+     * so cold start paid for Firestore before the user saw anything. Crashlytics recorded it
+     * from both ends: ANRs in LeaderboardManager.<clinit> and in MyApplication.onCreate.
+     *
+     * Nothing on the startup path needs it — the earliest read is a leaderboard upload far
+     * below — so deferring construction to first real use is free.
+     */
+    private val db by lazy { FirebaseFirestore.getInstance() }
     private var applicationContext: Context? = null
     
     /**

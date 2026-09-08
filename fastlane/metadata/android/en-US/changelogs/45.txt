@@ -1,0 +1,7 @@
+Security checks rebuilt. DeviceGPT now shows which keyboards and accessibility services can read your screen or keystrokes, which apps can read your advertising ID, and which apps came from outside an app store — real checks, not a fixed list of app names.
+
+Mic test: one tap of Deny no longer blocks the test, and granting it in Settings is picked up right away.
+
+Website testing now spaces its 4 attempts, so a fault that comes and goes cannot hide.
+
+Faster cold start.

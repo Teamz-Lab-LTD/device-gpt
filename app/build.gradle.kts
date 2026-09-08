@@ -36,8 +36,8 @@ android {
         applicationId = "com.teamz.lab.debugger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 44
-        versionName = "3.1.25"
+        versionCode = 45
+        versionName = "3.1.26"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
