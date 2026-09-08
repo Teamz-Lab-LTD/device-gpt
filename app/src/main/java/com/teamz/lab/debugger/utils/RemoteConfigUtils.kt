@@ -50,6 +50,20 @@ object RemoteConfigUtils {
      */
     private const val DEFAULT_FIRST_SCAN_GATE_ENABLED = true
 
+    /**
+     * Same contract as DEFAULT_FIRST_SCAN_GATE_ENABLED: referenced by BOTH the defaults map
+     * and the pre-defaults answer, so the two cannot drift.
+     *
+     * These two were the remaining accessors reading Remote Config with no defaultsApplied
+     * guard. setDefaultsAsync() is async, so until it lands getLong() returns Firebase's
+     * static 0 rather than the bundled value — and 0 is the OFF value for both keys.
+     * ads_grace_sessions = 0 means "show interstitials from session 1", which is precisely
+     * what vc43 shipped to prevent, on precisely the population it was for: a first-time
+     * user with no cached config.
+     */
+    private const val DEFAULT_ADS_GRACE_SESSIONS = 2L
+    private const val DEFAULT_PAYWALL_MAX_PER_SESSION = 1L
+
     /** Returns true if the device's country is in the RC-driven suppression list. */
     fun isCountrySuppressed(): Boolean {
         val code = cachedCountryCode
@@ -204,12 +218,12 @@ object RemoteConfigUtils {
                 // per session over 418 sessions, in a 155-second average session, for 0
                 // purchases in 28 days. 1 is the ceiling; set 0 to switch the paywall off
                 // entirely without a release.
-                "paywall_max_per_session" to 1L,
+                "paywall_max_per_session" to DEFAULT_PAYWALL_MAX_PER_SESSION,
                 // 2 = sessions 1-2 are interstitial-free. Shipped as 0L in 04973e2 (2026-07-10)
                 // as a dark flag and never lit, so the July plan's "No ads in sessions 1-2"
                 // was documented and never enforced. The live RC has no key, so this bundled
                 // value is what actually governs a fresh install.
-                "ads_grace_sessions" to 2L,
+                "ads_grace_sessions" to DEFAULT_ADS_GRACE_SESSIONS,
                 "post_delight_ad_quiet_ms" to 15000L,        // No fullscreen ad within Xms after a delight moment
                 "widget_v2_enabled" to false,                // R3 delta-first widget layout
                 "charge_summary_enabled" to false,           // R2 charge report ritual
@@ -509,12 +523,16 @@ object RemoteConfigUtils {
 
     /** Max paywall impressions per session. Default 1; 0 disables the paywall entirely. */
     fun getPaywallMaxPerSession(): Long {
+        if (!defaultsApplied) return DEFAULT_PAYWALL_MAX_PER_SESSION
         val value = remoteConfig.getLong("paywall_max_per_session")
-        return if (value < 0L) 1L else value
+        return if (value < 0L) DEFAULT_PAYWALL_MAX_PER_SESSION else value
     }
 
     /** No interstitial/app-open ads in sessions 1..N. Default: 2 */
-    fun getAdsGraceSessions(): Int = remoteConfig.getLong("ads_grace_sessions").toInt()
+    fun getAdsGraceSessions(): Int {
+        if (!defaultsApplied) return DEFAULT_ADS_GRACE_SESSIONS.toInt()
+        return remoteConfig.getLong("ads_grace_sessions").toInt()
+    }
 
     /** Quiet window after a delight moment before any fullscreen ad. Default: 15000 */
     fun getPostDelightAdQuietMs(): Long {

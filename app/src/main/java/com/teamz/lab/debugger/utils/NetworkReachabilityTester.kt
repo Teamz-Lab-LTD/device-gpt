@@ -322,7 +322,11 @@ object NetworkReachabilityTester {
                     (f.errorCode?.let { c -> " code=$c" } ?: "") +
                     (f.description?.let { d -> " \"$d\"" } ?: ""))
             }
-            val verdict = AppDoctorContext.compareStacks(r.successCount, webView.successCount)
+            val verdict = AppDoctorContext.compareStacks(
+                r.successCount,
+                webView.successCount,
+                r.perAttempt.firstNotNullOfOrNull { it.httpsResponseCode },
+            )
             appendLine("  Verdict: $verdict")
             if (verdict == AppDoctorContext.StackVerdict.WEBVIEW_ONLY_FAILS) {
                 appendLine(

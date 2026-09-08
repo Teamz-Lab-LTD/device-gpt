@@ -57,16 +57,28 @@ class Session1AdGraceContractTest {
 
     @Test
     fun `the grace window has a bundled default so it holds before Remote Config lands`() {
+        // Widened, NOT weakened: the map now names a constant so it cannot drift from the
+        // pre-defaults answer, so accept either spelling — and when it is the constant form,
+        // additionally pin the constant's own value.
+        val literal = Regex("\"ads_grace_sessions\"\\s+to\\s+(\\d+)L").find(rc)?.groupValues?.get(1)?.toInt()
+        val viaConst = rc.contains("\"ads_grace_sessions\" to DEFAULT_ADS_GRACE_SESSIONS")
         assertTrue(
             "ads_grace_sessions must carry an explicit bundled default — a server-only value " +
                 "leaves session 1 unprotected on exactly the fresh installs it exists for",
-            Regex("\"ads_grace_sessions\"\\s+to\\s+\\d+L").containsMatchIn(rc)
+            literal != null || viaConst
         )
-        val n = Regex("\"ads_grace_sessions\"\\s+to\\s+(\\d+)L").find(rc)?.groupValues?.get(1)?.toInt()
+        val n = literal
+            ?: Regex("DEFAULT_ADS_GRACE_SESSIONS\\s*=\\s*(\\d+)L").find(rc)?.groupValues?.get(1)?.toInt()
         assertTrue(
             "the bundled default must actually cover sessions 1-2 (>=2). It shipped as 0 in " +
                 "04973e2 and was never lit, so the spec was documented but not enforced. Found $n.",
             n != null && n >= 2
+        )
+        assertTrue(
+            "the accessor must answer from the bundled default until setDefaultsAsync lands. " +
+                "Without the guard getLong returns Firebase's static 0 on a fresh install — " +
+                "'interstitials from session 1', the exact thing this contract forbids.",
+            rc.substringAfter("fun getAdsGraceSessions").contains("defaultsApplied")
         )
     }
 

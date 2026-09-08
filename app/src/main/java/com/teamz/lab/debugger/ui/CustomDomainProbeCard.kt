@@ -469,7 +469,11 @@ private fun StackComparisonRows(
     java: RepeatedProbeResult,
     web: WebViewStackProbe.Aggregate?
 ) {
-    val verdict = AppDoctorContext.compareStacks(java.successCount, web?.successCount)
+    val verdict = AppDoctorContext.compareStacks(
+        java.successCount,
+        web?.successCount,
+        java.perAttempt.firstNotNullOfOrNull { it.httpsResponseCode },
+    )
     Column(Modifier.fillMaxWidth()) {
         StackRow(stringResource(R.string.probe_stack_java), java.summaryLine, java.successCount > 0)
         StackRow(

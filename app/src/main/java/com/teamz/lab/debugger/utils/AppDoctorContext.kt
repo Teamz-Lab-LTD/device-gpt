@@ -98,10 +98,28 @@ object AppDoctorContext {
      */
     fun compareStacks(
         javaSuccessCount: Int?,
-        webViewSuccessCount: Int?
+        webViewSuccessCount: Int?,
+        javaHttpCode: Int? = null
     ): StackVerdict {
         if (javaSuccessCount == null || webViewSuccessCount == null) return StackVerdict.INCOMPLETE
-        val javaOk = javaSuccessCount > 0
+        // The two stacks disagreed on what "reached" means, and the asymmetry manufactured
+        // the headline diagnosis on healthy sites. The Java probe sets SUCCESS as soon as
+        // conn.responseCode returns AT ALL — 403 and 405 included — because for pure
+        // reachability that is the right answer: the packets got there. Chromium instead
+        // reports any main-frame status >= 400 through onReceivedHttpError, which
+        // WebViewStackProbe records as HTTP_ERROR, i.e. NOT a success.
+        //
+        // So a site that answers a bare non-browser request with 403 or 405 — common for
+        // WAFs and for endpoints that refuse HEAD — produced java 4/4, webview 0/4, and
+        // this function called it WEBVIEW_ONLY_FAILS: "Chromium is broken, everything else
+        // on the phone says the site is up". Both stacks had in fact been refused by the
+        // server in exactly the same way.
+        //
+        // Passing the Java response code lets the comparison see that. A >= 400 there means
+        // the Java side did not retrieve the page either, so the two agree and the verdict
+        // must not single out the WebView.
+        val javaRetrievedPage = javaHttpCode == null || javaHttpCode < 400
+        val javaOk = javaSuccessCount > 0 && javaRetrievedPage
         val webOk = webViewSuccessCount > 0
         return when {
             javaOk && webOk -> StackVerdict.BOTH_OK

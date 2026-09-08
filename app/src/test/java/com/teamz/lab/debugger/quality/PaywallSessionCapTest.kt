@@ -106,12 +106,25 @@ class PaywallSessionCapTest {
         assertTrue(
             "a server-only flag would leave the very first session — the one that matters " +
                 "most for D1 — uncapped",
-            rc.contains("\"paywall_max_per_session\" to 1L")
+            rc.contains("\"paywall_max_per_session\" to 1L") ||
+                rc.contains("\"paywall_max_per_session\" to DEFAULT_PAYWALL_MAX_PER_SESSION")
+        )
+        assertTrue(
+            "when the map names a constant, that constant must still be 1",
+            !rc.contains("\"paywall_max_per_session\" to DEFAULT_PAYWALL_MAX_PER_SESSION") ||
+                rc.contains("DEFAULT_PAYWALL_MAX_PER_SESSION = 1L")
         )
         val getter = rc.substringAfter("fun getPaywallMaxPerSession")
         assertTrue(
             "a negative value must not disable the cap by accident",
-            getter.contains("if (value < 0L) 1L else value")
+            getter.contains("if (value < 0L) 1L else value") ||
+                getter.contains("if (value < 0L) DEFAULT_PAYWALL_MAX_PER_SESSION else value")
+        )
+        assertTrue(
+            "the accessor must answer from the bundled default before setDefaultsAsync lands — " +
+                "pre-defaults getLong returns 0, which sessionCapClear reads as a deliberate " +
+                "kill switch, so the cap silently suppresses every paywall on a fresh install",
+            getter.contains("defaultsApplied")
         )
     }
 }
