@@ -1,0 +1,5 @@
+Your privacy choice is now respected. If you decline personalised ads in the consent screen, DeviceGPT no longer requests ads at all. Previously the app asked, recorded your answer, and then ignored it.
+
+Ad loading also stays inside its budget. A screen closing used to hand back the budget it had already spent, so some sessions kept requesting ads in the background long after they should have stopped. Less battery and data used.
+
+No change to any test or report.
