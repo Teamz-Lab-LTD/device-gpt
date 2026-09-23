@@ -1,0 +1,3 @@
+The rating request works again. It was set to appear a day after you install, but the timer it used could not survive the app being closed, so for most people it never appeared at all. It now waits a real day and asks only if you come back.
+
+It also no longer throws you out of the app. If Google cannot show the rating card, DeviceGPT used to open the Play Store page instead, without warning, seconds after your first scan. That is gone.
