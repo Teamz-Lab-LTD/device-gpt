@@ -1,0 +1,3 @@
+Device Timeline now fills in. It was built to show your phone's health day by day, but the daily reading it needs was only ever taken in a part of the app that is switched off, so the Timeline had nothing to draw. Every scan now records the day's health, and the history builds from here.
+
+You do not need the widget pinned for this to work.
