@@ -2,8 +2,6 @@ package com.teamz.lab.debugger.utils
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.core.content.edit
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -373,20 +371,18 @@ object ReviewPromptManager {
                         Log.w(TAG, "  - Too many review requests (Google limits to 3 per year)")
                     }
                     
-                    // Fallback: Open Play Store page (but don't mark as reviewed)
-                    // Only do this in release builds to avoid confusion
-                    if (!BuildConfig.DEBUG) {
-                        try {
-                            val packageName = activity.packageName
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
-                            if (intent.resolveActivity(activity.packageManager) != null) {
-                                activity.startActivity(intent)
-                                AnalyticsUtils.logEvent(AnalyticsEvent.ReviewOpenedPlayStore)
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to open Play Store", e)
-                        }
-                    }
+                    // NO fallback. This branch used to launch market://details, which threw
+                    // the user out of the app and onto the Play Store listing — unannounced,
+                    // roughly 15 seconds into their FIRST session, immediately after the score
+                    // reveal. requestReviewFlow() fails for ordinary reasons (quota spent, no
+                    // Play Services, unsupported device), so this was not a rare path, and the
+                    // user it hit had done nothing but install the app and wait for a scan.
+                    // Google's In-App Review guidance is explicit that the flow must not be
+                    // substituted with a deep link the user did not ask for. Being ejected to a
+                    // store page is a reason to uninstall, not a reason to rate: 11 lifetime
+                    // ratings against a 141% uninstall ratio is consistent with this firing.
+                    // The ask now simply does not happen when Play declines to show it.
+                    AnalyticsUtils.logEvent(AnalyticsEvent.ReviewFlowUnavailable)
 
                     // Signal paywall chain even on failure: review attempted → now show paywall
                     _reviewFlowCompleted.tryEmit(Unit)

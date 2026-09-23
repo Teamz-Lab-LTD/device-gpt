@@ -258,7 +258,10 @@ enum class AnalyticsEvent(val eventName: String) {
     AppOpened("app_opened"),
     DrawerOpened("drawer_opened"),
     ReviewRequested("review_requested"),
-    ReviewOpenedPlayStore("review_opened_play_store"),
+    // Play declined to show the in-app review card (quota spent, unsupported device).
+    // Replaces review_opened_play_store, which fired when the app deep-linked the user
+    // to the store listing instead — that fallback is gone, so nothing emits the old name.
+    ReviewFlowUnavailable("review_flow_unavailable"),
     InfoExpanded("info_expanded"),
     InfoCollapsed("info_collapsed"),
     InfoCopied("info_copied"),
