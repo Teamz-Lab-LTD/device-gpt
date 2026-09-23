@@ -236,7 +236,9 @@ object NativeAdManager {
             hasInitialized = false
             currentRotationIndex = 0
         }
-        resetStats()
+        // NOT resetStats() — see resetCacheBookkeeping(). Clearing the pool must not refund
+        // the session's request budget.
+        resetCacheBookkeeping()
         cacheGeneration.intValue++
     }
 
@@ -430,13 +432,35 @@ object NativeAdManager {
         android.util.Log.i(TAG, getStats())
     }
 
-    fun resetStats() {
-        totalRequests = 0
+    /**
+     * Cache bookkeeping only. The per-session REQUEST BUDGET deliberately survives.
+     *
+     * clear() used to call resetStats(), which zeroed totalRequests — and clear() runs from
+     * MainActivity.onDestroy AND from three places in RevenueCatPaywall. The paywall was shown
+     * 269 times in 14 days, so "7 native requests per session" was really "7 per paywall view".
+     * AdMob for the 7 days to 2026-09-23: 1,647 native requests, 1,647 matched, **7 impressions**
+     * — a 0.42% show rate on 100% fill, which is the requested-but-never-shown pattern AdMob
+     * penalises and which nearly cost this publisher account in July.
+     *
+     * Emptying the ad pool is memory management. Spending the session's request budget is a
+     * different fact about the session, and one must not erase the other.
+     */
+    private fun resetCacheBookkeeping() {
         successfulLoads = 0
         failedLoads = 0
         retryAttempts = 0
         positionUsageMap.clear()
-        android.util.Log.d(TAG, "🔄 Stats reset")
+        android.util.Log.d(TAG, "🔄 Cache bookkeeping reset (request budget kept: $totalRequests)")
+    }
+
+    /**
+     * Full reset INCLUDING the request budget. Only legitimate at a real session boundary —
+     * Application.onCreate, i.e. a new process. Do not call this from a screen teardown.
+     */
+    fun resetStats() {
+        resetCacheBookkeeping()
+        totalRequests = 0
+        android.util.Log.d(TAG, "🔄 Stats reset (new session — request budget cleared)")
     }
 
     fun getTargetAdCount(): Int = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdTargetCount()

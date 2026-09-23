@@ -64,6 +64,11 @@ object RemoteConfigUtils {
     private const val DEFAULT_ADS_GRACE_SESSIONS = 2L
     private const val DEFAULT_PAYWALL_MAX_PER_SESSION = 1L
 
+    // Referenced by BOTH the defaults map and the accessor fallback so the two cannot drift.
+    // They had drifted: bundled 60000/7 against fallbacks of 10000/20.
+    private const val DEFAULT_NATIVE_AD_REQUEST_INTERVAL_MS = 60000L
+    private const val DEFAULT_NATIVE_AD_MAX_REQUESTS_PER_SESSION = 7
+
     /** Returns true if the device's country is in the RC-driven suppression list. */
     fun isCountrySuppressed(): Boolean {
         val code = cachedCountryCode
@@ -145,8 +150,8 @@ object RemoteConfigUtils {
                 // which throttles AdMob match rate. Cut to one-ad-at-a-time + long throttle + tight budget.
                 "native_ad_target_count" to 1L,              // Cache only 1 ad at a time (was 3)
                 "native_ad_max_retries" to 0L,               // No retry on fail; low fill = retries burn more (was 1)
-                "native_ad_request_interval_ms" to 60000L,   // 60s between requests (was 10s)
-                "native_ad_max_requests_per_session" to 7L,  // Bumped 5 -> 7 alongside 28min TTL drop so refills don't exhaust budget
+                "native_ad_request_interval_ms" to DEFAULT_NATIVE_AD_REQUEST_INTERVAL_MS,
+                "native_ad_max_requests_per_session" to DEFAULT_NATIVE_AD_MAX_REQUESTS_PER_SESSION.toLong(),
                 "native_ad_ttl_ms" to 1_680_000L,            // 28 min — under typical mediation network TTLs (Unity 30min, Mintegral 40min)
                 "app_open_ad_min_session" to 1L,             // Default 1 = NO session gate (ads from session 1). Set to 3+ via Remote Config when ready to trade short-term ad revenue for retention.
                 // v3.1.11 W1 ad-pipeline fix — app-open over-fire throttle.
@@ -260,7 +265,27 @@ object RemoteConfigUtils {
         return false
     }
 
+    /**
+     * True when UMP has not (yet) confirmed that an ad request is permitted.
+     *
+     * Added 2026-09-23. UmpConsentManager.canRequestAds() existed since the UMP integration and
+     * was called by NOTHING — the only other reference in the whole app was its own analytics
+     * log line. So consent was collected and then ignored: every ad path requested regardless,
+     * which is precisely the "ad requests with no TC string" AdMob flagged as
+     * "Consent requirement: No CMP" on 2026-09-22.
+     *
+     * Sits beside isUserAdFree() and isCountrySuppressed() because this is the same kind of
+     * question — may we ask for an ad at all — and one choke point is how it stays answered
+     * for every format instead of three formats minus whichever one someone forgets.
+     */
+    private fun consentBlocksAds(): Boolean {
+        if (UmpConsentManager.adsPermittedCached()) return false
+        AppLog.d("RemoteConfigUtils", "consentBlocksAds() - UMP has not permitted ad requests yet")
+        return true
+    }
+
     fun shouldShowInterstitialAds(): Boolean {
+        if (consentBlocksAds()) return false
         if (isUserAdFree()) {
             AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - User is ad-free (premium or referral), skipping ads")
             return false
@@ -290,6 +315,7 @@ object RemoteConfigUtils {
     }
 
     fun shouldShowAppOpenAds(): Boolean {
+        if (consentBlocksAds()) return false
         if (isUserAdFree()) {
             AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - User is ad-free, skipping ads")
             return false
@@ -334,6 +360,7 @@ object RemoteConfigUtils {
     }
 
     fun shouldShowNativeAds(): Boolean {
+        if (consentBlocksAds()) return false
         if (isUserAdFree()) return false
         if (isCountrySuppressed()) return false
         return remoteConfig.getBoolean("show_native_ads")
@@ -564,16 +591,27 @@ object RemoteConfigUtils {
         return value.toInt()
     }
 
-    /** Minimum ms between native ad requests (throttling). Default: 10000 */
+    /**
+     * Minimum ms between native ad requests. Falls back to the SAME value the defaults map
+     * bundles (60s), not to the older 10s.
+     *
+     * getLong() returns Firebase's static 0 until setDefaultsAsync() lands, so this fallback is
+     * the value actually in force during every cold start that loses that race. It read 10000
+     * while the bundled default was 60000 — six times the request rate, for exactly the fresh
+     * installs with no cached config. Two sources of truth, and the fallback was the looser one.
+     */
     fun getNativeAdRequestIntervalMs(): Long {
         val value = remoteConfig.getLong("native_ad_request_interval_ms")
-        return if (value == 0L) 10000L else value
+        return if (value == 0L) DEFAULT_NATIVE_AD_REQUEST_INTERVAL_MS else value
     }
 
-    /** Total native ad request budget per session. Default: 20 */
+    /**
+     * Native ad request budget per session. Falls back to the bundled 7, not the older 20 —
+     * see getNativeAdRequestIntervalMs() for why the fallback is the value that matters.
+     */
     fun getNativeAdMaxRequestsPerSession(): Int {
         val value = remoteConfig.getLong("native_ad_max_requests_per_session")
-        return if (value == 0L) 20 else value.toInt()
+        return if (value == 0L) DEFAULT_NATIVE_AD_MAX_REQUESTS_PER_SESSION else value.toInt()
     }
 
     /**

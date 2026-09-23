@@ -72,7 +72,20 @@ class NativeAdResetOnColdStartTest {
         val resetIdx = nativeSrc.indexOf("fun resetStats()")
         assertTrue("resetStats() must be declared in NativeAdManager", resetIdx > 0)
         val nextFun = nativeSrc.indexOf("\n    fun ", resetIdx + 1)
-        val body = nativeSrc.substring(resetIdx, if (nextFun > 0) nextFun else resetIdx + 600)
+        val declared = nativeSrc.substring(resetIdx, if (nextFun > 0) nextFun else resetIdx + 600)
+        // resetStats() delegates the per-cache counters to resetCacheBookkeeping() so that
+        // clear() can reset those WITHOUT refunding the per-session request budget — clear()
+        // runs on every paywall dismiss, which turned a 7-request cap into 7 per paywall view.
+        // The requirement here is unchanged (a full reset zeroes everything); follow the call
+        // rather than demanding the assignments sit literally inside resetStats().
+        val body = if (declared.contains("resetCacheBookkeeping()")) {
+            val bIdx = nativeSrc.indexOf("private fun resetCacheBookkeeping()")
+            assertTrue("resetCacheBookkeeping() must exist if resetStats() delegates to it", bIdx > 0)
+            val bEnd = nativeSrc.indexOf("\n    fun ", bIdx + 1)
+            declared + nativeSrc.substring(bIdx, if (bEnd > 0) bEnd else bIdx + 600)
+        } else {
+            declared
+        }
         assertTrue(
             "resetStats() must zero totalRequests — the counter checked by canMakeRequest() against the per-session cap.",
             body.contains("totalRequests = 0")

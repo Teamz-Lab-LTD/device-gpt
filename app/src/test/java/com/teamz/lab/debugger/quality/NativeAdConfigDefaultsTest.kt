@@ -39,8 +39,25 @@ class NativeAdConfigDefaultsTest {
             )
     }
 
+
+/**
+ * Inlines `const val NAME = <literal>` back into any `"key" to NAME` entry before the regexes
+ * below run. The defaults map now references named constants so the map and the accessor
+ * fallback cannot drift (they had: bundled 60000/7 against fallbacks of 10000/20). These guards
+ * check the VALUE, so they resolve the constant rather than requiring a literal in the map.
+ */
+private fun inlineConsts(text: String): String {
+    val consts = Regex("""const val ([A-Z_][A-Z0-9_]*) = (\d[\d_]*)L?""")
+        .findAll(text).associate { it.groupValues[1] to it.groupValues[2].replace("_", "") }
+    var out = text
+    for ((name, value) in consts) {
+        out = out.replace(Regex("""\bto $name(\.toLong\(\))?"""), "to ${value}L")
+    }
+    return out
+}
+
     private val src by lazy {
-        findRemoteConfigUtilsFile().readText()
+        inlineConsts(findRemoteConfigUtilsFile().readText())
     }
 
     @Test

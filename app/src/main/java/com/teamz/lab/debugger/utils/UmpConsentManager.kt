@@ -28,13 +28,40 @@ object UmpConsentManager {
 
     @Volatile private var initialized = false
 
+    /**
+     * Cached answer to "may this app request an ad right now", readable without a Context.
+     *
+     * Mirrors ReferralManager.isAdFreeFromReferralsCached() so RemoteConfigUtils — which takes
+     * no Context in its ad gates — can consult consent at the same choke point as premium and
+     * country suppression.
+     *
+     * Starts false on purpose. Until UMP has actually answered, the honest state is "we do not
+     * know whether this user is in a consent geo", and requesting an ad on a guess is what
+     * produced the AdMob "Consent requirement: No CMP" flag on 2026-09-22.
+     */
+    @Volatile private var adsPermitted = false
+
+    /** True only once UMP has confirmed consent is obtained or not required. */
+    fun adsPermittedCached(): Boolean = adsPermitted
+
+    /**
+     * Whether ads may be requested.
+     *
+     * Was `true` on exception. That fails OPEN: any SDK error turned into "go ahead, request
+     * ads", with no TC string attached, in exactly the geos where that is a regulatory problem.
+     * It now fails CLOSED. The revenue exposure is bounded — canRequestAds() returns true for
+     * NOT_REQUIRED (every non-EEA user, which is ~89% of this app's impressions) as soon as UMP
+     * resolves, and resolution is served from cache for returning users.
+     */
     fun canRequestAds(context: Context): Boolean {
-        return try {
+        val allowed = try {
             UserMessagingPlatform.getConsentInformation(context).canRequestAds()
         } catch (e: Exception) {
-            android.util.Log.w(TAG, "canRequestAds() threw — treating as true: ${e.message}")
-            true
+            android.util.Log.w(TAG, "canRequestAds() threw — failing closed: ${e.message}")
+            false
         }
+        adsPermitted = allowed
+        return allowed
     }
 
     fun ensureConsent(activity: Activity, onConsentReady: () -> Unit) {
@@ -59,7 +86,9 @@ object UmpConsentManager {
         // Watchdog: if UMP SDK doesn't resolve in UMP_TIMEOUT_MS, proceed anyway.
         mainHandler.postDelayed({
             if (!callbackFired.get()) {
-                android.util.Log.w(TAG, "UMP timeout after ${UMP_TIMEOUT_MS}ms — proceeding without consent")
+                // Deliberately does NOT set adsPermitted. The callback exists so the UI is not
+                // held hostage by a slow network; it is not evidence that consent was given.
+                android.util.Log.w(TAG, "UMP timeout after ${UMP_TIMEOUT_MS}ms — UI proceeds, ads stay blocked")
                 try {
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.UmpConsentFailed,
@@ -106,6 +135,11 @@ object UmpConsentManager {
                         UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { formError ->
                             if (formError != null) {
                                 android.util.Log.w(TAG, "Consent form error: ${formError.message}")
+                            }
+                            adsPermitted = try {
+                                consentInfo.canRequestAds()
+                            } catch (_: Exception) {
+                                false
                             }
                             try {
                                 AnalyticsUtils.logEvent(

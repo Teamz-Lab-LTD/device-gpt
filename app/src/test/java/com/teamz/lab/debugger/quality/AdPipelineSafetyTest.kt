@@ -38,7 +38,24 @@ class AdPipelineSafetyTest {
     }
 
     private val adConfigSrc by lazy { locate("src/main/java/com/teamz/lab/debugger/utils/AdConfig.kt").readText() }
-    private val remoteConfigSrc by lazy { locate("src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt").readText() }
+
+/**
+ * Inlines `const val NAME = <literal>` back into any `"key" to NAME` entry before the regexes
+ * below run. The defaults map now references named constants so the map and the accessor
+ * fallback cannot drift (they had: bundled 60000/7 against fallbacks of 10000/20). These guards
+ * check the VALUE, so they resolve the constant rather than requiring a literal in the map.
+ */
+private fun inlineConsts(text: String): String {
+    val consts = Regex("""const val ([A-Z_][A-Z0-9_]*) = (\d[\d_]*)L?""")
+        .findAll(text).associate { it.groupValues[1] to it.groupValues[2].replace("_", "") }
+    var out = text
+    for ((name, value) in consts) {
+        out = out.replace(Regex("""\bto $name(\.toLong\(\))?"""), "to ${value}L")
+    }
+    return out
+}
+
+    private val remoteConfigSrc by lazy { inlineConsts(locate("src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt").readText()) }
     private val nativeAdsSrc by lazy { locate("src/main/java/com/teamz/lab/debugger/ui/admob_native_ads.kt").readText() }
     private val manifestSrc by lazy { locate("src/main/AndroidManifest.xml").readText() }
 
@@ -267,5 +284,38 @@ class AdPipelineSafetyTest {
                 "budget=$budget × interval=${intervalMs}ms = ${minBudgetDurationMs / 60_000}min.",
             minBudgetDurationMs >= 6 * 60 * 1000L
         )
+    }
+
+    @Test
+    fun `clearing the ad pool does not refund the session request budget`() {
+        // TRIPWIRE. NativeAdManager.clear() called resetStats(), which zeroed totalRequests.
+        // clear() runs from MainActivity.onDestroy AND three places in RevenueCatPaywall, and
+        // the paywall was shown 269 times in 14 days — so the "7 requests per session" cap was
+        // really "7 per paywall view". AdMob, 7 days to 2026-09-23: 1,647 native requests,
+        // 1,647 matched, 7 impressions. A 0.42% show rate on 100% fill is the
+        // requested-but-never-shown pattern that put this publisher account at risk in July.
+        //
+        // Not a behavioural test: canMakeRequest() reads RemoteConfigUtils, which needs a live
+        // Firebase instance, so the reset path cannot be exercised on the JVM. Stated plainly
+        // rather than dressed up as one.
+        val src = nativeAdsSrc
+            .replace(Regex("/\\*.*?\\*/", RegexOption.DOT_MATCHES_ALL), "")
+            .lines().filterNot { it.trimStart().startsWith("//") }.joinToString("\n")
+        val clearBody = src.substringAfter("fun clear(").substringBefore("fun invalidateCache")
+        assertFalse(
+            "clear() must not call resetStats() — emptying the pool is memory management, " +
+                "spending the request budget is a fact about the session. Use " +
+                "resetCacheBookkeeping().",
+            clearBody.contains("resetStats()"),
+        )
+        assertTrue(
+            "clear() should reset cache bookkeeping",
+            clearBody.contains("resetCacheBookkeeping()"),
+        )
+        // resetStats() keeps the budget reset, and belongs only to a real session boundary.
+        val callers = Regex("NativeAdManager\\.resetStats\\(\\)").findAll(
+            java.io.File("src/main/java/com/teamz/lab/debugger/Application.kt").readText()
+        ).count()
+        assertEquals("Application.onCreate is the only legitimate caller of resetStats()", 1, callers)
     }
 }
