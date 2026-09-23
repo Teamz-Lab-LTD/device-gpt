@@ -97,22 +97,50 @@ class Session1AdGraceContractTest {
     }
 
     @Test
-    fun `the review sheet waits for the value moment`() {
-        // Pin the CONDITION, not the file. The first version of this guard only asserted
-        // that "hasCompletedScan" appeared somewhere in the branch — which stayed true when
-        // the term was deleted from the if-condition and left in the val above it. Mutation
-        // testing caught a guard that could not fail.
-        val condition = Regex("if \\(ENABLE_FIRST_LAUNCH_REVIEW[^)]*\\)").find(review)?.value
-        assertTrue("the first-launch review condition was not found at all", condition != null)
+    fun `the first session never asks for a review`() {
+        // This guard used to pin `if (ENABLE_FIRST_LAUNCH_REVIEW && scanDone ...)` — it
+        // required the session-1 ask to WAIT for the scan. The ask has since been removed
+        // from session 1 entirely, which satisfies that intent more strongly, so the guard
+        // now pins the stronger contract instead of the weaker one it was written against.
+        val firstLaunchBranch = review
+            .substringAfter("if (isFirstLaunch) {")
+            .substringBefore("\n        }")
         assertTrue(
-            "the first-launch review must be gated on the completed scan IN THE CONDITION. " +
-                "It used to land ~15s into session 1 among five other modal interruptions, " +
-                "before the app had shown the user anything. Found: $condition",
-            condition!!.contains("scanDone")
+            "the isFirstLaunch branch was not found; this guard would pass vacuously",
+            firstLaunchBranch.isNotBlank() && firstLaunchBranch.contains("KEY_FIRST_LAUNCH_DATE")
         )
         assertTrue(
-            "and scanDone must actually be derived from FirstScanGate",
-            review.contains("FirstScanGate.hasCompletedScan")
+            "the first session must not reach showReviewPrompt(). It used to land ~15s into " +
+                "session 1 among five other modal interruptions, before the app had shown the " +
+                "user anything. Found: $firstLaunchBranch",
+            !firstLaunchBranch.contains("showReviewPrompt(")
+        )
+    }
+
+    @Test
+    fun `the install-age gate is a comparison, not a coroutine that has to stay alive`() {
+        // review_delay_first_launch_ms was raised 15000 -> 86400000 to push the ask out by a
+        // day. It was being passed to delay() on a CoroutineScope(Dispatchers.Main) tied to
+        // nothing, so with a 155-second average session the prompt could never fire at all:
+        // the intent was to postpone the ask, the effect was to delete it. It must stay a
+        // comparison against a stored timestamp, which process death cannot erase.
+        assertTrue(
+            "getReviewDelayFirstLaunchMs() is being slept on again instead of compared",
+            !Regex("""delay\(\s*\w*[Ff]irstLaunch\w*\s*\)""").containsMatchIn(review)
+        )
+        assertTrue(
+            "the install-age gate no longer reads the persisted first-launch timestamp",
+            review.contains("KEY_FIRST_LAUNCH_DATE") && review.contains("minInstallAgeMs")
+        )
+    }
+
+    @Test
+    fun `the review decision stays a pure function the tests can drive`() {
+        assertTrue(
+            "shouldShowReviewPrompt() stopped delegating to reviewGate(). The Context-bound " +
+                "version is what let an unreachable prompt survive: nothing could assert that " +
+                "an ask was ever actually possible.",
+            review.contains("reviewGate(") && review.contains("ReviewGate.SHOW")
         )
     }
 }

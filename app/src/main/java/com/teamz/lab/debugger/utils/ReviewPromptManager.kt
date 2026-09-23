@@ -39,16 +39,15 @@ object ReviewPromptManager {
     private const val FIRESTORE_FIELD_HAS_REVIEWED = "has_reviewed"
     private const val FIRESTORE_FIELD_REVIEWED_DATE = "reviewed_date"
     
-    // Configuration - "Review First, Paywall After" strategy
-    // Show review on FIRST session, then paywall chains after it
-    // Users subconsciously rate 5 stars before seeing pricing
-    private const val MIN_APP_OPENS_BEFORE_PROMPT = 1 // Show from first session
+    // Configuration. The ask is NOT on the first session: review_delay_first_launch_ms is
+    // now a minimum age since install, checked against a stored timestamp, so the user has
+    // to come back before being asked. DELAY_FIRST_LAUNCH_MS and ENABLE_FIRST_LAUNCH_REVIEW
+    // are gone with the coroutine that slept on them.
+    private const val MIN_APP_OPENS_BEFORE_PROMPT = 1 // A second session is enough, once past the age gate
     private const val MIN_MEANINGFUL_INTERACTIONS = 1 // OR 1 meaningful interaction
     private const val MIN_DAYS_BETWEEN_PROMPTS = 30 // Don't show more than once per month
     private const val DELAY_BEFORE_SHOWING_MS = 3000L // Fallback: 3s after app opens (overridden by RemoteConfig)
     private const val DELAY_AFTER_INTERACTION_MS = 3000L // Wait 3 seconds after positive interaction
-    private const val DELAY_FIRST_LAUNCH_MS = 15000L // Fallback: 15s on first launch (overridden by RemoteConfig)
-    private const val ENABLE_FIRST_LAUNCH_REVIEW = true // Show review on first session
 
     // Signal for chaining paywall after review flow completes
     // Strategy: Review first → Paywall after (users rate positively before seeing pricing)
@@ -97,59 +96,28 @@ object ReviewPromptManager {
         val isFirstLaunch = firstLaunchDate == 0L
         
         if (isFirstLaunch) {
+            // Record the install moment and stop. The very first session never asks.
+            //
+            // This used to launch `delay(review_delay_first_launch_ms)` on a bare
+            // CoroutineScope(Dispatchers.Main) and prompt when it woke. That worked while
+            // the value was 15000, and it is what made the sheet land 15 seconds into
+            // session one. The value was then raised to 86400000 to push the ask out to a
+            // day, with a note that the real gate was a code fix — this is that fix.
+            //
+            // A 24-hour delay() in an unscoped coroutine cannot survive: the scope is tied
+            // to nothing, so it dies with the process, and the average session here is 155
+            // seconds. The parameter did not delay the prompt by a day, it disabled the
+            // first-launch prompt outright, which is part of why the app has 11 lifetime
+            // ratings. Elapsed time is now measured from the stored install timestamp in
+            // shouldShowReviewPrompt(), where process death cannot erase it.
             prefs.edit {
                 putLong(KEY_FIRST_LAUNCH_DATE, System.currentTimeMillis())
-            }
-            Log.d(TAG, "trackAppOpenAndMaybeShowReview() - First launch detected")
-            
-            // Show review on first launch if enabled (with configurable delay to let user see the app)
-            //
-            // 2026-09-08: added the completed-scan condition. The "review first, paywall
-            // after" strategy above is kept deliberately — 4.7 stars from 80 ratings is
-            // doing real work on a 28.5% store-listing conversion, and gutting it would
-            // cost acquisition. What changed is WHEN: the sheet used to land ~15s into the
-            // very first session, among five other modal interruptions, before the user had
-            // been shown anything. Now it waits for the one moment the app has actually
-            // delivered something — the device score. Value first, then the ask.
-            val scanDone = try {
-                com.teamz.lab.debugger.ui.FirstScanGate.hasCompletedScan(context)
-            } catch (_: Throwable) {
-                true // never let a prefs read failure suppress the prompt entirely
-            }
-            if (ENABLE_FIRST_LAUNCH_REVIEW && scanDone && !context.userHasAlreadyReviewed()) {
-                val firstLaunchDelay = RemoteConfigUtils.getReviewDelayFirstLaunchMs()
-                Log.d(TAG, "trackAppOpenAndMaybeShowReview() - Will show review on first launch after ${firstLaunchDelay}ms")
-                CoroutineScope(Dispatchers.Main).launch {
-                    delay(firstLaunchDelay) // Configurable via RemoteConfig: review_delay_first_launch_ms
-                    
-                    // Double-check user hasn't reviewed in the meantime
-                    try {
-                        withTimeout(500) {
-                            syncReviewStatusFromFirebase(context)
-                        }
-                    } catch (e: Exception) {
-                        Log.d(TAG, "trackAppOpenAndMaybeShowReview() - Sync timeout/error on first launch, proceeding")
-                    }
-                    
-                    // Final check before showing
-                    if (!context.userHasAlreadyReviewed()) {
-                        Log.d(TAG, "trackAppOpenAndMaybeShowReview() - ✅ Showing review prompt on first launch")
-                        showReviewPrompt(activity)
-                    } else {
-                        Log.d(TAG, "trackAppOpenAndMaybeShowReview() - User already reviewed, skipping first launch prompt")
-                    }
-                }
-            } else {
-                Log.d(TAG, "trackAppOpenAndMaybeShowReview() - First launch review disabled or user already reviewed")
-            }
-            
-            // Still increment app open count for future prompts
-            prefs.edit {
                 putInt(KEY_APP_OPEN_COUNT, 1)
             }
+            Log.d(TAG, "trackAppOpenAndMaybeShowReview() - First launch recorded; no prompt this session")
             return
         }
-        
+
         // Increment app open count
         val appOpenCount = prefs.getInt(KEY_APP_OPEN_COUNT, 0) + 1
         prefs.edit {
@@ -252,41 +220,26 @@ object ReviewPromptManager {
      */
     private fun shouldShowReviewPrompt(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        
-        // Check if user already reviewed (local check - fast)
-        if (context.userHasAlreadyReviewed()) {
-            Log.d(TAG, "shouldShowReviewPrompt() - User already reviewed")
-            return false
-        }
-        
-        // Check time since last prompt
+        val now = System.currentTimeMillis()
+        val firstLaunchDate = prefs.getLong(KEY_FIRST_LAUNCH_DATE, 0L)
         val lastPromptTime = prefs.getLong(KEY_LAST_PROMPT_TIME, 0L)
-        if (lastPromptTime > 0) {
-            val timeSinceLastPrompt = System.currentTimeMillis() - lastPromptTime
-            val daysSinceLastPrompt = timeSinceLastPrompt / (24 * 60 * 60 * 1000)
-            
-            if (daysSinceLastPrompt < MIN_DAYS_BETWEEN_PROMPTS) {
-                Log.d(TAG, "shouldShowReviewPrompt() - Only $daysSinceLastPrompt days since last prompt (need $MIN_DAYS_BETWEEN_PROMPTS)")
-                return false
-            }
-        }
-        
-        // Check app open count OR meaningful interactions
-        val appOpenCount = prefs.getInt(KEY_APP_OPEN_COUNT, 0)
-        val interactionCount = prefs.getInt(KEY_MEANINGFUL_INTERACTIONS, 0)
 
-        val hasEnoughAppOpens = appOpenCount >= MIN_APP_OPENS_BEFORE_PROMPT
-        val hasEnoughInteractions = interactionCount >= MIN_MEANINGFUL_INTERACTIONS
-
-        if (!hasEnoughAppOpens && !hasEnoughInteractions) {
-            Log.d(TAG, "shouldShowReviewPrompt() - App opens ($appOpenCount) < $MIN_APP_OPENS_BEFORE_PROMPT AND interactions ($interactionCount) < $MIN_MEANINGFUL_INTERACTIONS")
-            return false
-        }
-
-        Log.d(TAG, "shouldShowReviewPrompt() - ✅ All conditions met, should show review (opens: $appOpenCount, interactions: $interactionCount)")
-        return true
+        val gate = reviewGate(
+            alreadyReviewed = context.userHasAlreadyReviewed(),
+            // -1 means "no install timestamp recorded", i.e. this is the first session.
+            msSinceInstall = if (firstLaunchDate > 0L) now - firstLaunchDate else -1L,
+            minInstallAgeMs = RemoteConfigUtils.getReviewDelayFirstLaunchMs(),
+            msSinceLastPrompt = if (lastPromptTime > 0L) now - lastPromptTime else -1L,
+            minMsBetweenPrompts = MIN_DAYS_BETWEEN_PROMPTS * 24L * 60L * 60L * 1000L,
+            appOpenCount = prefs.getInt(KEY_APP_OPEN_COUNT, 0),
+            meaningfulInteractions = prefs.getInt(KEY_MEANINGFUL_INTERACTIONS, 0),
+            minAppOpens = MIN_APP_OPENS_BEFORE_PROMPT,
+            minInteractions = MIN_MEANINGFUL_INTERACTIONS,
+        )
+        Log.d(TAG, "shouldShowReviewPrompt() - $gate")
+        return gate == ReviewGate.SHOW
     }
-    
+
     /**
      * Show Google Play In-App Review prompt
      * Uses the official Google Play In-App Review API
