@@ -136,10 +136,20 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         } catch (e: Exception) { false }
         var v2DeltaLine: String? = null
         var trendArrow = ""
+        // Write today's snapshot UNCONDITIONALLY (dedup is inside the repository). This used
+        // to sit inside the `if (widgetV2)` below, which made the only writer of
+        // TYPE_BASELINE_SNAPSHOT rows conditional on a flag that is off — while
+        // timeline_enabled is ON in production and DeviceTimelineSection renders exactly that
+        // row type. The Timeline therefore had no daily health history to show, and flipping
+        // widget_v2_enabled would have produced no visible delta for at least a day, because
+        // the history it reads only starts accruing after the flip.
+        try {
+            com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(context, healthScore)
+        } catch (e: Exception) {
+            android.util.Log.w("DeviceGPT_Widget", "daily snapshot failed: ${e.message}")
+        }
         if (widgetV2) {
             try {
-                // Write today's snapshot if due (dedup inside), then read prefs-cached delta.
-                com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(context, healthScore)
                 val (prev, last) = com.teamz.lab.debugger.db.DeviceEventsRepository.snapshotDeltaFromPrefs(context)
                 if (prev in 0..10 && last in 0..10) {
                     val diff = last - prev

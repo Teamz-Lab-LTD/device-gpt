@@ -290,6 +290,17 @@ object FirstScanGate {
                 result?.battery, result?.memory, result?.storage, result?.network,
             )
         } catch (_: Throwable) { /* journaling not critical */ }
+        // R3: today's baseline snapshot, at most one per calendar day (dedup lives in the
+        // repository, which is why its own doc says callers may invoke it "on every app open
+        // / widget refresh"). Until now the widget was its ONLY caller, and that call sat
+        // inside `if (widgetV2)` — a flag that is off in production. So the row type the
+        // Device Timeline renders was never written, for anyone, while timeline_enabled is
+        // on. A user without the widget pinned had no way to produce one at all.
+        try {
+            com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(
+                context, (finalScore.coerceIn(0, 100)) / 10,
+            )
+        } catch (_: Throwable) { /* journaling not critical */ }
         Log.i(TAG, "First scan completed — score=$finalScore")
     }
 
