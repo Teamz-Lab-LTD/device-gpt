@@ -134,6 +134,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val widgetV2 = try {
             com.teamz.lab.debugger.utils.RemoteConfigUtils.isWidgetV2Enabled()
         } catch (e: Exception) { false }
+        // Record the arm actually served, so a Remote Config split on widget_v2_enabled can be
+        // compared in GA4. Only writes when the resolved arm changes, not on every render.
+        com.teamz.lab.debugger.utils.WidgetExperiment.stampIfChanged(context, widgetV2)
         var v2DeltaLine: String? = null
         var trendArrow = ""
         // Write today's snapshot UNCONDITIONALLY (dedup is inside the repository). This used
