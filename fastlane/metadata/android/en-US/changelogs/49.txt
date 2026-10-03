@@ -1,0 +1,3 @@
+Honest results. A phone with nothing wrong was scored "Fair" and shown warnings it had not earned, from checks that could not see or files every phone has. Those are gone, here and in the Privacy Dashboard.
+
+Your first scan now counts as a scan, and no permission prompt opens right after it. If the upgrade screen cannot load, it simply closes instead of asking why you left.
