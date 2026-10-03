@@ -91,6 +91,8 @@ class ReviewFixesTest {
             "Locked vs. unlocked", "Any detected malicious software", "Steps to take if spyware detected",
             "Unauthorized call monitoring", "Remove spyware/malicious apps immediately",
             "behavioral advertising injection", "spyware indicators, camera/mic activity",
+            "Surveillance & spoofing detection", "Recent access history and frequency",
+            "Apps accessing camera/mic when not in use", "Camera/mic active when app is closed",
         )
         for (f in listOf("utils/ai_prompt_generator.kt", "appfunctions/PrivacyAppFunctions.kt")) {
             val visible = src(f).lines().filter { line ->

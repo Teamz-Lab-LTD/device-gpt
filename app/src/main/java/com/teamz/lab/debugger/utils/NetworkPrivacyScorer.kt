@@ -177,7 +177,7 @@ object NetworkPrivacyScorer {
         val isError = raw.contains("❌")
         return PrivacyCheckResult(
             name = "isp_tracking",
-            displayName = "ISP Behavior",
+            displayName = "Connectivity Test",
             status = when {
                 passed -> PrivacyCheckStatus.PASS
                 isError -> PrivacyCheckStatus.ERROR

@@ -175,7 +175,7 @@ object AIPromptGenerator {
         - Speed test: Download, upload, latency, jitter
         - Packet loss and connection stability
         - Public/local IP, DNS, gateway
-        - Surveillance & spoofing detection
+        - DNS, proxy-header, HTTPS-certificate and connectivity checks
         - Streaming CDN presence (YouTube, Netflix, etc.)
         - MTU size, captive portal, usage stats
 
@@ -1505,7 +1505,7 @@ $itemContent
    - SSL Certificate - what is this checking and should I worry?
    - Proxy Detection - what is a transparent proxy and why is it bad?
    - Ping Reachability - what a single ping to 8.8.8.8 shows, and what it cannot show
-   - ISP Behavior - what could my ISP be doing?
+   - Connectivity Test - what an unexpected answer to the test request can mean
    - Captive Portal - what is this and when should I be concerned?
    - Private DNS - what is this and how do I enable it?
 
@@ -2071,13 +2071,11 @@ $itemContent
    - **Microphone Access**: Which apps accessed the mic, when, and frequency
    - **Speaker/Flashlight**: Apps using audio output or flashlight
    - **Access Patterns**: Normal usage vs. suspicious patterns
-   - **Timeline**: Recent access history and frequency
 
 2. **Privacy Risk Assessment** (Security Analysis)
    - **Risk Level**: Overall privacy risk (Low/Medium/High/Critical)
    - **Suspicious Apps**: Apps with unusual or excessive access
    - **Legitimate vs. Questionable**: Which accesses are normal vs. concerning
-   - **Background Access**: Apps accessing camera/mic when not in use
    - **Permission Abuse**: Apps requesting permissions they don't need
 
 3. **App-by-App Analysis** (Detailed Breakdown)
@@ -2112,7 +2110,6 @@ $itemContent
    - **Suspicious Patterns**: What indicates malicious behavior
    - **Access Capabilities**: Which apps can read the screen or keystrokes, based only on the data below
    - **Excessive Access**: Apps accessing too frequently
-   - **Background Access**: Camera/mic active when app is closed
    - **When to Take Action**: Immediate steps if suspicious activity detected
 
 8. **Immediate Actions** (If Concerns Found)
