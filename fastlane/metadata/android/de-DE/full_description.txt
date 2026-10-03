@@ -6,7 +6,7 @@ Akku & Temperatur: Hitze-Warnungen, Ladeverhalten, Akku-Drain-Hinweise
 
 Leistung & Speicher: Engpässe bei RAM/Speicher, Ursachen für Langsamkeit
 
-Datenschutz: Mikrofon-/Kamera-Nutzung und Berechtigungen prüfen
+Datenschutz: Mikrofon-/Kamera-Berechtigungen prüfen
 
 Sicherheits-Signale: Root-Status, Entwicklermodus, USB-Debugging
 

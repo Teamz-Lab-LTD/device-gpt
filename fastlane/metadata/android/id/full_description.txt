@@ -26,9 +26,9 @@ Wi-Fi tersambung tapi tidak ada yang terbuka? App Doctor mencari sebabnya:
 
 🛡️ Zero Trust Dashboard — audit keamanan ponsel
 Audit tiga bagian dengan skor 0–100:
-• App Privacy Risk (35%): perekam layar, aplikasi tersembunyi, penyalahgunaan mic/camera, ad tracker
-• Network Trust (35%): manipulasi DNS, SSL hijack (MITM), transparent proxy, pelacakan ISP
-• Device Integrity (30%): root, bootloader, sideloading, developer mode, izin overlay, notification listener
+• App Privacy Risk (35%): perekam layar, aplikasi tersembunyi, ad tracker
+• Network Trust (35%): manipulasi DNS, SSL hijack (MITM), transparent proxy
+• Device Integrity (30%): root, sideloading, developer mode, izin overlay, notification listener
 
 🔌 AI Bridge — biarkan Claude atau Cursor membaca ponsel Anda
 Pasangkan klien AI desktop lewat jaringan lokal dengan PIN atau QR code. Ia membaca data perangkat langsung melalui MCP — tanpa cloud, tanpa akun.

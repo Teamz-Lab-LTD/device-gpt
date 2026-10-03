@@ -20,7 +20,7 @@ Info hardware e stato sicurezza, senza root
 
 🔐 Privacy scanner Android + sicurezza
 
-Cronologia accessi microfono/fotocamera e controllo permessi
+Controllo dei permessi di microfono/fotocamera
 
 Stato root, opzioni sviluppatore e USB debugging
 

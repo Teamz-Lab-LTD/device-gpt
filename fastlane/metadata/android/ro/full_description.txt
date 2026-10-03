@@ -24,9 +24,9 @@ Android nu are un ecran integrat de sănătate baterie. DeviceGPT umple golul:
 
 🛡️ Zero Trust Dashboard — Audit de Securitate Telefon
 Audit în trei secțiuni care punctează dispozitivul de la 0 la 100:
-• Risc Confidențialitate Aplicații (35%): aplicații care înregistrează ecranul, aplicații ascunse, abuz microfon/cameră, trackere publicitare
-• Încredere Rețea (35%): manipulare DNS, interceptare SSL (MITM), proxy transparent, urmărire ISP, DNS privat
-• Integritate Dispozitiv (30%): stare root, bootloader, sideloading, mod dezvoltator, permisiuni overlay
+• Risc Confidențialitate Aplicații (35%): aplicații care înregistrează ecranul, aplicații ascunse, trackere publicitare
+• Încredere Rețea (35%): manipulare DNS, interceptare SSL (MITM), proxy transparent, DNS privat
+• Integritate Dispozitiv (30%): stare root, sideloading, mod dezvoltator, permisiuni overlay
 
 "Mi-a fost telefonul hack-uit?" — Zero Trust Dashboard îți dă un răspuns punctat și structurat în loc de o senzație vagă.
 

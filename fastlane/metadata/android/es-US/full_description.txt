@@ -24,9 +24,9 @@ Android no tiene una pantalla integrada de salud de bateria. DeviceGPT llena ese
 
 🛡️ Zero Trust Dashboard — Auditoria de Seguridad
 Auditoria en tres secciones, score 0 a 100:
-• Riesgo Apps (35%): apps de grabacion, apps ocultas, abuso micro/camara, trackers
-• Red (35%): DNS, SSL hijack (MITM), proxy, ISP tracking, DNS privado
-• Dispositivo (30%): root, bootloader, sideloading, modo dev, overlay
+• Riesgo Apps (35%): apps de grabacion, apps ocultas, trackers
+• Red (35%): DNS, SSL hijack (MITM), proxy, DNS privado
+• Dispositivo (30%): root, sideloading, modo dev, overlay
 
 "¿Hackearon mi telefono?" — Zero Trust te da respuesta puntuada en vez de sensacion vaga.
 

@@ -30,9 +30,9 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 
 🛡️ Zero Trust Dashboard — ফোনের security audit
 তিন ভাগের audit, ০–১০০ স্কোর:
-• App Privacy Risk (৩৫%): screen-recording app, লুকানো app, mic/camera এর অপব্যবহার, ad tracker
-• Network Trust (৩৫%): DNS কারসাজি, SSL hijack (MITM), transparent proxy, ISP tracking, private DNS
-• Device Integrity (৩০%): root, bootloader, sideloading, developer mode, overlay permission, notification listener
+• App Privacy Risk (৩৫%): screen-recording app, লুকানো app, ad tracker
+• Network Trust (৩৫%): DNS কারসাজি, SSL hijack (MITM), transparent proxy, private DNS
+• Device Integrity (৩০%): root, sideloading, developer mode, overlay permission, notification listener
 
 🔌 AI Bridge — Claude বা Cursor কে ফোন পড়তে দিন
 নিজের local network এ PIN বা QR code দিয়ে desktop এর AI client জোড়া লাগান। MCP দিয়ে ওইটা live device data পড়ে — cloud লাগে না, account লাগে না।

@@ -20,7 +20,7 @@ Informacje o sprzęcie i stanie bezpieczeństwa, bez roota
 
 🔐 Privacy scanner Android
 
-Historia dostępu do mikrofonu/kamery i przegląd uprawnień
+Przegląd uprawnień do mikrofonu/kamery
 
 Status roota, opcje programistyczne, debugowanie USB
 

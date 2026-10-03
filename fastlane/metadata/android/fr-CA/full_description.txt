@@ -24,9 +24,9 @@ Android n'a pas d'écran intégré pour la santé de batterie. DeviceGPT comble 
 
 🛡️ Zero Trust Dashboard — Audit de Sécurité
 Audit en trois sections, note 0 à 100 :
-• Risque Apps (35%) : apps d'enregistrement écran, apps cachées, abus micro/caméra, trackers
-• Réseau (35%) : DNS, SSL hijack (MITM), proxy, ISP tracking, DNS privé
-• Appareil (30%) : root, bootloader, sideloading, mode dev, overlay
+• Risque Apps (35%) : apps d'enregistrement écran, apps cachées, trackers
+• Réseau (35%) : DNS, SSL hijack (MITM), proxy, DNS privé
+• Appareil (30%) : root, sideloading, mode dev, overlay
 
 "Téléphone piraté ?" — Zero Trust donne une réponse notée au lieu d'une vague impression.
 

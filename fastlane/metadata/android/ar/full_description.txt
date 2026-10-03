@@ -30,9 +30,9 @@
 
 🛡️ Zero Trust Dashboard — تدقيق أمان الهاتف
 تدقيق من ثلاثة أقسام بدرجة من 0 إلى 100:
-• App Privacy Risk (35%): تطبيقات تسجيل الشاشة، التطبيقات المخفية، إساءة استخدام mic/camera، ad tracker
-• Network Trust (35%): تلاعب DNS، SSL hijack (MITM)، transparent proxy، تتبّع ISP، private DNS
-• Device Integrity (30%): root، bootloader، sideloading، developer mode، أذونات overlay، notification listener
+• App Privacy Risk (35%): تطبيقات تسجيل الشاشة، التطبيقات المخفية، ad tracker
+• Network Trust (35%): تلاعب DNS، SSL hijack (MITM)، transparent proxy، private DNS
+• Device Integrity (30%): root، sideloading، developer mode، أذونات overlay، notification listener
 
 🔌 AI Bridge — دع Claude أو Cursor يقرأ هاتفك
 اربط عميل AI على سطح المكتب عبر شبكتك المحلية بـ PIN أو QR code. يقرأ بيانات الجهاز الحيّة عبر MCP — بلا سحابة وبلا حساب.

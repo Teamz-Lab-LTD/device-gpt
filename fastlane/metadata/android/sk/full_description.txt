@@ -24,9 +24,9 @@ Android nemá vstavanú obrazovku zdravia batérie. DeviceGPT túto medzeru zap�
 
 🛡️ Zero Trust Dashboard — Bezpečnostný Audit Telefónu
 Trojdielny audit, ktorý ohodnotí vaše zariadenie od 0 do 100:
-• Riziko Súkromia Aplikácií (35%): aplikácie nahrávajúce obrazovku, skryté aplikácie, zneužitie mikrofónu/kamery, detekcia reklamných trackerov
-• Dôvera Siete (35%): manipulácia DNS, SSL únos (MITM), transparentná proxy, sledovanie ISP, súkromné DNS
-• Integrita Zariadenia (30%): stav rootu, bootloader, sideloading, vývojársky režim, oprávnenia overlay
+• Riziko Súkromia Aplikácií (35%): aplikácie nahrávajúce obrazovku, skryté aplikácie, detekcia reklamných trackerov
+• Dôvera Siete (35%): manipulácia DNS, SSL únos (MITM), transparentná proxy, súkromné DNS
+• Integrita Zariadenia (30%): stav rootu, sideloading, vývojársky režim, oprávnenia overlay
 
 "Nie je môj telefón hacknutý?" — Zero Trust Dashboard vráti štruktúrovanú bodovú odpoveď namiesto hmlistého pocitu.
 

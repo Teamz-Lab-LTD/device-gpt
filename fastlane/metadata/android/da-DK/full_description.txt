@@ -24,9 +24,9 @@ Android har ingen indbygget skærm til batterisundhed. DeviceGPT lukker hullet:
 
 🛡️ Zero Trust Dashboard — Telefon Sikkerhedsaudit
 En audit i tre dele der bedømmer din enhed fra 0 til 100:
-• App Privatlivs Risiko (35%): skærmoptagelses apps, skjulte apps, mikrofon/kamera misbrug, ad tracker detektion
-• Netværks Tillid (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, ISP tracking, privat DNS
-• Enheds Integritet (30%): root status, bootloader, sideloading, udviklertilstand, overlay tilladelser, notifikations lyttere
+• App Privatlivs Risiko (35%): skærmoptagelses apps, skjulte apps, ad tracker detektion
+• Netværks Tillid (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, privat DNS
+• Enheds Integritet (30%): root status, sideloading, udviklertilstand, overlay tilladelser, notifikations lyttere
 
 "Er min telefon hacket?" — Zero Trust Dashboard giver et scoret, struktureret svar i stedet for en vag fornemmelse.
 

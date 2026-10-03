@@ -24,9 +24,9 @@ Android heeft geen ingebouwd batterij gezondheidsscherm. DeviceGPT springt in da
 
 🛡️ Zero Trust Dashboard — Telefoon Beveiligings Audit
 Een audit in drie delen die je toestel scoort van 0 tot 100:
-• App Privacy Risico (35%): schermopname apps, verborgen apps, microfoon/camera misbruik, ad tracker detectie
-• Netwerk Vertrouwen (35%): DNS manipulatie, SSL hijack (MITM), transparente proxy, ISP tracking, privé DNS
-• Toestel Integriteit (30%): root status, bootloader, sideloading, ontwikkelaarsmodus, overlay rechten, notificatie luisteraars
+• App Privacy Risico (35%): schermopname apps, verborgen apps, ad tracker detectie
+• Netwerk Vertrouwen (35%): DNS manipulatie, SSL hijack (MITM), transparente proxy, privé DNS
+• Toestel Integriteit (30%): root status, sideloading, ontwikkelaarsmodus, overlay rechten, notificatie luisteraars
 
 "Is mijn telefoon gehackt?" — Het Zero Trust Dashboard geeft een gescoord, gestructureerd antwoord in plaats van een vaag gevoel.
 
