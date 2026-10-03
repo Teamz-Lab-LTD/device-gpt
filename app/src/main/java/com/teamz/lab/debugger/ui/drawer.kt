@@ -1609,34 +1609,22 @@ fun NotificationPermissionDialog(
             )
         },
         text = {
-            Text(
-                text = "To show live system data in the notification bar, the app needs permission to post notifications.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onDismiss()
-                onRequestPermission()
-            }) {
-                Text(
-                    LocalContext.current.string(R.string.allow),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        dismissButton = {
+            // The checkbox used to sit in dismissButton, squeezed beside the buttons, where it
+            // rendered 16px tall — the opt-out existed but could not be seen.
             Column {
-                TextButton(onClick = onDismiss) {
-                    Text(
-                        LocalContext.current.string(R.string.cancel),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Text(
+                    text = "To show live system data in the notification bar, the app needs permission to post notifications.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .clickable {
+                            isCheck = !isCheck
+                            onDoNotAskMeAgain(isCheck)
+                        }
                 ) {
                     Checkbox(
                         checked = isCheck,
@@ -1657,6 +1645,25 @@ fun NotificationPermissionDialog(
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onDismiss()
+                onRequestPermission()
+            }) {
+                Text(
+                    LocalContext.current.string(R.string.allow),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    LocalContext.current.string(R.string.cancel),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     )

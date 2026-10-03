@@ -1982,7 +1982,12 @@ fun HandleSystemMonitorAutoStart() {
                     context, postNotificationPermission
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                showDialog = true
+                // Not on the install day: this dialog was the first thing a new user saw after
+                // "See details". See MonitorPromptPolicy.
+                if (com.teamz.lab.debugger.utils.MonitorPromptPolicy.shouldOffer(
+                        com.teamz.lab.debugger.utils.MonitorPromptPolicy.installAgeMs(context)
+                    )
+                ) showDialog = true
             } else {
                 startService(context)
             }
