@@ -245,3 +245,29 @@ and loses 20 privacy points. Same class as fix 3; it should be fixed before vc49
 
 **Analytics contamination:** this run sent one real `first_open` to GA4 from model
 `sdk_gphone64_arm64`. Exclude that model in D1 reads.
+
+## Fix 5 (this branch, `b6232f6`): the Privacy Dashboard told every phone it had a threat
+
+The score and "Threats Today" now come from `PrivacySignals`, which reads each check that
+actually measures something, instead of searching display text. The old version had these
+problems:
+- **Monitoring:** it searched for "Screen Recording" and "Suspicious", which are the section
+  *headers* of the text it was searching. Every user lost 20 points and saw the threat.
+- **DPI:** it flagged any `ping` output containing "packet loss", and every ping summary says
+  "0% packet loss". Every user who could ping was told "your ISP might be inspecting traffic",
+  and Network Trust advised a VPN.
+- **SSL:** "unable to check" (for example, offline) counted as a certificate threat.
+- **Mic/camera:** `logcat` only shows DeviceGPT's own log. It was removed from the score, and the
+  text now says what Android actually offers.
+- **Spoofing:** a real detection never matched the check, so it never counted. It does now.
+
+Tests: 3 of 3 behaviour tests failed on the old code; a clean device scored 70. Full suite:
+696 tests, 0 failed. Emulator: Privacy Score 90/100 with one threat, USB debugging, which is on.
+
+**Still claimed, not fixed (wording, needs the owner):**
+- The Device Info section is titled "Device Spyware & Tracking Test".
+- Its rows read "Deep Packet Inspection (ISP/Government Scanning Traffic)".
+- Network Trust labels a ping result "Deep Packet Inspection".
+
+These names claim detections the app cannot perform. The results under them are now honest; the
+labels are not.
