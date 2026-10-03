@@ -297,3 +297,39 @@ Tests: red on the old code. Full suite: 698 tests, 0 failed. Checked on the emul
 **The store listing still makes this claim, not fixed here:** the full description says "Network
 Trust (35%): … deep packet inspection …". The app no longer claims that, so the listing now
 over-claims. Listing changes go through `/aso-refresh` only.
+
+## Shipped: vc50 / 3.1.31 to production, 2026-10-04 (100%, `main` at 8c40390)
+
+An independent code review of the merged range ran in three passes. After the first two it
+said "with fixes"; after the third, only one prompt line was left, and that is now fixed. What
+the review added, beyond fixes 1–6:
+- Camera/mic "Active" read DeviceGPT's own app-ops, and Zero Trust raised a warning from it.
+  This is now an honest note, and the check is removed.
+- The DNS check compared only the first address it got back, so healthy networks were told
+  their DNS was "hijacked". It now checks the address against the full set the provider
+  publishes.
+- When the phone was offline, the "ISP tracking" check reported it as ⚠️. Offline is now
+  "could not check".
+- The first scan no longer waits for the security cache, and the 2-second wait limit actually
+  holds now (the daily scan no longer runs inside a scope that waits for it to finish).
+- The Network tab's "Government & ISP Surveillance Test" and the AI prompts' spyware, bootloader
+  and access-history premises are gone.
+- In the listing (77 locales): "live mic use" / "mic/camera abuse", "bootloader", "ISP tracking"
+  and the mic/camera "access history" lines are removed.
+
+Before upload: 706 tests, 0 failed. The bundle has the right version (50 / 3.1.31) and signing
+key, the new strings are present and the removed strings are absent. On the emulator, the
+release APK showed:
+- the first scan counted as a scan, with no permission popup;
+- Security Dashboard 90/100;
+- DNS Integrity OK;
+- no Camera/Mic row;
+- "Network Privacy Checks · Low".
+
+The Crashlytics mapping was uploaded in the same Gradle run as the bundle. The production track,
+re-read from the store, shows 3.1.31 (50) completed (full).
+
+**Not verified on a real device** (the Pixel was locked, then unplugged). **The number to
+re-check:** the share of real users who uninstall on day 0 (49% before). Read it once 50 or more
+real users have first opened vc50, about 3 weeks out. Exclude robot traffic: device model
+`(not set)`, Calpella, Reston and Frankfurt, and `sdk_gphone64_arm64`.
