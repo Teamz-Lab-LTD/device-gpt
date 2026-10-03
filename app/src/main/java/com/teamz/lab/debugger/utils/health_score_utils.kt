@@ -1,7 +1,13 @@
 package com.teamz.lab.debugger.utils
 
+import android.app.admin.DevicePolicyManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.os.BatteryManager
+import android.os.Environment
+import android.os.StatFs
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.content.edit
@@ -19,29 +25,76 @@ object HealthScoreUtils {
     }
 
     suspend fun calculateDailyHealthScore(context: Context): Int = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-        var score = 10 // Start with perfect score
+        // Battery and storage used to be scored by matching words in display text, and the
+        // words never matched ("Good ✅" is not "good"), so every phone lost 2 points it had
+        // not earned. Read the structured values the display text was built from instead.
+        val batteryHealth = try {
+            context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                ?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+        } catch (_: Exception) { -1 }
 
-        // Battery Health (0-3 points) - Using existing battery functions
-        val batteryInfo = getBatteryChargingInfo(context)
-        score -= when {
-            batteryInfo.contains("excellent") || batteryInfo.contains("good") || batteryInfo.contains("normal") -> 0
-            batteryInfo.contains("fair") -> 1
-            batteryInfo.contains("poor") || batteryInfo.contains("bad") -> 2
-            batteryInfo.contains("critical") || batteryInfo.contains("overheating") -> 3
-            else -> 1 // Default penalty for unknown status
+        val storageFreePct = try {
+            val stat = StatFs(Environment.getDataDirectory().path)
+            if (stat.totalBytes > 0L) (stat.availableBytes * 100 / stat.totalBytes).toInt() else null
+        } catch (_: Exception) { null }
+
+        // Security used to deduct for any ❌/⚠️ in the Security tab text. Most of those lines
+        // are not faults: "No admin set" is the normal state of a personal phone, SELinux is
+        // unreadable by apps, /etc/hosts exists on every device. The one real exposure in that
+        // block is unencrypted storage, read here directly. The refresh still runs because it
+        // warms SecurityInfoCache for the synchronous, Compose-facing callers further down.
+        SecurityInfoCache.refresh(context)
+        val storageUnencrypted = try {
+            (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager)
+                ?.storageEncryptionStatus == DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE
+        } catch (_: Exception) { false }
+
+        scoreFromSignals(
+            batteryHealth = batteryHealth,
+            storageFreePct = storageFreePct,
+            thermalStatus = getThermalZoneTemperatures(context),
+            ramUsage = getRamUsage(context),
+            storageUnencrypted = storageUnencrypted,
+            rooted = isDeviceRooted().let { it.contains("Yes") || it.contains("Rooted") },
+            usbDebugging = isUsbDebuggingEnabled(context).let { it.contains("enabled") || it.contains("Enabled") },
+        )
+    }
+
+    /**
+     * Pure scoring, so every deduction can be tested. A deduction needs a fault; an unreadable
+     * value is an unknown and costs nothing — the old `else -> 1` turned "could not read" into
+     * "something is wrong", which is how a healthy phone ended up "Fair".
+     */
+    internal fun scoreFromSignals(
+        batteryHealth: Int,
+        storageFreePct: Int?,
+        thermalStatus: String,
+        ramUsage: String,
+        storageUnencrypted: Boolean,
+        rooted: Boolean,
+        usbDebugging: Boolean,
+    ): Int {
+        var score = 10
+
+        // Battery Health (0-3 points)
+        score -= when (batteryHealth) {
+            BatteryManager.BATTERY_HEALTH_OVERHEAT -> 3
+            BatteryManager.BATTERY_HEALTH_DEAD,
+            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE,
+            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> 2
+            BatteryManager.BATTERY_HEALTH_COLD -> 1
+            else -> 0 // GOOD, UNKNOWN, unreadable
         }
 
-        // Storage Status (0-2 points) - Using existing storage functions
-        val storageInfo = getMemoryAndStorageInfo(context)
+        // Storage headroom (0-2 points) — same bands as FirstScanGate's storage sub-score
         score -= when {
-            storageInfo.contains("excellent") || storageInfo.contains("good") || storageInfo.contains("available") -> 0
-            storageInfo.contains("fair") -> 1
-            storageInfo.contains("poor") || storageInfo.contains("full") || storageInfo.contains("low") -> 2
-            else -> 1 // Default penalty for unknown status
+            storageFreePct == null -> 0
+            storageFreePct >= 15 -> 0
+            storageFreePct >= 10 -> 1
+            else -> 2
         }
 
         // Thermal Status (0-2 points)
-        val thermalStatus = getThermalZoneTemperatures(context)
         when {
             thermalStatus.contains("cool") || thermalStatus.contains("normal") -> score -= 0
             thermalStatus.contains("warm") -> score -= 1
@@ -49,34 +102,20 @@ object HealthScoreUtils {
         }
 
         // RAM Usage (0-1 point)
-        val ramUsage = getRamUsage(context)
         if (ramUsage.contains("high") || ramUsage.contains("critical")) {
             score -= 1
         }
 
-        // Security Status (0-2 points). Already inside withContext(Dispatchers.IO), so the
-        // suspend call needs no runBlocking. This also warms SecurityInfoCache for the
-        // synchronous, Compose-facing callers further down this file.
-        val securityInfo = SecurityInfoCache.refresh(context)
-        if (securityInfo.contains("❌") || securityInfo.contains("⚠️")) {
-            score -= 2
-        }
+        // Security (0-2 points)
+        if (storageUnencrypted) score -= 2
 
-        // Additional meaningful checks
-        
-        // Check if device is rooted (major security risk)
-        val rootStatus = isDeviceRooted()
-        if (rootStatus.contains("Yes") || rootStatus.contains("Rooted")) {
-            score -= 2
-        }
-        
-        // Check if USB debugging is enabled (security risk)
-        val usbDebugStatus = isUsbDebuggingEnabled(context)
-        if (usbDebugStatus.contains("enabled") || usbDebugStatus.contains("Enabled")) {
-            score -= 1
-        }
+        // Rooted device (major security risk)
+        if (rooted) score -= 2
 
-        maxOf(1, score) // Minimum score of 1 (last expression is returned from lambda)
+        // USB debugging enabled (security risk)
+        if (usbDebugging) score -= 1
+
+        return maxOf(1, score) // Minimum score of 1
     }
 
     fun saveHealthScore(context: Context, score: Int) {
