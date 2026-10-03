@@ -77,13 +77,27 @@ debugging, thermal and RAM checks are unchanged.
   remaining −1 is real: USB debugging is on because adb is connected. No crash in logcat.
 - **Still to do:** a run on the Pixel 8a. It was locked (fingerprint) during this session.
 
-## Fix 2 (next): the first scan does not count as a scan, and the scan button is hidden
+## Fix 2 (this branch): the first scan did not count, and a permission dialog came first
 
-- `FirstScanGate.markCompleted` never calls `HealthScoreUtils.saveHealthScore`. So seconds after
-  scanning, the card says "not yet · 0 scans · Run a scan".
-- The four FABs (PRO / Cert / AI / Send) sit on top of the card's "Scan Device Health" button.
-- Right after "See details", a notification-permission pre-prompt opens before the user has
-  seen the app. Its "Don't ask me again" row is clipped to 16px.
+- `7250aff`: the gate now runs the daily scan alongside the quick scan, and waits for it before
+  showing the score. On the emulator, the card a new user lands on now reads "Today's Health
+  Score 9/10 · Scanned 1 day · Best 9/10 · 1 scan". Before, it read "not yet · 0 scans · Run a
+  scan". The score still appears about 2 seconds after launch.
+- `d390d22`: "Allow Realtime Monitor" used to open on every cold start for Android 13+ users,
+  including the first landing. It now waits until the install is 24 hours old. Waiting costs
+  little: users who got the monitor in their first 15 minutes uninstalled within 15 minutes at
+  25%, against 22% overall. The "Don't ask me again" checkbox was squeezed to 16px; it now sits
+  in the dialog body. On device, ticking it and pressing Cancel keeps the dialog from returning.
+- Tests: 7 new ones, each red before its fix. Full suite: **676 tests, 0 failed**.
+- **Dropped: the FABs do not actually hide the scan button.** The list already has 120dp of
+  bottom padding, so the button scrolls clear of the FABs. On first landing it just sits at the
+  bottom edge. Four pulsing FABs on every tab is a design decision, not a bug.
+- **Found, not fixed:** in session 1, tapping the drawer's "Realtime" toggle opens a
+  full-screen "Not ready to pay? Invite friends" screen. The monitor sits behind the
+  paywall/referral reroute. GA4 shows `referral_fallback_shown` for 13 of 47 vc48 humans.
+  Whether that belongs in session 1 is a monetisation call.
+- **Not verified on the Pixel 8a:** it was locked, then unplugged. Not verified on Android 12 or
+  lower either; the dialog is only reached on Android 13+.
 
 ## Fix 3 (next): false ❌ / ⚠️ lines on the Security tab
 
