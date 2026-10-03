@@ -271,3 +271,29 @@ Tests: 3 of 3 behaviour tests failed on the old code; a clean device scored 70. 
 
 These names claim detections the app cannot perform. The results under them are now honest; the
 labels are not.
+
+## Fix 6 (this branch, `9a25deb`): section names that claimed detections the app cannot make
+
+| was | now |
+|---|---|
+| "Device Spyware & Tracking Test" (teaser: "full spyware scan results & protection steps") | "Privacy Exposure Check" ("full privacy exposure details & what to do") |
+| "Deep Packet Inspection (ISP/Government Scanning Traffic)" / "Deep Data Scanning (Government/ISP Surveillance)" | "Ping to 8.8.8.8 (Connection Reachability)" |
+| Network Trust row "Deep Packet Inspection" ("…a VPN can help") | "Ping Reachability (8.8.8.8)"; the internal id `dpi_detection` is kept |
+
+The same claims were also removed from two AI prompts and from the AppFunctions KDoc, which
+on-device agents read. Two rows under the renamed section were false, not just badly named:
+- **Microphone:** "Background Microphone Usage (Eavesdropping Risk)" and "AI Voice Clone Risk
+  Check" (paywalled as a "full voice clone vulnerability analysis") both read **DeviceGPT's own**
+  mic permission. Anyone who allowed the mic test saw "Active" or "voice clone risk". The
+  section is now "Microphone Privacy": one honest note, no paywall.
+- **Battery:** "Unusual Battery Drain (Spyware…)" ran `dumpsys batterystats`, which apps are not
+  allowed to read, so it said "Normal" on every phone. The function is removed; the row now
+  points to Settings → Battery usage.
+
+The internet threat level also stopped counting "❌ could not check" as a threat.
+
+Tests: red on the old code. Full suite: 698 tests, 0 failed. Checked on the emulator.
+
+**The store listing still makes this claim, not fixed here:** the full description says "Network
+Trust (35%): … deep packet inspection …". The app no longer claims that, so the listing now
+over-claims. Listing changes go through `/aso-refresh` only.
