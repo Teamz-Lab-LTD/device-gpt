@@ -1,0 +1,3 @@
+Honest results. Several checks reported problems they could not actually see: a "Fair" score on healthy phones, security warnings, camera or mic "active", DNS "hijacking" on normal networks, and "ISP tracking" when you were offline. These checks now report only what they can measure.
+
+Your first scan counts as a scan, and no permission prompt opens right after it. If the upgrade screen cannot load, it simply closes.
