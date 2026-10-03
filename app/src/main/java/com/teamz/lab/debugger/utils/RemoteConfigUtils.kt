@@ -216,7 +216,11 @@ object RemoteConfigUtils {
                 // Both are unproven bets against a paywall that converts 2 users / 28 days
                 // and ~$2.56/mo of ads; neither ships silently. Enable via Remote Config
                 // when you want to run the experiment and can measure it.
-                "paywall_delay_enabled" to false,            // true = gate cold-open paywall on session>=min + first scan
+                // true since 2026-10-04: the bundled value applies until the first RC fetch, and
+                // `false` gave fresh installs the cold paywall 20 s into session one (3 of 121
+                // vc43+ installs within a minute). Production RC already gates it — the gate
+                // blocked 19 new vc48 users — so this only closes the pre-fetch window.
+                "paywall_delay_enabled" to true,             // true = gate cold-open paywall on session>=min + first scan
                 "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall (when gate on)
                 "paywall_reason_routing_enabled" to false,   // Dismiss-reason routing (Phase 1 = log-only)
                 // Hard cap on paywall impressions per session. Measured 2026-08-27: 1.72
