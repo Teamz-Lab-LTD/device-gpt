@@ -1410,10 +1410,7 @@ fun getCameraMicSpeakerFlashInfo(context: Context): String {
         
         🔥 Torch Mode: ${if (supportsTorchMode) "✅ Supported" else "❌ No Torch Mode"}
 
-        🔒 Active Mic/Camera Usage: $micCamStatus
-        
-        🔍 Recent Mic/Camera Usage Log:
-        ${getRecentCameraMicUsageLog()}
+        🔒 Mic/Camera Use by Other Apps: $micCamStatus
     """.trimIndent()
 }
 

@@ -1879,7 +1879,6 @@ $itemContent
    - **System Vulnerabilities**: Android version, security patches, known CVEs
    - **Root/Jailbreak Status**: Is device rooted? Security implications
    - **Developer Options**: USB debugging, OEM unlock status and risks
-   - **Bootloader Status**: Locked vs. unlocked and security impact
    - **App Vulnerabilities**: Any apps with known security issues
    - **Network Security**: Wi-Fi, VPN, DNS security status
 
@@ -1887,7 +1886,7 @@ $itemContent
    - **App Permissions**: Overly permissive apps, suspicious permissions
    - **Data Collection**: Apps collecting excessive data
    - **Tracking**: Ad tracking, analytics, location tracking
-   - **Spyware/Malware**: Any detected malicious software
+   - **Install Sources**: Apps from outside an app store, based only on the data below (the app does not scan for malware)
    - **Privacy Settings**: Current privacy configuration status
    - **Data Exposure**: Risk of data leakage or unauthorized access
 
@@ -2111,13 +2110,13 @@ $itemContent
 
 7. **Warning Signs & Red Flags**
    - **Suspicious Patterns**: What indicates malicious behavior
-   - **Unauthorized Access**: Signs of hacking or spyware
+   - **Access Capabilities**: Which apps can read the screen or keystrokes, based only on the data below
    - **Excessive Access**: Apps accessing too frequently
    - **Background Access**: Camera/mic active when app is closed
    - **When to Take Action**: Immediate steps if suspicious activity detected
 
 8. **Immediate Actions** (If Concerns Found)
-   - **Critical Issues**: Steps to take if spyware detected
+   - **If Something Looks Wrong**: How to review or remove an app you do not recognise
    - **Permission Revocation**: Which apps to immediately restrict
    - **App Removal**: Apps to uninstall if suspicious
    - **Security Scan**: Additional security measures to take
@@ -2922,7 +2921,6 @@ $itemContent
    - **What the Data Shows**: Which apps hold screen-reading or keystroke access — capabilities, not a malware verdict
    - **Keyloggers**: Software recording keystrokes
    - **Screen Recording**: Unauthorized screen capture
-   - **Call Recording**: Unauthorized call monitoring
    - **Data Theft**: Unauthorized data access or exfiltration
    - **Remote Access**: Unauthorized remote control capabilities
 
@@ -2944,7 +2942,7 @@ $itemContent
 
 6. **Protection Strategies** (Actionable Steps)
    - **Immediate Actions** (Critical):
-     - Remove spyware/malicious apps immediately
+     - Review and remove any app you do not recognise
      - Revoke suspicious permissions
      - Disable tracking IDs
    - **High Priority**:
@@ -3007,7 +3005,7 @@ $itemContent
    - **SSL/TLS Certificate**: MITM attack risk assessment, certificate pinning status, HSTS compliance
    - **Transparent Proxy**: HTTP proxy detection, traffic interception analysis, corporate vs ISP proxy distinction
    - **Ping Reachability**: what one ping to 8.8.8.8 does and does not show (it cannot detect traffic inspection; 100% loss often just means the network blocks ping)
-   - **ISP Behavior**: Traffic monitoring, HTTP 204 redirect analysis, behavioral advertising injection
+   - **Connectivity Test**: What an unexpected answer to the HTTP 204 test can mean (proxy, filter); it cannot show traffic monitoring
    - **Captive Portal**: Network authentication analysis, session hijacking risks on public networks
    - **Private DNS (DoT/DoH)**: DNS encryption status, recommended DNS providers, privacy benefits of encrypted DNS
 
@@ -3069,7 +3067,7 @@ $itemContent
 
 **Provide analysis covering:**
 1. **Executive Summary**: Overall security posture rating and key findings.
-2. **App Privacy Risk Analysis**: Assess permission patterns, spyware indicators, camera/mic activity, accessibility service usage.
+2. **App Privacy Risk Analysis**: Assess permission patterns and accessibility service usage from the data below; the app cannot see other apps' live camera/mic use and does not scan for spyware.
 3. **Network Trust Analysis**: Evaluate DNS integrity, SSL certificates, proxy/VPN detection, ISP behavior.
 4. **Device Integrity Analysis**: Assess root status, USB debugging, encryption, overlay permissions, notification listeners, sideloading settings.
 5. **Cross-Section Correlations**: Are there patterns that suggest a coordinated threat (e.g., accessibility service + screen recorder + no encryption)?

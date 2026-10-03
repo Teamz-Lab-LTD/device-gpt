@@ -168,7 +168,7 @@ object ZeroTrustScorer {
 
         val score = calculateSectionScore(checks, mapOf(
             "keylogger" to 20, "screen_recorder" to 15, "dangerous_permissions" to 20,
-            "camera_mic_active" to 15, "accessibility_services" to 20, "malware_scan" to 10
+            "accessibility_services" to 20, "malware_scan" to 10
         ), normalizeToRun = true)
 
         return TrustSection(
@@ -324,8 +324,8 @@ object ZeroTrustScorer {
 
     /**
      * [normalizeToRun]: score out of the weights of the checks that actually ran, so a check the
-     * app could not perform is neither a pass nor a penalty. Off by default — the privacy section
-     * builds a variable number of checks against fixed weights and keeps its old arithmetic.
+     * app could not perform is neither a pass nor a penalty. Both the app-privacy and the
+     * device-integrity sections use it; off by default for any future caller.
      */
     private fun calculateSectionScore(
         checks: List<TrustCheckResult>,

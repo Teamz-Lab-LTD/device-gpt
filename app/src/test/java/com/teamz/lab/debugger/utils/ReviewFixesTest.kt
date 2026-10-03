@@ -76,6 +76,9 @@ class ReviewFixesTest {
         assertFalse("score must not run the full security scan it does not use", fn.contains("SecurityInfoCache.refresh"))
         val g = src("ui/FirstScanGateScreen.kt")
         assertTrue(g.contains("withTimeoutOrNull("))
+        // A coroutineScope { } joins all children, cancelled or not, and cancelling blocking IO
+        // does not stop it — so the daily record must NOT be started inside one.
+        assertFalse("daily scan must not run inside a joining coroutineScope", g.contains("kotlinx.coroutines.coroutineScope {"))
         val gate = src("ui/FirstScanGate.kt")
         assertTrue("recordDailyScan must not swallow cancellation", gate.contains("CancellationException) { throw"))
     }
@@ -85,6 +88,9 @@ class ReviewFixesTest {
         val banned = listOf(
             "which apps used these features", "check which apps are accessing my camera",
             "Spyware Detection", "Spyware & Keylogger Check", "Any malicious monitoring detected",
+            "Locked vs. unlocked", "Any detected malicious software", "Steps to take if spyware detected",
+            "Unauthorized call monitoring", "Remove spyware/malicious apps immediately",
+            "behavioral advertising injection", "spyware indicators, camera/mic activity",
         )
         for (f in listOf("utils/ai_prompt_generator.kt", "appfunctions/PrivacyAppFunctions.kt")) {
             val visible = src(f).lines().filter { line ->
@@ -93,6 +99,14 @@ class ReviewFixesTest {
             }.joinToString("\n")
             for (b in banned) assertFalse("$f still shows \"$b\"", visible.contains(b))
         }
+    }
+
+    @Test
+    fun `network tab does not name a surveillance or tracking detection`() {
+        val ui = src("ui/network_ui.kt"); val nu = src("utils/network_utils.kt")
+        assertFalse(ui.contains("\"Government & ISP Surveillance Test\""))
+        for (b in listOf("Tracking & User Activity Logging", "Invisible ISP Proxies (Traffic Interception)", "Deep Data Scanning"))
+            assertFalse(b, nu.lines().filterNot { it.trim().startsWith("*") || it.trim().startsWith("//") }.joinToString("\n").contains(b))
     }
 
     @Test

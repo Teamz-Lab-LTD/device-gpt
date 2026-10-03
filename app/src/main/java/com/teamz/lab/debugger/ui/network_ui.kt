@@ -254,7 +254,7 @@ fun NetworkInfoSection(
         "Network Usage Breakdown" to networkUsageStats,
         "ISP Details" to ispDetails, // ✅ ISP Name & ASN
         "ISP Streaming/CDN Servers" to ispStreamingServers,
-        "Government & ISP Surveillance Test" to govSurveillance,
+        "Network Privacy Checks" to govSurveillance,
         "Internet Health Score" to healthScore,
         "Mobile Data Speed" to mobileSpeed,
         "Download Speed" to downloadSpeed,

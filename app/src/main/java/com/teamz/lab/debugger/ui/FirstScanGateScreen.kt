@@ -84,17 +84,16 @@ fun FirstScanGateScreen(
             // The daily 1-10 scan runs alongside the quick scan and is awaited before the score
             // shows, so the Health tab behind "See details" never says "0 scans" to someone who
             // just scanned. It is also the scan the user would otherwise be asked to run there.
-            val result = kotlinx.coroutines.coroutineScope {
-                val daily = async { FirstScanGate.recordDailyScan(context) }
-                val quick = FirstScanGate.runQuickScan(context) { completed, label ->
-                    progress = completed / 4f
-                    checkLabel = label
-                }
-                // Bounded: the score must never wait long on the daily record. On timeout the
-                // record is dropped and the Health tab falls back to its own scan button.
-                kotlinx.coroutines.withTimeoutOrNull(2_000L) { daily.await() } ?: daily.cancel()
-                quick
+            // Started in the LaunchedEffect's own scope, not a nested coroutineScope { }: that
+            // would join this child even after a timeout, and cancelling blocking IO does not stop
+            // it — the bound would be fiction. Here a slow record just lands after the score shows.
+            val daily = async(kotlinx.coroutines.Dispatchers.IO) { FirstScanGate.recordDailyScan(context) }
+            val result = FirstScanGate.runQuickScan(context) { completed, label ->
+                progress = completed / 4f
+                checkLabel = label
             }
+            // Bounded: wait at most 2 s for the daily record before showing the score.
+            kotlinx.coroutines.withTimeoutOrNull(2_000L) { daily.await() }
             scanResult = result
             val total = result.total
             if (total == null) {

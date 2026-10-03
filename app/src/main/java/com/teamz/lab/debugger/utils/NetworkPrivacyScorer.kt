@@ -185,8 +185,8 @@ object NetworkPrivacyScorer {
             },
             detail = if (passed) "Connectivity test answered normally"
             else if (isError) "Could not reach the test servers"
-            else "A test request was redirected (often a Wi-Fi sign-in page)",
-            recommendation = if (!passed && !isError) "If you are on public Wi-Fi, sign in to it; otherwise prefer HTTPS sites" else null
+            else "A test request got an unexpected answer (proxy or content filter)",
+            recommendation = if (!passed && !isError) "Check for a proxy, VPN or filter on this network; prefer HTTPS sites" else null
         )
     }
 

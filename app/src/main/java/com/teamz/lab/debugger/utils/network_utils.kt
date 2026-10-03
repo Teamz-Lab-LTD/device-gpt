@@ -753,7 +753,7 @@ fun getInternetUptime(): String {
 internal fun ispLineFromCodes(googleCode: Int?, firefoxCode: Int?): String = when {
     googleCode == 204 || firefoxCode == 200 -> "✅ Connectivity test answered normally (no redirect)\n"
     googleCode == null && firefoxCode == null -> "❌ Could not check (no connection to the test servers)\n"
-    else -> "⚠️ A connectivity test was redirected or changed — usually a Wi-Fi sign-in page, sometimes a proxy\n"
+    else -> "⚠️ A connectivity test got an unexpected answer — usually a proxy or content filter\n"
 }
 
 fun checkISPTracking(): String {
@@ -994,15 +994,15 @@ fun checkInternetPrivacyAndSurveillance(): String {
     return """
         🔐 Threat Level Summary: $threatLevel
 
-        🔍 Fake or Redirected Websites (DNS Tampering): $dnsManipulation
+        🔍 DNS Answers (dns.google / one.one.one.one): $dnsManipulation
         
-        🔗 Invisible ISP Proxies (Traffic Interception): $proxyDetection
+        🔗 Proxy Headers: $proxyDetection
         
-        🔒 Secure Websites Tampered (SSL Certificate Check): $sslIntegrity
+        🔒 HTTPS Certificate Check (google.com): $sslIntegrity
         
         📡 Ping to 8.8.8.8 (Connection Reachability): $dpiDetection
         
-        🕵️ Tracking & User Activity Logging: $ispTracking
+        🕵️ Connectivity Test (redirects): $ispTracking
     """.trimIndent()
 }
 
