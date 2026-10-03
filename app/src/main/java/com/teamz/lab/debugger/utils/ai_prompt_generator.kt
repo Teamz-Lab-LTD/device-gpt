@@ -97,7 +97,6 @@ object AIPromptGenerator {
 
         **Other Questions:**
         • Can I run on-device AI models like ChatGPT on this phone?  
-        • Did my phone move when it was locked? (Could someone have touched it?)  
         • What are "frame drops" and why do they matter?
 
         📊 **What $appName Measured (Technical Data Below):**
@@ -106,7 +105,6 @@ object AIPromptGenerator {
         - **Battery** (health, temperature, charging status)  
         - **Storage** (how much space is used vs. available)  
         - **Frame drops** (how smooth videos/games run)  
-        - **Motion sensors** (if phone moved while locked)  
         - **Root/Developer mode** (advanced settings status)  
         - **Mic/Camera logs** (which apps used these features)  
         - **AI support test** (can phone run AI apps)  

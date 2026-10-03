@@ -393,31 +393,22 @@ object HealthScoreUtils {
                 suggestions.add("📱 Go to Settings > Security > Encrypt phone to lock your data")
                 suggestions.add("💡 This keeps your private stuff safe even if your phone is lost")
             }
-            securityInfo.contains("❌ No admin set") -> {
-                suggestions.add("👮 Your phone doesn't recognize you as the owner")
-                suggestions.add("📱 Go to Settings > Security > Device admin apps to fix this")
-                suggestions.add("🔑 This helps you control your phone's security settings")
-            }
-            securityInfo.contains("⚠️ Clipboard might be accessed") -> {
-                suggestions.add("📎 Your copied text might be seen by other apps (older Android versions)")
+            // "❌ No admin set" branch removed 2026-10-04: no device admin is the normal state,
+            // and the advice sent users to grant an app device-admin access.
+            securityInfo.contains("⚠️ Clipboard can be read") -> {
+                suggestions.add("📎 Your copied text can be read by other apps on Android 9 and older")
                 suggestions.add("🔒 Don't copy passwords or credit card numbers on older phones")
-                suggestions.add("📱 Update your phone to Android 11+ for automatic protection")
+                suggestions.add("📱 Android 10 and newer block background apps from reading the clipboard")
             }
             securityInfo.contains("⚠️ Modified system files found") -> {
                 suggestions.add("🚨 Your phone's system has been changed - this could be dangerous")
                 suggestions.add("🛡️ Go to Settings > Security > Google Play Protect > Scan device")
                 suggestions.add("📞 If you didn't modify your phone, contact customer support")
             }
-            securityInfo.contains("🚨 Malware Signatures Detected") -> {
-                suggestions.add("☠️ DANGER: Bad apps detected on your phone!")
-                suggestions.add("🗑️ Go to Settings > Apps and uninstall suspicious apps immediately")
-                suggestions.add("🛡️ Run Google Play Protect: Settings > Security > Google Play Protect")
-            }
-            securityInfo.contains("👣 Your phone moved while locked") -> {
-                suggestions.add("👀 Someone might be touching your phone when you're not around")
-                suggestions.add("🔒 Go to Settings > Security > Smart Lock and turn off 'On-body detection'")
-                suggestions.add("📱 This prevents your phone from unlocking when it's moved")
-            }
+            // "🚨 Malware Signatures Detected" branch removed 2026-10-04: nothing produces that text
+            // since the invented signature list was replaced, and the app does no malware detection.
+            // The 👣 motion branch was removed 2026-10-04 with the placeholder check that fed
+            // it — it told every user someone might be handling their phone.
             securityInfo.contains("📱") && securityInfo.contains("Permissions:") -> {
                 suggestions.add("🔐 Some apps have access to your camera, microphone, and location")
                 suggestions.add("📱 Go to Settings > Apps > [app name] > Permissions to review")

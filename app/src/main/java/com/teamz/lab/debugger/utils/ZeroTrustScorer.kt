@@ -295,22 +295,28 @@ object ZeroTrustScorer {
             recommendation = if (unknownSources) "Disable in Settings > Security > Install unknown apps" else null
         ))
 
-        // 7. SELinux
-        val selinuxEnforced = security.contains("system protection is active")
-        checks.add(TrustCheckResult(
-            name = "selinux",
-            displayName = "System Protection (SELinux)",
-            status = if (selinuxEnforced) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
-            detail = if (selinuxEnforced) "SELinux is enforcing -- kernel-level protection active"
-            else "SELinux may not be enforcing",
-            recommendation = if (!selinuxEnforced) "This is unusual -- contact your device manufacturer" else null
-        ))
+        // 7. SELinux. Three states: getenforce is "Permission denied" for apps on current Android,
+        // and an unreadable status used to WARN every user to "contact your device manufacturer".
+        // "Not checked" in the security text = we could not see it: add no check and score the
+        // section over the checks that ran (normalizeToRun below).
+        val selinuxNotChecked = security.contains("Not checked")
+        if (!selinuxNotChecked) {
+            val selinuxEnforced = security.contains("system protection is active")
+            checks.add(TrustCheckResult(
+                name = "selinux",
+                displayName = "System Protection (SELinux)",
+                status = if (selinuxEnforced) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
+                detail = if (selinuxEnforced) "SELinux is enforcing -- kernel-level protection active"
+                else "SELinux is not enforcing",
+                recommendation = if (!selinuxEnforced) "This is unusual -- contact your device manufacturer" else null
+            ))
+        }
 
         val score = calculateSectionScore(checks, mapOf(
             "root_status" to 20, "usb_debugging" to 15, "encryption" to 15,
             "overlay_permission" to 10, "notification_listeners" to 10,
             "unknown_sources" to 15, "selinux" to 15
-        ))
+        ), normalizeToRun = true)
 
         return TrustSection(
             name = "device_integrity",
@@ -324,9 +330,15 @@ object ZeroTrustScorer {
 
     // ==================== Scoring ====================
 
+    /**
+     * [normalizeToRun]: score out of the weights of the checks that actually ran, so a check the
+     * app could not perform is neither a pass nor a penalty. Off by default — the privacy section
+     * builds a variable number of checks against fixed weights and keeps its old arithmetic.
+     */
     private fun calculateSectionScore(
         checks: List<TrustCheckResult>,
-        weights: Map<String, Int>
+        weights: Map<String, Int>,
+        normalizeToRun: Boolean = false,
     ): Int {
         var total = 0
         for (check in checks) {
@@ -337,6 +349,10 @@ object ZeroTrustScorer {
                 TrustCheckStatus.FAIL -> 0
                 TrustCheckStatus.ERROR -> weight / 3
             }
+        }
+        if (normalizeToRun) {
+            val possible = checks.sumOf { weights[it.name] ?: 10 }
+            if (possible > 0) total = total * 100 / possible
         }
         return total.coerceIn(0, 100)
     }

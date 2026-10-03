@@ -1110,18 +1110,25 @@ suspend fun getSecurityInfo(context: Context): String = withContext(Dispatchers.
     val devicePolicyManager =
         context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
-    // 🛡️ SELinux Status
-    val isSELinuxEnforced = try {
+    // 🛡️ SELinux Status. Apps get "Permission denied" from getenforce on current Android, and
+    // empty output used to be reported as "shield is off" to every user. See selinuxStatusLine.
+    val getenforceOutput = try {
         val process = Runtime.getRuntime().exec("getenforce")
-        val result = process.inputStream.bufferedReader().readText().trim()
-        result.equals("Enforcing", ignoreCase = true)
+        process.inputStream.bufferedReader().readText().trim()
     } catch (e: Exception) {
         handleError(e)
-        false
+        null
     }
 
-    // 🆔 Device Admin Check
-    val hasDeviceAdmin = devicePolicyManager.activeAdmins?.isNotEmpty() ?: false
+    // 🆔 Device admin apps, by name. None is the normal state of a personal phone.
+    val adminLabels = devicePolicyManager.activeAdmins.orEmpty().map { admin ->
+        try {
+            val pm = context.packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(admin.packageName, 0)).toString()
+        } catch (_: Exception) {
+            admin.packageName
+        }
+    }.distinct()
 
     // 🔐 Encryption Status
     val encryptionStatus = when (devicePolicyManager.storageEncryptionStatus) {
@@ -1131,9 +1138,6 @@ suspend fun getSecurityInfo(context: Context): String = withContext(Dispatchers.
         DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED -> "⚠️ This device doesn't support storage protection"
         else -> "❓ Unable to check storage protection status"
     }
-
-    // 👣 Motion While Locked
-    val motionLog = detectMotionWhileLocked(context)
 
     // 🧠 App Permission Heatmap
     val permissionRadar = getPermissionHeatmap(context)
@@ -1149,10 +1153,10 @@ suspend fun getSecurityInfo(context: Context): String = withContext(Dispatchers.
 
     """
 🛡️ System Protection (SELinux):
-${if (isSELinuxEnforced) "✅ Your system protection is active and keeping things safe" else "❌ Security shield is off — less protection against threats"}
+${selinuxStatusLine(getenforceOutput)}
 
-👮 Admin Access (Phone Owner):
-${if (hasDeviceAdmin) "✅ You're the verified owner of this device" else "❌ No admin set — features may be limited"}
+👮 Device Admin Apps:
+${deviceAdminLine(adminLabels)}
 
 🔐 Data Safety (Phone Storage):
 $encryptionStatus
@@ -1160,17 +1164,14 @@ $encryptionStatus
 🧠 Which Apps Can Peek? (Permission Radar):
 $permissionRadar
 
-📎 Clipboard Safety & Spy Detection (Copy-Paste Checker):
+📎 Clipboard Access:
 $clipboardStatus
 
 🧱 System Health Check:
 $tamperCheck
 
-🛡️ Malware Scan (Offline Check):
+📦 App Install Sources:
 $malwareScan
-
-👣 Motion While Locked:
-$motionLog
 """.trimIndent()
 
 }
@@ -1236,7 +1237,9 @@ suspend fun lastKnownLocation(context: Context): String {
 fun checkSystemTampering(): String {
     val suspiciousPaths = listOf(
         "/system/bin/.ext", "/system/etc/init.d/99SuperSUDaemon",
-        "/system/xbin/daemonsu", "/etc/hosts"
+        "/system/xbin/daemonsu"
+        // "/etc/hosts" removed 2026-10-04: it ships on every Android device, so every user was
+        // told their system files had been modified.
     )
     val tampered = suspiciousPaths.filter { File(it).exists() }
 
@@ -1247,13 +1250,46 @@ fun checkSystemTampering(): String {
     }
 }
 
-fun detectClipboardAccess(): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        "✅ Clipboard auto-clears after a while (Android 11+). Safe."
+fun detectClipboardAccess(): String = clipboardLine(Build.VERSION.SDK_INT)
+
+/**
+ * Android 10 stopped background apps from reading the clipboard. The old copy credited this to
+ * Android 11 and claimed the clipboard "auto-clears", which Android 11 does not do.
+ */
+internal fun clipboardLine(sdkInt: Int): String =
+    if (sdkInt >= Build.VERSION_CODES.Q) {
+        "✅ Apps running in the background cannot read your clipboard (Android 10+)."
     } else {
-        "⚠️ Clipboard might be accessed by background apps (Pre Android 11)."
+        "⚠️ Clipboard can be read by apps running in the background (Android 9 and older)."
     }
+
+/**
+ * Three states, not two. "Permissive" is a real fault; an unreadable status is not — apps get
+ * "Permission denied" from getenforce on current Android, and that used to tell every user
+ * their "security shield is off". The ✅ wording is matched by ZeroTrustScorer; keep it.
+ */
+internal fun selinuxStatusLine(getenforceOutput: String?): String = when {
+    getenforceOutput.equals("Enforcing", ignoreCase = true) ->
+        "✅ Your system protection is active and keeping things safe"
+    getenforceOutput.equals("Permissive", ignoreCase = true) ->
+        "❌ Security shield is off — less protection against threats"
+    else -> "ℹ️ Not checked — Android does not let apps read this setting"
 }
+
+/**
+ * Device admin apps can use extra controls such as locking the screen or erasing data. Having
+ * none is the normal, safer state of a personal phone; it used to read "❌ No admin set", with
+ * advice to go and grant admin access. Must not contain "Yes"/"Enabled":
+ * getPhoneHackabilityScore counts those words anywhere in the security text.
+ */
+internal fun deviceAdminLine(adminLabels: List<String>): String =
+    if (adminLabels.isEmpty()) {
+        "✅ No apps have device admin access"
+    } else {
+        "ℹ️ ${adminLabels.size} app${if (adminLabels.size == 1) " has" else "s have"} device admin access: " +
+            adminLabels.joinToString(", ") +
+            ". If you don't recognise one, review it in Settings > Security > Device admin apps."
+    }
 
 /**
  * Where your apps came from.
@@ -2181,17 +2217,9 @@ fun detectAiVoiceCloneRisk(context: Context): String {
 fun detectAdTrackingApps(context: Context): String =
     PrivacyExposureScanner.adTrackingExposure(context).render()
 
-fun detectMotionWhileLocked(context: Context): String {
-    val accelFile = File("/sys/class/input") // Simulated for illustration
-    val hasSensorActivity =
-        accelFile.exists() // Placeholder: replace with actual sensor log if you store it
-
-    return if (hasSensorActivity) {
-        "👣 Your phone moved while locked — possible snooping at night or while away."
-    } else {
-        "✅ No motion detected while locked."
-    }
-}
+// The "motion while the phone was locked" check was removed 2026-10-04. It warned of possible
+// snooping whenever /sys/class/input existed, which is on every Android phone. The app records
+// no motion data and makes no such claim.
 
 fun getRecentCameraMicUsageLog(): String {
     return try {
