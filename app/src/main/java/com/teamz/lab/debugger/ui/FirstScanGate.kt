@@ -305,6 +305,21 @@ object FirstScanGate {
     }
 
     /**
+     * Record the first scan as today's daily scan, so the Health tab the user lands on next
+     * knows a scan happened. Until 2026-10-04 it did not: seconds after scanning, the card
+     * said "Scanned: not yet · 0 scans · Run a scan". Returns the 1-10 daily score, or null
+     * if it could not be computed — never blocks the gate.
+     */
+    suspend fun recordDailyScan(context: Context): Int? = try {
+        val daily = com.teamz.lab.debugger.utils.HealthScoreUtils.calculateDailyHealthScore(context)
+        com.teamz.lab.debugger.utils.HealthScoreUtils.saveHealthScore(context, daily)
+        daily
+    } catch (t: Throwable) {
+        Log.w(TAG, "daily scan record failed: ${t.message}")
+        null
+    }
+
+    /**
      * v3.2.0: the scan could not read ANY subsystem. Completes the gate (never
      * trap the user) but persists NO score — a fabricated number is the exact
      * Deceptive Behavior class the strike was about.

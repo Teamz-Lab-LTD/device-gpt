@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.async
 
 /**
  * v3.2.0 honest FirstScanGate UI.
@@ -80,9 +81,17 @@ fun FirstScanGateScreen(
     // Real scan — progress advances only when a check actually finishes.
     LaunchedEffect(Unit) {
         if (phase == Phase.SCANNING.name) {
-            val result = FirstScanGate.runQuickScan(context) { completed, label ->
-                progress = completed / 4f
-                checkLabel = label
+            // The daily 1-10 scan runs alongside the quick scan and is awaited before the score
+            // shows, so the Health tab behind "See details" never says "0 scans" to someone who
+            // just scanned. It is also the scan the user would otherwise be asked to run there.
+            val result = kotlinx.coroutines.coroutineScope {
+                val daily = async { FirstScanGate.recordDailyScan(context) }
+                val quick = FirstScanGate.runQuickScan(context) { completed, label ->
+                    progress = completed / 4f
+                    checkLabel = label
+                }
+                daily.await()
+                quick
             }
             scanResult = result
             val total = result.total

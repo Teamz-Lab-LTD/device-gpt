@@ -210,7 +210,7 @@ fun HealthScoreCard(
                 StatItem(
                     icon = Icons.Default.Analytics,
                     label = "Total",
-                    value = "$totalScans scans",
+                    value = "$totalScans scan${if (totalScans == 1) "" else "s"}",
                     color = MaterialTheme.colorScheme.primary
                 )
             }
