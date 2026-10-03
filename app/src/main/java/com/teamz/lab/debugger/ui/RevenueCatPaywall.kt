@@ -27,13 +27,17 @@ import com.teamz.lab.debugger.utils.PaywallPolicy
  * @param showPaywall Whether to show the paywall
  * @param onDismiss Callback when paywall is dismissed
  * @param analyticsSource Source identifier for analytics tracking (e.g., "revenuecat_paywall", "revenuecat_paywall_drawer")
+ * @param onUnavailable Callback when the paywall could not be shown at all (offering failed,
+ *   timed out, had no packages, or the SDK is not configured). Distinct from [onDismiss]: the
+ *   user never saw a price, so callers must not treat it as a refusal. Defaults to [onDismiss].
  */
 @OptIn(ExperimentalPreviewRevenueCatUIPurchasesAPI::class)
 @Composable
 fun RevenueCatPaywall(
     showPaywall: Boolean,
     onDismiss: () -> Unit,
-    analyticsSource: String = "revenuecat_paywall"
+    analyticsSource: String = "revenuecat_paywall",
+    onUnavailable: () -> Unit = onDismiss,
 ) {
     val context = LocalContext.current
     val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
@@ -75,7 +79,7 @@ fun RevenueCatPaywall(
         if (showPaywall && !isPremium && offering == null) {
             if (!RevenueCatManager.isSdkConfigured()) {
                 Log.w("RevenueCatPaywall", "RevenueCat not configured — closing paywall request")
-                onDismiss()
+                onUnavailable()
                 return@LaunchedEffect
             }
             com.revenuecat.purchases.Purchases.sharedInstance.getOfferings(
@@ -87,7 +91,7 @@ fun RevenueCatPaywall(
                             ?: offerings.current
                         if (targetOffering == null) {
                             Log.e("RevenueCatPaywall", "No offering available. IDs: ${offerings.all.keys}")
-                            reportOfferingUnavailable(context, analyticsSource, "no_offering_available", onDismiss)
+                            reportOfferingUnavailable(context, analyticsSource, "no_offering_available", onUnavailable)
                             return
                         }
                         // 2026-07-25: RC can return an offering whose packages have no local
@@ -107,7 +111,7 @@ fun RevenueCatPaywall(
                                     "Play Billing productDetails lookup failed for every package. " +
                                     "Fix product type mismatch in RC dashboard.",
                             )
-                            reportOfferingUnavailable(context, analyticsSource, "offering_has_no_packages", onDismiss)
+                            reportOfferingUnavailable(context, analyticsSource, "offering_has_no_packages", onUnavailable)
                             return
                         }
                         offering = targetOffering
@@ -128,7 +132,7 @@ fun RevenueCatPaywall(
                             context.getString(R.string.premium_unavailable_try_later),
                             Toast.LENGTH_SHORT
                         ).show()
-                        onDismiss()
+                        onUnavailable()
                     }
                 }
             )
@@ -156,7 +160,7 @@ fun RevenueCatPaywall(
                     "RevenueCatPaywall",
                     "Offering fetch did not complete within 6s — dismissing to unstick the UI",
                 )
-                reportOfferingUnavailable(context, analyticsSource, "offering_fetch_timeout", onDismiss)
+                reportOfferingUnavailable(context, analyticsSource, "offering_fetch_timeout", onUnavailable)
             }
         }
     }

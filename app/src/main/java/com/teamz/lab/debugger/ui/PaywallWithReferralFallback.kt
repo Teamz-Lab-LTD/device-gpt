@@ -96,7 +96,14 @@ fun PaywallWithReferralFallback(
         } else {
             showReferralFallback = false
             showFullShareDialog = false
-            showDismissReasonSheet = true
+            // Once per install. It used to follow every paywall journey, and new users do not
+            // answer it: of 22 day-one survey events on vc48, 20 were sheet_dismissed or
+            // no_response. Every extra time it was one more screen between the user and the app.
+            if (com.teamz.lab.debugger.utils.PaywallPolicy.dismissSurveyAllowed(context)) {
+                showDismissReasonSheet = true
+            } else {
+                onDismiss()
+            }
         }
     }
 
@@ -118,7 +125,12 @@ fun PaywallWithReferralFallback(
     RevenueCatPaywall(
         showPaywall = showPaywall && !showReferralFallback && !showFullShareDialog,
         onDismiss = handleRcDismiss,
-        analyticsSource = analyticsSource
+        analyticsSource = analyticsSource,
+        // The offering never loaded, so there was no price to refuse. Until 2026-10-04 this went
+        // through handleRcDismiss: "Not ready to pay?" for a price the user never saw, then
+        // "why did you close?" for a paywall they never closed. RevenueCatPaywall has already
+        // shown its "premium unavailable" toast; just end the chain.
+        onUnavailable = { onDismiss() }
     )
 
     if (showReferralFallback && !showFullShareDialog) {
@@ -170,6 +182,7 @@ private fun PaywallDismissReasonSheet(
     var responded by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    LaunchedEffect(Unit) { com.teamz.lab.debugger.utils.PaywallPolicy.recordDismissSurveyShown(context) }
     fun logAndFinish(reasonKey: String) {
         if (responded) return
         responded = true

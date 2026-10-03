@@ -46,6 +46,7 @@ object PaywallPolicy {
     private const val KEY_SESSION_SHOWN_COUNT = "policy_session_shown_count"
     private const val KEY_SESSION_STAMP = "policy_session_stamp"
     private const val DAY_MS = 24L * 60 * 60 * 1000
+    private const val KEY_DISMISS_SURVEY_SHOWN = "policy_dismiss_survey_shown"
 
     enum class RouteAction { RESHOW_ONCE, COOLDOWN_7D, SUPPRESS_30D, LOG_ONLY }
 
@@ -200,6 +201,20 @@ object PaywallPolicy {
             }
             RouteAction.LOG_ONLY -> false
         }
+    }
+
+    // ---- 3. Dismiss-reason survey frequency -------------------------------------------
+
+    /**
+     * The "Quick — why did you close?" sheet runs once per install. It used to follow every
+     * paywall journey; on vc48, 20 of 22 day-one survey events were sheet_dismissed or
+     * no_response, so repeating it collected nothing and added a screen each time.
+     */
+    fun dismissSurveyAllowed(context: Context): Boolean =
+        !prefs(context).getBoolean(KEY_DISMISS_SURVEY_SHOWN, false)
+
+    fun recordDismissSurveyShown(context: Context) {
+        prefs(context).edit { putBoolean(KEY_DISMISS_SURVEY_SHOWN, true) }
     }
 
     /** New install / debug reset helper. */
