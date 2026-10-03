@@ -150,22 +150,24 @@ object NetworkPrivacyScorer {
         )
     }
 
+    // Internal id stays "dpi_detection" (weights, analytics). A single ping cannot detect deep
+    // packet inspection; until 2026-10-04 this row was named and worded as if it could.
     private fun evaluateDpiDetection(): PrivacyCheckResult {
         val raw = checkDPIDetection()
         val passed = raw.contains("✅")
         val isError = raw.contains("❌")
         return PrivacyCheckResult(
             name = "dpi_detection",
-            displayName = "Deep Packet Inspection",
+            displayName = "Ping Reachability (8.8.8.8)",
             status = when {
                 passed -> PrivacyCheckStatus.PASS
                 isError -> PrivacyCheckStatus.ERROR
                 else -> PrivacyCheckStatus.WARNING
             },
-            detail = if (passed) "No deep packet inspection signatures detected"
-            else if (isError) "Unable to check for network interference"
-            else "Network interference indicators detected",
-            recommendation = if (!passed && !isError) "Your ISP may be inspecting traffic -- a VPN can help" else null
+            detail = if (passed) "Reached 8.8.8.8 with no packet loss"
+            else if (isError) "Could not tell — the ping did not get through (many networks block ping)"
+            else "Packets were lost on the way to 8.8.8.8",
+            recommendation = if (!passed && !isError) "Your connection is dropping packets -- try another network" else null
         )
     }
 

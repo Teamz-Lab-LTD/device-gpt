@@ -1787,6 +1787,14 @@ fun getLastLogs(): String {
     }
 }
 
+/**
+ * The "Privacy Exposure Check" section (Device Info). Row names describe what each check reads,
+ * not a detection it cannot make. Until 2026-10-04 the rows were "Screen Recording Apps
+ * Detected:", "Suspicious Accessibility Services (Spying Apps)", "Background Microphone Usage
+ * (Eavesdropping Risk)", "Unusual Battery Drain (Spyware Running in Background)" and "Keylogger
+ * Detection"; the collapsed card previewed the first one, so every user read "Screen Recording
+ * Apps Detected" before opening it.
+ */
 fun isDeviceBeingMonitored(context: Context): String {
     val hasScreenRecordingApps = detectScreenRecordingApps(context)
     val suspiciousAccessibilityServices = detectSuspiciousAccessibilityServices(context)
@@ -1794,30 +1802,36 @@ fun isDeviceBeingMonitored(context: Context): String {
     val unknownCerts = checkSSLCertificateHijack()
     val deepPacketInspection = checkDPIDetection()
     val appPermissionsMisuse = detectDangerousPermissions(context)
-    val backgroundMicUsage = isMicrophoneBeingUsed(context)
-    val unusualBatteryDrain = detectBatteryDrain()
     val keyloggerCheck = detectKeylogger(context)
 
-    return """        
-🎥 Screen Recording Apps Detected: $hasScreenRecordingApps
-        
-🕵️ Suspicious Accessibility Services (Spying Apps): $suspiciousAccessibilityServices
-       
-🖥️ Developer Mode / Remote Debugging (ADB Enabled): $adbEnabled
-       
-🔒 Fake Security Certificates (SSL Hijack by ISP/Government): $unknownCerts
-       
-📡 Deep Packet Inspection (ISP/Government Scanning Traffic): $deepPacketInspection
-      
-📲 Apps with Excessive Permissions (Camera, Mic, SMS, Call Logs): $appPermissionsMisuse
-       
-🎙 Background Microphone Usage (Eavesdropping Risk): $backgroundMicUsage
-       
-🔋 Unusual Battery Drain (Spyware Running in Background): $unusualBatteryDrain
-       
-⌨️ Keylogger Detection (Silent Keyboard Tracking Apps): $keyloggerCheck
+    return """
+🎥 Screen Capture Access: $hasScreenRecordingApps
+
+🕵️ Accessibility Services: $suspiciousAccessibilityServices
+
+🖥️ USB Debugging (ADB): $adbEnabled
+
+🔒 HTTPS Certificate Check (google.com): $unknownCerts
+
+📡 Ping to 8.8.8.8 (Connection Reachability): $deepPacketInspection
+
+📲 Apps With Camera, Mic, SMS or Call-Log Access: $appPermissionsMisuse
+
+🎙 Microphone Use by Other Apps: ${OTHER_APPS_MIC_NOTE}
+
+🔋 Battery Use by Other Apps: ℹ️ Android does not let apps read other apps' battery use. Settings → Battery → Battery usage shows it.
+
+⌨️ Who Can Read Your Typing: $keyloggerCheck
     """.trimIndent()
 }
+
+/**
+ * Android does not expose other apps' live microphone use. isMicrophoneBeingUsed() reads
+ * DeviceGPT's OWN record-audio app-op (myUid), so it said "Active" — "eavesdropping risk",
+ * "voice clone risk" — for everyone who allowed the mic test.
+ */
+internal const val OTHER_APPS_MIC_NOTE =
+    "ℹ️ Android does not let apps see when other apps use the microphone. On Android 12 and newer, a green dot appears in the status bar while any app is using it."
 
 /** ⌨️ Detect Keylogger Apps */
 /**
@@ -1924,18 +1938,8 @@ fun isMicrophoneBeingUsed(context: Context): String {
     }
 }
 
-/** 🔋 Detect Unusual Battery Drain */
-fun detectBatteryDrain(): String {
-    return try {
-        val process = Runtime.getRuntime().exec("dumpsys batterystats")
-        val output = process.inputStream.bufferedReader().readText()
-        val highDrain = Regex("top=\\[(.*?)\\]").find(output)?.groupValues?.get(1)
-        if (!highDrain.isNullOrEmpty()) "High Usage Apps: $highDrain" else "Normal Battery Consumption"
-    } catch (e: Exception) {
-        handleError(e)
-        "Unknown"
-    }
-}
+// detectBatteryDrain() removed 2026-10-04: `dumpsys batterystats` needs the DUMP permission,
+// which apps do not get, so it returned "Normal Battery Consumption" on every phone.
 
 fun getAiInferenceSupport(context: Context): String {
     val hasNNAPI = context.packageManager.hasSystemFeature("android.hardware.neuralnetworks")
@@ -2195,14 +2199,10 @@ fun getFaceUnlockTrustLevel(context: Context): String {
     return level
 }
 
-fun detectAiVoiceCloneRisk(context: Context): String {
-    val micStatus = isMicrophoneBeingUsed(context)
-    return when (micStatus) {
-        "Active" -> "🎙️ Microphone is currently in use. Potential AI voice clone risk."
-        "Not Active" -> "✅ No active mic usage. Safe from voice cloning."
-        else -> "⚠️ Unable to determine mic status."
-    }
-}
+fun detectAiVoiceCloneRisk(@Suppress("UNUSED_PARAMETER") context: Context): String =
+    // It read DeviceGPT's own mic permission (see OTHER_APPS_MIC_NOTE) and called it a voice
+    // clone risk, or called the phone "safe from voice cloning" — neither is something it measured.
+    OTHER_APPS_MIC_NOTE
 
 /**
  * Cross-app ad tracking, measured.

@@ -257,8 +257,8 @@ fun DeviceInfoSection(
         // android.util.Log.d("DeviceInfoSection", "🔄 Recomputing deviceInfo - isFullyLoaded: ${state.isFullyLoaded}, items with data: ${listOf(state.deviceDetails, state.cpuDetails, state.gpuDetails).count { it.isNotEmpty() }}") // Disabled: Too verbose
         listOf(
             "Device Specifications" to (if (showLoading && state.deviceDetails.isEmpty()) loadingText else state.deviceDetails),
-            "Device Spyware & Tracking Test" to (if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText
-                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.isDeviceBeingMonitored, "full spyware scan results & protection steps")
+            "Privacy Exposure Check" to (if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText
+                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.isDeviceBeingMonitored, "full privacy exposure details & what to do")
                 else state.isDeviceBeingMonitored),
             "Processor & Performance" to (if (showLoading && state.cpuDetails.isEmpty()) loadingText else state.cpuDetails),
             "Graphics & GPU Information" to (if (showLoading && state.gpuDetails.isEmpty()) loadingText else state.gpuDetails),
@@ -289,8 +289,10 @@ fun DeviceInfoSection(
             "Hidden Apps & Services Check" to (if (showLoading && state.hiddenAppsStatus.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hiddenAppsStatus, "full hidden apps list & removal guide")
                 else state.hiddenAppsStatus),
-            "AI Voice Clone Risk Check" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
-                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.voiceCloneRisk, "full voice clone vulnerability analysis")
+            // Was "AI Voice Clone Risk Check", with premium selling a "full voice clone
+            // vulnerability analysis". The check read DeviceGPT's own mic permission; what is left
+            // is one honest sentence, so there is nothing to put behind the paywall.
+            "Microphone Privacy" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
                 else state.voiceCloneRisk),
             "How Hackable Is My Phone?" to (if (showLoading && state.hackability.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hackability, "full hackability report & security fixes")

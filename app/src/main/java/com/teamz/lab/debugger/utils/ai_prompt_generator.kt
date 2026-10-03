@@ -1504,7 +1504,7 @@ $itemContent
    - DNS Integrity - what is DNS and why does it matter for privacy?
    - SSL Certificate - what is this checking and should I worry?
    - Proxy Detection - what is a transparent proxy and why is it bad?
-   - Deep Packet Inspection - what does this mean in everyday terms?
+   - Ping Reachability - what a single ping to 8.8.8.8 shows, and what it cannot show
    - ISP Behavior - what could my ISP be doing?
    - Captive Portal - what is this and when should I be concerned?
    - Private DNS - what is this and how do I enable it?
@@ -3006,7 +3006,7 @@ $itemContent
    - **DNS Integrity**: Analyze DNS manipulation findings, explain DNS hijacking/poisoning risks, ISP DNS interception
    - **SSL/TLS Certificate**: MITM attack risk assessment, certificate pinning status, HSTS compliance
    - **Transparent Proxy**: HTTP proxy detection, traffic interception analysis, corporate vs ISP proxy distinction
-   - **Deep Packet Inspection**: DPI methodology assessment, ISP traffic analysis capabilities, protocol-level inspection
+   - **Ping Reachability**: what one ping to 8.8.8.8 does and does not show (it cannot detect traffic inspection; 100% loss often just means the network blocks ping)
    - **ISP Behavior**: Traffic monitoring, HTTP 204 redirect analysis, behavioral advertising injection
    - **Captive Portal**: Network authentication analysis, session hijacking risks on public networks
    - **Private DNS (DoT/DoH)**: DNS encryption status, recommended DNS providers, privacy benefits of encrypted DNS

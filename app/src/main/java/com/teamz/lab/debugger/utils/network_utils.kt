@@ -813,11 +813,11 @@ fun checkDPIDetection(): String {
     } catch (e: java.io.IOException) {
         // Network I/O errors or command execution failures
         // These are expected when network is unavailable or ping command fails
-        "❌ Unable to Check DPI (Network unavailable)"
+        "❌ Could not check ping to 8.8.8.8 (network unavailable)"
     } catch (e: Exception) {
         // Only log unexpected errors
         handleError(e)
-        "❌ Unable to Check DPI"
+        "❌ Could not check ping to 8.8.8.8"
     }
 }
 
@@ -831,9 +831,9 @@ fun checkDPIDetection(): String {
 internal fun dpiLineFromPing(output: String): String {
     val loss = Regex("""(\d+(?:\.\d+)?)% packet loss""").find(output)?.groupValues?.get(1)?.toDoubleOrNull()
     return when {
-        loss == null -> "❌ Unable to Check DPI (no ping result)"
+        loss == null -> "❌ Could not check ping to 8.8.8.8 (no ping result)"
         loss == 0.0 -> "✅ Reached 8.8.8.8 with no packet loss"
-        else -> "❌ Unable to Check DPI (ping to 8.8.8.8 did not get through; many networks block ping)"
+        else -> "❌ Could not check: ping to 8.8.8.8 did not get through (many networks block ping)"
     }
 }
 
@@ -956,6 +956,12 @@ fun checkDNSManipulation(): String {
 }
 
 
+/**
+ * A finding is a ⚠️ result. "❌ Could not check" (offline, ping blocked) is not one: it used to
+ * count, so a network that blocks ping — common on mobile — raised the threat level by itself.
+ */
+internal fun countNetworkFindings(results: List<String>): Int = results.count { it.contains("⚠️") }
+
 fun checkInternetPrivacyAndSurveillance(): String {
     val dnsManipulation = checkDNSManipulation()
     val proxyDetection = checkTransparentProxy()
@@ -963,13 +969,9 @@ fun checkInternetPrivacyAndSurveillance(): String {
     val dpiDetection = checkDPIDetection()
     val ispTracking = checkISPTracking()
 
-    val threatCount = listOf(
-        dnsManipulation,
-        proxyDetection,
-        sslIntegrity,
-        dpiDetection,
-        ispTracking
-    ).count { it.contains("⚠️") || it.contains("❌") }
+    val threatCount = countNetworkFindings(
+        listOf(dnsManipulation, proxyDetection, sslIntegrity, dpiDetection, ispTracking)
+    )
 
     val threatLevel = when (threatCount) {
         0 -> "🟢 Low"
@@ -986,7 +988,7 @@ fun checkInternetPrivacyAndSurveillance(): String {
         
         🔒 Secure Websites Tampered (SSL Certificate Check): $sslIntegrity
         
-        📡 Deep Data Scanning (Government/ISP Surveillance): $dpiDetection
+        📡 Ping to 8.8.8.8 (Connection Reachability): $dpiDetection
         
         🕵️ Tracking & User Activity Logging: $ispTracking
     """.trimIndent()

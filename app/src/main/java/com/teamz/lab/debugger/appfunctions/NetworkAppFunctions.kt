@@ -11,7 +11,7 @@ class NetworkAppFunctions {
     /**
      * Runs DeviceGPT's full network probe: DNS/HTTPS reachability against popular services,
      * QUIC hint, captive portal / private-DNS / VPN detection, and a network-privacy audit
-     * (SSL cert sanity, DPI hints, ISP tracking heuristics, captive portal).
+     * (SSL cert sanity, ping reachability, ISP tracking heuristics, captive portal).
      *
      * Returns a composite report with an openness grade AND a privacy grade.
      *
@@ -92,7 +92,7 @@ class NetworkAppFunctions {
 
     /**
      * Runs only the network-privacy audit: DNS integrity, SSL cert sanity, transparent-proxy
-     * detection, DPI detection, ISP tracking heuristics, captive portal detection.
+     * detection, ping reachability, ISP tracking heuristics, captive portal detection.
      *
      * Use this for: "is my network private?", "is anyone tracking my traffic?".
      */
