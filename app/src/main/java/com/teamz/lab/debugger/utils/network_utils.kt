@@ -807,13 +807,9 @@ fun checkISPTracking(): String {
 
 fun checkDPIDetection(): String {
     return try {
-        val vpnTest =
+        val output =
             Runtime.getRuntime().exec("ping -c 1 8.8.8.8").inputStream.bufferedReader().readText()
-        if (vpnTest.contains("packet loss") || vpnTest.contains("Request timeout")) {
-            "⚠️ Your ISP might be blocking VPNs or inspecting traffic!"
-        } else {
-            "✅ No DPI Detected"
-        }
+        dpiLineFromPing(output)
     } catch (e: java.io.IOException) {
         // Network I/O errors or command execution failures
         // These are expected when network is unavailable or ping command fails
@@ -822,6 +818,22 @@ fun checkDPIDetection(): String {
         // Only log unexpected errors
         handleError(e)
         "❌ Unable to Check DPI"
+    }
+}
+
+/**
+ * One ping can say "reached 8.8.8.8" or "could not tell" — never "your ISP is inspecting
+ * traffic". The old test flagged contains("packet loss"), and every ping summary says
+ * "0% packet loss", so every user who could ping was told their ISP might be blocking VPNs or
+ * inspecting traffic (and Network Trust advised a VPN). 100% loss usually means the network
+ * blocks ping, which many mobile networks do; that is not evidence of interception either.
+ */
+internal fun dpiLineFromPing(output: String): String {
+    val loss = Regex("""(\d+(?:\.\d+)?)% packet loss""").find(output)?.groupValues?.get(1)?.toDoubleOrNull()
+    return when {
+        loss == null -> "❌ Unable to Check DPI (no ping result)"
+        loss == 0.0 -> "✅ Reached 8.8.8.8 with no packet loss"
+        else -> "❌ Unable to Check DPI (ping to 8.8.8.8 did not get through; many networks block ping)"
     }
 }
 

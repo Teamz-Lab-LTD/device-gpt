@@ -2221,112 +2221,78 @@ fun detectAdTrackingApps(context: Context): String =
 // snooping whenever /sys/class/input existed, which is on every Android phone. The app records
 // no motion data and makes no such claim.
 
-fun getRecentCameraMicUsageLog(): String {
-    return try {
-        val logcat = Runtime.getRuntime().exec("logcat -d -t 100")
-            .inputStream.bufferedReader().readLines()
+/**
+ * Android does not let an app see when OTHER apps use the microphone or camera. This used to run
+ * `logcat -d`, which since Android 4.1 returns only the calling app's own log: it answered
+ * "✅ No recent mic or camera access" for every phone, and could report DeviceGPT's own mic or
+ * camera test as "recent usage detected". Say what the platform actually offers instead.
+ */
+fun getRecentCameraMicUsageLog(): String =
+    "ℹ️ Android does not let apps see when other apps use your microphone or camera. " +
+        "On Android 12 and newer, a green dot appears in the status bar while any app is using " +
+        "them, and Settings → Security & privacy → Privacy dashboard lists which apps did."
 
-        val matches = logcat.filter {
-            it.contains("CameraService") || it.contains("AudioRecord") || it.contains("mediarecorder")
-        }
+/**
+ * The facts the privacy score and "Threats Today" are built from — each one read from the check
+ * that measures it, never by searching display text.
+ *
+ * Until 2026-10-04 both functions matched words in strings: "Screen Recording"/"Suspicious"
+ * against isDeviceBeingMonitored(), whose own section HEADERS contain those words (−20 and a
+ * threat for every user); ⚠️/❌ against the DPI check, which warned on every successful ping;
+ * ❌ "unable to check" SSL as a threat; and the mic/camera "log", which can only see
+ * DeviceGPT's own process. A clean emulator scored 60 with "Screen recording or suspicious apps
+ * detected".
+ */
+data class PrivacySignals(
+    val screenCaptureExposed: Boolean,
+    val usbDebugging: Boolean,
+    val rooted: Boolean,
+    val suspiciousSslCertificate: Boolean,
+    val spoofingAppInstalled: Boolean,
+)
 
-        if (matches.isNotEmpty()) {
-            "🔍 Recent usage detected:\n" + matches.takeLast(5).joinToString("\n")
-        } else {
-            "✅ No recent mic or camera access in logs."
-        }
-    } catch (e: Exception) {
-        handleError(e)
-        "❌ Unable to read recent mic/camera usage"
-    }
+fun collectPrivacySignals(context: Context): PrivacySignals = PrivacySignals(
+    // Same source and threshold as the Security Dashboard's "Screen Content Access" check.
+    screenCaptureExposed = try {
+        PrivacyExposureScanner.screenCaptureExposure(context).level == ExposureLevel.ELEVATED
+    } catch (_: Exception) { false },
+    usbDebugging = isUsbDebuggingEnabled(context).let { it.contains("enabled") || it.contains("Enabled") },
+    rooted = isDeviceRooted().let { it.contains("Yes") || it.contains("Rooted") },
+    suspiciousSslCertificate = isSuspiciousSslResult(checkSSLCertificateHijack()),
+    spoofingAppInstalled = detectSensorSpoofing(context).contains("Spoofing Detected"),
+)
+
+/** A check that could not run ("❌ Unable to Check…", e.g. offline) is not a finding. */
+fun isSuspiciousSslResult(raw: String): Boolean = raw.contains("Suspicious SSL Certificate")
+
+fun privacyScoreFromSignals(s: PrivacySignals): Int {
+    var score = 100
+    if (s.screenCaptureExposed) score -= 20
+    if (s.usbDebugging) score -= 10
+    if (s.rooted) score -= 15
+    if (s.suspiciousSslCertificate) score -= 10
+    if (s.spoofingAppInstalled) score -= 10
+    return score.coerceIn(0, 100)
+}
+
+fun privacyThreatsFromSignals(s: PrivacySignals): List<String> = buildList {
+    if (s.screenCaptureExposed) add("An installed app can capture or read your screen")
+    if (s.usbDebugging) add("USB debugging enabled (security risk)")
+    if (s.rooted) add("Device is rooted (security risk)")
+    if (s.suspiciousSslCertificate) add("SSL certificate issues detected")
+    if (s.spoofingAppInstalled) add("A GPS spoofing app is installed")
 }
 
 /**
  * Calculate daily privacy score (0-100) based on device privacy state
  * Higher score = better privacy
  */
-fun calculatePrivacyScore(context: Context): Int {
-    var score = 100 // Start with perfect score
-    
-    // Check for monitoring/spyware (-20 points)
-    val monitoringStatus = isDeviceBeingMonitored(context)
-    if (monitoringStatus.contains("Screen Recording") || monitoringStatus.contains("Suspicious")) {
-        score -= 20
-    }
-    
-    // Check for USB debugging (-10 points)
-    val usbDebugStatus = isUsbDebuggingEnabled(context)
-    if (usbDebugStatus.contains("enabled") || usbDebugStatus.contains("Enabled")) {
-        score -= 10
-    }
-    
-    // Check for root access (-15 points)
-    val rootStatus = isDeviceRooted()
-    if (rootStatus.contains("Yes") || rootStatus.contains("Rooted")) {
-        score -= 15
-    }
-    
-    // Check for SSL certificate issues (-10 points)
-    val sslStatus = checkSSLCertificateHijack()
-    if (sslStatus.contains("⚠️") || sslStatus.contains("❌")) {
-        score -= 10
-    }
-    
-    // Check for DPI detection (-10 points)
-    val dpiStatus = checkDPIDetection()
-    if (dpiStatus.contains("⚠️") || dpiStatus.contains("❌")) {
-        score -= 10
-    }
-    
-    // Check for recent mic/camera usage (-5 points per recent usage)
-    val recentUsage = getRecentCameraMicUsageLog()
-    if (recentUsage.contains("Recent usage detected")) {
-        val usageCount = recentUsage.split("\n").count { it.isNotBlank() } - 1 // Subtract header line
-        score -= minOf(15, usageCount * 5) // Max -15 points
-    }
-    
-    // Check for GPS spoofing (-10 points)
-    val spoofingStatus = detectSensorSpoofing(context)
-    if (spoofingStatus.contains("⚠️") || spoofingStatus.contains("❌")) {
-        score -= 10
-    }
-    
-    return maxOf(0, score) // Ensure score is between 0-100
-}
+fun calculatePrivacyScore(context: Context): Int = privacyScoreFromSignals(collectPrivacySignals(context))
 
 /**
  * Get privacy threats detected today
  */
-fun getPrivacyThreatsToday(context: Context): List<String> {
-    val threats = mutableListOf<String>()
-    
-    val monitoringStatus = isDeviceBeingMonitored(context)
-    if (monitoringStatus.contains("Screen Recording") || monitoringStatus.contains("Suspicious")) {
-        threats.add("Screen recording or suspicious apps detected")
-    }
-    
-    val recentUsage = getRecentCameraMicUsageLog()
-    if (recentUsage.contains("Recent usage detected")) {
-        threats.add("Recent microphone or camera access detected")
-    }
-    
-    val usbDebugStatus = isUsbDebuggingEnabled(context)
-    if (usbDebugStatus.contains("enabled") || usbDebugStatus.contains("Enabled")) {
-        threats.add("USB debugging enabled (security risk)")
-    }
-    
-    val rootStatus = isDeviceRooted()
-    if (rootStatus.contains("Yes") || rootStatus.contains("Rooted")) {
-        threats.add("Device is rooted (security risk)")
-    }
-    
-    val sslStatus = checkSSLCertificateHijack()
-    if (sslStatus.contains("⚠️") || sslStatus.contains("❌")) {
-        threats.add("SSL certificate issues detected")
-    }
-    
-    return threats
-}
+fun getPrivacyThreatsToday(context: Context): List<String> = privacyThreatsFromSignals(collectPrivacySignals(context))
 
 /**
  * Data class for app cache information
