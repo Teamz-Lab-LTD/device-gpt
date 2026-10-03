@@ -99,16 +99,60 @@ debugging, thermal and RAM checks are unchanged.
 - **Not verified on the Pixel 8a:** it was locked, then unplugged. Not verified on Android 12 or
   lower either; the dialog is only reached on Android 13+.
 
-## Fix 3 (next): false ❌ / ⚠️ lines on the Security tab
+## Fix 3 (this branch, `242ec48`): the app told healthy phones they were at risk
 
-The Security tab shows these lines to every user. They are the same false findings that fix 1
-removed from the score:
-- "❌ No admin set — features may be limited"
-- "❌ Security shield is off" (when SELinux cannot be read)
-- "⚠️ Modified system files found: /etc/hosts"
+Before the fix, an Android 15 emulator with no faults showed this under Health → Smart
+Recommendations: "🛡️ Your phone's security system is turned off - this is unusual and risky ·
+📞 Contact your phone's customer support". It sat directly above "🌟 Great job! Your phone is in
+excellent shape". This is the pattern Play's Deceptive Behavior policy targets.
 
-Fix 1 took them out of the score but not out of the display. They need copy that tells the
-truth, and the owner has to approve that copy, because these lines are the policy surface.
+Each alarm came from a check that could not see, a normal state reported as a fault, or a
+placeholder:
+
+| line | why it was false | now |
+|---|---|---|
+| ❌ Security shield is off | apps get `getenforce: Permission denied` (confirmed with `run-as`) | ℹ️ Not checked. "Permissive" still ❌ |
+| ❌ No admin set → advice: "go to Device admin apps to fix this" | no device admin is the normal state; the advice told users to grant admin access to an app | ✅ none / ℹ️ lists them by name |
+| ⚠️ Modified system files: /etc/hosts | the file ships on every Android device | path removed |
+| 👣 "Your phone moved while locked — possible snooping" | `/sys/class/input` exists on every phone; the code said "Simulated for illustration" | check, advice and AI-prompt claim removed |
+| ✅ Clipboard "auto-clears (Android 11+)" | the protection is Android 10's background-read block; Android 11 does not auto-clear the clipboard | corrected |
+| "Malware Scan (Offline Check)", "Spy Detection" | the app does no malware or spy detection | renamed |
+
+Zero Trust used to give an unreadable SELinux status a WARNING, with "contact your device
+manufacturer". It now leaves that check out and scores the section over the checks that ran.
+When all 7 run, nothing changes, because their weights add up to 100.
+
+The Suggestions `when` block shows only its first match. So these had to change together:
+fixing one would have surfaced the next false branch.
+
+- Tests: `SecurityFalseAlarmTest`. All 3 behaviour tests failed on the old code: `/etc/hosts`
+  was flagged, "No admin set" was in the text, and the suggestions contained alarms. Full suite:
+  **684 tests, 0 failed**.
+- Device: the suggestions now open with "Great job!" and contain no alarm. The Security section
+  reads ℹ️ Not checked / ✅ No apps have device admin access / ✅ System files look clean /
+  📦 App Install Sources.
+- **Not verified on device:** the Zero Trust per-check rows. The session-1 paywall loop (below)
+  kept taking over the screen. The dashboard itself rendered (72/100) without a crash.
+- **The owner should review the wording.** These lines are the policy surface.
+- **Same class, not fixed:** `getRecentCameraMicUsageLog()` runs `logcat -d`. An app can only
+  read its own log, so the result "✅ No recent mic or camera access" is false reassurance.
+  "Recent usage detected" can fire from DeviceGPT's own mic test, and it feeds
+  `calculatePrivacyScore` and `getPrivacyThreatsToday`.
+
+## Next candidate: the first-session paywall loop
+
+On a fresh debug install, logcat shows `paywall_fallback_triggered {session_count=1,
+fallback_delay_ms=20000}`, meaning a paywall fires 20 seconds into the first session. After
+that, the paywall, "Quick — why did you close?", and "Not ready to pay? Invite friends" cycle
+into each other. Answering the survey led straight back to the referral screen. Every
+`paywall_rerouted` event carries `action=COOLDOWN_7D, applied=false`.
+
+The debug build may not have production's Remote Config: `coldTriggerAllowed` depends on an RC
+flag and a minimum session count. But production GA4 shows the same pattern on vc48: **12 of 47
+real users saw a paywall on day 0**, and 13 saw the referral screen **38 times**.
+
+This is the strongest remaining first-session suspect. It is a monetisation decision, so it is
+the owner's call.
 
 ## Measurement changes the owner should approve
 
