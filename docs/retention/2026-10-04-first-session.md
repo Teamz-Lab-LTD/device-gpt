@@ -160,7 +160,21 @@ fixing one would have surfaced the next false branch.
   fetched. With production RC loaded, `paywall_rerouted` logs `applied=true`, so production
   does apply the 7-day cooldown.
 
-### Found, not fixed: the live RevenueCat paywall's own claims (needs the owner)
+### Fixed and published 2026-10-04 21:24 UTC: the live RevenueCat paywall's own claims
+
+The owner approved it. Paywall `pw24cbb6af3f704532` ("device-gpt", offering `device-gpt-offering`,
+shared project `proj8d8322e7`) went from revision 93 to revision 96:
+- removed the "4.8 stars · ★★★★★ · 60+ reviews" block, laurel images included;
+- the headline now uses the store's `{{ product.price }}` instead of a hand-typed "$2.99";
+- removed "Faster app performance".
+
+I compared the draft with the published version line by line before publishing. Nothing else
+changed: the button, "Restore purchases", the package binding and the other three benefits are
+the same. On a fresh install on the emulator, the paywall now reads "Remove Ads Forever · BDT
+420.00 • Lifetime Access", and the button reads "Get Premium - BDT 420.00". To undo, restore
+revision 93 in the RevenueCat dashboard.
+
+What it showed before:
 
 The paywall is designed in the RevenueCat dashboard, not in this repo. It shows:
 - **"4.8 stars · 60+ reviews"**, but Play has 5 ratings averaging 3.0.
