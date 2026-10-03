@@ -41,9 +41,9 @@ object HealthScoreUtils {
         // Security used to deduct for any ❌/⚠️ in the Security tab text. Most of those lines
         // are not faults: "No admin set" is the normal state of a personal phone, SELinux is
         // unreadable by apps, /etc/hosts exists on every device. The one real exposure in that
-        // block is unencrypted storage, read here directly. The refresh still runs because it
-        // warms SecurityInfoCache for the synchronous, Compose-facing callers further down.
-        SecurityInfoCache.refresh(context)
+        // block is unencrypted storage, read here directly. SecurityInfoCache is warmed by
+        // Application start-up and the Health tab, not here: the full security scan (getenforce,
+        // two package scans) used to sit in front of the first scan's score for nothing.
         val storageUnencrypted = try {
             (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager)
                 ?.storageEncryptionStatus == DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE

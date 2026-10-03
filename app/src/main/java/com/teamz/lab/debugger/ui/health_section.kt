@@ -1480,12 +1480,12 @@ Android manages battery automatically. This card surfaces diagnostic tips (charg
             // Similar to Device Info tab's approach - show loading immediately, then update
             LaunchedEffect(Unit) {
                 // Run all network operations on background thread
-                val privacyScoreValue = withContext(Dispatchers.IO) {
-                    calculatePrivacyScore(context)
+                // One collection for both: each run makes an HTTPS call and scans installed apps.
+                val signals = withContext(Dispatchers.IO) {
+                    com.teamz.lab.debugger.utils.collectPrivacySignals(context)
                 }
-                val threatsValue = withContext(Dispatchers.IO) {
-                    getPrivacyThreatsToday(context)
-                }
+                val privacyScoreValue = com.teamz.lab.debugger.utils.privacyScoreFromSignals(signals)
+                val threatsValue = com.teamz.lab.debugger.utils.privacyThreatsFromSignals(signals)
                 val recentUsageValue = withContext(Dispatchers.Default) {
                     getRecentCameraMicUsageLog()
                 }

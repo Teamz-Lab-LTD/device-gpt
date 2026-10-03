@@ -98,6 +98,9 @@ class PaywallLoopTest {
     @Test
     fun `bundled default gates the cold paywall`() {
         val rc = src("app/src/main/java/com/teamz/lab/debugger/utils/RemoteConfigUtils.kt")
-        assertTrue(rc.contains("\"paywall_delay_enabled\" to true"))
+        val literal = rc.contains("\"paywall_delay_enabled\" to true")
+        val viaConstant = rc.contains("\"paywall_delay_enabled\" to DEFAULT_PAYWALL_DELAY_ENABLED") &&
+            rc.contains("DEFAULT_PAYWALL_DELAY_ENABLED = true")
+        assertTrue("bundled paywall_delay_enabled must be true", literal || viaConstant)
     }
 }

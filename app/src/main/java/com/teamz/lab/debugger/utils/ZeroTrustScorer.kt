@@ -139,17 +139,9 @@ object ZeroTrustScorer {
         add("dangerous_permissions", "Sensitive Permissions",
             assessSensitivePermissionExposure(appPerms))
 
-        // 4. Camera/mic currently active — unchanged, this one was already real (AppOps)
-        val camMicActive = withContext(Dispatchers.IO) { isCameraOrMicActive(context) }
-        val isActive = camMicActive.contains("Active") || camMicActive.contains("🎤") || camMicActive.contains("📷")
-        checks.add(TrustCheckResult(
-            name = "camera_mic_active",
-            displayName = "Camera/Mic Activity",
-            status = if (!isActive) TrustCheckStatus.PASS else TrustCheckStatus.WARNING,
-            detail = if (!isActive) "Camera and microphone are not currently in use"
-            else "Camera or microphone is currently active",
-            recommendation = if (isActive) "Check which app is using your camera/microphone" else null
-        ))
+        // 4. Camera/mic activity — removed 2026-10-04. It read DeviceGPT's own app-ops, not
+        // other apps', and warned everyone who had allowed the mic or camera test. Android gives
+        // apps no way to see other apps' live use, so there is nothing honest to score here.
 
         // 5. Accessibility services, named and described rather than blanket-flagged
         val thirdPartyAccess = accessibility.filter { !it.isSystem }
@@ -177,7 +169,7 @@ object ZeroTrustScorer {
         val score = calculateSectionScore(checks, mapOf(
             "keylogger" to 20, "screen_recorder" to 15, "dangerous_permissions" to 20,
             "camera_mic_active" to 15, "accessibility_services" to 20, "malware_scan" to 10
-        ))
+        ), normalizeToRun = true)
 
         return TrustSection(
             name = "app_privacy",

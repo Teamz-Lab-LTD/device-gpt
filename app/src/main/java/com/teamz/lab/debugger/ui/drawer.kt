@@ -1,4 +1,6 @@
 package com.teamz.lab.debugger.ui
+
+import androidx.compose.foundation.selection.toggleable
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
@@ -1621,17 +1623,19 @@ fun NotificationPermissionDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .clickable {
-                            isCheck = !isCheck
-                            onDoNotAskMeAgain(isCheck)
-                        }
+                        // One toggleable control for the row, so TalkBack reads one checkbox.
+                        .toggleable(
+                            value = isCheck,
+                            role = androidx.compose.ui.semantics.Role.Checkbox,
+                            onValueChange = {
+                                isCheck = it
+                                onDoNotAskMeAgain(it)
+                            }
+                        )
                 ) {
                     Checkbox(
                         checked = isCheck,
-                        onCheckedChange = {
-                            isCheck = it
-                            onDoNotAskMeAgain(it)
-                        },
+                        onCheckedChange = null,
                         colors = CheckboxDefaults.colors(
                             checkedColor = MaterialTheme.colorScheme.primary,
                             uncheckedColor = MaterialTheme.colorScheme.outline,

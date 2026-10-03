@@ -90,7 +90,9 @@ fun FirstScanGateScreen(
                     progress = completed / 4f
                     checkLabel = label
                 }
-                daily.await()
+                // Bounded: the score must never wait long on the daily record. On timeout the
+                // record is dropped and the Health tab falls back to its own scan button.
+                kotlinx.coroutines.withTimeoutOrNull(2_000L) { daily.await() } ?: daily.cancel()
                 quick
             }
             scanResult = result

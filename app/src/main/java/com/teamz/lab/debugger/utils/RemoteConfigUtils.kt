@@ -63,6 +63,7 @@ object RemoteConfigUtils {
      */
     private const val DEFAULT_ADS_GRACE_SESSIONS = 2L
     private const val DEFAULT_PAYWALL_MAX_PER_SESSION = 1L
+    private const val DEFAULT_PAYWALL_DELAY_ENABLED = true
 
     // Referenced by BOTH the defaults map and the accessor fallback so the two cannot drift.
     // They had drifted: bundled 60000/7 against fallbacks of 10000/20.
@@ -220,7 +221,7 @@ object RemoteConfigUtils {
                 // `false` gave fresh installs the cold paywall 20 s into session one (3 of 121
                 // vc43+ installs within a minute). Production RC already gates it — the gate
                 // blocked 19 new vc48 users — so this only closes the pre-fetch window.
-                "paywall_delay_enabled" to true,             // true = gate cold-open paywall on session>=min + first scan
+                "paywall_delay_enabled" to DEFAULT_PAYWALL_DELAY_ENABLED,             // true = gate cold-open paywall on session>=min + first scan
                 "paywall_min_sessions" to 3L,                // Min sessions before any cold-open paywall (when gate on)
                 "paywall_reason_routing_enabled" to false,   // Dismiss-reason routing (Phase 1 = log-only)
                 // Hard cap on paywall impressions per session. Measured 2026-08-27: 1.72
@@ -541,7 +542,12 @@ object RemoteConfigUtils {
     // === v3.2.0 growth program flags (2026-07-10 synthesis) ===
 
     /** Gate cold-open paywall triggers on session count + first scan. Default: true */
-    fun isPaywallDelayEnabled(): Boolean = remoteConfig.getBoolean("paywall_delay_enabled")
+    fun isPaywallDelayEnabled(): Boolean {
+        // Reads before setDefaultsAsync lands return false, which would open the gate in the
+        // exact pre-fetch window the bundled default exists for.
+        if (!defaultsApplied) return DEFAULT_PAYWALL_DELAY_ENABLED
+        return remoteConfig.getBoolean("paywall_delay_enabled")
+    }
 
     /** Minimum sessions before a cold-open paywall may show. Default: 3 */
     fun getPaywallMinSessions(): Int {

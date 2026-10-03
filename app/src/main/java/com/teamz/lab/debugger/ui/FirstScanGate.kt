@@ -314,6 +314,7 @@ object FirstScanGate {
         val daily = com.teamz.lab.debugger.utils.HealthScoreUtils.calculateDailyHealthScore(context)
         com.teamz.lab.debugger.utils.HealthScoreUtils.saveHealthScore(context, daily)
         daily
+    } catch (e: kotlinx.coroutines.CancellationException) { throw e
     } catch (t: Throwable) {
         Log.w(TAG, "daily scan record failed: ${t.message}")
         null

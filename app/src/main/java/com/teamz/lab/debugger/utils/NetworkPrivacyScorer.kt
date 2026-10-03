@@ -107,7 +107,7 @@ object NetworkPrivacyScorer {
             },
             detail = if (passed) "Your DNS requests are not being redirected"
             else if (isError) "Unable to verify DNS integrity"
-            else "Your DNS requests may be redirected by your ISP",
+            else "DNS answered with unexpected addresses (VPN, filter or provider)",
             recommendation = if (!passed) "Consider using a trusted DNS like Google (8.8.8.8) or Cloudflare (1.1.1.1)" else null
         )
     }
@@ -183,10 +183,10 @@ object NetworkPrivacyScorer {
                 isError -> PrivacyCheckStatus.ERROR
                 else -> PrivacyCheckStatus.WARNING
             },
-            detail = if (passed) "No tracking redirects detected from your ISP"
-            else if (isError) "Unable to check ISP behavior"
-            else "Your ISP may be tracking or redirecting your web traffic",
-            recommendation = if (!passed && !isError) "Consider using encrypted DNS and HTTPS-only browsing" else null
+            detail = if (passed) "Connectivity test answered normally"
+            else if (isError) "Could not reach the test servers"
+            else "A test request was redirected (often a Wi-Fi sign-in page)",
+            recommendation = if (!passed && !isError) "If you are on public Wi-Fi, sign in to it; otherwise prefer HTTPS sites" else null
         )
     }
 

@@ -90,7 +90,7 @@ class PrivacyAppFunctions {
         }
 
         return scanResult(
-            title = "Spyware & Keylogger Check",
+            title = "Who Can Read Your Screen or Typing",
             summary = summary,
             details = combinedFindings.toMap().toDetailEntries(),
         )

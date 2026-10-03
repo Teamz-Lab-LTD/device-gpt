@@ -1418,25 +1418,15 @@ fun getCameraMicSpeakerFlashInfo(context: Context): String {
 }
 
 
-fun isCameraOrMicActive(context: Context): String {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // API 29+
-        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val micAccess = appOpsManager.unsafeCheckOpNoThrow(
-            AppOpsManager.OPSTR_RECORD_AUDIO, android.os.Process.myUid(), context.packageName
-        )
-        val camAccess = appOpsManager.unsafeCheckOpNoThrow(
-            AppOpsManager.OPSTR_CAMERA, android.os.Process.myUid(), context.packageName
-        )
-
-        return when {
-            micAccess == AppOpsManager.MODE_ALLOWED || camAccess == AppOpsManager.MODE_ALLOWED -> "🎤🎥 Mic/Camera Active!"
-            micAccess == AppOpsManager.MODE_ERRORED && camAccess == AppOpsManager.MODE_ERRORED -> "✅ Mic & Camera Inactive"
-            else -> "Unknown"
-        }
-    } else {
-        return "Unsupported (Requires Android 10+)"
-    }
-}
+/**
+ * Android does not expose other apps' live camera or microphone use. This read DeviceGPT's OWN
+ * record-audio/camera app-ops (myUid), so it printed "🎤🎥 Mic/Camera Active!" — and Zero Trust
+ * warned "Camera or microphone is currently active" — for everyone who allowed the mic or camera
+ * test. (power_consumption_utils has its own private, unrelated isCameraOrMicActive.)
+ */
+@Suppress("UNUSED_PARAMETER")
+fun isCameraOrMicActive(context: Context): String =
+    "ℹ️ Android does not let apps see when other apps use the camera or microphone. On Android 12 and newer, a green dot appears in the status bar while any app is using them."
 
 
 fun getAvailableStorage(): String {

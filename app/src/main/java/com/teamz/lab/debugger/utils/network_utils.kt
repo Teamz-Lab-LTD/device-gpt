@@ -744,6 +744,18 @@ fun getInternetUptime(): String {
 }
 
 
+/**
+ * Connectivity probes (Google generate_204, Firefox canonical page). When neither answers at all
+ * — offline, DNS failure, blocked domain — there is nothing to judge; this used to say "your ISP
+ * might be tracking or redirecting your web traffic". A wrong answer means the request was
+ * redirected or rewritten, most often by a Wi-Fi sign-in page; that is what is reported.
+ */
+internal fun ispLineFromCodes(googleCode: Int?, firefoxCode: Int?): String = when {
+    googleCode == 204 || firefoxCode == 200 -> "✅ Connectivity test answered normally (no redirect)\n"
+    googleCode == null && firefoxCode == null -> "❌ Could not check (no connection to the test servers)\n"
+    else -> "⚠️ A connectivity test was redirected or changed — usually a Wi-Fi sign-in page, sometimes a proxy\n"
+}
+
 fun checkISPTracking(): String {
     val googleUrl = "https://clients3.google.com/generate_204"
     val firefoxUrl = "https://detectportal.firefox.com/canonical.html"
@@ -788,20 +800,9 @@ fun checkISPTracking(): String {
             Pair(false, null)
         }
     }
-    // ✅ Try Google's test first
     val (googleOk, googleCode) = testUrl(googleUrl, 204)
-    return if (googleOk) {
-        "✅ No ISP Tracking Detected\n"
-    } else {
-        // 🔁 Fallback to Firefox test
-        val (firefoxOk, firefoxCode) = testUrl(firefoxUrl, 200)
-
-        if (firefoxOk) {
-            "✅ No ISP Tracking Detected (via Firefox fallback)\n"
-        } else {
-            "⚠️ Your ISP might be tracking or redirecting your web traffic!\n"
-        }
-    }
+    val firefoxCode = if (googleOk) null else testUrl(firefoxUrl, 200).second
+    return ispLineFromCodes(googleCode, firefoxCode)
 }
 
 
@@ -934,16 +935,27 @@ fun checkTransparentProxy(): String {
     }
 }
 
+/**
+ * Both names publish several addresses (v4 and v6). The old check took only the FIRST answer and
+ * required exactly 8.8.8.8 / 1.1.1.1, so a healthy network that answered 8.8.4.4 or IPv6 was told
+ * "your ISP or Government might be hijacking DNS". A different answer can also come from a VPN,
+ * a filter or a family-safety DNS, so it is reported as that, not as hijacking.
+ */
+internal fun dnsLineFromAnswers(google: List<String>, cloudflare: List<String>): String {
+    val googleKnown = setOf("8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844")
+    val cloudflareKnown = setOf("1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001")
+    fun norm(a: String) = a.substringBefore('%').lowercase()
+    if (google.isEmpty() || cloudflare.isEmpty()) return "❌ Unable to Check DNS Manipulation (no answer)\n"
+    val ok = google.any { norm(it) in googleKnown } && cloudflare.any { norm(it) in cloudflareKnown }
+    return if (ok) "✅ DNS Requests Appear Normal\n"
+    else "⚠️ DNS answered with unexpected addresses — a VPN, filter or your provider may be changing DNS answers\n"
+}
+
 fun checkDNSManipulation(): String {
     return try {
-        val googleDNS = InetAddress.getByName("dns.google").hostAddress
-        val cloudflareDNS = InetAddress.getByName("one.one.one.one").hostAddress
-
-        if (googleDNS != "8.8.8.8" || cloudflareDNS != "1.1.1.1") {
-            "⚠️ Your ISP or Government might be hijacking DNS requests!\n"
-        } else {
-            "✅ DNS Requests Appear Normal\n"
-        }
+        val google = InetAddress.getAllByName("dns.google").mapNotNull { it.hostAddress }
+        val cloudflare = InetAddress.getAllByName("one.one.one.one").mapNotNull { it.hostAddress }
+        dnsLineFromAnswers(google, cloudflare)
     } catch (e: UnknownHostException) {
         // DNS resolution failure - network may be down or DNS unavailable
         // This is expected in some network conditions and not an error
