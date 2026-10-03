@@ -27,7 +27,7 @@ Conectado ao Wi-Fi e nada carrega? O App Doctor descobre o porquê:
 🛡️ Zero Trust Dashboard — auditoria de segurança
 Auditoria em três partes, nota de 0 a 100:
 • Risco de privacidade (35%): apps que gravam a tela, apps ocultos, abuso de microfone e câmera, rastreadores de anúncios
-• Confiança da rede (35%): manipulação de DNS, sequestro de SSL (MITM), proxy transparente, inspeção profunda de pacotes, rastreamento pelo provedor
+• Confiança da rede (35%): manipulação de DNS, sequestro de SSL (MITM), proxy transparente, rastreamento pelo provedor
 • Integridade do aparelho (30%): root, bootloader, instalação externa, modo desenvolvedor, permissões de sobreposição
 
 🔌 AI Bridge — deixe o Claude ou o Cursor lerem seu celular

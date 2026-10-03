@@ -28,7 +28,7 @@ Android has no built-in battery health screen. DeviceGPT fills the gap:
 🛡️ Zero Trust Dashboard — Phone Security Audit
 A three-section audit scoring your device 0–100:
 • App Privacy Risk (35%): screen-recording apps, hidden apps, mic/camera abuse, ad tracker detection
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
+• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, ISP tracking, private DNS
 • Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
 
 Asked "is my phone hacked?" — the Zero Trust Dashboard gives you a scored, structured answer.

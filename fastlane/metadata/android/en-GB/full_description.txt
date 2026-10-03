@@ -31,7 +31,7 @@ Connected to Wi-Fi but nothing loads? App Doctor finds out why:
 🛡️ Zero Trust Dashboard — Phone Security Audit
 A three-section audit scoring your device 0–100:
 • App Privacy Risk (35%): keyboards and accessibility services that can read your screen or keystrokes, apps reading your advertising ID, apps holding mic/camera/SMS, live mic use, sideloaded apps
-• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, deep packet inspection, ISP tracking, private DNS
+• Network Trust (35%): DNS manipulation, SSL hijack (MITM), transparent proxy, ISP tracking, private DNS
 • Device Integrity (30%): root status, bootloader, sideloading, developer mode, overlay permissions, notification listeners
 
 🔌 AI Bridge — Let Claude or Cursor Read Your Phone

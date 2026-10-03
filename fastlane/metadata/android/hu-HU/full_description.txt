@@ -25,7 +25,7 @@ Az Androidnak nincs beépített akkumulátor egészség képernyője. A DeviceGP
 🛡️ Zero Trust Dashboard — Telefon Biztonsági Audit
 Háromrészes audit, 0-tól 100-ig pontozás:
 • App Kockázat (35%): képernyőfelvevő appok, rejtett appok, mikrofon/kamera visszaélés, trackerek
-• Hálózat (35%): DNS, SSL eltérítés (MITM), proxy, mély csomag vizsgálat, ISP követés, privát DNS
+• Hálózat (35%): DNS, SSL eltérítés (MITM), proxy, ISP követés, privát DNS
 • Készülék (30%): root, bootloader, sideloading, fejlesztői mód, overlay
 
 "Feltörték a telefonomat?" — Zero Trust pontozott választ ad ködös érzés helyett.

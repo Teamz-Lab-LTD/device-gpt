@@ -25,7 +25,7 @@ Androidissa ei ole sisäänrakennettua akun terveys -näyttöä. DeviceGPT täyt
 🛡️ Zero Trust Dashboard — Puhelimen Tietoturva-auditointi
 Kolmiosainen auditointi, joka pisteyttää laitteen 0:sta 100:aan:
 • Sovellusten Yksityisyysriski (35%): ruudunkaappaussovellukset, piilotetut sovellukset, mikrofonin/kameran väärinkäyttö, mainosseuraimet
-• Verkon Luotettavuus (35%): DNS-manipulaatio, SSL-kaappaus (MITM), läpinäkyvä välityspalvelin, syvä pakettitarkastus, ISP-seuranta, yksityinen DNS
+• Verkon Luotettavuus (35%): DNS-manipulaatio, SSL-kaappaus (MITM), läpinäkyvä välityspalvelin, ISP-seuranta, yksityinen DNS
 • Laitteen Eheys (30%): root-tila, käynnistyslataaja, sideloading, kehittäjätila, overlay-luvat
 
 "Onko puhelimeni hakkeroitu?" — Zero Trust Dashboard antaa pisteytetyn, jäsennellyn vastauksen sumean tunteen sijaan.

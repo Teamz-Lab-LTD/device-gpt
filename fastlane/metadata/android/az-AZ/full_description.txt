@@ -25,7 +25,7 @@ Android-də quraşdırılmış batareya sağlamlığı ekranı yoxdur. DeviceGPT
 🛡️ Zero Trust Dashboard — Telefon Təhlükəsizlik Auditi
 Cihazınızı 0-dan 100-ə qədər qiymətləndirən üç bölmədə audit:
 • Tətbiq Məxfilik Riski (35%): ekran qeyd tətbiqləri, gizli tətbiqlər, mikrofon/kamera sui-istifadəsi, reklam izləyiciləri
-• Şəbəkə Etibarlılığı (35%): DNS manipulyasiyası, SSL ələ keçirilməsi (MITM), şəffaf proxy, dərin paket yoxlaması, ISP izləməsi, şəxsi DNS
+• Şəbəkə Etibarlılığı (35%): DNS manipulyasiyası, SSL ələ keçirilməsi (MITM), şəffaf proxy, ISP izləməsi, şəxsi DNS
 • Cihaz Bütövlüyü (30%): root statusu, bootloader, sideloading, developer rejimi, overlay icazələri
 
 "Telefonum hack olunub?" sualına Zero Trust Dashboard təxmini hisslər yerinə qiymətləndirilmiş, strukturlaşdırılmış cavab verir.

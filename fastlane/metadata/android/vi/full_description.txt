@@ -27,7 +27,7 @@ Sau mỗi lần quét, nhấn Ask AI để nhận cách khắc phục qua ChatGP
 🛡️ Zero Trust Dashboard — kiểm tra bảo mật điện thoại
 Ba phần, chấm điểm 0–100:
 • App Privacy Risk (35%): ứng dụng quay màn hình, ứng dụng ẩn, lạm dụng mic/camera, ad tracker
-• Network Trust (35%): thao túng DNS, SSL hijack (MITM), transparent proxy, deep packet inspection, theo dõi bởi ISP
+• Network Trust (35%): thao túng DNS, SSL hijack (MITM), transparent proxy, theo dõi bởi ISP
 • Device Integrity (30%): root, bootloader, sideloading, developer mode, quyền overlay, notification listener
 
 🔌 AI Bridge — để Claude hoặc Cursor đọc điện thoại của bạn

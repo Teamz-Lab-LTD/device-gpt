@@ -25,7 +25,7 @@ Android nema ugrađen zaslon zdravlja baterije. DeviceGPT popunjava tu prazninu:
 🛡️ Zero Trust Dashboard — Sigurnosni Audit Telefona
 Audit u tri dijela koji ocjenjuje vaš uređaj od 0 do 100:
 • Rizik Privatnosti Aplikacija (35%): aplikacije za snimanje zaslona, skrivene aplikacije, zlouporaba mikrofona/kamere, reklamni trackeri
-• Pouzdanost Mreže (35%): manipulacija DNS-a, SSL otmica (MITM), transparentni proxy, duboka inspekcija paketa, ISP praćenje, privatni DNS
+• Pouzdanost Mreže (35%): manipulacija DNS-a, SSL otmica (MITM), transparentni proxy, ISP praćenje, privatni DNS
 • Integritet Uređaja (30%): root status, bootloader, sideloading, način rada za razvojne programere, overlay dozvole
 
 "Je li mi telefon hakiran?" — Zero Trust Dashboard daje ocijenjeni, strukturirani odgovor umjesto maglovitog osjećaja.

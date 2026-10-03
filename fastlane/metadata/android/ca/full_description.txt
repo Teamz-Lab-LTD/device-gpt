@@ -25,7 +25,7 @@ Android no porta una pantalla integrada de salut de bateria. DeviceGPT cobreix a
 🛡️ Zero Trust Dashboard — Auditoria de Seguretat
 Una auditoria en tres seccions que puntua el dispositiu de 0 a 100:
 • Risc de Privacitat (35%): apps que graven pantalla, apps amagades, abús de micro/càmera, trackers publicitaris
-• Confiança de Xarxa (35%): manipulació DNS, segrest SSL (MITM), proxy transparent, inspecció profunda de paquets, ISP tracking, DNS privat
+• Confiança de Xarxa (35%): manipulació DNS, segrest SSL (MITM), proxy transparent, ISP tracking, DNS privat
 • Integritat del Dispositiu (30%): estat root, bootloader, sideloading, mode desenvolupador, permisos overlay
 
 "Tinc el mòbil hackejat?" — Zero Trust Dashboard et dóna una resposta puntuada i estructurada en lloc d'una sensació vaga.

@@ -25,7 +25,7 @@ O Android não tem um ecrã integrado para a saúde da bateria. O DeviceGPT pree
 🛡️ Zero Trust Dashboard — Auditoria de Segurança
 Auditoria em três secções que pontua o dispositivo de 0 a 100:
 • Risco de Privacidade de Apps (35%): apps que gravam ecrã, apps ocultas, abuso de micro/câmara, trackers de publicidade
-• Confiança de Rede (35%): manipulação DNS, intercepção SSL (MITM), proxy transparente, inspeção profunda de pacotes, ISP tracking, DNS privado
+• Confiança de Rede (35%): manipulação DNS, intercepção SSL (MITM), proxy transparente, ISP tracking, DNS privado
 • Integridade do Dispositivo (30%): estado root, bootloader, sideloading, modo developer, permissões overlay, listeners de notificações
 
 "Será que o meu telemóvel foi hackeado?" — o Zero Trust Dashboard dá uma resposta pontuada e estruturada em vez de uma sensação vaga.

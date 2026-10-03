@@ -25,7 +25,7 @@ Androidil pole sisseehitatud aku tervise ekraani. DeviceGPT täidab selle lünga
 🛡️ Zero Trust Dashboard — Telefoni Turvalisuse Audit
 Kolmest osast koosnev audit, mis hindab seadet 0-st 100-ni:
 • Rakenduse Privaatsuse Risk (35%): ekraani salvestus rakendused, peidetud rakendused, mikrofoni/kaamera väärkasutus, reklaami jälgijad
-• Võrgu Usaldus (35%): DNS manipulatsioon, SSL kaaperdamine (MITM), läbipaistev proksi, sügav pakettide kontroll, ISP jälgimine, privaatne DNS
+• Võrgu Usaldus (35%): DNS manipulatsioon, SSL kaaperdamine (MITM), läbipaistev proksi, ISP jälgimine, privaatne DNS
 • Seadme Terviklikkus (30%): root olek, alglaadur, sideloading, arendaja režiim, overlay õigused
 
 "Kas mu telefon on häkitud?" — Zero Trust Dashboard annab hinnatud, struktureeritud vastuse ähmase tunde asemel.
