@@ -139,7 +139,45 @@ fixing one would have surfaced the next false branch.
   "Recent usage detected" can fire from DeviceGPT's own mic test, and it feeds
   `calculatePrivacyScore` and `getPrivacyThreatsToday`.
 
-## Next candidate: the first-session paywall loop
+## Fix 4 (this branch): the paywall loop
+
+- `e429a2d`: when the RevenueCat offering failed to load, timed out, had no packages, or the SDK
+  was not configured, `RevenueCatPaywall` called the same `onDismiss` as a user closing the
+  paywall. So the user got "Not ready to pay?" for a price they never saw, then a survey about a
+  paywall they never closed. That is the loop seen on the emulator. A new `onUnavailable` path
+  now ends the chain after the "premium unavailable" toast.
+- `e429a2d`: "Quick — why did you close?" now appears once per install, not after every journey.
+  On vc48, 20 of 22 day-one survey events were `sheet_dismissed` or `no_response`.
+- `f278e2f`: the bundled `paywall_delay_enabled` is now `true`. On a cold emulator start, RC took
+  **31 seconds** to activate, which is longer than the 20-second fallback delay. With the old
+  `false` default, a fresh install could get the cold paywall in session one.
+- Tests: 4 of 4 contract tests failed on the old code. Full suite: **689 tests, 0 failed**.
+- Device: session one is now blocked (`paywall_cold_gate_blocked {session_count=1}`). On the
+  first journey, the survey appeared once; on the second, "Maybe later" ended the chain. The
+  offline failure path could not be forced on the emulator, because RevenueCat served a cached
+  offering. The contract test covers it.
+- **Correction to the paragraph below:** `applied=false` came from a debug run before RC had
+  fetched. With production RC loaded, `paywall_rerouted` logs `applied=true`, so production
+  does apply the 7-day cooldown.
+
+### Found, not fixed: the live RevenueCat paywall's own claims (needs the owner)
+
+The paywall is designed in the RevenueCat dashboard, not in this repo. It shows:
+- **"4.8 stars · 60+ reviews"**, but Play has 5 ratings averaging 3.0.
+- **"$2.99 • Lifetime Access"**, directly above a button that charges **BDT 420.00**.
+- "Faster app performance" as a premium benefit.
+- An image that loads as an empty white box when the network is cold.
+
+These are misleading-claim risks on an app that already has a Deceptive Behavior strike. The
+change goes to a live, customer-facing surface, so the owner has to approve it before anyone
+edits it.
+
+### Also seen in session one
+
+After "See details", the widget pin sheet opens; it reached 21 of 47 new vc48 users. Its preview
+says "🔥 -- days" (a streak) and "Tap to fix issues →".
+
+## Before fix 4: the first-session paywall loop
 
 On a fresh debug install, logcat shows `paywall_fallback_triggered {session_count=1,
 fallback_delay_ms=20000}`, meaning a paywall fires 20 seconds into the first session. After
