@@ -218,3 +218,30 @@ the owner's call.
 The day-0 `app_remove` share for humans in the cohort that installs the build carrying fix 1.
 Today it is 49%. Read it once 50 or more humans have installed that build, about 3 weeks after
 release.
+
+## Release-build pass on the emulator (2026-10-04, before vc49)
+
+This was a signed release APK built from this branch (R8 + shrinkResources, release key; still
+labelled vc48 / 3.1.29 because the version was not bumped). It ran as a fresh install on
+emulator-5560, Android 15.
+
+| check | result |
+|---|---|
+| first scan → "See details" | ✅ no monitor-permission dialog; only the widget pin sheet opens (unchanged) |
+| Health card | ✅ "Today's Health Score 9/10 · Scanned 1 day · 1 scan" (−1 is real: adb is on) |
+| Smart Recommendations | ✅ opens "Great job! Your phone is in excellent shape"; no security alarm |
+| Security Dashboard | ✅ 85/100; Device Integrity shows 6 rows with no SELinux row; the 75 matches the new scoring (64 of 85 points, normalised) |
+| crashes | ✅ none; DeviceGPT stayed one process for the whole run. Its only error lines are the known non-fatal `LeftCompositionCancellationException` |
+| paywall | ⚠️ not reachable on this build: the drawer says "Premium Active". Most likely the emulator's Google account already owns the lifetime product, and the release signature lets Play Billing restore it. The chain was verified on the debug build. |
+| Leaderboard | ⚠️ not reached: the emulator's own system process froze ("Process system isn't responding"). This branch does not touch Leaderboard code. |
+
+**New false alarm, visible on the release build, not fixed:** the Health → Privacy Dashboard
+shows "Privacy Score 60/100 · Threats Today: ⚠ Screen recording or suspicious apps detected" on a
+clean device. `getPrivacyThreatsToday` and `calculatePrivacyScore` test
+`isDeviceBeingMonitored(...).contains("Screen Recording") || contains("Suspicious")`. That
+string always contains those words, because they are its own section headers ("🎥 Screen Recording
+Apps Detected:", "🕵️ Suspicious Accessibility Services"). So every user is told about a threat
+and loses 20 privacy points. Same class as fix 3; it should be fixed before vc49.
+
+**Analytics contamination:** this run sent one real `first_open` to GA4 from model
+`sdk_gphone64_arm64`. Exclude that model in D1 reads.
