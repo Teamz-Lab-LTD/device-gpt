@@ -38,6 +38,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         android.util.Log.d("DeviceGPT_Widget", "onUpdate called for ${appWidgetIds.size} widget(s)")
+        // An explicit update broadcast reaches the provider even with no widget pinned; logging
+        // WidgetDisplayed{widget_count=0} then would count every scan as a widget display.
+        if (appWidgetIds.isEmpty()) return
         
         // Track widget display
         try {
@@ -83,19 +86,31 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         
         android.util.Log.d("DeviceGPT_Widget", "Reading widget data from SharedPreferences")
         
-        val battery = prefs.getString("battery", "🔋 Battery: --") ?: "🔋 Battery: --"
+        // Speeds, CPU, FPS, power and the alert/CTA text are written ONLY by SystemMonitorService,
+        // which never clears them when it stops. WidgetSnapshot refreshes last_update on its own,
+        // so without this gate a widget showed weeks-old service readings next to "Just now".
+        val serviceFresh = isServiceFresh(prefs.getLong(KEY_SERVICE_LAST_UPDATE, 0L), System.currentTimeMillis())
+        fun svc(key: String, default: String): String =
+            if (serviceFresh) prefs.getString(key, default) ?: default else default
+
+        val battery = svc("battery", "🔋 Battery: --")
         val ram = prefs.getString("ram", "🧠 RAM: --") ?: "🧠 RAM: --"
-        val cpu = prefs.getString("cpu", "") ?: ""
-        val download = prefs.getString("download", "📶 ↓ --") ?: "📶 ↓ --"
-        val upload = prefs.getString("upload", "↑ --") ?: "↑ --"
-        val latency = prefs.getString("latency", "") ?: ""
-        val power = prefs.getString("power", "⚡ Power: --") ?: "⚡ Power: --"
-        val thermal = prefs.getString("thermal", "🌡️ --") ?: "🌡️ --"
-        // No score yet is not a score of 0. It rendered "Health: 0/10 · ⚠️ Low Score" right after
-        // the app showed the same user an Excellent result.
-        val hasScore = prefs.contains("health_score")
+        val cpu = svc("cpu", "")
+        val download = svc("download", "📶 ↓ --")
+        val upload = svc("upload", "↑ --")
+        val latency = svc("latency", "")
+        val power = svc("power", "⚡ Power: --")
+        val thermal = svc("thermal", "🌡️ --")
+        // No score yet is not a score of 0 ("Health: 0/10 · ⚠️ Low Score" right after the app
+        // showed an Excellent result), and a score from an earlier day is not today's.
+        val hasScore = scoreIsCurrent(
+            hasStoredScore = prefs.contains("health_score"),
+            scoreDay = prefs.getString(WidgetSnapshot.KEY_HEALTH_SCORE_DAY, null),
+            today = WidgetSnapshot.today(),
+            serviceFresh = serviceFresh
+        )
         val healthScore = prefs.getInt("health_score", 0)
-        val streak = prefs.getInt("streak", 0)
+        val streak = if (serviceFresh) prefs.getInt("streak", 0) else 0
         val lastUpdate = prefs.getLong("last_update", 0)
         
         // Get battery percentage and charging status (stored separately for accuracy)
@@ -106,9 +121,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         
         // Factual status messages. Play policy 2026-07-10: stale prefs may still hold
         // pre-v3.2 "optimize" strings — sanitize on read so no banned word ever renders.
-        val alertMessage = sanitizeLegacyVocab(prefs.getString("alert_message", "") ?: "")
+        val alertMessage = sanitizeLegacyVocab(svc("alert_message", ""))
         val ctaMessage = sanitizeLegacyVocab(
-            prefs.getString("cta_message", "Open health check →") ?: "Open health check →"
+            svc("cta_message", "Open health check →")
         )
         
         // Extract temperature - use stored value first, fallback to parsing thermal string
@@ -147,8 +162,11 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         // row type. The Timeline therefore had no daily health history to show, and flipping
         // widget_v2_enabled would have produced no visible delta for at least a day, because
         // the history it reads only starts accruing after the flip.
+        // Only a score measured today (or live by the service): the repository keeps one row per
+        // day, so recording yesterday's score at the first refresh after midnight dropped the
+        // day's real scan, and a missing score was recorded as "Daily snapshot 0/10".
         try {
-            com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(context, healthScore)
+            if (hasScore) com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue(context, healthScore)
         } catch (e: Exception) {
             android.util.Log.w("DeviceGPT_Widget", "daily snapshot failed: ${e.message}")
         }
@@ -199,9 +217,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         
         // Get additional info
         val storageUsedTotal = prefs.getString("storage_used_total", "---") ?: "---"
-        val downloadSpeed = prefs.getString("download_speed", "---") ?: "---"
-        val uploadSpeed = prefs.getString("upload_speed", "---") ?: "---"
-        val hasInternet = prefs.getBoolean("has_internet", false) // Get actual connectivity status
+        val downloadSpeed = svc("download_speed", "---")
+        val uploadSpeed = svc("upload_speed", "---")
+        val hasInternet = serviceFresh && prefs.getBoolean("has_internet", false) // Get actual connectivity status
         val powerValue = try {
             power.substringAfter(":").substringBefore("W").trim().takeIf { it.isNotEmpty() } ?: "---"
         } catch (e: Exception) { "---" }
@@ -289,7 +307,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         views.setTextViewText(R.id.widget_cpu, "CPU: ${if (cpuPercent != "---" && cpuPercent.isNotEmpty()) "${cpuPercent}%" else "---"}")
         
         // Extract FPS from fps_data (format: "FPS: 59 • Drop Rate: 1.0%")
-        val fpsData = prefs.getString("fps_data", "") ?: ""
+        val fpsData = svc("fps_data", "")
         val fpsValue = try {
             val fpsMatch = Regex("FPS:\\s*(\\d+)").find(fpsData)
             fpsMatch?.groupValues?.get(1) ?: "---"
@@ -359,20 +377,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             }
         } else {
             // No alert shown, so show primary status here
-            when {
-                !hasScore -> "📊 Open app to scan"
-                // Critical issues (highest priority)
-                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🌡️ Hot"
-                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "📊 High Memory"
-                healthScore < 5 -> "⚠️ Low Score"
-                // Warnings (medium priority)
-                tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 40f -> "🌡️ Warm"
-                ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 70 -> "📊 High Usage"
-                healthScore < 7 -> "📉 Below Normal"
-                // Positive status (when everything is good)
-                healthScore >= 8 -> "✅ Healthy"
-                else -> "📊 Good"
-            }
+            primaryStatus(hasScore, tempValue, ramPercent, healthScore)
         }
         views.setTextViewText(R.id.widget_status, statusText)
         
@@ -393,7 +398,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         views.setTextViewText(R.id.widget_last_update, timeAgo)
         
         // Get widget action (what to do when tapped)
-        val widgetAction = prefs.getString("widget_action", "") ?: ""
+        val widgetAction = svc("widget_action", "")
         
         // Set click intent to open app directly to Health section (quick action)
         // Use dynamic navigation by tab name instead of index to handle tab order changes
@@ -459,6 +464,31 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         /**
          * Trigger widget update from SystemMonitorService
          */
+        internal const val KEY_SERVICE_LAST_UPDATE = "service_last_update"
+        /** SystemMonitorService writes every 30 s; older than this, its readings are not current. */
+        internal const val SERVICE_FRESH_MS = 5 * 60_000L
+
+        internal fun isServiceFresh(serviceLastUpdate: Long, now: Long): Boolean =
+            serviceLastUpdate > 0 && now - serviceLastUpdate in 0..SERVICE_FRESH_MS
+
+        internal fun scoreIsCurrent(hasStoredScore: Boolean, scoreDay: String?, today: String, serviceFresh: Boolean): Boolean =
+            hasStoredScore && (serviceFresh || scoreDay == today)
+
+        internal fun primaryStatus(hasScore: Boolean, tempValue: String, ramPercent: String, healthScore: Int): String = when {
+            !hasScore -> "📊 Open app to scan"
+            // Critical issues (highest priority)
+            tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 45f -> "🌡️ Hot"
+            ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 85 -> "📊 High Memory"
+            healthScore < 5 -> "⚠️ Low Score"
+            // Warnings (medium priority)
+            tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 40f -> "🌡️ Warm"
+            ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 70 -> "📊 High Usage"
+            healthScore < 7 -> "📉 Below Normal"
+            // Positive status (when everything is good)
+            healthScore >= 8 -> "✅ Healthy"
+            else -> "📊 Good"
+        }
+
         /** "🧠 RAM: 5468 MB / 7572 MB (72%)" -> "72"; anything without "(N%)" -> "--". */
         internal fun ramPercentFrom(ram: String): String =
             Regex("\\((\\d+)%\\)").find(ram)?.groupValues?.get(1) ?: "--"

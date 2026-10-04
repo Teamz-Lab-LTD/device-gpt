@@ -126,7 +126,8 @@ fun NetworkInfoSection(
             val ipAddressDeferred = async(Dispatchers.IO) { getPublicIPAddressFromIPInfo() }
             val govSurveillanceDeferred = async(Dispatchers.IO) { checkInternetPrivacyAndSurveillance() }
             val downloadSpeedDeferred = async(Dispatchers.IO) { getNetworkDownloadSpeed() }
-            val uploadSpeedDeferred = async(Dispatchers.IO) { getNetworkUploadSpeed() }
+            // After the download, not alongside it: two transfers at once each measure half the line.
+            val uploadSpeedDeferred = async(Dispatchers.IO) { downloadSpeedDeferred.await(); getNetworkUploadSpeed() }
             val wifiInfoDeferred = async(Dispatchers.IO) { getWiFiInformation(context) }
             val ispDetailsDeferred = async(Dispatchers.IO) { getISPDetails() }
             val streamingServersDeferred = async(Dispatchers.IO) { checkISPStreamingServers() }

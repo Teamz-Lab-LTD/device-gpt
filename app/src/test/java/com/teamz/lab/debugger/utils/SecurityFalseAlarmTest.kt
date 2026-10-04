@@ -54,7 +54,7 @@ class SecurityFalseAlarmTest {
         for (line in listOf(none, some)) {
             assertFalse(line, line.contains("❌"))
             assertFalse(line, line.contains("owner"))
-            // getPhoneHackabilityScore counts "Yes"/"Enabled" anywhere in the security text
+            // keep admin text neutral: it is shown inside the security summary
             assertFalse(line, line.contains("Yes") || line.contains("Enabled"))
         }
     }

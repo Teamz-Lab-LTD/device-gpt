@@ -1279,8 +1279,7 @@ internal fun selinuxStatusLine(getenforceOutput: String?): String = when {
 /**
  * Device admin apps can use extra controls such as locking the screen or erasing data. Having
  * none is the normal, safer state of a personal phone; it used to read "❌ No admin set", with
- * advice to go and grant admin access. Must not contain "Yes"/"Enabled":
- * getPhoneHackabilityScore counts those words anywhere in the security text.
+ * advice to go and grant admin access.
  */
 internal fun deviceAdminLine(adminLabels: List<String>): String =
     if (adminLabels.isEmpty()) {
@@ -1950,7 +1949,7 @@ fun getAiInferenceSupport(context: Context): String {
     val readiness = aiReadinessLine(is64bit, totalGb)
 
     return """
-    🤖 Neural Network Acceleration: ${if (hasNNAPI) "✅ Supported" else "❌ Not Supported"}
+    🤖 Android NNAPI: ${if (hasNNAPI) "available (Android 8.1+)" else "not available (needs Android 8.1+)"}
     
     📦 RAM Info: $ramInfo
     
@@ -2202,9 +2201,9 @@ fun getFaceUnlockTrustLevel(context: Context): String =
 internal fun faceUnlockLine(hasFaceHardware: Boolean): String =
     if (hasFaceHardware) {
         "ℹ️ This phone has face unlock. Android does not tell apps how strong it is.\n" +
-            "Quick check: if your banking or payment apps accept your face, it is the strong " +
-            "kind (Class 3) that a photo cannot fool. If they ask for a fingerprint or PIN " +
-            "instead, treat face unlock as convenience only."
+            "Quick check: if your banking or payment apps accept your face, it is very likely " +
+            "the strong kind (Class 3), which is tested against photos and masks. If they ask " +
+            "for a fingerprint or PIN instead, treat face unlock as convenience only."
     } else {
         "ℹ️ No face unlock reported on this phone."
     }

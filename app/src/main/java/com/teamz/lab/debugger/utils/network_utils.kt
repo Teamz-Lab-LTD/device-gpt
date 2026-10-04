@@ -58,21 +58,35 @@ private fun networkCapabilities(context: Context): NetworkCapabilities? {
  * speed: a 50 Mbps line read about 6, which cost 20 points in the Internet Health Score
  * (download < 10) and put an 8x-too-low figure on the Verified Health Report.
  */
+/** Upper bound on the download measurement; enough for a stable reading on any line. */
+private const val SPEED_TEST_MAX_NANOS = 8_000_000_000L
+
 internal fun megabitsPerSecond(bytes: Long, seconds: Double): Double =
     if (seconds <= 0.0) 0.0 else bytes * 8 / 1_000_000.0 / seconds
 
 fun getNetworkDownloadSpeed(): String {
     return try {
-        val start = System.nanoTime()
         val url = URL("https://speed.cloudflare.com/__down?bytes=10000000")
         val connection = url.openConnection() as HttpURLConnection
         connection.connectTimeout = 15_000
-        connection.readTimeout = 30_000
+        connection.readTimeout = 15_000
         connection.connect()
-        connection.inputStream.readBytes()
-        val end = System.nanoTime()
-        val duration = (end - start) / 1_000_000_000.0
-        "${"%.2f".format(megabitsPerSecond(10_000_000L, duration))} Mbps"
+        val input = connection.inputStream
+        // Timed from the open connection, so DNS/TCP/TLS setup is not counted as transfer, and
+        // capped: readTimeout only bounds the gap between reads, so a 0.5 Mbps line used to take
+        // ~160 s for the full 10 MB. Speed comes from the bytes actually received.
+        val start = System.nanoTime()
+        val deadline = start + SPEED_TEST_MAX_NANOS
+        val buf = ByteArray(64 * 1024)
+        var received = 0L
+        while (System.nanoTime() < deadline) {
+            val n = input.read(buf)
+            if (n < 0) break
+            received += n
+        }
+        val duration = (System.nanoTime() - start) / 1_000_000_000.0
+        input.close(); connection.disconnect()
+        "${"%.2f".format(megabitsPerSecond(received, duration))} Mbps"
     } catch (e: UnknownHostException) {
         // DNS resolution failure or no internet connection
         // This is expected when network is unavailable and not an error
@@ -121,6 +135,9 @@ fun getNetworkUploadSpeed(): String {
 
         val dataSizeMB = 2 // Upload 2MB dummy data
         val dummyData = ByteArray(dataSizeMB * 1024 * 1024) { 'A'.code.toByte() }
+        // Stream instead of buffering the whole body, and start the clock after the handshake.
+        connection.setFixedLengthStreamingMode(dummyData.size)
+        connection.connect()
 
         val start = System.nanoTime()
 

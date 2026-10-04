@@ -62,6 +62,11 @@ class SystemMonitorService : Service() {
     // Set in onCreate, read in onDestroy.
     private var serviceStartMs: Long = 0L
 
+    // Active speed tests are throttled (see SpeedTestPolicy); the last result is shown between.
+    private var lastSpeedTestMs = 0L
+    private var lastDownload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
+    private var lastUpload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -130,14 +135,21 @@ class SystemMonitorService : Service() {
 
                     // All these functions use REAL device data (no estimates):
                     // Use cancellable coroutines to ensure they can be stopped quickly
+                    val unmetered = try {
+                        !(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).isActiveNetworkMetered
+                    } catch (e: Exception) { false }
+                    val runSpeedTest = com.teamz.lab.debugger.utils.SpeedTestPolicy.shouldRun(
+                        System.currentTimeMillis(), lastSpeedTestMs, unmetered
+                    )
                     val downloadDeferred = async { 
                         ensureActive() // Check cancellation before starting
-                        getNetworkDownloadSpeed() 
-                    } // Real HTTP download
+                        if (runSpeedTest) getNetworkDownloadSpeed() else lastDownload
+                    } // Real HTTP download, throttled
                     val uploadDeferred = async { 
                         ensureActive() // Check cancellation before starting
-                        getNetworkUploadSpeed() 
-                    } // Real HTTP upload
+                        // After the download: two transfers at once each measure half the line.
+                        if (runSpeedTest) { downloadDeferred.await(); getNetworkUploadSpeed() } else lastUpload
+                    } // Real HTTP upload, throttled
                     val ramDeferred = async { 
                         ensureActive() // Check cancellation before starting
                         getRamUsage(context) 
@@ -270,6 +282,11 @@ class SystemMonitorService : Service() {
                     } catch (e: CancellationException) {
                         break // Exit loop if cancelled
                     }
+                    if (runSpeedTest) {
+                        lastSpeedTestMs = System.currentTimeMillis()
+                        lastDownload = download
+                        lastUpload = upload
+                    }
                     val latency = try {
                         latencyDeferred.await()
                     } catch (e: CancellationException) {
@@ -312,6 +329,9 @@ class SystemMonitorService : Service() {
                     // Beautify network label - check actual connectivity first
                     val networkLabel = if (!hasInternet) {
                         "📶 Internet: ⚠️ No connection"
+                    } else if (!download.contains("Mbps")) {
+                        // Not measured yet (speed tests run on Wi-Fi, every 30 min) — say only what is known.
+                        if (latency.isNotBlank()) "📶 Internet: ✅ Connected • Latency: ${latency.trim()}" else "📶 Internet: ✅ Connected"
                     } else if (download.contains("Speed Test Failed", ignoreCase = true) || 
                               download.contains("Failed", ignoreCase = true)) {
                         // Has connection but speed test failed (might be slow/unstable)
@@ -538,7 +558,8 @@ class SystemMonitorService : Service() {
             
             // Extract network speeds separately for widget display
             val downloadSpeed = try {
-                if (download.contains("Speed Test Failed", ignoreCase = true) || 
+                if (!download.contains("Mbps") ||
+                    download.contains("Speed Test Failed", ignoreCase = true) || 
                     download.contains("Failed", ignoreCase = true) ||
                     download.contains("No internet", ignoreCase = true)) {
                     "---"
@@ -548,7 +569,7 @@ class SystemMonitorService : Service() {
             } catch (e: Exception) { "---" }
             
             val uploadSpeed = try {
-                if (upload.contains("Failed", ignoreCase = true)) {
+                if (!upload.contains("Mbps") || upload.contains("Failed", ignoreCase = true)) {
                     "---"
                 } else {
                     upload.replace("↑", "").trim().substringBefore("Mbps").trim().takeIf { it.isNotEmpty() } ?: "---"
@@ -595,6 +616,8 @@ class SystemMonitorService : Service() {
                 putString("power", power)
                 putString("thermal", thermal)
                 putLong("last_update", System.currentTimeMillis())
+                // The widget only trusts the service-only fields below while this is recent.
+                putLong(com.teamz.lab.debugger.widgets.LockScreenMonitorWidget.KEY_SERVICE_LAST_UPDATE, System.currentTimeMillis())
                 putInt("health_score", healthScore)
                 putInt("streak", streak)
                 // Store battery percentage and status separately for widget

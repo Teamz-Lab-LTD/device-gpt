@@ -1,5 +1,7 @@
 package com.teamz.lab.debugger.widgets
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -7,6 +9,11 @@ import android.os.BatteryManager
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.getAvailableStorage
 import com.teamz.lab.debugger.utils.getRamUsage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /**
  * The widget's own data path.
@@ -25,13 +32,31 @@ object WidgetSnapshot {
 
     internal const val PREFS = "lock_screen_widget_data"
     internal const val KEY_HEALTH_SCORE = "health_score"
+    /** yyyy-MM-dd the stored score was measured; the widget shows it only on that day. */
+    internal const val KEY_HEALTH_SCORE_DAY = "health_score_day"
+
+    private val io = Executors.newSingleThreadExecutor { r -> Thread(r, "widget-snapshot").apply { isDaemon = true } }
+
+    /** Last queued write — exposed so tests can wait for it. */
+    @Volatile internal var pending: Future<*>? = null
+
+    internal fun today(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
     /**
-     * @param healthScore the daily score just saved, or null to reuse the latest saved one.
+     * Off the caller's thread: saveHealthScore runs on Main in two of its three callers, and this
+     * does a disk load, StatFs and four binder calls.
+     */
+    fun writeAsync(context: Context, healthScore: Int? = null) {
+        val app = context.applicationContext
+        pending = io.submit { write(app, healthScore) }
+    }
+
+    /**
+     * @param healthScore the daily score just saved, or null to reuse today's saved score.
      */
     fun write(context: Context, healthScore: Int? = null) {
         try {
-            val score = healthScore ?: latestSavedScore(context)
+            val score = healthScore ?: todaysSavedScore(context)
             val battery = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val bm = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
             val percent = bm?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1
@@ -40,7 +65,10 @@ object WidgetSnapshot {
             val tenthsC = battery?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE) ?: Int.MIN_VALUE
 
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().apply {
-                if (score != null) putInt(KEY_HEALTH_SCORE, score)
+                if (score != null) {
+                    putInt(KEY_HEALTH_SCORE, score)
+                    putString(KEY_HEALTH_SCORE_DAY, today())
+                }
                 if (percent in 0..100) putInt("battery_percent", percent)
                 putBoolean("battery_charging", status == BatteryManager.BATTERY_STATUS_CHARGING)
                 putBoolean("battery_full", status == BatteryManager.BATTERY_STATUS_FULL)
@@ -56,14 +84,19 @@ object WidgetSnapshot {
                 putLong("last_update", System.currentTimeMillis())
                 apply()
             }
-            LockScreenMonitorWidget.updateWidget(context)
+            // Prefs are always kept current; the broadcast only when a widget exists, because an
+            // explicit broadcast reaches the provider (and its analytics) with none pinned.
+            val ids = AppWidgetManager.getInstance(context)
+                .getAppWidgetIds(ComponentName(context, LockScreenMonitorWidget::class.java))
+            if (ids.isNotEmpty()) LockScreenMonitorWidget.updateWidget(context)
         } catch (t: Throwable) {
             android.util.Log.w("WidgetSnapshot", "write failed: ${t.message}")
         }
     }
 
-    private fun latestSavedScore(context: Context): Int? =
-        HealthScoreUtils.getHealthScoreHistory(context, 30).lastOrNull()?.second
+    /** Today's saved score only — an older one shown under a fresh timestamp reads as current. */
+    private fun todaysSavedScore(context: Context): Int? =
+        HealthScoreUtils.getHealthScoreHistory(context, 1).lastOrNull()?.second
 
     /** BatteryManager reports tenths of a degree; anything outside a plausible range is unknown. */
     internal fun batteryTempLabel(tenthsC: Int): String? {

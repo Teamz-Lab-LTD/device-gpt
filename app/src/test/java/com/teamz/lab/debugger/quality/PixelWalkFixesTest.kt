@@ -3,6 +3,7 @@ package com.teamz.lab.debugger.quality
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.teamz.lab.debugger.utils.HealthScoreUtils
+import com.teamz.lab.debugger.utils.SpeedTestPolicy
 import com.teamz.lab.debugger.utils.aiReadinessLine
 import com.teamz.lab.debugger.utils.faceUnlockLine
 import com.teamz.lab.debugger.utils.hackabilityLine
@@ -54,15 +55,18 @@ class PixelWalkFixesTest {
     @Test
     fun `saving the daily score fills the widget without the monitor service`() {
         HealthScoreUtils.saveHealthScore(context, 9)
+        WidgetSnapshot.pending!!.get()
         val p = context.getSharedPreferences(WidgetSnapshot.PREFS, Context.MODE_PRIVATE)
         assertEquals(9, p.getInt(WidgetSnapshot.KEY_HEALTH_SCORE, -1))
+        assertEquals(WidgetSnapshot.today(), p.getString(WidgetSnapshot.KEY_HEALTH_SCORE_DAY, null))
         assertTrue(p.getLong("last_update", 0) > 0)
         assertTrue(p.getString("ram", "")!!.contains("%)"))
     }
 
     @Test
-    fun `refresh with no new score reuses the last saved one`() {
+    fun `refresh with no new score reuses today's saved one`() {
         HealthScoreUtils.saveHealthScore(context, 8)
+        WidgetSnapshot.pending!!.get()
         context.getSharedPreferences(WidgetSnapshot.PREFS, Context.MODE_PRIVATE).edit().clear().commit()
         WidgetSnapshot.write(context)
         assertEquals(8, context.getSharedPreferences(WidgetSnapshot.PREFS, Context.MODE_PRIVATE).getInt("health_score", -1))
@@ -72,10 +76,45 @@ class PixelWalkFixesTest {
     fun `no score yet renders as unknown, not zero`() {
         assertEquals("Health: --/10", LockScreenMonitorWidget.healthScoreLabel(false, 0, ""))
         assertEquals("Health: 9/10 ↑", LockScreenMonitorWidget.healthScoreLabel(true, 9, " ↑"))
+        assertEquals("📊 Open app to scan", LockScreenMonitorWidget.primaryStatus(false, "--", "--", 0))
+        assertEquals("⚠️ Low Score", LockScreenMonitorWidget.primaryStatus(true, "--", "--", 3))
+        assertEquals("✅ Healthy", LockScreenMonitorWidget.primaryStatus(true, "30.0", "40", 9))
+    }
+
+    @Test
+    fun `a score from an earlier day is not shown as current`() {
+        assertTrue(LockScreenMonitorWidget.scoreIsCurrent(true, "2026-10-05", "2026-10-05", false))
+        assertFalse(LockScreenMonitorWidget.scoreIsCurrent(true, "2026-09-12", "2026-10-05", false))
+        assertFalse(LockScreenMonitorWidget.scoreIsCurrent(true, null, "2026-10-05", false))
+        assertTrue("live service score is current", LockScreenMonitorWidget.scoreIsCurrent(true, null, "2026-10-05", true))
+        assertFalse(LockScreenMonitorWidget.scoreIsCurrent(false, "2026-10-05", "2026-10-05", true))
         val w = src("app/src/main/java/com/teamz/lab/debugger/widgets/LockScreenMonitorWidget.kt")
-        val lowScore = w.indexOf("healthScore < 5 -> \"⚠️ Low Score\"")
-        val guard = w.lastIndexOf("!hasScore ->", lowScore)
-        assertTrue("unknown score must be handled before the Low Score branch", guard in 0 until lowScore)
+        assertTrue("timeline snapshot only for a current score",
+            w.contains("if (hasScore) com.teamz.lab.debugger.db.DeviceEventsRepository.recordDailySnapshotIfDue"))
+    }
+
+    @Test
+    fun `stale monitor-service readings are not shown`() {
+        val now = 1_000_000_000L
+        assertTrue(LockScreenMonitorWidget.isServiceFresh(now - 30_000, now))
+        assertFalse(LockScreenMonitorWidget.isServiceFresh(now - 6 * 60_000, now))
+        assertFalse(LockScreenMonitorWidget.isServiceFresh(0L, now))
+        val w = src("app/src/main/java/com/teamz/lab/debugger/widgets/LockScreenMonitorWidget.kt")
+        for (k in listOf("download_speed", "upload_speed", "cpu", "fps_data", "power", "alert_message", "cta_message", "widget_action"))
+            assertFalse("$k must go through the freshness gate", w.contains("prefs.getString(\"$k\""))
+        assertTrue(src("app/src/main/java/com/teamz/lab/debugger/services/system_monitor_service.kt")
+            .contains("LockScreenMonitorWidget.KEY_SERVICE_LAST_UPDATE"))
+    }
+
+    @Test
+    fun `monitor service does not run a 12 MB speed test every 30 seconds`() {
+        val t0 = 10_000_000L
+        assertTrue(SpeedTestPolicy.shouldRun(t0, 0L, unmetered = true))
+        assertFalse("never on metered data", SpeedTestPolicy.shouldRun(t0, 0L, unmetered = false))
+        assertFalse(SpeedTestPolicy.shouldRun(t0 + 60_000, t0, unmetered = true))
+        assertTrue(SpeedTestPolicy.shouldRun(t0 + SpeedTestPolicy.MIN_INTERVAL_MS, t0, unmetered = true))
+        val svc = src("app/src/main/java/com/teamz/lab/debugger/services/system_monitor_service.kt")
+        assertTrue(svc.contains("if (runSpeedTest) getNetworkDownloadSpeed() else lastDownload"))
     }
 
     @Test
@@ -109,6 +148,7 @@ class PixelWalkFixesTest {
         assertFalse(n.contains("val speed = dataSizeMB / duration"))
         assertFalse("upload must not use the slow single-region echo server", n.contains("URL(\"https://httpbin.org/post\")"))
         assertTrue(n.contains("connection.readTimeout"))
+        assertTrue("download must be capped in time", n.contains("SPEED_TEST_MAX_NANOS"))
     }
 
     // ---- device info ----------------------------------------------------------------------

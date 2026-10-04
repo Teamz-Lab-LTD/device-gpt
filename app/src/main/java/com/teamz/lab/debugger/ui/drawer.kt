@@ -842,7 +842,7 @@ fun DrawerContent(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "• Health Score & Daily Streak (most prominent)\n• Battery % with charging status (AC/USB/Wireless)\n• Temperature (°C)\n• Power consumption (Watts)\n• RAM usage (%)\n• Network speed (Mbps)\n• Update time indicator",
+                                text = "• Today's Health Score (most prominent)\n• Battery % with charging status (AC/USB/Wireless)\n• Battery temperature (°C)\n• RAM and storage use\n• With Real-time Monitor on: power (Watts), network speed (Mbps), CPU and FPS\n• When it was last updated",
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -852,7 +852,7 @@ fun DrawerContent(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "• Updates every 15 seconds automatically\n• Requires 'Real-time Monitor' to be enabled\n• Shows 'Live' when data is fresh (< 5s)\n• All data comes from real system APIs (not estimates)",
+                                text = "• Updates about every 15 minutes, and each time you scan\n• Real-time Monitor adds live speed, power, CPU and FPS (updates every 30 seconds)\n• Shows how long ago it was updated\n• All data comes from real system APIs (not estimates)",
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
