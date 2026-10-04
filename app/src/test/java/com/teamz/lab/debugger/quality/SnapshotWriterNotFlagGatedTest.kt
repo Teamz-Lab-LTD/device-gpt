@@ -47,7 +47,7 @@ class SnapshotWriterNotFlagGatedTest {
     @Test
     fun `the widget writes its snapshot outside the v2 branch`() {
         val callIndex = widget.indexOf("recordDailySnapshotIfDue")
-        val branchIndex = widget.indexOf("if (widgetV2)")
+        val branchIndex = widget.indexOf("if (widgetV2")
         assertTrue("recordDailySnapshotIfDue call not found", callIndex >= 0)
         assertTrue("if (widgetV2) branch not found", branchIndex >= 0)
         assertTrue(

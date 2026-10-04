@@ -66,6 +66,7 @@ class SystemMonitorService : Service() {
     private var lastSpeedTestMs = 0L
     private var lastDownload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
     private var lastUpload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
+    private var lastSpeedNetwork: String? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -135,20 +136,21 @@ class SystemMonitorService : Service() {
 
                     // All these functions use REAL device data (no estimates):
                     // Use cancellable coroutines to ensure they can be stopped quickly
-                    val unmetered = try {
-                        !(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).isActiveNetworkMetered
-                    } catch (e: Exception) { false }
-                    val runSpeedTest = com.teamz.lab.debugger.utils.SpeedTestPolicy.shouldRun(
-                        System.currentTimeMillis(), lastSpeedTestMs, unmetered
-                    )
+                    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    val unmetered = try { !cm.isActiveNetworkMetered } catch (e: Exception) { false }
+                    val networkId = try { cm.activeNetwork?.toString() } catch (e: Exception) { null }
+                    val nowMs = System.currentTimeMillis()
+                    val runSpeedTest = com.teamz.lab.debugger.utils.SpeedTestPolicy.shouldRun(nowMs, lastSpeedTestMs, unmetered)
+                    val reusedDownload = com.teamz.lab.debugger.utils.SpeedTestPolicy.reuse(lastDownload, lastSpeedTestMs, lastSpeedNetwork, networkId, nowMs)
+                    val reusedUpload = com.teamz.lab.debugger.utils.SpeedTestPolicy.reuse(lastUpload, lastSpeedTestMs, lastSpeedNetwork, networkId, nowMs)
                     val downloadDeferred = async { 
                         ensureActive() // Check cancellation before starting
-                        if (runSpeedTest) getNetworkDownloadSpeed() else lastDownload
+                        if (runSpeedTest) getNetworkDownloadSpeed() else reusedDownload
                     } // Real HTTP download, throttled
                     val uploadDeferred = async { 
                         ensureActive() // Check cancellation before starting
                         // After the download: two transfers at once each measure half the line.
-                        if (runSpeedTest) { downloadDeferred.await(); getNetworkUploadSpeed() } else lastUpload
+                        if (runSpeedTest) { downloadDeferred.await(); getNetworkUploadSpeed() } else reusedUpload
                     } // Real HTTP upload, throttled
                     val ramDeferred = async { 
                         ensureActive() // Check cancellation before starting
@@ -286,6 +288,7 @@ class SystemMonitorService : Service() {
                         lastSpeedTestMs = System.currentTimeMillis()
                         lastDownload = download
                         lastUpload = upload
+                        lastSpeedNetwork = networkId
                     }
                     val latency = try {
                         latencyDeferred.await()
@@ -329,17 +332,16 @@ class SystemMonitorService : Service() {
                     // Beautify network label - check actual connectivity first
                     val networkLabel = if (!hasInternet) {
                         "📶 Internet: ⚠️ No connection"
-                    } else if (!download.contains("Mbps")) {
-                        // Not measured yet (speed tests run on Wi-Fi, every 30 min) — say only what is known.
-                        if (latency.isNotBlank()) "📶 Internet: ✅ Connected • Latency: ${latency.trim()}" else "📶 Internet: ✅ Connected"
-                    } else if (download.contains("Speed Test Failed", ignoreCase = true) || 
-                              download.contains("Failed", ignoreCase = true)) {
+                    } else if (download.contains("Failed", ignoreCase = true)) {
                         // Has connection but speed test failed (might be slow/unstable)
                         "📶 Internet: ✅ Connected (speed test unavailable)"
+                    } else if (!download.contains("Mbps")) {
+                        // Not measured on this network yet (Wi-Fi only, every 30 min) — say only what is known.
+                        if (latency.isNotBlank()) "📶 Internet: ✅ Connected • Latency: ${latency.trim()}" else "📶 Internet: ✅ Connected"
                     } else {
                         // Extract clean values to avoid duplication
                         val downloadValue = download.replace("↓", "").trim()
-                        val uploadValue = upload.replace("↑", "").trim()
+                        val uploadValue = if (upload.contains("Mbps")) upload.replace("↑", "").trim() else "--"
                         // Latency is now just the value (e.g., "123ms"), no need to remove "Delay:" or "Latency:"
                         val latencyValue = latency.trim()
                         if (latencyValue.isNotEmpty()) {

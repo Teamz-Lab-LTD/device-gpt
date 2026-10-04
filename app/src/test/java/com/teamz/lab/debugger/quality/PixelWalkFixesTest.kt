@@ -114,7 +114,17 @@ class PixelWalkFixesTest {
         assertFalse(SpeedTestPolicy.shouldRun(t0 + 60_000, t0, unmetered = true))
         assertTrue(SpeedTestPolicy.shouldRun(t0 + SpeedTestPolicy.MIN_INTERVAL_MS, t0, unmetered = true))
         val svc = src("app/src/main/java/com/teamz/lab/debugger/services/system_monitor_service.kt")
-        assertTrue(svc.contains("if (runSpeedTest) getNetworkDownloadSpeed() else lastDownload"))
+        assertTrue(svc.contains("if (runSpeedTest) getNetworkDownloadSpeed() else reusedDownload"))
+    }
+
+    @Test
+    fun `a cached speed belongs to the network it was measured on, and expires`() {
+        val t0 = 50_000_000L
+        assertEquals("200.00 Mbps", SpeedTestPolicy.reuse("200.00 Mbps", t0, "net:101", "net:101", t0 + 60_000))
+        assertEquals("wifi -> mobile", SpeedTestPolicy.NOT_MEASURED, SpeedTestPolicy.reuse("200.00 Mbps", t0, "net:101", "net:102", t0 + 60_000))
+        assertEquals(SpeedTestPolicy.NOT_MEASURED, SpeedTestPolicy.reuse("200.00 Mbps", t0, "net:101", null, t0 + 60_000))
+        assertEquals("expired", SpeedTestPolicy.NOT_MEASURED, SpeedTestPolicy.reuse("200.00 Mbps", t0, "net:101", "net:101", t0 + SpeedTestPolicy.MIN_INTERVAL_MS))
+        assertEquals(SpeedTestPolicy.NOT_MEASURED, SpeedTestPolicy.reuse("200.00 Mbps", t0, null, null, t0 + 60_000))
     }
 
     @Test

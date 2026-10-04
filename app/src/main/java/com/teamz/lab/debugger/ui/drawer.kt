@@ -852,7 +852,7 @@ fun DrawerContent(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "• Updates about every 15 minutes, and each time you scan\n• Real-time Monitor adds live speed, power, CPU and FPS (updates every 30 seconds)\n• Shows how long ago it was updated\n• All data comes from real system APIs (not estimates)",
+                                text = "• Updates about every 15 minutes, and each time you scan\n• Real-time Monitor adds power, CPU and FPS (every 30 seconds) and a speed test on Wi-Fi about every 30 minutes\n• Shows how long ago it was updated\n• All data comes from real system APIs (not estimates)",
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))

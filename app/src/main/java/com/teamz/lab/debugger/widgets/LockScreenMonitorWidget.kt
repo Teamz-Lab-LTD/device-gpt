@@ -170,7 +170,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         } catch (e: Exception) {
             android.util.Log.w("DeviceGPT_Widget", "daily snapshot failed: ${e.message}")
         }
-        if (widgetV2) {
+        if (widgetV2 && hasScore) {
             try {
                 val (prev, last) = com.teamz.lab.debugger.db.DeviceEventsRepository.snapshotDeltaFromPrefs(context)
                 if (prev in 0..10 && last in 0..10) {

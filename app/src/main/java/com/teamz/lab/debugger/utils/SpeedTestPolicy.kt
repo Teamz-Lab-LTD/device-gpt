@@ -13,4 +13,12 @@ object SpeedTestPolicy {
 
     fun shouldRun(nowMs: Long, lastRunMs: Long, unmetered: Boolean): Boolean =
         unmetered && (lastRunMs <= 0L || nowMs - lastRunMs >= MIN_INTERVAL_MS)
+
+    /**
+     * A cached result describes the network it was measured on, for a while. Reused forever, a
+     * 200 Mbps Wi-Fi result kept showing on mobile data under a fresh timestamp.
+     */
+    fun reuse(cached: String, measuredAtMs: Long, measuredOn: String?, currentNetwork: String?, nowMs: Long): String =
+        if (measuredOn != null && measuredOn == currentNetwork && nowMs - measuredAtMs in 0 until MIN_INTERVAL_MS) cached
+        else NOT_MEASURED
 }
