@@ -2,6 +2,7 @@ package com.teamz.lab.debugger.quality
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.teamz.lab.debugger.ui.adaptive.FabScrollPolicy
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.SpeedTestPolicy
 import com.teamz.lab.debugger.utils.aiReadinessLine
@@ -202,5 +203,22 @@ class PixelWalkFixesTest {
         val ui = src("app/src/main/java/com/teamz/lab/debugger/ui/device_info_ui.kt")
         assertFalse(ui.contains("full face unlock security analysis"))
         assertFalse(ui.contains("full hackability report & security fixes"))
+    }
+
+    // ---- floating buttons ------------------------------------------------------------------
+
+    @Test
+    fun `floating buttons step aside while reading and return on scroll up`() {
+        assertFalse("finger moving up = reading down", FabScrollPolicy.next(true, -40f))
+        assertTrue(FabScrollPolicy.next(false, 40f))
+        assertTrue("tap jitter keeps state", FabScrollPolicy.next(true, -3f))
+        assertFalse(FabScrollPolicy.next(false, 3f))
+        val nav = src("app/src/main/java/com/teamz/lab/debugger/ui/adaptive/DeviceGptNavExperience.kt")
+        assertTrue(nav.contains("visible = fabsVisible"))
+        assertEquals("all three layouts observe scrolling", 3, Regex("\\.nestedScroll\\(fabScroll\\)").findAll(nav).count())
+        assertTrue("buttons come back on tab change", nav.contains("LaunchedEffect(selectedTab) { fabsVisible = true }"))
+        val fab = nav.indexOf("AnimatedVisibility(\n                    visible = fabsVisible")
+        assertTrue("price fetch must stay outside the animated block, or every scroll refetches it",
+            nav.indexOf("RevenueCatManager.getLifetimeProductPrice") in 0 until fab)
     }
 }

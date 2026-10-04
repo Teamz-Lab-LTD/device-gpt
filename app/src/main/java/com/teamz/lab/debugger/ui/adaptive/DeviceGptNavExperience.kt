@@ -10,7 +10,13 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -492,6 +498,10 @@ fun DeviceGptNavExperience(
             }
         )
     }) {
+        // Floating buttons step aside while the user scrolls down to read; see FabScrollPolicy.
+        var fabsVisible by remember { mutableStateOf(true) }
+        val fabScroll = remember { FabScrollConnection(onVisible = { fabsVisible = it }, current = { fabsVisible }) }
+        LaunchedEffect(selectedTab) { fabsVisible = true }
         Scaffold(topBar = {
             val menuTooltipState = rememberTooltipState()
             val refreshTooltipState = rememberTooltipState()
@@ -664,6 +674,11 @@ fun DeviceGptNavExperience(
                     label = "star_rotation"
                 )
                 
+                AnimatedVisibility(
+                    visible = fabsVisible,
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
+                ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -905,6 +920,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                     }
                     else FabLoading()
 
+                }
                 }
                 }
             }
@@ -1377,7 +1393,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(paddingValues),
+                                .padding(paddingValues)
+                                .nestedScroll(fabScroll),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             TabStrip()
@@ -1394,7 +1411,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(paddingValues),
+                                .padding(paddingValues)
+                                .nestedScroll(fabScroll),
                         ) {
                             ScanCategoryNav(width = 264.dp)
                             Column(
@@ -1418,6 +1436,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(paddingValues)
+                                .nestedScroll(fabScroll)
                                 .then(expandedKeyboardModifier),
                         ) {
                             ScanCategoryNav(width = 240.dp)
