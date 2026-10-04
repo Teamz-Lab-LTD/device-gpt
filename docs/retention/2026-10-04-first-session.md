@@ -333,3 +333,46 @@ re-read from the store, shows 3.1.31 (50) completed (full).
 re-check:** the share of real users who uninstall on day 0 (49% before). Read it once 50 or more
 real users have first opened vc50, about 3 weeks out. Exclude robot traffic: device model
 `(not set)`, Calpella, Reston and Frankfurt, and `sdk_gphone64_arm64`.
+
+## 2026-10-05: correction, Pixel walk-through, and vc51 (branch `retention/widget-and-false-readings`)
+
+**Correction.** vc50 was **not live** when this report said it was. The edits API shows a
+release as `completed` as soon as it is submitted. The Publishing API
+(`applications.tracks.releases.list`) showed `RELEASE_LIFECYCLE_STATE_IN_REVIEW` for 3.1.31 (50).
+Production users were still getting vc48. Check review state with that call, not with
+`edits.tracks.get`. The day-0 re-check clock starts when vc50 reaches `PUBLISHED`.
+
+**Pixel 8a, Android 16, vc50 release APK (the same build as the one in review):**
+- Fixed and confirmed on hardware:
+  - the first scan counts, with no contradiction;
+  - Network Privacy Checks are all ✅, Grade A 95/100.
+- Additional findings:
+  - **Widget.** About 30% of users pin it (GA4: 29 of 97 prompts). Right after an Excellent first
+    scan it showed "Health: 0/10 · ⚠️ Low Score", every metric "--" and "Initializing", and it
+    stayed that way. Only the opt-in monitor service ever wrote the widget's data.
+  - **Internet Health Score.** Healthy Wi-Fi scored 60/100 "Average". Speeds were megabytes per
+    second labelled Mbps, so they read 1/8 of the real figure, and the upload test went to
+    httpbin.org (1.1 Mbps against Cloudflare's 26 Mbps on the same line). The Verified Health
+    Report carried the same low figure.
+  - **Real-time Monitor.** It ran a 12 MB speed test every 30 seconds, about 1.4 GB an hour, on
+    mobile data too.
+  - **Device Info.**
+    - "Can be fooled by a photo" on a Class 3 face unlock.
+    - "No Ultra-Wide Camera" on a phone that has one.
+    - "Not fully AI-ready" on a Tensor G3: the check uses a feature flag Android doesn't define.
+    - Hackability matched any "Yes"/"Enabled" anywhere in the security text.
+    - Hackability and Face Unlock sat behind a "full analysis" paywall teaser. The paid result
+      is the same single line.
+  - **Not fixed (UX decision):**
+    - The three floating buttons (Cert/AI/Send) cover content on the Health tab.
+    - Two score scales sit side by side: Device Score 93/100 and the daily score 9/10.
+
+**vc51 (3.1.32)** fixes every item above except the two left as UX decisions. Two rounds of
+code review. 721 tests, 0 failed. On hardware:
+- **Emulator:** the widget pinned on day 0 shows 9/10 with real battery, temperature, RAM and
+  disk readings.
+- **Pixel:** 31.9 down / 13.0 up, Internet Health 100/100, correct face, ultra-wide, AI and
+  hackability lines.
+
+**Not released.** Releasing vc51 while vc50 is in review would replace vc50 and restart the
+review. Wait for vc50 to reach `PUBLISHED`, then ship vc51 as the next release.
