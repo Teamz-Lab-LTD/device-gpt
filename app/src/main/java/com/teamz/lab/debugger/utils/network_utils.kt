@@ -66,6 +66,8 @@ fun getNetworkDownloadSpeed(): String {
         val start = System.nanoTime()
         val url = URL("https://speed.cloudflare.com/__down?bytes=10000000")
         val connection = url.openConnection() as HttpURLConnection
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 30_000
         connection.connect()
         connection.inputStream.readBytes()
         val end = System.nanoTime()
@@ -107,8 +109,13 @@ fun getNetworkDownloadSpeed(): String {
 
 fun getNetworkUploadSpeed(): String {
     return try {
-        val url = URL("https://httpbin.org/post")
+        // Was https://httpbin.org/post: on the owner's line (2026-10-05) it took 15.8 s for 2 MB
+        // (1.1 Mbps) and sometimes hung past 60 s, while Cloudflare's upload endpoint measured
+        // 26 Mbps on the same Wi-Fi. A single US echo server measures the distance to it.
+        val url = URL("https://speed.cloudflare.com/__up")
         val connection = url.openConnection() as HttpURLConnection
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 30_000
         connection.requestMethod = "POST"
         connection.doOutput = true
 

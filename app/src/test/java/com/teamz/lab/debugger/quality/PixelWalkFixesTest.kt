@@ -107,6 +107,8 @@ class PixelWalkFixesTest {
         val n = src("app/src/main/java/com/teamz/lab/debugger/utils/network_utils.kt")
         assertFalse(n.contains("val speed = 10 / duration"))
         assertFalse(n.contains("val speed = dataSizeMB / duration"))
+        assertFalse("upload must not use the slow single-region echo server", n.contains("URL(\"https://httpbin.org/post\")"))
+        assertTrue(n.contains("connection.readTimeout"))
     }
 
     // ---- device info ----------------------------------------------------------------------

@@ -37,7 +37,7 @@ import com.teamz.lab.debugger.R
  * 3. getCompactPowerState() - Uses PowerManager API (REAL power/thermal state)
  * 4. getCompactBatteryStatus() - Uses BatteryManager API (REAL voltage/current)
  * 5. getNetworkDownloadSpeed() - Actually downloads 10MB from Cloudflare (REAL network test)
- * 6. getNetworkUploadSpeed() - Actually uploads 2MB to httpbin (REAL network test)
+ * 6. getNetworkUploadSpeed() - Actually uploads 2MB to Cloudflare speed.cloudflare.com/__up (REAL network test)
  * 7. getCompactLatency() - Executes ping command (REAL network latency)
  * 8. getCompactFpsAndDropRate() - Uses Choreographer API (REAL frame monitoring)
  * 9. PowerConsumptionUtils.getPowerConsumptionData() - Uses BatteryManager API (REAL power)
