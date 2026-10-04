@@ -52,6 +52,15 @@ private fun networkCapabilities(context: Context): NetworkCapabilities? {
     return networkCapabilities
 }
 
+/**
+ * Bytes over seconds, in megabits per second — the unit every speed test and ISP plan uses.
+ * Both tests below divided megaBYTES by seconds and printed "Mbps", reporting 1/8 of the real
+ * speed: a 50 Mbps line read about 6, which cost 20 points in the Internet Health Score
+ * (download < 10) and put an 8x-too-low figure on the Verified Health Report.
+ */
+internal fun megabitsPerSecond(bytes: Long, seconds: Double): Double =
+    if (seconds <= 0.0) 0.0 else bytes * 8 / 1_000_000.0 / seconds
+
 fun getNetworkDownloadSpeed(): String {
     return try {
         val start = System.nanoTime()
@@ -61,8 +70,7 @@ fun getNetworkDownloadSpeed(): String {
         connection.inputStream.readBytes()
         val end = System.nanoTime()
         val duration = (end - start) / 1_000_000_000.0
-        val speed = 10 / duration
-        "${"%.2f".format(speed)} Mbps"
+        "${"%.2f".format(megabitsPerSecond(10_000_000L, duration))} Mbps"
     } catch (e: UnknownHostException) {
         // DNS resolution failure or no internet connection
         // This is expected when network is unavailable and not an error
@@ -115,8 +123,7 @@ fun getNetworkUploadSpeed(): String {
 
         val end = System.nanoTime()
         val duration = (end - start) / 1_000_000_000.0
-        val speed = dataSizeMB / duration
-        "${"%.2f".format(speed)} Mbps"
+        "${"%.2f".format(megabitsPerSecond(dummyData.size.toLong(), duration))} Mbps"
     } catch (e: UnknownHostException) {
         // DNS resolution failure or no internet connection
         // This is expected when network is unavailable and not an error

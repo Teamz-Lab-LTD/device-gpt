@@ -1349,32 +1349,37 @@ fun getCameraMicSpeakerFlashInfo(context: Context): String {
     val micCamStatus = isCameraOrMicActive(context)
 
     // 📷 Check for Optical Zoom & Ultra-Wide Camera using Camera2 API
-    var supportsOpticalZoom = "❌ No Optical Zoom"
-    var supportsUltraWide = "❌ No Ultra-Wide Camera"
+    // Was "Optical Zoom", but it read SCALER_AVAILABLE_MAX_DIGITAL_ZOOM. And ultra-wide only
+    // looked for a back lens under 2 mm on the logical cameras, so phones that expose the
+    // ultra-wide through the main camera (Pixel 8a, verified 2026-10-05) read "No Ultra-Wide".
+    var supportsOpticalZoom = "ℹ️ Not reported"
+    var supportsUltraWide = "ℹ️ No ultra-wide camera visible to apps"
 
     try {
+        var maxDigitalZoom = 0f
+        var minZoomRatio = Float.MAX_VALUE
+        val backFocal = mutableListOf<Float>()
         for (cameraId in cameraManager.cameraIdList) {
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
-
-            // 🔍 Optical Zoom Support
-            val zoomRange =
-                characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
-            if (zoomRange != null && zoomRange > 1.0f) {
-                supportsOpticalZoom = "✅ Supported (Max Zoom: ${zoomRange}x)"
+            characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
+                ?.let { maxDigitalZoom = maxOf(maxDigitalZoom, it) }
+            if (characteristics.get(CameraCharacteristics.LENS_FACING) != CameraCharacteristics.LENS_FACING_BACK) continue
+            characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)?.let { backFocal += it.toList() }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                characteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE)
+                    ?.let { minZoomRatio = minOf(minZoomRatio, it.lower) }
             }
-
-            // 🌄 Ultra-Wide Camera Support
-            val lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING)
-            val focalLengths =
-                characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-
-            if (lensFacing == CameraCharacteristics.LENS_FACING_BACK && focalLengths != null) {
-                val minFocalLength = focalLengths.minOrNull()
-                if (minFocalLength != null && minFocalLength < 2.0f) {
-                    supportsUltraWide = "✅ Supported (Focal Length: $minFocalLength mm)"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                for (physicalId in characteristics.physicalCameraIds) {
+                    runCatching {
+                        cameraManager.getCameraCharacteristics(physicalId)
+                            .get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                    }.getOrNull()?.let { backFocal += it.toList() }
                 }
             }
         }
+        if (maxDigitalZoom > 1f) supportsOpticalZoom = "✅ Up to ${maxDigitalZoom}x"
+        if (hasUltraWideCamera(minZoomRatio, backFocal)) supportsUltraWide = "✅ Yes"
     } catch (e: Exception) {
         handleError(e)
         supportsOpticalZoom = "⚠️ Unable to Detect"
@@ -1386,7 +1391,7 @@ fun getCameraMicSpeakerFlashInfo(context: Context): String {
         
         🤳 Front Camera: ${if (hasFrontCamera) "✅ Available" else "❌ Not Found"}
         
-        🔍 Optical Zoom: $supportsOpticalZoom
+        🔍 Max Digital Zoom: $supportsOpticalZoom
         
         🌄 Ultra-Wide Camera: $supportsUltraWide
         
@@ -1928,18 +1933,21 @@ fun isMicrophoneBeingUsed(context: Context): String {
 // detectBatteryDrain() removed 2026-10-04: `dumpsys batterystats` needs the DUMP permission,
 // which apps do not get, so it returned "Normal Battery Consumption" on every phone.
 
+/**
+ * "android.hardware.neuralnetworks" is not a system feature Android defines, so the old check
+ * printed "❌ Not Supported / Not fully AI-ready" on every phone, Tensor and Snapdragon flagships
+ * included. ramOK matched the literal text "4000" or "6000" inside the RAM line. Neither measured
+ * anything; this reports the inputs that do decide it: 64-bit, RAM, Android version.
+ */
 fun getAiInferenceSupport(context: Context): String {
-    val hasNNAPI = context.packageManager.hasSystemFeature("android.hardware.neuralnetworks")
     val ramInfo = getRamUsage(context)
     val supportedAbis = Build.SUPPORTED_64_BIT_ABIS.joinToString()
     val is64bit = supportedAbis.contains("arm64") || supportedAbis.contains("x86_64")
-    val ramOK = !ramInfo.contains("MB") || ramInfo.contains("4000") || ramInfo.contains("6000")
-
-    val readiness = if (hasNNAPI && ramOK && is64bit) {
-        "✅ Your phone is AI-ready. Can run small local models."
-    } else {
-        "⚠️ Not fully AI-ready. May struggle with large models or neural tasks."
-    }
+    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+    val mi = android.app.ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) }
+    val totalGb = mi.totalMem / 1_000_000_000.0
+    val hasNNAPI = Build.VERSION.SDK_INT >= 27 // NNAPI ships with Android 8.1+
+    val readiness = aiReadinessLine(is64bit, totalGb)
 
     return """
     🤖 Neural Network Acceleration: ${if (hasNNAPI) "✅ Supported" else "❌ Not Supported"}
@@ -2160,31 +2168,46 @@ fun detectHiddenApps(context: Context): String {
     }
 }
 
+/**
+ * Counted "Yes"/"Enabled" anywhere in the whole getSecurityInfo() text — permission radar, install
+ * sources and all — as a third "vulnerability". Only two things here are measured: root
+ * binaries and USB debugging. SELinux cannot be read by apps (see selinuxStatusLine).
+ */
 suspend fun getPhoneHackabilityScore(context: Context): String = withContext(Dispatchers.IO) {
-    val root = isDeviceRooted()
-    val usb = isUsbDebuggingEnabled(context)
-    val selinux = getSecurityInfo(context)
-    val score = listOf(root, usb, selinux).count { it.contains("Yes") || it.contains("Enabled") }
-
-    val rating = when (score) {
-        0 -> "🔐 Secure"
-        1 -> "⚠️ Mild Risk"
-        2 -> "🚨 High Risk"
-        else -> "☠️ Critical Risk"
-    }
-
-    "📊 Hackability Score: $rating ($score/3 vulnerabilities found)"
+    hackabilityLine(rooted = isDeviceRooted() == "Yes", usbDebugging = isUsbDebuggingEnabled(context) == "Enabled")
 }
 
-fun getFaceUnlockTrustLevel(context: Context): String {
-    val hasBiometric = context.packageManager.hasSystemFeature(PackageManager.FEATURE_FACE)
-    val level = if (hasBiometric) {
-        "🧠 Likely 2D face unlock (camera-based). Can be fooled by a photo."
+internal fun hackabilityLine(rooted: Boolean, usbDebugging: Boolean): String {
+    val found = buildList {
+        if (rooted) add("root access tools found")
+        if (usbDebugging) add("USB debugging is on — turn it off in Developer options when you are not using it")
+    }
+    val rating = when (found.size) {
+        0 -> "🔐 No issues found"
+        1 -> "⚠️ 1 thing to check"
+        else -> "🚨 2 things to check"
+    }
+    return "📊 $rating (checks: root, USB debugging)" +
+        found.joinToString("") { "\n• $it" }
+}
+
+/**
+ * Said "Likely 2D face unlock. Can be fooled by a photo." for every phone with face hardware —
+ * including the Pixel 8a, whose face unlock is Class 3 (BIOMETRIC_STRONG, verified 2026-10-05).
+ * Apps cannot read the face sensor's class, so this says what is known and how to check.
+ */
+fun getFaceUnlockTrustLevel(context: Context): String =
+    faceUnlockLine(context.packageManager.hasSystemFeature(PackageManager.FEATURE_FACE))
+
+internal fun faceUnlockLine(hasFaceHardware: Boolean): String =
+    if (hasFaceHardware) {
+        "ℹ️ This phone has face unlock. Android does not tell apps how strong it is.\n" +
+            "Quick check: if your banking or payment apps accept your face, it is the strong " +
+            "kind (Class 3) that a photo cannot fool. If they ask for a fingerprint or PIN " +
+            "instead, treat face unlock as convenience only."
     } else {
-        "✅ No face unlock detected or hardware-based. Safer."
+        "ℹ️ No face unlock reported on this phone."
     }
-    return level
-}
 
 fun detectAiVoiceCloneRisk(@Suppress("UNUSED_PARAMETER") context: Context): String =
     // It read DeviceGPT's own mic permission (see OTHER_APPS_MIC_NOTE) and called it a voice
@@ -2827,3 +2850,19 @@ fun clearRamWithAppList(context: Context): Pair<Boolean, String> {
 
 
 
+
+
+/** Ultra-wide = a back camera that zooms out below 1x, or a back lens much wider than the main one. */
+internal fun hasUltraWideCamera(minZoomRatio: Float, backFocalLengths: List<Float>): Boolean {
+    if (minZoomRatio < 0.95f) return true
+    val f = backFocalLengths.filter { it > 0f }.distinct()
+    if (f.size < 2) return false
+    return f.minOrNull()!! / f.maxOrNull()!! <= 0.7f && f.minOrNull()!! < 3.5f
+}
+
+internal fun aiReadinessLine(is64bit: Boolean, totalRamGb: Double): String = when {
+    !is64bit -> "ℹ️ 32-bit only — most on-device AI apps need a 64-bit phone."
+    totalRamGb >= 7.5 -> "✅ Good for on-device AI: 64-bit with ${"%.0f".format(totalRamGb)} GB RAM."
+    totalRamGb >= 3.5 -> "✅ Can run small on-device AI models (${"%.0f".format(totalRamGb)} GB RAM)."
+    else -> "ℹ️ ${"%.0f".format(totalRamGb)} GB RAM — large on-device AI models may not fit."
+}

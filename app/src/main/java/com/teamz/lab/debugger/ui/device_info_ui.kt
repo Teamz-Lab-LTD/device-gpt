@@ -295,10 +295,8 @@ fun DeviceInfoSection(
             "Microphone Privacy" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
                 else state.voiceCloneRisk),
             "How Hackable Is My Phone?" to (if (showLoading && state.hackability.isEmpty()) loadingText
-                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hackability, "full hackability report & security fixes")
                 else state.hackability),
             "Face Unlock Security Trust Level" to (if (showLoading && state.faceUnlockTrust.isEmpty()) loadingText
-                else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.faceUnlockTrust, "full face unlock security analysis")
                 else state.faceUnlockTrust),
             "Ad Tracking SDK Exposure" to (if (showLoading && state.adTracking.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.adTracking, "full list of SDKs tracking you & how to stop them")

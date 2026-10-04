@@ -517,13 +517,14 @@ class SystemMonitorService : Service() {
             } catch (e: Exception) { "0" }
             
             // Extract storage info - get used/total format (e.g., "324/234 GB")
-            val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage() // Returns "availableGB GB / totalGB GB"
+            val storageInfo = com.teamz.lab.debugger.utils.getAvailableStorage() // Returns "usedGB GB / totalGB GB"
             val storageUsedTotal = try {
                 val storageMatch = Regex("(\\d+)\\s*GB\\s*/\\s*(\\d+)\\s*GB").find(storageInfo)
                 if (storageMatch != null) {
-                    val availableGB = storageMatch.groupValues[1].toIntOrNull() ?: 0
+                    // getAvailableStorage() returns "<used> GB / <total> GB". This used to treat
+                    // the first number as AVAILABLE and print total-minus-used, inverting the disk.
+                    val usedGB = storageMatch.groupValues[1].toIntOrNull() ?: 0
                     val totalGB = storageMatch.groupValues[2].toIntOrNull() ?: 0
-                    val usedGB = totalGB - availableGB
                     "$usedGB/$totalGB GB"
                 } else {
                     "---"

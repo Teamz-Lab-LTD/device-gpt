@@ -29,7 +29,9 @@ class WidgetRefreshWorker(context: Context, params: WorkerParameters) : Worker(c
                 ComponentName(applicationContext, LockScreenMonitorWidget::class.java)
             )
             if (ids.isNotEmpty()) {
-                LockScreenMonitorWidget.updateWidget(applicationContext)
+                // write() ends with updateWidget(). Without it the widget only re-read prefs that
+                // nothing but the opt-in monitor service ever filled.
+                WidgetSnapshot.write(applicationContext)
             }
             // R4 wake moment: piggyback the new-app diff on the periodic wake.
             // No-ops unless RC new_app_watchdog_enabled is true.

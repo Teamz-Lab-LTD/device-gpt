@@ -141,6 +141,10 @@ object HealthScoreUtils {
         }
 
         // Total scans are now calculated from actual history, no need to increment counter
+
+        // The home-screen widget reads its own prefs; without this it showed 0/10 to everyone
+        // who had not turned on the monitor service. See WidgetSnapshot.
+        com.teamz.lab.debugger.widgets.WidgetSnapshot.write(context, score)
     }
 
     fun getLastScanDate(context: Context): String {

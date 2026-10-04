@@ -91,6 +91,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val latency = prefs.getString("latency", "") ?: ""
         val power = prefs.getString("power", "⚡ Power: --") ?: "⚡ Power: --"
         val thermal = prefs.getString("thermal", "🌡️ --") ?: "🌡️ --"
+        // No score yet is not a score of 0. It rendered "Health: 0/10 · ⚠️ Low Score" right after
+        // the app showed the same user an Excellent result.
+        val hasScore = prefs.contains("health_score")
         val healthScore = prefs.getInt("health_score", 0)
         val streak = prefs.getInt("streak", 0)
         val lastUpdate = prefs.getLong("last_update", 0)
@@ -118,9 +121,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
                 ?: "--"
         } catch (e: Exception) { "--" }
         
-        val ramPercent = try {
-            ram.substringAfter("(").substringBefore("%)").trim().takeIf { it.isNotEmpty() } ?: "--"
-        } catch (e: Exception) { "--" }
+        val ramPercent = ramPercentFrom(ram)
         
         // MOST IMPORTANT: Health Score (Psychological Trigger #1)
         // v3.1.11 W2 user-behavior insight — color-code health score so the user's
@@ -171,8 +172,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
                 android.util.Log.w("DeviceGPT_Widget", "widget v2 delta failed: ${e.message}")
             }
         }
-        views.setTextViewText(R.id.widget_health_score, "Health: $healthScore/10$trendArrow")
+        views.setTextViewText(R.id.widget_health_score, healthScoreLabel(hasScore, healthScore, trendArrow))
         val healthColor = when {
+            !hasScore -> 0xFFAAAAAA.toInt()
             healthScore >= 7 -> 0xFFD9FE06.toInt()   // lime — original "good" color preserved
             healthScore >= 4 -> 0xFFFFC107.toInt()   // amber — caution
             healthScore >= 1 -> 0xFFFF6B6B.toInt()   // red-coral — needs attention
@@ -350,6 +352,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             // Fallback: Always show something meaningful - positive status or monitoring status
             // This ensures the field is never empty
             secondaryStatus ?: when {
+                !hasScore -> "📊 Open app to scan"
                 healthScore >= 8 -> "✅ Good"
                 healthScore >= 7 -> "📊 OK"
                 else -> "📊 Monitoring"
@@ -357,6 +360,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         } else {
             // No alert shown, so show primary status here
             when {
+                !hasScore -> "📊 Open app to scan"
                 // Critical issues (highest priority)
                 tempValue != "--" && tempValue.toFloatOrNull() ?: 0f > 45f -> "🌡️ Hot"
                 ramPercent != "--" && ramPercent.toIntOrNull() ?: 0 > 85 -> "📊 High Memory"
@@ -455,6 +459,13 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         /**
          * Trigger widget update from SystemMonitorService
          */
+        /** "🧠 RAM: 5468 MB / 7572 MB (72%)" -> "72"; anything without "(N%)" -> "--". */
+        internal fun ramPercentFrom(ram: String): String =
+            Regex("\\((\\d+)%\\)").find(ram)?.groupValues?.get(1) ?: "--"
+
+        internal fun healthScoreLabel(hasScore: Boolean, score: Int, trendArrow: String): String =
+            if (hasScore) "Health: $score/10$trendArrow" else "Health: --/10"
+
         fun updateWidget(context: Context) {
             android.util.Log.d("DeviceGPT_Widget", "Triggering widget update from SystemMonitorService")
             try {

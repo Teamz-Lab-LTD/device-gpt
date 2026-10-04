@@ -183,7 +183,7 @@
         android:id="@+id/widget_cta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tap to fix issues →"
+        android:text="Open health check →"
         android:textColor="#FFD9FE06"
         android:textSize="11sp"
         android:textStyle="bold"
