@@ -1,0 +1,5 @@
+The home-screen widget now shows your real score, battery, temperature, RAM and storage from the first day, instead of "0/10".
+
+Speed results are now correct: they were showing about 1/8 of your real speed, which also lowered the Internet Health Score. The Real-time Monitor now tests speed only on Wi-Fi, about every 30 minutes, so it no longer uses mobile data.
+
+Fixed wrong results for face unlock, ultra-wide camera and AI support. The floating buttons now move out of the way while you scroll.
