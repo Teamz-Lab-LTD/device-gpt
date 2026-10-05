@@ -1178,3 +1178,10 @@ We strive for accuracy in this README. If you find any mismatch between the docu
 We welcome contributions that improve documentation accuracy and developer experience.
 
 ---
+
+## DeviceGPT
+
+DeviceGPT is an Android phone checkup that goes past the battery percentage. It estimates battery wear, sweeps the display for dead or stuck pixels, maps touch dead zones, checks both cameras for focus and colour cast, and measures WiFi speed. It also lists which apps can reach your microphone, camera or SMS, and flags keyboards or accessibility services that can see your screen, all without root. It can run a Model Context Protocol server on the phone so Claude, ChatGPT or Cursor can query it.
+
+Landing page: https://apps.teamzlab.com/devicegpt/?utm_source=github-repo-readme&utm_medium=listing
+Google Play: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger
