@@ -1,6 +1,6 @@
 🔍 WiFi rýchlostný test, zdravie batérie, test mikrofónu, AI diagnostika telefónu — všetko jedným klepnutím v Androide. DeviceGPT preskenuje vaše zariadenie a výsledok vysvetlí bežnou slovenčinou. Bez rootu.
 
-Po každom skene klepnite na Spýtať sa AI a získajte okamžité riešenia cez ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com alebo Repliku. Deväť AI platforiem na dosah. Sken zostáva v telefóne — nezdieľame nič, kým sami nechcete.
+Po každom skene klepnite na Spýtať sa AI a získajte okamžité riešenia cez ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com alebo Repliku. Deväť AI platforiem na dosah. Výsledky skenu zostávajú v telefóne, kým ich sami nezdieľate; skóre a model telefónu sa odosielajú do globálneho rebríčka.
 
 🚀 WiFi a Sieťový Rýchlostný Test
 • WiFi rýchlostný test: sťahovanie, nahrávanie, ping, jitter
@@ -10,17 +10,15 @@ Po každom skene klepnite na Spýtať sa AI a získajte okamžité riešenia cez
 
 🔋 AI Zdravie Batérie — Čo Android Skrýva
 Android nemá vstavanú obrazovku zdravia batérie. DeviceGPT túto medzeru zapĺňa:
-• Stav zdravia batérie, teplota a signály degradácie na jednej obrazovke
+• Stav zdravia batérie (ako ho hlási Android) a teplota
 • Správanie pri nabíjaní a sledovanie cyklov v čase
-• Tester batérie na porovnanie rýchleho a pomalého nabíjania
 • Export dát batérie do CSV alebo sa spýtajte AI
 
 🎤 Test Mikrofónu, Hardvér, Senzor
 • Test mikrofónu: vstupná úroveň, hladina šumu, okamžité prehrávanie
-• Test hardvéru telefónu: dotykový displej, reproduktory, kamera, GPS, akcelerometer
+• Test hardvéru telefónu: dotykový displej a kamera, plus stav GPS a zoznam senzorov (akcelerometer a ďalšie)
 • Monitoring FPS a detekcia poklesu snímok cez Choreographer API
-• Meranie latencie dotyku až na milisekundy
-• Test nabíjania — rýchlosť, teplota aj prúd súčasne
+• Údaje o nabíjaní — rýchlosť vo wattoch, teplota a prúd
 
 🛡️ Zero Trust Dashboard — Bezpečnostný Audit Telefónu
 Trojdielny audit, ktorý ohodnotí vaše zariadenie od 0 do 100:
@@ -33,12 +31,11 @@ Trojdielny audit, ktorý ohodnotí vaše zariadenie od 0 do 100:
 🤖 AI Vám Telefón Vysvetlí Ľudsky
 Iné diagnostické aplikácie ukazujú len čísla. DeviceGPT ich vysvetľuje:
 "Batéria sa prehrieva — zatvorte aplikácie na pozadí."
-"Mikrofón bol použitý dnes v noci — odoberte oprávnenia aplikácií."
 "Jitter na Wi-Fi môže kaziť hranie — reštartujte router."
 Inteligentný, kontextový prompt máme pripravený pre AI podľa vášho výberu.
 
 📱 Kontrola Zdravia Telefónu — Jeden Sken, Celý Obraz
-• Skóre zdravia telefónu pre batériu, úložisko, RAM, teplotu, senzory
+• Skóre zdravia telefónu pre batériu, úložisko, RAM, teplotu, zabezpečenie
 • Info o zariadení: špecifikácie, detaily systému, build info
 • Izolované testovanie komponentov: kamera, displej, CPU, sieťový výkon
 
@@ -51,7 +48,7 @@ Vygenerujte certifikovanú správu o telefóne pre ďalší predaj, support tick
 • Sledovanie spánku/prebudenia pre nočnú analýzu batérie
 
 🚀 Ďalej Obsahuje
-• Widget na zamykacej obrazovke (Android 13+): skóre zdravia, batéria, teplota
+• Widget na domovskej obrazovke: skóre zdravia, batéria, teplota
 • 15+ jazykov
 • Funguje offline pre väčšinu skenov (Spýtať sa AI vyžaduje sieť)
 • Žiadna registrácia. Žiadny root.

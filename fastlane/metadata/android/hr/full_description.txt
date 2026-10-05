@@ -1,6 +1,6 @@
 🔍 WiFi test brzine, zdravlje baterije, test mikrofona, AI dijagnostika telefona — sve jednim dodirom na Androidu. DeviceGPT skenira vaš uređaj i objašnjava rezultat na običnom hrvatskom. Bez roota.
 
-Nakon svakog skeniranja, pritisnite Pitaj AI za trenutna rješenja preko ChatGPT-a, Geminija, Claudea, DeepSeeka, Perplexityja, Copilota, Groka, You.com-a ili Replike. Devet AI platformi nadohvat ruke. Skeniranje ostaje na uređaju — ne dijelimo ništa dok sami ne želite.
+Nakon svakog skeniranja, pritisnite Pitaj AI za trenutna rješenja preko ChatGPT-a, Geminija, Claudea, DeepSeeka, Perplexityja, Copilota, Groka, You.com-a ili Replike. Devet AI platformi nadohvat ruke. Rezultati skeniranja ostaju na telefonu osim ako ih sami ne podijelite; ocjene i model telefona šalju se na globalnu ljestvicu.
 
 🚀 WiFi i Mrežni Test Brzine
 • WiFi test brzine: preuzimanje, slanje, ping, jitter
@@ -10,17 +10,15 @@ Nakon svakog skeniranja, pritisnite Pitaj AI za trenutna rješenja preko ChatGPT
 
 🔋 AI Zdravlje Baterije — Što Android Skriva
 Android nema ugrađen zaslon zdravlja baterije. DeviceGPT popunjava tu prazninu:
-• Stanje zdravlja baterije, temperatura i signali trošenja na jednom zaslonu
+• Stanje zdravlja baterije (kako ga prijavljuje Android) i temperatura
 • Ponašanje pri punjenju i praćenje ciklusa kroz tjedne
-• Tester baterije za usporedbu brzog i sporog punjenja
 • Izvezite podatke baterije u CSV ili pitajte AI za objašnjenje
 
 🎤 Test Mikrofona, Hardvera, Senzora
 • Test mikrofona: razina ulaza, razina šuma, trenutna reprodukcija
-• Test hardvera telefona: zaslon na dodir, zvučnici, kamera, GPS, akcelerometar
+• Test hardvera telefona: zaslon na dodir i kamera, plus stanje GPS-a i popis senzora (akcelerometar i drugi)
 • FPS praćenje i detekcija pada okvira preko Choreographer API-ja
-• Mjerenje kašnjenja dodira do milisekunde
-• Test punjenja — brzina, temperatura i struja zajedno
+• Očitanje punjenja — brzina u vatima, temperatura i struja
 
 🛡️ Zero Trust Dashboard — Sigurnosni Audit Telefona
 Audit u tri dijela koji ocjenjuje vaš uređaj od 0 do 100:
@@ -33,12 +31,11 @@ Audit u tri dijela koji ocjenjuje vaš uređaj od 0 do 100:
 🤖 AI Objašnjava Vaš Telefon Ljudskim Jezikom
 Druge dijagnostičke aplikacije pokazuju samo brojeve. DeviceGPT ih objašnjava:
 "Baterija se pregrijava — zatvorite pozadinske aplikacije."
-"Mikrofon je korišten prošle noći — opozovite dozvole aplikacija."
 "Wi-Fi jitter može kvariti igranje — restartajte router."
 Pametan, kontekstualni prompt već je spreman za AI po vašem izboru.
 
 📱 Provjera Zdravlja Telefona — Jedno Skeniranje
-• Ocjena zdravlja telefona za bateriju, pohranu, RAM, temperaturu, senzore
+• Ocjena zdravlja telefona za bateriju, pohranu, RAM, temperaturu, sigurnost
 • Info o uređaju: specifikacije, detalji sustava, build info
 • Izolirano testiranje komponenti: kamera, zaslon, CPU, mrežna snaga
 
@@ -51,7 +48,7 @@ Generirajte certificirani izvještaj o telefonu za preprodaju, tickete za podrš
 • Praćenje spavanja/buđenja za noćnu analizu baterije
 
 🚀 Također Uključuje
-• Widget zaključanog zaslona (Android 13+) s ocjenom zdravlja, baterijom, temperaturom
+• Widget početnog zaslona s ocjenom zdravlja, baterijom, temperaturom
 • 15+ jezika
 • Radi offline za većinu skeniranja (Pitaj AI zahtijeva mrežu)
 • Bez registracije. Bez roota.

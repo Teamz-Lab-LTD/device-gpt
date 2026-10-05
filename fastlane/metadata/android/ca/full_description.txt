@@ -1,6 +1,6 @@
 🔍 Test de velocitat WiFi, salut bateria, test de micròfon, diagnòstic IA del telèfon — tot amb un sol toc a Android. DeviceGPT escaneja el dispositiu i explica el resultat en català planer. Sense root.
 
-Després de cada escaneig, prem Pregunta a la IA per obtenir solucions instantànies via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com o Replika. Nou plataformes d'IA a l'abast. L'escaneig es queda al dispositiu — no compartim res fins que tu ho decideixis.
+Després de cada escaneig, prem Pregunta a la IA per obtenir solucions instantànies via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com o Replika. Nou plataformes d'IA a l'abast. Els resultats de l'escaneig es queden al telèfon si no els comparteixes; la puntuació i el model del telèfon van a la classificació global.
 
 🚀 Test de Velocitat WiFi i Xarxa
 • Test de velocitat WiFi: descàrrega, pujada, ping, jitter
@@ -10,17 +10,15 @@ Després de cada escaneig, prem Pregunta a la IA per obtenir solucions instantà
 
 🔋 Salut Bateria IA — El que Android no et mostra
 Android no porta una pantalla integrada de salut de bateria. DeviceGPT cobreix aquest buit:
-• Estat de salut de bateria, temperatura i senyals de degradació
+• Estat de salut de la bateria (tal com l'informa Android) i temperatura
 • Comportament de càrrega i seguiment de cicles
-• Provador de bateria per comparar càrrega ràpida i lenta
 • Exporta dades de bateria a CSV o pregunta a la IA
 
 🎤 Test de Micròfon, Maquinari, Sensor
 • Test de micròfon amb nivell d'entrada, soroll de fons i reproducció instantània
-• Test de maquinari: pantalla tàctil, altaveus, càmera, GPS, acceleròmetre
+• Test de maquinari: pantalla tàctil i càmera, a més de l'estat del GPS i la llista de sensors (acceleròmetre i més)
 • Monitor d'FPS i detecció de caigudes de frames via Choreographer API
-• Mesura de latència del tacte
-• Test de càrrega — velocitat, temperatura i corrent
+• Lectura de càrrega — velocitat en watts, temperatura i corrent
 
 🛡️ Zero Trust Dashboard — Auditoria de Seguretat
 Una auditoria en tres seccions que puntua el dispositiu de 0 a 100:
@@ -33,12 +31,11 @@ Una auditoria en tres seccions que puntua el dispositiu de 0 a 100:
 🤖 La IA T'Explica el Telèfon en Català
 Altres apps de diagnòstic mostren xifres. DeviceGPT les explica:
 "La bateria s'està sobreescalfant — tanca apps en segon pla."
-"Han fet servir el micròfon aquesta nit — revoca permisos."
 "El jitter del WiFi afecta el joc — reinicia el router."
 Un prompt intel·ligent i contextual ja està preparat per a la IA que triïs.
 
 📱 Comprovació de Salut del Telèfon — Un sol escaneig
-• Puntuació de salut per bateria, emmagatzematge, RAM, temperatura, sensors
+• Puntuació de salut per bateria, emmagatzematge, RAM, temperatura i seguretat
 • Informació del dispositiu: specs, sistema, build
 • Test aïllat de components: càmera, pantalla, CPU, xarxa
 
@@ -51,7 +48,7 @@ Genera un informe certificat per a revenda, tickets de suport o prova d'estat. S
 • Seguiment de son/despertar per a anàlisi de bateria nocturna
 
 🚀 També Inclou
-• Widget de pantalla bloquejada (Android 13+): puntuació, bateria, temperatura
+• Widget de pantalla d'inici: puntuació, bateria, temperatura
 • 15+ idiomes
 • Funciona offline per a la majoria d'escanejos (Pregunta a la IA necessita xarxa)
 • Sense registre. Sense root.

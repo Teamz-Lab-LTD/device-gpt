@@ -1,6 +1,6 @@
 🔍 WiFi-nopeustesti, akun terveys, mikrofonitesti, AI puhelimen diagnostiikka — kaikki yhdellä napsautuksella Androidilla. DeviceGPT skannaa laitteesi ja selittää tuloksen tavallisella suomella. Ei rootia.
 
-Jokaisen skannauksen jälkeen napauta Kysy AI:lta saadaksesi välittömiä ratkaisuja ChatGPT:n, Geminin, Clauden, DeepSeekin, Perplexityn, Copilotin, Grokin, You.comin tai Replikan kautta. Yhdeksän AI alustaa yhdellä napsautuksella. Skannauksesi pysyy laitteessa — emme jaa mitään ennen kuin itse haluat.
+Jokaisen skannauksen jälkeen napauta Kysy AI:lta saadaksesi välittömiä ratkaisuja ChatGPT:n, Geminin, Clauden, DeepSeekin, Perplexityn, Copilotin, Grokin, You.comin tai Replikan kautta. Yhdeksän AI alustaa yhdellä napsautuksella. Skannauksen tulokset pysyvät puhelimessasi, ellet itse jaa niitä; pisteet ja puhelinmalli lähetetään maailmanlaajuiselle tulostaululle.
 
 🚀 WiFi ja Verkon Nopeustesti
 • WiFi-nopeustesti: lataus, lähetys, ping, jitter
@@ -10,17 +10,15 @@ Jokaisen skannauksen jälkeen napauta Kysy AI:lta saadaksesi välittömiä ratka
 
 🔋 AI Akun Terveys — Mitä Android piilottaa
 Androidissa ei ole sisäänrakennettua akun terveys -näyttöä. DeviceGPT täyttää tämän aukon:
-• Akun terveystila, lämpötila ja kulumissignaalit yhdellä näytöllä
+• Akun terveystila (Androidin ilmoittamana) ja lämpötila
 • Latauskäyttäytyminen ja syklien seuranta viikkojen aikana
-• Akkutesteri nopean ja hitaan latauksen vertailuun
 • Vie akkutiedot CSV:hen tai kysy AI:lta selitystä
 
 🎤 Mikrofonitesti, Laitteistotesti, Anturitesti
 • Mikrofonitesti: tulosignaali, kohinan pohja, välitön toisto
-• Puhelimen laitteistotesti: kosketusnäyttö, kaiuttimet, kamera, GPS, kiihtyvyysanturi
+• Puhelimen laitteistotesti: kosketusnäyttö ja kamera, lisäksi GPS:n tila ja anturiluettelo (kiihtyvyysanturi ym.)
 • FPS-seuranta ja ruudunpoiston havaitseminen Choreographer API:n kautta
-• Kosketuksen latenssin mittaus millisekuntiin asti
-• Lataustesti — nopeus, lämpötila ja virta yhdessä
+• Latauksen lukemat — nopeus watteina, lämpötila ja virta
 
 🛡️ Zero Trust Dashboard — Puhelimen Tietoturva-auditointi
 Kolmiosainen auditointi, joka pisteyttää laitteen 0:sta 100:aan:
@@ -33,12 +31,11 @@ Kolmiosainen auditointi, joka pisteyttää laitteen 0:sta 100:aan:
 🤖 AI Selittää Puhelimesi Tavallisella Kielellä
 Muut diagnostiikkasovellukset näyttävät vain numeroita. DeviceGPT selittää ne:
 "Akku ylikuumenee — sulje taustasovellukset."
-"Mikrofonia käytettiin viime yönä — peruuta sovellusluvat."
 "Wi-Fi-jitter voi häiritä pelaamista — käynnistä reititin uudelleen."
 Älykäs, kontekstitietoinen kehote on valmiina valitsemallesi AI:lle.
 
 📱 Puhelimen Kuntotarkistus — Yksi Skannaus
-• Puhelimen terveyspisteet akulle, tallennustilalle, RAM-muistille, lämpötilalle, antureille
+• Puhelimen terveyspisteet akulle, tallennustilalle, RAM-muistille, lämpötilalle ja tietoturvalle
 • Laitetiedot: spesifikaatiot, järjestelmä, build info
 • Komponentin eristystesti: kamera, näyttö, CPU, verkon virta
 
@@ -51,7 +48,7 @@ Luo sertifioitu puhelinraportti jälleenmyyntiä, tukipyyntöjä tai kuntotodist
 • Uni/herätyksen seuranta yölliseen akun analyysiin
 
 🚀 Sisältää Myös
-• Lukitusnäytön widget (Android 13+) terveyspisteillä, akulla, lämpötilalla
+• Aloitusnäytön widget terveyspisteillä, akulla, lämpötilalla
 • 15+ kieltä
 • Toimii offline-tilassa useimmissa skannauksissa (Kysy AI:lta vaatii verkon)
 • Ei rekisteröintiä. Ei rootia.

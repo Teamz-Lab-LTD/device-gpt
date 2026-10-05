@@ -22,7 +22,7 @@ Fiche matériel + statut sécurité, sans root
 
 🔐 Privacy scanner Android + sécurité
 
-Historique d’accès micro/caméra et vérification des autorisations
+Vérification des autorisations micro/caméra
 
 Statut root, options développeur et débogage USB
 
@@ -61,7 +61,7 @@ Confidentialité d’abord
 
 Utilisation anonyme possible (connexion optionnelle pour sync/classement)
 
-Aucun envoi automatique : vous contrôlez le partage/export
+Scores et modèle du téléphone envoyés au classement mondial ; tout le reste n’est partagé/exporté que si vous le décidez
 
 Beaucoup de contrôles fonctionnent hors ligne (selon l’appareil)
 

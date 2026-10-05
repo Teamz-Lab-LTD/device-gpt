@@ -1,6 +1,6 @@
 🔍 WiFi kiiruse test, aku tervis, mikrofoni test, AI telefoni diagnostika — kõik ühe puudutusega Androidis. DeviceGPT skaneerib teie seadme ja selgitab tulemust selges eesti keeles. Root pole vajalik.
 
-Pärast iga skaneerimist puudutage Küsi AI-lt, et saada koheseid lahendusi ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com või Replika kaudu. Üheksa AI platvormi ühe puudutuse kaugusel. Teie skaneerimine jääb seadmesse — me ei jaga midagi enne, kui ise soovite.
+Pärast iga skaneerimist puudutage Küsi AI-lt, et saada koheseid lahendusi ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com või Replika kaudu. Üheksa AI platvormi ühe puudutuse kaugusel. Skaneerimise tulemused jäävad teie telefoni, kui te neid ise ei jaga; skoorid ja telefoni mudel saadetakse globaalsesse edetabelisse.
 
 🚀 WiFi ja Võrgu Kiiruse Test
 • WiFi kiiruse test: allalaadimine, üleslaadimine, ping, jitter
@@ -10,17 +10,15 @@ Pärast iga skaneerimist puudutage Küsi AI-lt, et saada koheseid lahendusi Chat
 
 🔋 AI Aku Tervis — Mida Android Peidab
 Androidil pole sisseehitatud aku tervise ekraani. DeviceGPT täidab selle lünga:
-• Aku tervise olek, temperatuur ja kulumise märgid ühel ekraanil
+• Aku tervise olek (nagu Android selle teatab) ja temperatuur
 • Laadimiskäitumine ja tsüklite jälgimine nädalate jooksul
-• Aku tester kiire vs aeglase laadimise võrdluseks
 • Eksportige aku andmed CSV-sse või küsige AI-lt selgitust
 
 🎤 Mikrofoni Test, Riistvara Test, Anduri Test
 • Mikrofoni test: sisendi tase, müra põhi, kohene taasesitus
-• Telefoni riistvara test: puuteekraan, kõlarid, kaamera, GPS, kiirendusmõõtur
+• Telefoni riistvara test: puuteekraan ja kaamera, lisaks GPS-i olek ja andurite loend (kiirendusmõõtur jm)
 • FPS jälgimine ja kaadrite kaotuse tuvastamine läbi Choreographer API
-• Puute latentsuse mõõtmine kuni millisekundini
-• Laadimise test — kiirus, temperatuur ja vool koos
+• Laadimise näidud — kiirus vattides, temperatuur ja vool
 
 🛡️ Zero Trust Dashboard — Telefoni Turvalisuse Audit
 Kolmest osast koosnev audit, mis hindab seadet 0-st 100-ni:
@@ -33,12 +31,11 @@ Kolmest osast koosnev audit, mis hindab seadet 0-st 100-ni:
 🤖 AI Selgitab Teie Telefoni Lihtsas Keeles
 Teised diagnostika rakendused näitavad vaid numbreid. DeviceGPT selgitab neid:
 "Aku kuumeneb üle — sulgege tausta rakendused."
-"Mikrofoni kasutati eile öösel — tühistage rakenduse load."
 "Wi-Fi jitter võib mängimist rikkuda — taaskäivitage ruuter."
 Nutikas, konteksti tundlik prompt on valmis teie valitud AI jaoks.
 
 📱 Telefoni Tervisekontroll — Üks Skaneerimine
-• Telefoni tervise skoor akule, salvestusruumile, RAM-ile, temperatuurile, anduritele
+• Telefoni tervise skoor akule, salvestusruumile, RAM-ile, temperatuurile, turvalisusele
 • Seadme info: spetsifikatsioonid, süsteemi detailid, build info
 • Komponendi isolatsiooni test: kaamera, ekraan, CPU, võrgu võimsus
 
@@ -51,7 +48,7 @@ Genereerige sertifitseeritud telefoni aruanne edasimüügiks, tugitaotlusteks v�
 • Une/ärkamise jälgimine öise aku analüüsi jaoks
 
 🚀 Sisaldab Ka
-• Lukustusekraani vidin (Android 13+) tervise skoori, aku, temperatuuriga
+• Avaekraani vidin tervise skoori, aku, temperatuuriga
 • 15+ keelt
 • Töötab offline enamiku skaneerimiste jaoks (Küsi AI-lt vajab võrku)
 • Registreerimist pole. Rooti pole.

@@ -1,12 +1,12 @@
 🔍 Mic test, camera test, screen test, dead pixel test, battery health, AI phone diagnostics — sekali tap di Android. DeviceGPT memindai ponsel Anda dan menjelaskan hasilnya dengan bahasa sederhana. Tanpa root.
 
-Setelah setiap scan, tekan Ask AI untuk solusi lewat ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, atau Replika. Sembilan platform AI. Hasil scan tetap di ponsel Anda kecuali Anda membagikannya.
+Setelah setiap scan, tekan Ask AI untuk solusi lewat ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, atau Replika. Sembilan platform AI. Hasil scan tetap di ponsel Anda kecuali Anda membagikannya; skor dan model ponsel dikirim ke leaderboard global.
 
 🎤 Mic test, camera test, screen test
 • Mic test / microphone test — mengukur noise floor ruangan dan level suara Anda, lalu memutar rekamannya agar Anda tahu bagaimana lawan bicara mendengar Anda. Rekaman tidak keluar dari ponsel
 • Camera test — kamera tidak berfungsi? Kamera depan dan belakang, focus, warna melenceng
 • Screen test — dead pixel test dan stuck pixel test dengan 9 warna layar penuh serta grid untuk goresan. Ponsel tidak bisa mendeteksi dead pixel-nya sendiri, jadi Anda yang melihat dan DeviceGPT mencatat jawaban Anda — bukan skor tebakan
-• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• Phone hardware test: touch screen test, plus status GPS dan daftar sensor lengkap (accelerometer dan lainnya)
 • FPS monitoring dan deteksi frame drop (Choreographer API)
 
 🩺 App Doctor — "WiFi tersambung tapi tidak ada internet"
@@ -17,11 +17,11 @@ Wi-Fi tersambung tapi tidak ada yang terbuka? App Doctor mencari sebabnya:
 • Melaporkan jumlah percobaan berhasil dan rata-rata latency, bukan sekadar centang hijau
 
 🔋 AI Battery Health — yang tidak ditampilkan Android
-• Kondisi baterai, suhu, tanda penurunan kualitas
+• Kondisi baterai (sesuai laporan Android) dan suhu
 • Konsumsi daya saat ini dalam watt (fisika sungguhan: P = V × I)
-• Rincian per komponen: display, cellular, RAM, Wi-Fi
+• Perkiraan rincian per komponen (model berbasis riset): display, cellular, RAM, Wi-Fi
 • App screen time — Android tidak melaporkan pemakaian baterai per aplikasi, jadi ini peringkat waktu layar, bukan baterai
-• Perilaku pengisian, cycle tracking, perbandingan isi cepat dan lambat
+• Perilaku pengisian dan cycle tracking
 • WiFi speed test dan network speed test: download, upload, ping, jitter
 
 🛡️ Zero Trust Dashboard — audit keamanan ponsel
@@ -34,13 +34,13 @@ Audit tiga bagian dengan skor 0–100:
 Pasangkan klien AI desktop lewat jaringan lokal dengan PIN atau QR code. Ia membaca data perangkat langsung melalui MCP — tanpa cloud, tanpa akun.
 
 📱 Phone health check — satu kali scan
-• Health score dari baterai, penyimpanan, RAM, suhu, sensor, plus info perangkat lengkap
+• Health score dari baterai, penyimpanan, RAM, suhu, keamanan, plus info perangkat lengkap
 • Laporan bersertifikat untuk jual kembali, ditandatangani (ECDSA P-256, Android KeyStore) dengan deteksi perubahan
 
 🏆 Leaderboard: 10 kategori global — Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 
 🚀 Termasuk juga
-• Lock screen widget (Android 13+): health score, baterai, suhu
+• Home screen widget: health score, baterai, suhu
 • 15+ bahasa
 • Sebagian besar scan berjalan offline (Ask AI butuh jaringan)
 • Tanpa pendaftaran. Tanpa root.

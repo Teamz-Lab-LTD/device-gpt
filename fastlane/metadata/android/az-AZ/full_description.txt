@@ -1,6 +1,6 @@
 🔍 WiFi sürət testi, batareya sağlamlığı, mikrofon testi, AI telefon diaqnostikası — Android-də bir toxunuşla. DeviceGPT cihazınızı skan edir və nəticəni sadə dildə izah edir. Root tələb olunmur.
 
-Hər skandan sonra AI-dan Soruş düyməsinə basaraq ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com və ya Replika vasitəsilə dərhal həll yolu alın. Doqquz AI platforması bir toxunuşda. Skanınız cihazda qalır — siz paylaşana qədər heç nə göndərilmir.
+Hər skandan sonra AI-dan Soruş düyməsinə basaraq ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com və ya Replika vasitəsilə dərhal həll yolu alın. Doqquz AI platforması bir toxunuşda. Skan nəticələri siz paylaşmadıqca telefonunuzda qalır; ballar və telefon modeli qlobal reytinqə göndərilir.
 
 🚀 WiFi və Şəbəkə Sürət Testi
 • WiFi sürət testi: yükləmə, göndərmə, ping, jitter
@@ -10,17 +10,15 @@ Hər skandan sonra AI-dan Soruş düyməsinə basaraq ChatGPT, Gemini, Claude, D
 
 🔋 AI Batareya Sağlamlığı — Android-in göstərmədikləri
 Android-də quraşdırılmış batareya sağlamlığı ekranı yoxdur. DeviceGPT bu boşluğu doldurur:
-• Batareya sağlamlığı, temperatur və köhnəlmə siqnalları bir ekranda
+• Batareya sağlamlığı (Android-in bildirdiyi kimi) və temperatur
 • Şarj davranışı və dövr izləməsi
-• Sürətli vs yavaş şarj müqayisəsi üçün batareya testeri
 • Batareya məlumatlarını CSV-yə ixrac və ya AI-dan izahat
 
 🎤 Mikrofon Testi, Aparat Testi, Sensor Testi
 • Mikrofon testi: giriş səviyyəsi, küy zəmini, dərhal səsləndirmə
-• Telefon aparat testi: sensor ekran, dinamiklər, kamera, GPS, akselerometr
+• Telefon aparat testi: sensor ekran və kamera, üstəlik GPS vəziyyəti və sensor siyahısı (akselerometr və s.)
 • FPS monitorinqi və kadr itkisi aşkarlanması (Choreographer API)
-• Toxunma gecikməsinin ms səviyyəsində ölçülməsi
-• Şarj testi — sürət, temperatur və cərəyan bir yerdə
+• Şarj göstəriciləri — vattla sürət, temperatur və cərəyan
 
 🛡️ Zero Trust Dashboard — Telefon Təhlükəsizlik Auditi
 Cihazınızı 0-dan 100-ə qədər qiymətləndirən üç bölmədə audit:
@@ -33,12 +31,11 @@ Cihazınızı 0-dan 100-ə qədər qiymətləndirən üç bölmədə audit:
 🤖 AI Telefonunuzu Sadə Dildə İzah Edir
 Digər diaqnostika tətbiqləri yalnız rəqəmlər göstərir. DeviceGPT onları izah edir:
 "Batareya istiləşir — fon tətbiqlərini bağlayın."
-"Mikrofon dünən gecə istifadə olunub — tətbiq icazələrini geri çağırın."
 "Wi-Fi jitter oyunlara təsir edə bilər — routeri yenidən başladın."
 Seçdiyiniz AI üçün ağıllı, kontekstual prompt artıq hazırdır.
 
 📱 Telefon Sağlamlıq Yoxlanışı — Bir Skan
-• Batareya, yaddaş, RAM, temperatur, sensorlar üçün telefon sağlamlıq balı
+• Batareya, yaddaş, RAM, temperatur və təhlükəsizlik üçün telefon sağlamlıq balı
 • Cihaz məlumatı: spesifikasiyalar, sistem detalları, build info
 • Komponent təcrid testi: kamera, ekran, CPU, şəbəkə gücü
 
@@ -51,7 +48,7 @@ Yenidən satış, dəstək biletləri və ya vəziyyət sübutu üçün sertifik
 • Gecə batareya analizi üçün yuxu/oyanış izləməsi
 
 🚀 Həmçinin Daxildir
-• Kilid ekran vidceti (Android 13+): sağlamlıq balı, batareya, temperatur
+• Əsas ekran vidceti: sağlamlıq balı, batareya, temperatur
 • 15+ dil
 • Əksər skanlar üçün offline işləyir (AI-dan Soruş şəbəkə tələb edir)
 • Qeydiyyat tələb olunmur. Root tələb olunmur.

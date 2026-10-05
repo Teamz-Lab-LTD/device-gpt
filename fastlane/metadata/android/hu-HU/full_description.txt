@@ -1,6 +1,6 @@
 🔍 WiFi sebesség teszt, akkumulátor egészség, mikrofon teszt, AI telefon diagnosztika — mind egyetlen érintéssel Androidon. A DeviceGPT beszkenneli a készülékedet és érthető magyar nyelven elmagyarázza az eredményt. Nincs szükség rootra.
 
-Minden szkennelés után koppints a Kérdezd az AI-t gombra azonnali megoldásokért a ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com vagy Replika segítségével. Kilenc AI platform egy érintésre. A szkennelés a készüléken marad — semmit sem osztunk meg, amíg te ezt nem akarod.
+Minden szkennelés után koppints a Kérdezd az AI-t gombra azonnali megoldásokért a ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com vagy Replika segítségével. Kilenc AI platform egy érintésre. A szkennelés eredményei a telefonodon maradnak, hacsak meg nem osztod őket; a pontszámok és a telefon típusa a globális ranglistára kerülnek.
 
 🚀 WiFi és Hálózat Sebesség Teszt
 • WiFi sebesség teszt: letöltés, feltöltés, ping, jitter
@@ -10,17 +10,15 @@ Minden szkennelés után koppints a Kérdezd az AI-t gombra azonnali megoldások
 
 🔋 AI Akkumulátor Egészség — Amit az Android elrejt
 Az Androidnak nincs beépített akkumulátor egészség képernyője. A DeviceGPT betölti ezt a hiányt:
-• Akkumulátor egészség állapota, hőmérséklet és kopási jelek egy képernyőn
+• Akkumulátor egészség állapota (ahogy az Android jelenti) és hőmérséklet
 • Töltési viselkedés és ciklus követés hetek alatt
-• Akkumulátor tesztelő gyors vs lassú töltés összehasonlításhoz
 • Akkumulátor adatok exportálása CSV-be vagy AI magyarázat kérése
 
 🎤 Mikrofon Teszt, Hardver Teszt, Szenzor Teszt
 • Mikrofon teszt: bemeneti szint, zajküszöb, azonnali visszajátszás
-• Telefon hardver teszt: érintőképernyő, hangszórók, kamera, GPS, gyorsulásmérő
+• Telefon hardver teszt: érintőképernyő és kamera, plusz GPS állapot és szenzorlista (gyorsulásmérő és mások)
 • FPS monitoring és frame drop észlelés Choreographer API-n keresztül
-• Érintési latencia mérés milliszekundumig
-• Töltési teszt — sebesség, hőmérséklet és áram együtt
+• Töltési adatok — sebesség wattban, hőmérséklet és áram
 
 🛡️ Zero Trust Dashboard — Telefon Biztonsági Audit
 Háromrészes audit, 0-tól 100-ig pontozás:
@@ -33,12 +31,11 @@ Háromrészes audit, 0-tól 100-ig pontozás:
 🤖 Az AI Magyaráz Téged Tisztán
 Más diagnosztikai appok csak számokat mutatnak. A DeviceGPT elmagyarázza őket:
 "Az akkumulátor túlmelegszik — zárd be a háttér appokat."
-"A mikrofont az éjjel használták — vond vissza az app engedélyeket."
 "A Wi-Fi jitter zavarhatja a játékot — indítsd újra a routert."
 Egy okos, kontextusra szabott prompt már készen áll a választott AI-hoz.
 
 📱 Telefon Egészség Ellenőrzés — Egy Szkennelés
-• Telefon egészség pontszám akkumulátorra, tárolóra, RAM-ra, hőmérsékletre, szenzorokra
+• Telefon egészség pontszám akkumulátorra, tárolóra, RAM-ra, hőmérsékletre, biztonságra
 • Készülék info: specifikációk, rendszer részletek, build info
 • Komponens izolációs teszt: kamera, kijelző, CPU, hálózati teljesítmény
 
@@ -51,7 +48,7 @@ Generálj tanúsított telefon jelentést viszonteladáshoz, support jegyekhez v
 • Alvás/ébredés követés éjszakai akkumulátor elemzéshez
 
 🚀 Tartalmaz Még
-• Zárolt képernyő widget (Android 13+) egészség pontszámmal, akkumulátorral, hőmérséklettel
+• Kezdőképernyő widget egészség pontszámmal, akkumulátorral, hőmérséklettel
 • 15+ nyelv
 • Offline működik a legtöbb szkenneléshez (Kérdezd az AI-t hálózatot igényel)
 • Nincs regisztráció. Nincs root.

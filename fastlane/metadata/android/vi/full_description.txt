@@ -1,12 +1,12 @@
 🔍 Mic test, camera test, screen test, dead pixel test, battery health, AI phone diagnostics — chỉ một chạm trên Android. DeviceGPT quét thiết bị và giải thích kết quả bằng ngôn ngữ dễ hiểu. Không cần root.
 
-Sau mỗi lần quét, nhấn Ask AI để nhận cách khắc phục qua ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com hoặc Replika. Chín nền tảng AI. Kết quả quét ở lại trong máy trừ khi bạn tự chia sẻ.
+Sau mỗi lần quét, nhấn Ask AI để nhận cách khắc phục qua ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com hoặc Replika. Chín nền tảng AI. Kết quả quét ở lại trong máy trừ khi bạn tự chia sẻ; điểm số và mẫu máy được gửi lên bảng xếp hạng toàn cầu.
 
 🎤 Mic test, camera test, screen test
 • Mic test / microphone test — đo mức ồn nền của phòng và mức giọng của bạn, rồi phát lại bản ghi ngay để bạn nghe người gọi nghe mình thế nào. Bản ghi không rời khỏi máy
 • Camera test — camera không hoạt động? Kiểm tra camera trước và sau, focus, lệch màu
 • Screen test — dead pixel test và stuck pixel test với 9 màu toàn màn hình cùng lưới để soi vết xước. Điện thoại không tự phát hiện được điểm chết của chính nó, nên bạn nhìn và DeviceGPT ghi lại câu trả lời của bạn — không đoán điểm số
-• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• Phone hardware test: touch screen test, kèm trạng thái GPS và danh sách cảm biến (accelerometer và các cảm biến khác)
 • FPS monitoring và phát hiện rớt khung hình (Choreographer API)
 
 🩺 App Doctor — "WiFi có kết nối nhưng không vào được mạng"
@@ -17,11 +17,11 @@ Sau mỗi lần quét, nhấn Ask AI để nhận cách khắc phục qua ChatGP
 • Báo số lần thành công và độ trễ trung bình, không chỉ một dấu tích xanh
 
 🔋 AI Battery Health — thứ Android không hiển thị
-• Tình trạng pin, nhiệt độ, dấu hiệu chai pin
+• Tình trạng pin (theo Android báo) và nhiệt độ
 • Mức tiêu thụ điện hiện tại theo watt (vật lý thật: P = V × I)
-• Phân tách theo linh kiện: display, cellular, RAM, Wi-Fi
+• Ước tính theo linh kiện (mô hình dựa trên nghiên cứu): display, cellular, RAM, Wi-Fi
 • App screen time — Android không báo mức pin theo từng ứng dụng, nên đây là xếp hạng thời gian dùng màn hình, không phải pin
-• Hành vi sạc, cycle tracking, so sánh sạc nhanh và chậm
+• Hành vi sạc và cycle tracking
 • WiFi speed test và network speed test: download, upload, ping, jitter
 
 🛡️ Zero Trust Dashboard — kiểm tra bảo mật điện thoại
@@ -34,13 +34,13 @@ Ba phần, chấm điểm 0–100:
 Ghép ứng dụng AI trên máy tính qua mạng nội bộ bằng PIN hoặc QR code. Nó đọc dữ liệu thiết bị theo thời gian thực qua MCP — không cloud, không tài khoản.
 
 📱 Phone health check — một lần quét
-• Health score gồm pin, bộ nhớ, RAM, nhiệt độ, cảm biến, kèm thông tin thiết bị đầy đủ
+• Health score gồm pin, bộ nhớ, RAM, nhiệt độ, bảo mật, kèm thông tin thiết bị đầy đủ
 • Báo cáo có chứng thực để bán lại, ký bằng ECDSA P-256, Android KeyStore, kèm phát hiện chỉnh sửa
 
 🏆 Leaderboard: 10 hạng mục toàn cầu — Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 
 🚀 Còn có
-• Lock screen widget (Android 13+): health score, pin, nhiệt độ
+• Home screen widget: health score, pin, nhiệt độ
 • Hơn 15 ngôn ngữ
 • Phần lớn bài quét chạy offline (Ask AI cần mạng)
 • Không cần đăng ký. Không cần root.

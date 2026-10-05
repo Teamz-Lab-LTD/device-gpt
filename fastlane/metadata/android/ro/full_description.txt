@@ -1,6 +1,6 @@
 🔍 Test viteză WiFi, sănătate baterie, test microfon, diagnostic IA telefon — totul cu o atingere pe Android. DeviceGPT scanează dispozitivul și explică rezultatul în română obișnuită. Fără root.
 
-După fiecare scanare, apasă Întreabă IA pentru soluții instant prin ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com sau Replika. Nouă platforme IA la îndemână. Scanarea rămâne pe dispozitiv — nu împărtășim nimic până nu decizi tu.
+După fiecare scanare, apasă Întreabă IA pentru soluții instant prin ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com sau Replika. Nouă platforme IA la îndemână. Rezultatele scanării rămân pe telefon dacă nu le partajezi tu; scorurile și modelul telefonului ajung în clasamentul global.
 
 🚀 Test Viteză WiFi și Rețea
 • Test viteză WiFi: download, upload, ping, jitter
@@ -10,17 +10,15 @@ După fiecare scanare, apasă Întreabă IA pentru soluții instant prin ChatGPT
 
 🔋 Sănătate Baterie cu IA — Ce nu îți arată Android
 Android nu are un ecran integrat de sănătate baterie. DeviceGPT umple golul:
-• Stare sănătate baterie, temperatură și semnale de degradare pe un singur ecran
+• Starea sănătății bateriei (așa cum o raportează Android) și temperatura
 • Comportament încărcare și urmărirea ciclurilor în timp
-• Tester baterie pentru comparare încărcare rapidă vs lentă
 • Exportă date baterie în CSV sau întreabă IA pentru explicații
 
 🎤 Test Microfon, Hardware, Senzor
 • Test microfon: nivel intrare, podea zgomot, redare instant
-• Test hardware telefon: ecran tactil, difuzoare, cameră, GPS, accelerometru
+• Test hardware telefon: ecran tactil și cameră, plus starea GPS și lista senzorilor (accelerometru și altele)
 • Monitorizare FPS și detectare frame drop prin Choreographer API
-• Măsurare latență atingere până la ms
-• Test încărcare — viteză, temperatură și curent împreună
+• Date despre încărcare — viteză în wați, temperatură și curent
 
 🛡️ Zero Trust Dashboard — Audit de Securitate Telefon
 Audit în trei secțiuni care punctează dispozitivul de la 0 la 100:
@@ -33,12 +31,11 @@ Audit în trei secțiuni care punctează dispozitivul de la 0 la 100:
 🤖 IA Îți Explică Telefonul în Limbaj Normal
 Alte aplicații de diagnostic arată doar cifre. DeviceGPT le explică:
 "Bateria se supraîncălzește — închide aplicațiile din fundal."
-"Microfonul a fost folosit noaptea trecută — revocă permisiunile aplicațiilor."
 "Jitter Wi-Fi poate strica gaming-ul — restartează routerul."
 Un prompt inteligent și contextual este deja pregătit pentru IA aleasă de tine.
 
 📱 Verificare Sănătate Telefon — O Singură Scanare
-• Scor sănătate telefon pentru baterie, stocare, RAM, temperatură, senzori
+• Scor sănătate telefon pentru baterie, stocare, RAM, temperatură, securitate
 • Info dispozitiv: specificații, detalii sistem, build info
 • Test izolat componente: cameră, ecran, CPU, putere rețea
 
@@ -51,7 +48,7 @@ Generează un raport telefon certificat pentru revânzare, tickete de suport sau
 • Urmărire somn/trezire pentru analiză nocturnă baterie
 
 🚀 Include și
-• Widget ecran blocat (Android 13+): scor sănătate, baterie, temperatură
+• Widget ecran principal: scor sănătate, baterie, temperatură
 • 15+ limbi
 • Funcționează offline pentru majoritatea scanărilor (Întreabă IA necesită rețea)
 • Fără înregistrare. Fără root.

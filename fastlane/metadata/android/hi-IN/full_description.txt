@@ -1,6 +1,6 @@
 🔍 WiFi speed test, camera test, mic test, battery health, AI phone diagnostics — Android पर एक टैप में। DeviceGPT आपका फ़ोन scan करता है और नतीजा आसान भाषा में समझाता है। Root की ज़रूरत नहीं।
 
-हर scan के बाद Ask AI दबाइए और ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com या Replika से हल पाइए। नौ AI platform। जब तक आप ख़ुद share न करें, scan आपके फ़ोन में ही रहता है।
+हर scan के बाद Ask AI दबाइए और ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com या Replika से हल पाइए। नौ AI platform। जब तक आप ख़ुद share न करें, scan के नतीजे आपके फ़ोन में ही रहते हैं; scores और फ़ोन का model global leaderboard पर जाते हैं।
 
 🩺 App Doctor — "WiFi चालू है पर इंटरनेट नहीं"
 Wi-Fi लगा है फिर भी कुछ नहीं खुलता? App Doctor वजह ढूँढता है:
@@ -14,18 +14,18 @@ Wi-Fi लगा है फिर भी कुछ नहीं खुलता? 
 • Cellular और Wi-Fi दोनों के लिए network speed test
 
 🔋 AI Battery Health — जो Android नहीं दिखाता
-• Battery health, temperature, घिसाव के संकेत
+• Battery health (जैसा Android बताता है) और temperature
 • अभी की power draw watt में (असली भौतिकी: P = V × I)
-• कौन सा हिस्सा कितना खाता है: display, cellular, RAM, Wi-Fi
+• कौन सा हिस्सा कितना खाता है, इसका अनुमान (research-based model): display, cellular, RAM, Wi-Fi
 • App screen time — Android per-app battery use नहीं बताता, इसलिए यह screen time की गिनती है, battery की नहीं
-• Charging का तरीक़ा, cycle tracking, तेज़ बनाम धीमी charge की तुलना
+• Charging का तरीक़ा और cycle tracking
 • Battery data CSV में export कीजिए या Ask AI से समझिए
 
 🎤 Mic test, camera test, screen test
 • Mic test / microphone test — कमरे का noise floor और आपकी आवाज़ का level मापता है, फिर recording तुरंत बजाकर सुनाता है ताकि आप जान सकें सामने वाला आपको कैसा सुनता है। Recording फ़ोन से बाहर नहीं जाती
 • Camera test — camera काम नहीं कर रहा? आगे और पीछे का camera, focus, रंग की गड़बड़
 • Screen test — dead pixel test और stuck pixel test, 9 full-screen रंग और खरोंच देखने का grid। फ़ोन अपने dead pixel ख़ुद नहीं पकड़ सकता, इसलिए आप देखते हैं और DeviceGPT आपका जवाब दर्ज करता है — अंदाज़े से score नहीं देता
-• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• Phone hardware test: touch screen test, साथ में GPS status और पूरी sensor list (accelerometer वगैरह)
 • FPS monitoring और frame drop detection (Choreographer API)
 
 🛡️ Zero Trust Dashboard — फ़ोन का security audit
@@ -42,7 +42,7 @@ Wi-Fi लगा है फिर भी कुछ नहीं खुलता? 
 "Wi-Fi jitter gaming में दिक़्क़त कर सकता है — router restart कीजिए।"
 
 📱 Phone health check — एक scan में
-• Battery, storage, RAM, temperature, sensor मिलाकर health score, साथ में पूरी device info
+• Battery, storage, RAM, temperature, security मिलाकर health score, साथ में पूरी device info
 
 📊 फ़ोन की हालत और resale report
 बेचने, support ticket या हालत के सबूत के लिए certified report बनाइए। Cryptographically signed (ECDSA P-256, Android KeyStore), साथ में tamper detection और share करने लायक़ verification code।
@@ -51,7 +51,7 @@ Wi-Fi लगा है फिर भी कुछ नहीं खुलता? 
 • 10 global category: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
 
 🚀 और भी
-• Lock screen widget (Android 13+): health score, battery, temperature
+• Home screen widget: health score, battery, temperature
 • 15+ भाषाएँ
 • ज़्यादातर scan offline चलते हैं (Ask AI को network चाहिए)
 • Signup नहीं। Root नहीं।

@@ -1,6 +1,6 @@
 🔍 Teste de velocidade WiFi, saúde da bateria, teste de microfone, diagnóstico IA do telemóvel — tudo com um toque no Android. O DeviceGPT analisa o teu dispositivo e explica o resultado em português corrente. Sem root.
 
-Depois de cada análise, carrega em Perguntar à IA para obteres soluções imediatas via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com ou Replika. Nove plataformas IA à mão. A análise fica no dispositivo — nada é partilhado a não ser que o decidas.
+Depois de cada análise, carrega em Perguntar à IA para obteres soluções imediatas via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com ou Replika. Nove plataformas IA à mão. Os resultados da análise ficam no telemóvel, a não ser que os partilhes; as pontuações e o modelo do telemóvel vão para a classificação global.
 
 🚀 Teste de Velocidade WiFi e Rede
 • Teste de velocidade WiFi: download, upload, ping, jitter
@@ -10,17 +10,15 @@ Depois de cada análise, carrega em Perguntar à IA para obteres soluções imed
 
 🔋 Saúde da Bateria com IA — O que o Android não mostra
 O Android não tem um ecrã integrado para a saúde da bateria. O DeviceGPT preenche essa lacuna:
-• Estado da saúde da bateria, temperatura e sinais de degradação
+• Estado da saúde da bateria (tal como o Android o indica) e temperatura
 • Comportamento de carregamento e contagem de ciclos
-• Testador de bateria para comparar carregamento rápido vs lento
 • Exporta dados para CSV ou pergunta à IA
 
 🎤 Teste de Microfone, Hardware, Sensor
 • Teste de microfone: nível de entrada, ruído de fundo, reprodução imediata
-• Teste de hardware: ecrã táctil, colunas, câmara, GPS, acelerómetro
+• Teste de hardware: ecrã táctil e câmara, mais o estado do GPS e a lista de sensores (acelerómetro e outros)
 • Monitorização de FPS e deteção de drops via Choreographer API
-• Medição de latência do toque até ao milissegundo
-• Teste de carregamento — velocidade, temperatura, corrente
+• Leitura do carregamento — velocidade em watts, temperatura, corrente
 
 🛡️ Zero Trust Dashboard — Auditoria de Segurança
 Auditoria em três secções que pontua o dispositivo de 0 a 100:
@@ -33,12 +31,11 @@ Auditoria em três secções que pontua o dispositivo de 0 a 100:
 🤖 A IA Explica o Telemóvel em Português Claro
 Outras apps de diagnóstico mostram só números. O DeviceGPT explica-os:
 "A bateria está a sobreaquecer — fecha apps em segundo plano."
-"O microfone foi usado a noite passada — revoga permissões."
 "Jitter no Wi-Fi pode estragar jogos — reinicia o router."
 Um prompt inteligente e contextual já está pronto para a IA que escolheres.
 
 📱 Verificar Saúde do Telemóvel — Uma análise, panorama completo
-• Pontuação de saúde para bateria, armazenamento, RAM, temperatura, sensores
+• Pontuação de saúde para bateria, armazenamento, RAM, temperatura, segurança
 • Info do dispositivo: especificações, sistema, build
 • Teste isolado de componentes: câmara, ecrã, CPU, rede
 
@@ -51,7 +48,7 @@ Gera um relatório certificado para revenda, tickets de suporte ou prova de esta
 • Tracking de sono/despertar para análise noturna
 
 🚀 Inclui Também
-• Widget de ecrã de bloqueio (Android 13+): pontuação, bateria, temperatura
+• Widget de ecrã principal: pontuação, bateria, temperatura
 • 15+ idiomas
 • Funciona offline na maioria das análises (Perguntar à IA precisa de rede)
 • Sem registo. Sem root.

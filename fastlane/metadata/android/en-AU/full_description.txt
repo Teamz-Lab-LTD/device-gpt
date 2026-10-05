@@ -1,6 +1,6 @@
 🔍 WiFi speed test, camera test, mic test, battery health, AI phone diagnostics — one tap on Android. DeviceGPT scans your device and explains the result in plain English. No root.
 
-After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Your scan stays on-device unless you share it.
+After every scan, tap Ask AI to get instant fixes via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com, or Replika. Nine AI platforms. Raw scan results stay on your phone unless you share them; scores and phone model go to the leaderboard.
 
 🩺 App Doctor — "WiFi Connected But No Internet"
 Connected to Wi-Fi but nothing loads? App Doctor finds out why:
@@ -14,18 +14,18 @@ Connected to Wi-Fi but nothing loads? App Doctor finds out why:
 • Network speed test for cellular + Wi-Fi
 
 🔋 AI Battery Health — What Android Doesn't Show
-• Battery health status, temperature, degradation signals
+• Battery health status (Android's reading) and temperature
 • Live device power draw in watts (real physics: P = V × I)
-• Component breakdown: display, cellular, RAM, Wi-Fi
+• Estimated component breakdown (model-based): display, cellular, RAM, Wi-Fi
 • App screen time — Android does not report per-app battery use, so this ranks screen time, not battery
-• Charging behavior, cycle tracking, fast vs slow charge comparison
+• Charging behavior and cycle tracking
 • Export battery data to CSV or Ask AI for explanation
 
 🎤 Mic Test, Camera Test, Screen Test
 • Mic test / microphone test — measures the room noise floor, your voice level, and plays the recording straight back so you hear what callers hear. The recording never leaves your phone
 • Camera test — camera not working? Front and rear check, focus, colour cast
 • Screen test — dead pixel test and stuck pixel test with 9 full-screen colours plus a grid for scratches. Your phone cannot detect its own dead pixels, so you look and DeviceGPT records your answer — never a guessed score
-• Phone hardware test: touch screen test, speaker test, GPS test, accelerometer
+• Phone hardware test: touch screen test, plus GPS status and sensor list (accelerometer and more)
 • FPS monitoring and frame drop detection (Choreographer API)
 
 🛡️ Zero Trust Dashboard — Phone Security Audit
@@ -42,7 +42,7 @@ Pair a desktop AI client over your local network with a PIN or QR code. It reads
 "Wi-Fi jitter may affect gaming — restart router."
 
 📱 Phone Health Check — One Scan
-• Health score across battery, storage, RAM, temperature, sensors, plus full device info
+• Health score across battery, storage, RAM, temperature and security, plus full device info
 
 📊 Phone Condition Check & Resale Report
 Generate a certified phone report for resale, support tickets, or proof of condition. Cryptographically signed (ECDSA P-256, Android KeyStore) with tamper detection and a shareable verification code.
@@ -51,7 +51,7 @@ Generate a certified phone report for resale, support tickets, or proof of condi
 • 10 global categories: battery, speed, thermal, display, camera, CPU
 
 🚀 Also Includes
-• Lock screen widget (Android 13+): health score, battery, temperature
+• Home screen widget: health score, battery, temperature
 • 15+ languages
 • Works offline for most scans (Ask AI needs network)
 • No signup. No root.

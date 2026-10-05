@@ -1,6 +1,6 @@
 🔍 WiFi hastighetstest, batterihelse, mikrofontest, AI telefon diagnostikk — alt med ett trykk på Android. DeviceGPT skanner enheten din og forklarer resultatet på vanlig norsk. Ingen root nødvendig.
 
-Etter hver skanning, trykk Spør AI for umiddelbare løsninger via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com eller Replika. Ni AI plattformer innenfor rekkevidde. Skanningen blir på enheten — vi deler ingenting før du selv ønsker det.
+Etter hver skanning, trykk Spør AI for umiddelbare løsninger via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com eller Replika. Ni AI plattformer innenfor rekkevidde. Skanneresultatene blir på telefonen med mindre du deler dem; poengsummer og telefonmodell sendes til den globale ledertavlen.
 
 🚀 WiFi & Nettverk Hastighetstest
 • WiFi hastighetstest med nedlasting, opplasting, ping og jitter
@@ -10,17 +10,15 @@ Etter hver skanning, trykk Spør AI for umiddelbare løsninger via ChatGPT, Gemi
 
 🔋 AI Batterihelse — Hva Android Ikke Viser
 Android har ingen innebygd skjerm for batterihelse. DeviceGPT fyller det tomrommet:
-• Batterihelse, temperatur og slitasjesignaler på én skjerm
+• Batterihelse (slik Android rapporterer den) og temperatur
 • Ladeadferd og syklussporing over uker
-• Batteri tester for rask vs sakte lading sammenligning
 • Eksporter batteridata til CSV eller spør AI om forklaring
 
 🎤 Mikrofontest, Maskinvaretest, Sensortest
 • Mikrofontest med inngangsnivå, støygolv og umiddelbar avspilling
-• Telefon maskinvaretest: berøringsskjerm, høyttalere, kamera, GPS, akselerometer
+• Telefon maskinvaretest: berøringsskjerm og kamera, pluss GPS-status og sensorliste (akselerometer m.m.)
 • FPS overvåking og frame drop deteksjon via Choreographer API
-• Berøringslatens måling helt ned til millisekunder
-• Ladetest — hastighet, temperatur og strøm samlet
+• Ladeavlesning — hastighet i watt, temperatur og strøm
 
 🛡️ Zero Trust Dashboard — Telefon Sikkerhetsaudit
 En audit i tre deler som scorer enheten fra 0 til 100:
@@ -33,12 +31,11 @@ En audit i tre deler som scorer enheten fra 0 til 100:
 🤖 AI Forklarer Telefonen på Vanlig Norsk
 Andre diagnoseapper viser bare tall. DeviceGPT forklarer dem:
 "Batteriet overopphetes — lukk bakgrunnsapper."
-"Mikrofonen ble brukt i natt — trekk tilbake apptillatelser."
 "Wi-Fi jitter kan ødelegge gaming — start ruteren på nytt."
 En smart, kontekstbevisst prompt står klar for den AI du velger.
 
 📱 Telefon Helsesjekk — Én Skanning, Hele Bildet
-• Telefon helsescore for batteri, lagring, RAM, temperatur, sensorer
+• Telefon helsescore for batteri, lagring, RAM, temperatur, sikkerhet
 • Enhetsinfo: specs, systemdetaljer, build info
 • Komponent isolasjon test for kamera, skjerm, CPU, nettverksstrøm
 
@@ -51,7 +48,7 @@ Generer en sertifisert telefonrapport for videresalg, support saker eller bevis 
 • Søvn/våkne tracking for nattlig batterianalyse
 
 🚀 Inkluderer Også
-• Låseskjerm widget (Android 13+) med helsescore, batteri, temperatur
+• Startskjerm widget med helsescore, batteri, temperatur
 • 15+ språk
 • Fungerer offline for de fleste skanninger (Spør AI krever nettverk)
 • Ingen registrering. Ingen root.

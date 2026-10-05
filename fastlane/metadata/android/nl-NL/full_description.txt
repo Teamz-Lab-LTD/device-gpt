@@ -1,6 +1,6 @@
 🔍 WiFi snelheidstest, batterijgezondheid, microfoon test, AI telefoon diagnose — alles met één tik op je Android. DeviceGPT scant je toestel en legt het resultaat uit in gewoon Nederlands. Geen root nodig.
 
-Na elke scan kun je Vraag AI gebruiken voor directe oplossingen via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com of Replika. Negen AI platforms binnen handbereik. Je scan blijft op je toestel — wij delen niets totdat jij dat zelf wilt.
+Na elke scan kun je Vraag AI gebruiken voor directe oplossingen via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com of Replika. Negen AI platforms binnen handbereik. Je scanresultaten blijven op je telefoon, tenzij je ze deelt; scores en je telefoonmodel gaan naar het wereldwijde klassement.
 
 🚀 WiFi & Netwerk Snelheidstest
 • WiFi snelheidstest met download, upload, ping en jitter
@@ -10,17 +10,15 @@ Na elke scan kun je Vraag AI gebruiken voor directe oplossingen via ChatGPT, Gem
 
 🔋 AI Batterij Gezondheid — Wat Android Verborgen Houdt
 Android heeft geen ingebouwd batterij gezondheidsscherm. DeviceGPT springt in dat gat:
-• Batterijgezondheid, temperatuur en slijtagesignalen in één oogopslag
+• Batterijgezondheid (zoals Android die meldt) en temperatuur
 • Oplaadgedrag en cyclus tracking over weken
-• Batterij tester voor snel vs traag opladen vergelijken
 • Exporteer batterijdata naar CSV of Vraag AI om uitleg
 
 🎤 Microfoon Test, Hardware Test, Sensor Test
 • Microfoon test met inputniveau, ruisvloer en directe afspeel
-• Telefoon hardware test: touchscreen, speakers, camera, GPS, versnellingsmeter
+• Telefoon hardware test: touchscreen en camera, plus GPS-status en sensorlijst (versnellingsmeter en meer)
 • FPS monitoring en frame drop detectie via Choreographer API
-• Touch latency meting tot op de ms nauwkeurig
-• Oplaad test — snelheid, temperatuur en stroomverbruik samen
+• Oplaadgegevens — snelheid in watt, temperatuur en stroom
 
 🛡️ Zero Trust Dashboard — Telefoon Beveiligings Audit
 Een audit in drie delen die je toestel scoort van 0 tot 100:
@@ -33,12 +31,11 @@ Een audit in drie delen die je toestel scoort van 0 tot 100:
 🤖 AI Vertaalt Je Telefoon Naar Gewone Taal
 Andere diagnose apps tonen alleen cijfers. DeviceGPT legt ze uit:
 "Batterij oververhit — sluit achtergrond apps."
-"Microfoon werd vannacht gebruikt — trek app rechten in."
 "WiFi jitter kan gaming verstoren — herstart de router."
 Een slimme, context-aware prompt staat klaar voor de AI van jouw keuze.
 
 📱 Telefoon Gezondheidscheck — Eén Scan, Volledig Beeld
-• Telefoon gezondheidsscore met batterij, opslag, RAM, temperatuur en sensoren
+• Telefoon gezondheidsscore met batterij, opslag, RAM, temperatuur en beveiliging
 • Toestel info: specs, system details, build info
 • Component isolatie testen voor camera, scherm, CPU en netwerk vermogen
 
@@ -51,7 +48,7 @@ Maak een gecertificeerd telefoon rapport voor doorverkoop, support tickets of be
 • Slaap/wakker tracking voor nacht batterij analyse
 
 🚀 Bevat Verder
-• Vergrendelscherm widget (Android 13+) met gezondheidsscore, batterij, temperatuur
+• Startscherm widget met gezondheidsscore, batterij, temperatuur
 • 15+ talen
 • Werkt offline voor de meeste scans (Vraag AI vereist netwerk)
 • Geen registratie. Geen root.

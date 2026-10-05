@@ -1,12 +1,12 @@
 🔍 Teste de microfone, teste de câmera, teste de tela, teste de pixel morto, saúde da bateria e diagnóstico do celular com IA — em um toque no Android. O DeviceGPT examina o aparelho e explica o resultado em linguagem simples. Sem root.
 
-Depois de cada exame, toque em Ask AI para receber soluções via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com ou Replika. Nove plataformas de IA. O resultado fica no seu celular, a menos que você mesmo compartilhe.
+Depois de cada exame, toque em Ask AI para receber soluções via ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com ou Replika. Nove plataformas de IA. O resultado fica no seu celular, a menos que você mesmo compartilhe; as notas e o modelo do aparelho vão para o ranking global.
 
 🎤 Teste de microfone, teste de câmera, teste de tela
 • Teste de microfone — mede o ruído de fundo do ambiente e o nível da sua voz, depois toca a gravação na hora para você ouvir como quem liga te escuta. A gravação nunca sai do celular
 • Teste de câmera — a câmera não funciona? Verificação das câmeras frontal e traseira, foco e desvio de cor
 • Teste de tela — teste de pixel morto e de pixel travado com 9 cores em tela cheia e uma grade para ver riscos. O celular não detecta os próprios pixels mortos, então você olha e o DeviceGPT registra a sua resposta — nunca uma nota adivinhada
-• Teste de hardware: tela sensível ao toque, alto-falante, GPS, acelerômetro
+• Teste de hardware: tela sensível ao toque, além do status do GPS e da lista de sensores (acelerômetro e outros)
 • Monitoramento de FPS e detecção de quedas de quadro (Choreographer API)
 
 🩺 App Doctor — "Wi-Fi conectado mas sem internet"
@@ -17,11 +17,11 @@ Conectado ao Wi-Fi e nada carrega? O App Doctor descobre o porquê:
 • Informa quantas tentativas passaram e a latência média, não só um sinal verde
 
 🔋 Saúde da bateria com IA — o que o Android não mostra
-• Estado da bateria, temperatura e sinais de desgaste
+• Estado da bateria (conforme o Android informa) e temperatura
 • Consumo em watts em tempo real (física de verdade: P = V × I)
-• Detalhe por componente: tela, rede móvel, RAM, Wi-Fi
+• Estimativa por componente (modelo baseado em pesquisa): tela, rede móvel, RAM, Wi-Fi
 • Tempo de tela por app — o Android não informa o consumo de bateria por aplicativo, então isto ordena tempo de tela, não bateria
-• Comportamento de carga, ciclos e comparação entre carga rápida e lenta
+• Comportamento de carga e ciclos
 • Teste de velocidade Wi-Fi e da rede: download, upload, ping, jitter
 
 🛡️ Zero Trust Dashboard — auditoria de segurança
@@ -34,13 +34,13 @@ Auditoria em três partes, nota de 0 a 100:
 Conecte um cliente de IA do computador pela sua rede local com PIN ou QR code. Ele lê os dados do aparelho ao vivo por MCP — sem nuvem, sem conta.
 
 📱 Verificação de saúde do celular — um exame
-• Nota de saúde somando bateria, armazenamento, RAM, temperatura e sensores, além das informações completas do aparelho
+• Nota de saúde somando bateria, armazenamento, RAM, temperatura e segurança, além das informações completas do aparelho
 • Relatório certificado para revenda, assinado com ECDSA P-256 e Android KeyStore, com detecção de adulteração
 
 🏆 Ranking: 10 categorias globais — bateria, velocidade, térmica, energia, saúde, consistência, tela, câmera, CPU e consumo por app
 
 🚀 Também inclui
-• Widget de tela de bloqueio (Android 13+): nota de saúde, bateria, temperatura
+• Widget da tela inicial: nota de saúde, bateria, temperatura
 • Mais de 15 idiomas
 • A maioria dos exames funciona sem internet (o Ask AI precisa de rede)
 • Sem cadastro. Sem root.
