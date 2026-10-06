@@ -2,6 +2,8 @@
 
 ## 🔴 PENDING OWNER DECISION — tell the owner at the start of every session in this repo
 
+> **2026-10-07 update:** the ad stop-gap is DONE with no release — Remote Config `ads_grace_sessions` and `app_open_ad_min_session` set to 10 (v17). Both fullscreen ad paths in the LIVE build (vc50) honour it (3632d72). A 72 h install-age gate is optional polish, not required.
+
 Churn diagnosis, 2026-10-07: `docs/CHURN-DIAGNOSIS-2026-10-07.md`. The 28-day fleet verdict shows
 51 installs and 52 uninstalls.
 
