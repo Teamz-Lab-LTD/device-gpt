@@ -61,6 +61,19 @@ private fun networkCapabilities(context: Context): NetworkCapabilities? {
 /** Upper bound on the download measurement; enough for a stable reading on any line. */
 private const val SPEED_TEST_MAX_NANOS = 8_000_000_000L
 
+/** Reads [input] until it ends or [maxNanos] have passed, and returns the bytes received. */
+internal fun readUntilDeadline(input: java.io.InputStream, maxNanos: Long, now: () -> Long = System::nanoTime): Long {
+    val deadline = now() + maxNanos
+    val buf = ByteArray(64 * 1024)
+    var received = 0L
+    while (now() < deadline) {
+        val n = input.read(buf)
+        if (n < 0) break
+        received += n
+    }
+    return received
+}
+
 internal fun megabitsPerSecond(bytes: Long, seconds: Double): Double =
     if (seconds <= 0.0) 0.0 else bytes * 8 / 1_000_000.0 / seconds
 
@@ -76,14 +89,7 @@ fun getNetworkDownloadSpeed(): String {
         // capped: readTimeout only bounds the gap between reads, so a 0.5 Mbps line used to take
         // ~160 s for the full 10 MB. Speed comes from the bytes actually received.
         val start = System.nanoTime()
-        val deadline = start + SPEED_TEST_MAX_NANOS
-        val buf = ByteArray(64 * 1024)
-        var received = 0L
-        while (System.nanoTime() < deadline) {
-            val n = input.read(buf)
-            if (n < 0) break
-            received += n
-        }
+        val received = readUntilDeadline(input, SPEED_TEST_MAX_NANOS)
         val duration = (System.nanoTime() - start) / 1_000_000_000.0
         input.close(); connection.disconnect()
         "${"%.2f".format(megabitsPerSecond(received, duration))} Mbps"
