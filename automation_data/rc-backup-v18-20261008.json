@@ -1,0 +1,213 @@
+{
+  "conditions": [
+    {
+      "name": "retention_ab_50pct",
+      "expression": "percent \u003c= 50",
+      "tagColor": "GREEN"
+    },
+    {
+      "name": "v3114_plus",
+      "expression": "app.id == '1:953087721962:android:ba0f24c4dcd3b6ccc4b293' && app.version.\u003e=(['3.1.14'])",
+      "tagColor": "BLUE"
+    },
+    {
+      "name": "v3117_plus",
+      "expression": "app.id == '1:953087721962:android:ba0f24c4dcd3b6ccc4b293' && app.version.\u003e=(['3.1.17'])",
+      "tagColor": "GREEN"
+    }
+  ],
+  "parameters": {
+    "native_ad_target_count": {
+      "defaultValue": {
+        "value": "2"
+      },
+      "description": "Tuned 2026-06-01: was 1 (v3.1.4 too tight), now 2.",
+      "valueType": "NUMBER"
+    },
+    "native_ad_max_retries": {
+      "defaultValue": {
+        "value": "1"
+      },
+      "description": "Tuned 2026-06-01: was 0, now 1.",
+      "valueType": "NUMBER"
+    },
+    "native_ad_request_interval_ms": {
+      "defaultValue": {
+        "value": "60000"
+      },
+      "description": "Tuned 2026-06-01: was 60000, now 30000.",
+      "valueType": "NUMBER"
+    },
+    "native_ad_max_requests_per_session": {
+      "defaultValue": {
+        "value": "10"
+      },
+      "description": "Tuned 2026-06-01: was 5, now 10.",
+      "valueType": "NUMBER"
+    },
+    "interstitial_ad_interval": {
+      "defaultValue": {
+        "value": "45"
+      },
+      "description": "Tuned 2026-06-01: code default 60s, now 45s.",
+      "valueType": "NUMBER"
+    },
+    "first_scan_gate_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "conditionalValues": {
+        "v3114_plus": {
+          "value": "true"
+        }
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10 — v3.2.0+ only: older builds contain the pre-fix scan",
+      "valueType": "BOOLEAN"
+    },
+    "d1_overnight_drain_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "conditionalValues": {
+        "retention_ab_50pct": {
+          "value": "true"
+        }
+      },
+      "description": "v3.1.11 W1: D1OvernightDrainWorker 20h push. TRUE for 50% via Firebase installation-id bucketing.",
+      "valueType": "BOOLEAN"
+    },
+    "timeline_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "charge_summary_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "widget_v2_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "new_app_watchdog_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "insight_per_open_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "rewarded_report_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "share_card_v2_enabled": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "v3.2.0 growth program flip 2026-07-10",
+      "valueType": "BOOLEAN"
+    },
+    "widget_pin_prompt_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "ON 2026-08-28 (was OFF since 2026-07-10). 5/116 installs pinned the widget; 81 saw the preview (6% conv). One-time prompt after a good scan. See project_devicegpt_behavior_baseline memory.",
+      "valueType": "BOOLEAN"
+    },
+    "enable_leaderboard": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Owner override 2026-07-10: leaderboard is a core surface. Reverted my unilateral disable.",
+      "valueType": "BOOLEAN"
+    },
+    "tab_order": {
+      "defaultValue": {
+        "value": "health,leaderboard,camera,screen_test,power,device_info,network_info"
+      },
+      "description": "Health first 2026-09-08 (owner call). New users landed on Leaderboard: ad on top, top-3 blurred, no rank card. Score card + insight + Timeline live on Health, unseen by new users. Leaderboard KEPT at pos 2.",
+      "valueType": "STRING"
+    },
+    "show_app_open_ads": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "conditionalValues": {
+        "v3117_plus": {
+          "value": "true"
+        }
+      },
+      "description": "OFF for builds \u003c 3.1.17: those requested 18,124 app-open ads and showed 59 (0.38%) - wasted spend + AdMob invalid-traffic risk. 3.1.17+ fixed the pipeline (headless requests removed, ad auto-shows on arrival), so ads are ON there.",
+      "valueType": "BOOLEAN"
+    },
+    "paywall_delay_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "ON 2026-08-28, commit 51495f0. Gates cold-open paywall on session\u003e=3 + 1 scan. Was FALSE: paywall showed session 1, 717 shows/418 sessions, 0 purchases/28d, 73% uninstall, D1 8.6%.",
+      "valueType": "BOOLEAN"
+    },
+    "paywall_reason_routing_enabled": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "ON 2026-08-28 w/ paywall_delay_enabled. REQUIRED: onDismissReason() only writes cooldown state when true. no_response+sheet_dismissed=78% of dismissals now route to COOLDOWN_7D instead of LOG_ONLY.",
+      "valueType": "BOOLEAN"
+    },
+    "app_open_ad_min_session": {
+      "defaultValue": {
+        "value": "10"
+      },
+      "description": "10 (was 3, 2026-10-07 owner-approved churn stop-gap: sessions 1-9 have no app-open ad). Bundled default is 1L (NO gate) despite app_open_manager.kt:288 claiming 3. See docs/CHURN-DIAGNOSIS-2026-10-07.md.",
+      "valueType": "NUMBER"
+    },
+    "ads_grace_sessions": {
+      "defaultValue": {
+        "value": "10"
+      },
+      "description": "10 (was 2; 2026-10-07 owner-approved churn stop-gap: no interstitials in sessions 1-10). Honoured by BOTH showAdBeforeAction and showAdIfAvailable (3632d72, in vc50). See debugger docs/CHURN-DIAGNOSIS-2026-10-07.md.",
+      "valueType": "NUMBER"
+    },
+    "show_leaderboard_interstitial_ads": {
+      "defaultValue": {
+        "value": "false"
+      },
+      "description": "OFF 2026-09-08. Interstitial fired on the landing tab. Ads are the only repeated 1-star complaint - 2 of 4 negatives, two languages, five months apart.",
+      "valueType": "BOOLEAN"
+    },
+    "review_delay_first_launch_ms": {
+      "defaultValue": {
+        "value": "86400000"
+      },
+      "description": "24h, was 15000. Review sheet landed 15s into session 1 (MIN_APP_OPENS=1 = no gate). review_requested reached 73-130% of installs on an app with 148% uninstall. Proper gate is a code fix.",
+      "valueType": "NUMBER"
+    }
+  },
+  "version": {
+    "versionNumber": "18",
+    "updateTime": "2026-10-06T21:37:15.118460Z",
+    "updateUser": {
+      "email": "teamz.lab.contact@gmail.com"
+    },
+    "updateOrigin": "REST_API",
+    "updateType": "INCREMENTAL_UPDATE"
+  }
+}

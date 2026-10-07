@@ -44,9 +44,10 @@ devices `Pixel 8a` (owner) and `sdk_gphone64_arm64`.
 | Review asks, real users, 90 days | 308 asks / 268 users (151 on install day, mostly builds before the 2026-09-24 gate fix) |
 | Ratings received, Aug–Sep | about 5 (5, 5, 3, 1, 1 stars) |
 | Asks on current builds (3.1.29+) | about 12 a month |
-| Review → paywall chain | `enable_review_first_strategy` = true (bundled default; not set in RC) |
+| Review → paywall chain | **turned off 2026-10-08** (RC v19 `enable_review_first_strategy=false`). Before: the paywall opened right after the review flow, even when Play showed no dialog. Watch `paywall_chain_review_completed` with `strategy_enabled=false`, and the 1★ share of new ratings. Roll back: set it to true, or restore `automation_data/rc-backup-v18-20261008.json` |
 
-## Remote Config (sys-explorer-131ed, v18)
+## Remote Config (sys-explorer-131ed, v19 since 2026-10-08)
 `review_delay_first_launch_ms` = 86400000 (24 h); `ads_grace_sessions` = 10; `app_open_ad_min_session` = 10;
-`native_ad_target_count` = 2; `native_ad_max_requests_per_session` = 10.
+`native_ad_target_count` = 2; `native_ad_max_requests_per_session` = 10; `enable_review_first_strategy` = false (v19).
+Writing needs the ETag: send `Accept-Encoding: gzip`, or the response has no ETag header.
 Access: `gcloud auth print-access-token --account=teamz.lab.contact@gmail.com`.
