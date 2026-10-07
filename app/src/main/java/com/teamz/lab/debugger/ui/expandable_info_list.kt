@@ -560,11 +560,18 @@ fun rememberAdLoader(activity: Activity): AdLoader {
 
     // Check premium status reactively - don't load ads if user has premium
     val shouldShowAds = RemoteConfigUtils.shouldShowNativeAdsReactive()
-    
-    LaunchedEffect(Unit, shouldShowAds) {
+    // Consent must be observed, not read once: this effect first runs before UMP has answered.
+    val consentPermitsAds by com.teamz.lab.debugger.utils.UmpConsentManager.adsPermittedFlow.collectAsState()
+
+    LaunchedEffect(Unit, shouldShowAds, consentPermitsAds) {
         // Premium users never see ads - skip loading entirely
         if (!shouldShowAds) {
             Log.d(TAG, "🚫 Premium user detected - skipping native ad loading")
+            return@LaunchedEffect
+        }
+        // Not yet: this effect re-runs the moment consentPermitsAds turns true.
+        if (!consentPermitsAds) {
+            Log.d(TAG, "⏳ Waiting for UMP consent before loading native ads")
             return@LaunchedEffect
         }
         
@@ -631,7 +638,9 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         }
                     }
                 } else if (!shouldLoadAd) {
-                    Log.d(TAG, "🚫 Premium user detected - skipping ad load ${index + 1}/$adsToLoad")
+                    // shouldShowNativeAds() is false for consent, premium, referral ad-free or a
+                    // suppressed country — not only premium, which is what this used to claim.
+                    Log.d(TAG, "🚫 Native ads not allowed right now - skipping ad load ${index + 1}/$adsToLoad")
                 }
             }
 
@@ -678,8 +687,8 @@ fun rememberAdLoader(activity: Activity): AdLoader {
     // evicted/expired/added). If the pool drops below targetCount and we can make a
     // request, kick the loader. Without this, an evict-then-empty pool would never
     // repopulate because the LaunchedEffect above is keyed only on (Unit, shouldShowAds).
-    LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds) {
-        if (!shouldShowAds || activity.isDestroyed) return@LaunchedEffect
+    LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds, consentPermitsAds) {
+        if (!shouldShowAds || !consentPermitsAds || activity.isDestroyed) return@LaunchedEffect
         val targetCount = NativeAdManager.getTargetAdCount()
         val currentCount = NativeAdManager.nativeAds.filterNotNull().size
         if (currentCount >= targetCount) return@LaunchedEffect

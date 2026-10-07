@@ -119,10 +119,10 @@ class NativeAdReentrancyContractTest {
         // count, premium, and pipeline lock before firing exactly ONE request.
         assertTrue(
             "Refill LaunchedEffect must exist — it is now the SINGLE refill source.",
-            src.contains("LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds)")
+            src.contains("LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds")
         )
         // The refill body must check ALL gates before firing.
-        val refillStart = src.indexOf("LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds)")
+        val refillStart = src.indexOf("LaunchedEffect(NativeAdManager.cacheGeneration.intValue, shouldShowAds")
         val refillEnd = src.indexOf("\n    return adLoader", refillStart).let {
             if (it < 0) src.length else it
         }

@@ -39,7 +39,18 @@ object UmpConsentManager {
      * know whether this user is in a consent geo", and requesting an ad on a guess is what
      * produced the AdMob "Consent requirement: No CMP" flag on 2026-09-22.
      */
-    @Volatile private var adsPermitted = false
+    private val _adsPermitted = kotlinx.coroutines.flow.MutableStateFlow(false)
+    private var adsPermitted: Boolean
+        get() = _adsPermitted.value
+        set(value) { _adsPermitted.value = value }
+
+    /**
+     * The same answer as an observable value. Native ads load from composables that start
+     * BEFORE UMP resolves (cold start: loader at ~1.8 s, consent at ~3.1 s on the emulator,
+     * 2026-10-08). Reading the plain flag there skipped the load and nothing ever retried it,
+     * so from 3.1.27 (2026-09-24) most sessions got no native ad at all. Collect this instead.
+     */
+    val adsPermittedFlow: kotlinx.coroutines.flow.StateFlow<Boolean> = _adsPermitted
 
     /** True only once UMP has confirmed consent is obtained or not required. */
     fun adsPermittedCached(): Boolean = adsPermitted
