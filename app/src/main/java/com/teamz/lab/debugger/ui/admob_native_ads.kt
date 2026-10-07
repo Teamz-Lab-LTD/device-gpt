@@ -352,6 +352,10 @@ object NativeAdManager {
 
     fun canMakeRequest(): Boolean {
         val maxRequests = com.teamz.lab.debugger.utils.RemoteConfigUtils.getNativeAdMaxRequestsPerSession()
+        if (!com.teamz.lab.debugger.utils.AdDailyCap.allow("native")) {
+            android.util.Log.w(TAG, "⛔ Native ad daily cap reached (${com.teamz.lab.debugger.utils.AdDailyCap.count("native")})")
+            return false
+        }
         if (totalRequests >= maxRequests) {
             android.util.Log.w(TAG, "⛔ Native ad request budget reached ($totalRequests/$maxRequests)")
             return false
@@ -364,6 +368,7 @@ object NativeAdManager {
     fun recordRequest() {
         lastRequestTime = System.currentTimeMillis()
         totalRequests++
+        com.teamz.lab.debugger.utils.AdDailyCap.record("native")
         android.util.Log.d(TAG, "📤 Ad request #$totalRequests recorded at ${System.currentTimeMillis()}")
     }
 

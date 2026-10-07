@@ -54,6 +54,16 @@ object AdConfig {
     }
     
     /**
+     * A unit id AdMob can actually serve: right shape, not Google's sample publisher, not a
+     * placeholder. The rewarded id in local_config was "…/1234567890", which the AdMob account
+     * does not contain (checked 2026-10-08), so every rewarded request failed.
+     */
+    fun isRealUnitId(id: String): Boolean =
+        Regex("^ca-app-pub-\\d{16}/\\d{10}$").matches(id) &&
+            !id.startsWith("ca-app-pub-3940256099942544") &&
+            !id.endsWith("/1234567890")
+
+    /**
      * Get Rewarded Ad Unit ID
      * Returns production ID from local_config.properties in release builds,
      * or test ID in debug builds or if not configured

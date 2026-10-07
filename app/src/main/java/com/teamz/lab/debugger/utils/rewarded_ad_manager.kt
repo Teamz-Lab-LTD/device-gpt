@@ -28,6 +28,12 @@ object RewardedAdManager {
     fun loadAd(context: Context, onLoaded: (() -> Unit)? = null) {
         val now = System.currentTimeMillis()
         if (isLoading || rewardedAd != null || now < nextEligibleLoadTimeMs) return
+        // No real unit configured: do not ask AdMob for an ad it cannot serve. Callers fall
+        // through to onAdFailed, which already grants the reward.
+        if (!com.teamz.lab.debugger.BuildConfig.DEBUG && !AdConfig.isRealUnitId(adUnitId)) {
+            onLoaded?.invoke()
+            return
+        }
         isLoading = true
 
         if (RemoteConfigUtils.shouldShowRewardedAds()) {

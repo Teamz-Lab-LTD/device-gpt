@@ -67,6 +67,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
 
             AppOpenAdManager.resetSessionCounters()
             com.teamz.lab.debugger.ui.NativeAdManager.resetStats()
+            com.teamz.lab.debugger.utils.AdDailyCap.init(applicationContext)
             // v3.1.11 W1 user-behavior insight — A/B cohort labeler.
             // Stamps the GA4 user property ab_cohort_v3111 exactly once per install
             // so post-v3.1.11 retention dashboards can slice control vs treatment.
