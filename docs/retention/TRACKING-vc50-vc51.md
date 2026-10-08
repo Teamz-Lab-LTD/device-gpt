@@ -7,7 +7,7 @@ Compare every number below with this baseline. Change one thing at a time.
 | Build | What it changes | State |
 |---|---|---|
 | vc50 / 3.1.31 | honest results, paywall loop fixed, first scan counts | PUBLISHED (review cleared ~2026-10-07) |
-| vc51 / 3.1.32 | widget has real data, speeds in Mbps, monitor saves mobile data, 4 false readings fixed, floating buttons hide on scroll, **native ads wait for consent**, 30/day native request cap, no rewarded requests to a placeholder unit | sent 2026-10-08, IN_REVIEW |
+| vc51 / 3.1.32 | widget has real data, speeds in Mbps, monitor saves mobile data, 4 false readings fixed, floating buttons hide on scroll, **native ads wait for consent**, 30/day native request cap, no rewarded requests to a placeholder unit | sent 2026-10-08, **PUBLISHED by 2026-10-09** (review took under a day) |
 
 Check release state with the Publishing API, not `edits.tracks` (that shows `completed` while
 a release is still in review):
