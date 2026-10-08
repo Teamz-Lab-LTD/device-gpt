@@ -76,6 +76,20 @@ object WidgetPinPrompt {
         }
     }
 
+    /** The user tapped "Add widget": ask the launcher now. No RC flag, no once-per-install. */
+    fun requestNow(context: Context): Boolean = try {
+        val awm = context.getSystemService<AppWidgetManager>()
+        if (awm == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !awm.isRequestPinAppWidgetSupported) false
+        else {
+            val successIntent = PendingIntent.getBroadcast(
+                context, PIN_SUCCESS_REQUEST_CODE,
+                Intent(context, WidgetPinResultReceiver::class.java).setAction(ACTION_WIDGET_PIN_SUCCESS),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            awm.requestPinAppWidget(ComponentName(context, LockScreenMonitorWidget::class.java), null, successIntent)
+        }
+    } catch (t: Throwable) { false }
+
     private fun log(result: String) {
         try {
             AnalyticsUtils.logEvent(

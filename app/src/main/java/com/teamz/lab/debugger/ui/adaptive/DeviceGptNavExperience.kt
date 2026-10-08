@@ -1814,6 +1814,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
     // v3.2.0 rewarded v1 — exact-grant offer. Copy states the grant verbatim:
     // one report per ad. Grant is delivered even if the ad fails AFTER starting;
     // an early user dismiss (no reward callback) grants nothing.
+    com.teamz.lab.debugger.ui.TestDoneSheet()
+
     if (showRewardedReportOffer) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showRewardedReportOffer = false },
