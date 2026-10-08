@@ -2,7 +2,7 @@
 
 ## 🔴 PENDING OWNER DECISION — tell the owner at the start of every session in this repo
 
-> **2026-10-09 (owner's yes): full-screen ads from session 4.** RC v20: `ads_grace_sessions` = 3 (skips sessions 1–3), `app_open_ad_min_session` = 4. With both at 10 (v17), full-screen ads, about 70% of ad revenue, were off for almost every user while the app kept requesting them: 263 requests and 0 impressions on 2026-10-08. Day-0 users (sessions 1–3) stay protected. Do not put these back to 10 without asking the owner.
+> **2026-10-09: full-screen ads are back at 10/10 (RC v21), and vc52 adds an install-age gate.** RC v20 had set them to start from session 4. That was a mistake: a "session" is MainActivity.onCreate at least 60 s apart, NOT a day, so session 4 can come within the first hour, the exact window where 3/3 day-0 full-screen ad viewers uninstalled. vc52 `QuietPeriod`: for the first 72 h by install age, no full-screen ads (none shown, none requested) and no unasked-for paywall. Research: `docs/retention/2026-10-09-user-research.md`.
 >
 > **2026-10-07 update (superseded above):** the ad stop-gap is DONE with no release — Remote Config `ads_grace_sessions` and `app_open_ad_min_session` set to 10 (v17). Both fullscreen ad paths in the LIVE build (vc50) honour it (3632d72). A 72 h install-age gate is optional polish, not required.
 

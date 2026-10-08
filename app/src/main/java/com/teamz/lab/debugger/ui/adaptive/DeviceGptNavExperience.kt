@@ -130,9 +130,8 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.services.isDoNotAskMeAgain
 import com.teamz.lab.debugger.services.isSystemMonitorRunning
 import com.teamz.lab.debugger.services.isUserEnableMonitoringService
-import com.teamz.lab.debugger.services.isUserFirstTime
 import com.teamz.lab.debugger.services.setDoNotAskMeAgain
-import com.teamz.lab.debugger.services.setUserFirstTime
+import com.teamz.lab.debugger.services.setUserEnableMonitoringService
 import com.teamz.lab.debugger.services.startSystemMonitorService
 import com.teamz.lab.debugger.ui.AIAssistantDialog
 import com.teamz.lab.debugger.ui.PaywallWithReferralFallback
@@ -1172,7 +1171,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                         }
                                     },
                                     onScanComplete = {
-                                        if (!RevenueCatManager.isPremium()) {
+                                        // Was ungated: lastShown == 0 fired a paywall on a new user's very first scan.
+                                        if (!RevenueCatManager.isPremium() && com.teamz.lab.debugger.utils.QuietPeriod.unsolicitedPaywallAllowed()) {
                                             val prefs = context.getSharedPreferences("paywall_trigger_prefs", Context.MODE_PRIVATE)
                                             val lastShown = prefs.getLong("last_paywall_shown_time", 0L)
                                             val daysSince = (System.currentTimeMillis() - lastShown) / (24 * 60 * 60 * 1000)
@@ -1954,6 +1954,8 @@ fun HandleSystemMonitorAutoStart() {
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
+                // The user accepted the monitor prompt: that is the opt-in.
+                context.setUserEnableMonitoringService(true)
                 startService(context)
             } else {
                 Toast.makeText(context, context.string(R.string.notification_permission_denied), Toast.LENGTH_SHORT).show()
@@ -2007,9 +2009,10 @@ fun HandleSystemMonitorAutoStart() {
                         com.teamz.lab.debugger.utils.MonitorPromptPolicy.installAgeMs(context)
                     )
                 ) showDialog = true
-            } else {
-                startService(context)
             }
+            // Permission already granted is not a request to start the monitor. It used to
+            // start here on first launch for 48% of new users (5 ever chose it), running a
+            // persistent notification and speed tests nobody asked for.
         }
     }
 
@@ -2027,11 +2030,9 @@ fun HandleSystemMonitorAutoStart() {
 }
 
 
+/** Starts the monitor only if the user turned it on (drawer toggle or the permission prompt). */
 private fun startService(context: Context) {
-    if (context.isUserFirstTime() || context.isUserEnableMonitoringService()) {
+    if (context.isUserEnableMonitoringService()) {
         context.startSystemMonitorService()
-        if (context.isUserFirstTime()) {
-            context.setUserFirstTime(false)
-        }
     }
 }

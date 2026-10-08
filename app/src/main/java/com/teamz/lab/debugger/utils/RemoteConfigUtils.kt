@@ -70,6 +70,9 @@ object RemoteConfigUtils {
     private const val DEFAULT_NATIVE_AD_REQUEST_INTERVAL_MS = 60000L
     private const val DEFAULT_NATIVE_AD_MAX_REQUESTS_PER_SESSION = 7
 
+    /** ISO country captured at app start (SIM network first), or "" if unknown. */
+    fun countryCode(): String = cachedCountryCode
+
     /** Returns true if the device's country is in the RC-driven suppression list. */
     fun isCountrySuppressed(): Boolean {
         val code = cachedCountryCode
@@ -290,6 +293,8 @@ object RemoteConfigUtils {
     }
 
     fun shouldShowInterstitialAds(): Boolean {
+        // First 72 h after install: no full-screen ad shown or requested. See QuietPeriod.
+        if (QuietPeriod.activeNow()) return false
         if (consentBlocksAds()) return false
         if (isUserAdFree()) {
             AppLog.d("RemoteConfigUtils", "shouldShowInterstitialAds() - User is ad-free (premium or referral), skipping ads")
@@ -320,6 +325,8 @@ object RemoteConfigUtils {
     }
 
     fun shouldShowAppOpenAds(): Boolean {
+        // First 72 h after install: no full-screen ad shown or requested. See QuietPeriod.
+        if (QuietPeriod.activeNow()) return false
         if (consentBlocksAds()) return false
         if (isUserAdFree()) {
             AppLog.d("RemoteConfigUtils", "shouldShowAppOpenAds() - User is ad-free, skipping ads")

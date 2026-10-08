@@ -61,6 +61,7 @@ object PaywallPolicy {
      * [delightTriggerAllowed] instead — they carry their own value context.
      */
     fun coldTriggerAllowed(context: Context): Boolean {
+        if (!QuietPeriod.unsolicitedPaywallAllowed()) return false
         if (!sessionCapClear(context)) return false
         if (!RemoteConfigUtils.isPaywallDelayEnabled()) return suppressionClear(context)
         val sessions = EngagementTracker.getSessionCount(context)
@@ -75,6 +76,7 @@ object PaywallPolicy {
      * suppression windows.
      */
     fun delightTriggerAllowed(context: Context): Boolean {
+        if (!QuietPeriod.unsolicitedPaywallAllowed()) return false
         val p = prefs(context)
         val last = p.getLong("last_paywall_shown_time", 0L)
         val repeatMs = RemoteConfigUtils.getPaywallRepeatIntervalDays() * DAY_MS

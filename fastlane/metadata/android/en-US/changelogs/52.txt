@@ -1,1 +1,1 @@
-Health screen layout update. Small fixes and better reliability.
+Your first 3 days have no full-screen ads and no upgrade pop-ups you did not ask for. The Real-time Monitor now runs only when you turn it on. Health screen layout update.
