@@ -24,7 +24,7 @@ Run: `python3 scripts/admob-guard.py` (healthy prints `ADS OK`). Use `--days 7` 
 | Native show rate (shown / served) | 4% (12% without the 09-19/20 loop) | higher | ads load early in the session now |
 | Interstitial match rate | 26% (376/1432) | watch | |
 | Interstitial clicks / impressions | 25% (12/48) | under 10% | above 10% means accidental clicks and AdMob risk |
-| Full-screen ads | held until session 10 (RC v17, 2026-10-06) | — | day-0 ads were tied to uninstalls |
+| Full-screen ads | held until session 10 (RC v17, 2026-10-06) → **from session 4 (RC v20, 2026-10-09)** | interstitial/app-open impressions come back for returning users | v17 turned off about 70% of ad revenue; 2026-10-08 showed 263 requests and 0 impressions. Watch day-0 uninstalls: sessions 1–3 stay ad-free |
 
 ## Users
 | Metric | Baseline | Source |
@@ -46,8 +46,8 @@ devices `Pixel 8a` (owner) and `sdk_gphone64_arm64`.
 | Asks on current builds (3.1.29+) | about 12 a month |
 | Review → paywall chain | **turned off 2026-10-08** (RC v19 `enable_review_first_strategy=false`). Before: the paywall opened right after the review flow, even when Play showed no dialog. Watch `paywall_chain_review_completed` with `strategy_enabled=false`, and the 1★ share of new ratings. Roll back: set it to true, or restore `automation_data/rc-backup-v18-20261008.json` |
 
-## Remote Config (sys-explorer-131ed, v19 since 2026-10-08)
-`review_delay_first_launch_ms` = 86400000 (24 h); `ads_grace_sessions` = 10; `app_open_ad_min_session` = 10;
+## Remote Config (sys-explorer-131ed, v20 since 2026-10-09)
+`review_delay_first_launch_ms` = 86400000 (24 h); `ads_grace_sessions` = 3; `app_open_ad_min_session` = 4 (v20);
 `native_ad_target_count` = 2; `native_ad_max_requests_per_session` = 10; `enable_review_first_strategy` = false (v19).
 Writing needs the ETag: send `Accept-Encoding: gzip`, or the response has no ETag header.
 Access: `gcloud auth print-access-token --account=teamz.lab.contact@gmail.com`.

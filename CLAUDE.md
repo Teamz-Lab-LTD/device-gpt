@@ -2,7 +2,9 @@
 
 ## 🔴 PENDING OWNER DECISION — tell the owner at the start of every session in this repo
 
-> **2026-10-07 update:** the ad stop-gap is DONE with no release — Remote Config `ads_grace_sessions` and `app_open_ad_min_session` set to 10 (v17). Both fullscreen ad paths in the LIVE build (vc50) honour it (3632d72). A 72 h install-age gate is optional polish, not required.
+> **2026-10-09 (owner's yes): full-screen ads from session 4.** RC v20: `ads_grace_sessions` = 3 (skips sessions 1–3), `app_open_ad_min_session` = 4. With both at 10 (v17), full-screen ads, about 70% of ad revenue, were off for almost every user while the app kept requesting them: 263 requests and 0 impressions on 2026-10-08. Day-0 users (sessions 1–3) stay protected. Do not put these back to 10 without asking the owner.
+>
+> **2026-10-07 update (superseded above):** the ad stop-gap is DONE with no release — Remote Config `ads_grace_sessions` and `app_open_ad_min_session` set to 10 (v17). Both fullscreen ad paths in the LIVE build (vc50) honour it (3632d72). A 72 h install-age gate is optional polish, not required.
 
 Churn diagnosis, 2026-10-07: `docs/CHURN-DIAGNOSIS-2026-10-07.md`. The 28-day fleet verdict shows
 51 installs and 52 uninstalls.
