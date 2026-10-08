@@ -125,6 +125,7 @@ class CameraHealthViewModel(application: Application) : AndroidViewModel(applica
                         "all_responded" to result.allLensesResponded,
                     ),
                 )
+                com.teamz.lab.debugger.utils.TestDoneCard.onTestCompleted(context)
                 onComplete(result)
             } catch (e: Exception) {
                 ErrorHandler.handleError(e, context = "CameraHealthViewModel.runHealthCheck")

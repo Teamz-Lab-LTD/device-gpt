@@ -54,6 +54,7 @@ class ScreenTestViewModel(application: Application) : AndroidViewModel(applicati
                 AnalyticsEvent.ScreenPixelTestCompleted,
                 mapOf("user_reported_issue" to userReportedIssue),
             )
+            com.teamz.lab.debugger.utils.TestDoneCard.onTestCompleted(context)
         }
     }
 

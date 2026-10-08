@@ -208,6 +208,7 @@ fun MicTestCard(
                     ).name
                 )
             )
+            com.teamz.lab.debugger.utils.TestDoneCard.onTestCompleted(context)
         }
     }
 
