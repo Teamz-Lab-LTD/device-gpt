@@ -373,6 +373,28 @@ fun HealthSection(
             DeviceTimelineSection(onHistoryPaywall = { showTimelineHistoryPaywall = true })
         }
 
+        // Native Ad — first screen. Was the 7th card, two screens down: after vc51 native ads
+        // loaded 61/day with 100% fill and AdMob counted 0 impressions (2026-10-08), because
+        // users do not scroll that far. Kept a card away from Run again / Share.
+        // Policy: Single native ad per screen, adequate spacing, clearly labeled
+        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
+            item(key = "native_ad_top") {
+                // Use position-specific ad to ensure proper rotation
+                val nativeAd = remember(healthAdCacheGen, "health_section_top") { NativeAdManager.getAdForPosition("health_section_top") }
+                if (nativeAd != null) {
+                    // Logging reduced - only log once
+                    LaunchedEffect(nativeAd.hashCode()) {
+                        android.util.Log.d("AdDisplay", "📺 Health section ad - " +
+                                "Ad hash: ${nativeAd.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp)) // Spacing before ad
+                    AdMobNativeAdCard(nativeAd = nativeAd)
+                    Spacer(modifier = Modifier.height(8.dp)) // Spacing after ad
+                }
+            }
+        }
+
+
         // Health Score Card
         item(key = "health_score") {
             // Memoize the onScoreClick callback to prevent unnecessary recomposition
@@ -529,25 +551,6 @@ fun HealthSection(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
-            }
-        }
-
-        // Native Ad (just above Smart Recommendations for better revenue)
-        // Policy: Single native ad per screen, adequate spacing, clearly labeled
-        if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
-            item(key = "native_ad_top") {
-                // Use position-specific ad to ensure proper rotation
-                val nativeAd = remember(healthAdCacheGen, "health_section_top") { NativeAdManager.getAdForPosition("health_section_top") }
-                if (nativeAd != null) {
-                    // Logging reduced - only log once
-                    LaunchedEffect(nativeAd.hashCode()) {
-                        android.util.Log.d("AdDisplay", "📺 Health section ad - " +
-                                "Ad hash: ${nativeAd.hashCode()}, Total ads: ${NativeAdManager.nativeAds.filterNotNull().size}")
-                    }
-                    Spacer(modifier = Modifier.height(8.dp)) // Spacing before ad
-                    AdMobNativeAdCard(nativeAd = nativeAd)
-                    Spacer(modifier = Modifier.height(8.dp)) // Spacing after ad
                 }
             }
         }
