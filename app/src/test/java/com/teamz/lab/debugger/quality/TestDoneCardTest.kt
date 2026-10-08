@@ -47,12 +47,24 @@ class TestDoneCardTest {
         assertFalse(TestDoneCard.visible.value)
     }
 
+    @Test fun `the mic card is not shown before the playback question is answered`() {
+        var dir = File(System.getProperty("user.dir") ?: ".")
+        while (!File(dir, "settings.gradle.kts").exists() && dir.parentFile != null) dir = dir.parentFile
+        val s = File(dir, "app/src/main/java/com/teamz/lab/debugger/ui/MicTestCard.kt").readText()
+        val completed = s.indexOf("AnalyticsEvent.MicTestCompleted")
+        val answered = s.indexOf("AnalyticsEvent.MicTestPlaybackAnswered")
+        val between = s.substring(completed, answered)
+        assertFalse("no card between 'completed' and the answer", between.contains("TestDoneCard.onTestCompleted("))
+    }
+
     @Test fun `all three completion sites notify the card`() {
         var dir = File(System.getProperty("user.dir") ?: ".")
         while (!File(dir, "settings.gradle.kts").exists() && dir.parentFile != null) dir = dir.parentFile
         val base = "app/src/main/java/com/teamz/lab/debugger/ui/"
         for ((file, event) in listOf(
-            "MicTestCard.kt" to "AnalyticsEvent.MicTestCompleted",
+            // Not MicTestCompleted: that fires before "Did you hear your own voice?", and the card
+            // covered the question on the emulator (2026-10-09). The test is done when that is answered.
+            "MicTestCard.kt" to "AnalyticsEvent.MicTestPlaybackAnswered",
             "CameraHealthViewModel.kt" to "AnalyticsEvent.CameraHealthCheckCompleted",
             "ScreenTestViewModel.kt" to "AnalyticsEvent.ScreenPixelTestCompleted",
         )) {
