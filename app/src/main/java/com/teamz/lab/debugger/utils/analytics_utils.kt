@@ -359,6 +359,10 @@ enum class AnalyticsEvent(val eventName: String) {
     MicTestCompleted("mic_test_completed"),
     MicTestFailed("mic_test_failed"),
     MicTestPlaybackAnswered("mic_test_playback_answered"),
+    FsTestChosen("fs_test_chosen"),                       // param: test
+    FsDoneCardShown("fs_done_card_shown"),
+    FsDoneCardAction("fs_done_card_action"),              // param: action
+    FsNotifPermissionResult("fs_notif_permission_result"),// param: granted
     TabAiBridgeViewed("tab_ai_bridge_viewed"),
     // AI Bridge (2026-07-24) — full funnel so future adoption/pricing decisions come from real usage.
     // `toggled` fires on both on and off (param `on`: bool). `client_connected` fires for every

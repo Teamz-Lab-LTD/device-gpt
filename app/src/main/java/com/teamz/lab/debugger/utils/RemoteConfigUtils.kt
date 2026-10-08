@@ -245,6 +245,7 @@ object RemoteConfigUtils {
                 "rewarded_report_enabled" to false,          // Rewarded ad unlock for 1 Verified Report
                 "share_card_v2_enabled" to false,            // Compose-to-bitmap score share card
                 "timeline_enabled" to false,                 // R5 Device Timeline on Health tab
+                "first_screen_test_chooser" to false,       // A/B: test chooser on score screen (spec 2026-10-09)
                 "widget_pin_prompt_enabled" to false         // Pin prompt after score reveal
             )
         ).addOnCompleteListener { defaultsApplied = true }
@@ -592,6 +593,7 @@ object RemoteConfigUtils {
     fun isShareCardV2Enabled(): Boolean = remoteConfig.getBoolean("share_card_v2_enabled")
     fun isTimelineEnabled(): Boolean = remoteConfig.getBoolean("timeline_enabled")
     fun isWidgetPinPromptEnabled(): Boolean = remoteConfig.getBoolean("widget_pin_prompt_enabled")
+    fun isFirstScreenTestChooserEnabled(): Boolean = remoteConfig.getBoolean("first_screen_test_chooser")
 
     // === Native ad loading configuration (tunable without app update) ===
 
