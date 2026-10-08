@@ -170,7 +170,7 @@ class MainActivity : ComponentActivity() {
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
                                         // One beat later: widget pin prompt (self-guarded,
                                         // RC widget_pin_prompt_enabled, once per install).
-                                        com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
+                                        if (!com.teamz.lab.debugger.utils.FirstScreenExperiment.isB(this@MainActivity)) com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
                                     },
                                     onDismiss = {
                                         // Name the destination. Falling through to
@@ -181,7 +181,18 @@ class MainActivity : ComponentActivity() {
                                         intent.putExtra("navigate_to_tab", "health")
                                         gateState.value =
                                             com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
-                                        com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
+                                        if (!com.teamz.lab.debugger.utils.FirstScreenExperiment.isB(this@MainActivity)) com.teamz.lab.debugger.utils.WidgetPinPrompt.maybePrompt(this@MainActivity)
+                                    },
+                                    onChooseTest = { choice ->
+                                        try {
+                                            com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
+                                                com.teamz.lab.debugger.utils.AnalyticsEvent.FsTestChosen,
+                                                mapOf("test" to choice)
+                                            )
+                                        } catch (_: Throwable) { }
+                                        intent.putExtra("navigate_to_tab", com.teamz.lab.debugger.utils.FirstScreenExperiment.tabFor(choice))
+                                        gateState.value =
+                                            com.teamz.lab.debugger.ui.FirstScanGate.State.COMPLETED
                                     },
                                 )
                             }

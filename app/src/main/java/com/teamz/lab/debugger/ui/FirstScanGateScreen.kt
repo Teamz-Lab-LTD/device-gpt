@@ -22,6 +22,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +61,7 @@ import kotlinx.coroutines.async
 fun FirstScanGateScreen(
     onShareScore: (Int) -> Unit = {},
     onDismiss: () -> Unit = {},
+    onChooseTest: ((String) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var phase by rememberSaveable { mutableStateOf(Phase.SCANNING.name) }
@@ -137,6 +139,13 @@ fun FirstScanGateScreen(
                     FirstScanGate.markCompleted(context, finalScore, scanResult)
                     onDismiss()
                 },
+                // A/B (spec 2026-10-09): arm B gets Camera / Mic / Screen here — what the store
+                // listing sells — instead of landing everyone on the health report.
+                showChooser = onChooseTest != null && com.teamz.lab.debugger.utils.FirstScreenExperiment.isB(context),
+                onChoose = { choice ->
+                    FirstScanGate.markCompleted(context, finalScore, scanResult)
+                    onChooseTest?.invoke(choice)
+                },
             )
             Phase.FAILED -> FailedUi(onContinue = onDismiss)
         }
@@ -195,6 +204,8 @@ private fun ScoredUi(
     subNetwork: Int,
     onShare: () -> Unit,
     onDetails: () -> Unit,
+    showChooser: Boolean = false,
+    onChoose: (String) -> Unit = {},
 ) {
     val grade = when {
         score >= 90 -> Grade("Excellent", Color(0xFF2E7D32))
@@ -253,23 +264,55 @@ private fun ScoredUi(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
         )
-        Spacer(Modifier.height(32.dp))
-        Button(
-            onClick = onShare,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
-        ) {
-            Text("Share my score", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onDetails,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("See details", fontSize = 16.sp)
+        Spacer(Modifier.height(24.dp))
+        if (showChooser) {
+            Text(
+                text = "What do you want to test?",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                for ((label, key) in listOf("Camera" to "camera", "Mic" to "mic", "Screen" to "screen")) {
+                    Button(
+                        onClick = { onChoose(key) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    ) { Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth()) {
+                Text("Share my score", fontSize = 16.sp)
+            }
+            TextButton(onClick = { onChoose("report") }, modifier = Modifier.fillMaxWidth()) {
+                Text("See full health report", fontSize = 14.sp)
+            }
+        } else {
+            Button(
+                onClick = onShare,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                Text("Share my score", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = onDetails,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("See details", fontSize = 16.sp)
+            }
         }
     }
 }
