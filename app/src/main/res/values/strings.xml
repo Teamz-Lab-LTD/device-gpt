@@ -596,4 +596,8 @@
     <!-- Drawer: sentences with a number or two parts (task 3, 2026-10-09) -->
     <string name="drawer_usage_body">To show your network usage statistics, we need access to usage data. This helps us display accurate network usage information in the app.</string>
     <string name="account_link_to_keep_days">Link Gmail to keep data safe forever (%1$s days remaining)</string>
+
+    <!-- Top bar theme button (task 3, 2026-10-09) -->
+    <string name="theme_button_cd">Theme</string>
+    <string name="theme_selected_cd">Selected</string>
 </resources>

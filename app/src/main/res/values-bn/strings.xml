@@ -590,4 +590,8 @@
     <!-- Drawer: sentences with a number or two parts (task 3, 2026-10-09) -->
     <string name="drawer_usage_body">আপনার নেট কত খরচ হলো, তা দেখাতে এই অনুমতি লাগবে। এতে অ্যাপ ঠিক হিসাব দেখাতে পারে।</string>
     <string name="account_link_to_keep_days">তথ্য সব সময় রাখতে জিমেইল যুক্ত করুন (আর %1$s দিন বাকি)</string>
+
+    <!-- Top bar theme button (task 3, 2026-10-09) -->
+    <string name="theme_button_cd">সাদা বা কালো রং বদলান</string>
+    <string name="theme_selected_cd">বেছে নেওয়া আছে</string>
 </resources>

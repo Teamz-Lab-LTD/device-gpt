@@ -71,7 +71,7 @@ private fun ThemeOptionCard(
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Selected",
+                    contentDescription = androidx.compose.ui.res.stringResource(R.string.theme_selected_cd),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
@@ -99,7 +99,7 @@ fun QuickThemeSwitcher(
                     AppTheme.DESIGN_SYSTEM_LIGHT -> Icons.Default.LightMode
                     AppTheme.DESIGN_SYSTEM_DARK -> Icons.Default.DarkMode
                 },
-                contentDescription = "Theme",
+                contentDescription = androidx.compose.ui.res.stringResource(R.string.theme_button_cd),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
