@@ -64,6 +64,7 @@ import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.components.pressScale
 import com.teamz.lab.debugger.ui.components.rememberResultFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 /**
  * Camera tab: fact sheet + per-lens liveness check. Screen tests moved to their own tab
@@ -189,7 +190,7 @@ fun CameraHealthSection(
                 )
                 if (latestResult != null && onItemAIClick != null) {
                     IconButton(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.touchTarget(32.dp),
                         onClick = {
                             val content = CameraHealthUtils.buildCameraAiContext(context, latestResult!!)
                             onItemAIClick("Camera Health Test", content)
@@ -259,6 +260,7 @@ fun CameraHealthSection(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .heightIn(min = 48.dp)
                             .clickable { showDetail = !showDetail },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -484,7 +486,7 @@ private fun ColorCastCheckCard(
         )
         if (result != null && onItemAIClick != null) {
             IconButton(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.touchTarget(32.dp),
                 onClick = {
                     onItemAIClick(
                         "Camera Colour Cast Check",

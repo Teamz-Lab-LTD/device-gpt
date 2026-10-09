@@ -52,6 +52,7 @@ import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AIPromptGenerator
 import com.teamz.lab.debugger.utils.AdConfig
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 /**
  * One row of the phone-info or network-info list.
@@ -305,6 +306,7 @@ fun ExpandableInfoList(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .heightIn(min = 48.dp)
                                 .combinedClickable {
                                     expandedItems[actualIndex] = !expanded
                                     AnalyticsUtils.logEvent(
@@ -334,7 +336,7 @@ fun ExpandableInfoList(
                                                 "item_title" to key
                                             ))
                                         },
-                                        modifier = Modifier.size(32.dp)
+                                        modifier = Modifier.touchTarget(32.dp)
                                     ) {
                                         Icon(
                                             imageVector = AIIcon.icon,

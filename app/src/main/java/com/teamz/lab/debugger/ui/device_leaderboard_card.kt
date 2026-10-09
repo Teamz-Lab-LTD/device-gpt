@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -42,7 +41,8 @@ fun DeviceLeaderboardCard(
             Icon(
                 imageVector = Icons.Default.EmojiEvents,
                 contentDescription = stringResource(R.string.lb_dlc_cd),
-                tint = if (percentile >= 90) MaterialTheme.colorScheme.primary else Color.Gray,
+                tint = if (percentile >= 90) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -68,7 +68,7 @@ fun DeviceLeaderboardCard(
                 Text(
                     text = stringResource(R.string.lb_dlc_your_score),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 DgText(
                     text = "$userScore/10",
@@ -80,7 +80,7 @@ fun DeviceLeaderboardCard(
                 Text(
                     text = stringResource(R.string.lb_dlc_model_avg),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 DgText(
                     text = String.format("%.1f/10", averageScore),
@@ -91,7 +91,7 @@ fun DeviceLeaderboardCard(
                 Text(
                     text = stringResource(R.string.lb_dlc_top_score),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 DgText(
                     text = "$topScore/10",

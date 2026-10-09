@@ -47,6 +47,9 @@ import com.teamz.lab.debugger.ui.icons.DgText
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.theme.dgSemanticColors
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 @Composable
 fun NetworkReachabilityCard(
@@ -171,13 +174,14 @@ fun NetworkReachabilityCard(
                     val badgeBg = when {
                         goodScore && isDark -> DesignSystemColors.NeonGreen
                         goodScore -> MaterialTheme.colorScheme.primaryContainer
-                        report!!.opennessScore >= 50 -> Color(0xFFFF9800)
-                        else -> Color(0xFFF44336)
+                        report!!.opennessScore >= 50 -> dgSemanticColors().warn
+                        else -> MaterialTheme.colorScheme.error
                     }
                     val badgeText = when {
                         goodScore && isDark -> DesignSystemColors.Dark
                         goodScore -> MaterialTheme.colorScheme.onPrimaryContainer
-                        else -> Color.White
+                        report!!.opennessScore >= 50 -> dgSemanticColors().onWarn
+                        else -> MaterialTheme.colorScheme.onError
                     }
                     Surface(
                         modifier = Modifier.size(36.dp),
@@ -207,8 +211,8 @@ fun NetworkReachabilityCard(
             // Expanded content
             AnimatedVisibility(
                 visible = isExpanded && hasRun && report != null && !isLoading,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(motionTween(DgMotion.standard)) + fadeIn(motionTween(DgMotion.standard)),
+                exit = shrinkVertically(motionTween(DgMotion.quick)) + fadeOut(motionTween(DgMotion.quick))
             ) {
                 report?.let { r ->
                     Column(

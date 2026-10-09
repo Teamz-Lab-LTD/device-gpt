@@ -52,6 +52,7 @@ import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.motionTween
+import com.teamz.lab.debugger.ui.theme.dgSemanticColors
 
 /**
  * Network Privacy Report Card - a prominent card that shows a privacy
@@ -203,8 +204,8 @@ fun NetworkPrivacyReportCard(
             // --- Expanded content ---
             AnimatedVisibility(
                 visible = isExpanded && !isLoading && report != null,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(motionTween(DgMotion.standard)) + fadeIn(motionTween(DgMotion.standard)),
+                exit = shrinkVertically(motionTween(DgMotion.quick)) + fadeOut(motionTween(DgMotion.quick))
             ) {
                 report?.let { privacyReport ->
                     Column(
@@ -345,13 +346,14 @@ private fun GradeBadge(grade: String, score: Int, isDark: Boolean = false) {
     val bgColor = when {
         goodScore && isDark -> DesignSystemColors.NeonGreen
         goodScore -> MaterialTheme.colorScheme.primaryContainer
-        score >= 50 -> Color(0xFFFF9800)
-        else -> Color(0xFFF44336)
+        score >= 50 -> dgSemanticColors().warn
+        else -> MaterialTheme.colorScheme.error
     }
     val textColor = when {
         goodScore && isDark -> DesignSystemColors.Dark
         goodScore -> MaterialTheme.colorScheme.onPrimaryContainer
-        else -> Color.White
+        score >= 50 -> dgSemanticColors().onWarn
+        else -> MaterialTheme.colorScheme.onError
     }
 
     Surface(

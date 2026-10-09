@@ -302,7 +302,7 @@ fun BestDeviceCardFromEntry(
                         text = " " + stringResource(R.string.lb_avg_suffix),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         modifier = Modifier.padding(start = 2.dp)
                     )
                 }
@@ -322,7 +322,7 @@ fun BestDeviceCardFromEntry(
                             stringResource(R.string.lb_verified_many, entry.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         modifier = Modifier.weight(1f, fill = false)
                     )
                 }
@@ -428,7 +428,7 @@ fun BestDeviceCard(
                             stringResource(R.string.lb_verified_many, device.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         modifier = Modifier.weight(1f, fill = false)
                     )
                 }

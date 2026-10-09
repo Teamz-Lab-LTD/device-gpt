@@ -77,6 +77,7 @@ import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.icons.displayText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.motionTween
+import com.teamz.lab.debugger.ui.theme.contrastOn
 
 /**
  * Viral Share Dialog - Makes sharing easy, shows reward progress, and tracks viral growth
@@ -232,8 +233,8 @@ fun ViralShareDialog(
                     ShareButton(
                         icon = Icons.Default.Chat,
                         text = stringResource(R.string.lb_vs_whatsapp),
-                        containerColor = Color(0xFF25D366),
-                        contentColor = Color.White,
+                        containerColor = WhatsAppGreen,
+                        contentColor = contrastOn(WhatsAppGreen),
                         onClick = {
                             com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
                                 context,
@@ -251,8 +252,8 @@ fun ViralShareDialog(
                     ShareButton(
                         icon = Icons.Default.Send,
                         text = stringResource(R.string.lb_vs_telegram),
-                        containerColor = Color(0xFF0088CC),
-                        contentColor = Color.White,
+                        containerColor = TelegramBlue,
+                        contentColor = contrastOn(TelegramBlue),
                         onClick = {
                             com.teamz.lab.debugger.utils.EngagementTracker.trackSignificantAction(
                                 context,
@@ -899,3 +900,9 @@ private fun ReferralManager.RewardTier.descriptionRes(): Int = when (this) {
     ReferralManager.RewardTier.GOLD -> R.string.lb_tier_gold_desc
     ReferralManager.RewardTier.LEGEND -> R.string.lb_tier_legend_desc
 }
+
+/** WhatsApp's brand green. Its text colour comes from [contrastOn]: white on it is unreadable. */
+private val WhatsAppGreen = Color(0xFF25D366)
+
+/** Telegram's brand blue. Its text colour comes from [contrastOn]. */
+private val TelegramBlue = Color(0xFF0088CC)

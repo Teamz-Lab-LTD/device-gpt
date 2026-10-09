@@ -28,6 +28,7 @@ import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.DgIcons
 import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 
 @Composable
@@ -75,13 +76,13 @@ fun HealthScoreCard(
                         if (hasScannedToday) R.string.health_today_score else R.string.health_daily_check
                     ),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -209,7 +210,7 @@ fun HealthScoreCard(
                                 text = context.string(R.string.health_see_improvements),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = DesignSystemColors.Dark.copy(alpha = 0.7f),
-                                fontSize = 11.sp,
+                                fontSize = 12.sp,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         }

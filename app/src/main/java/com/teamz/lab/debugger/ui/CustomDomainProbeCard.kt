@@ -43,6 +43,7 @@ import com.teamz.lab.debugger.utils.ReachabilityStatus
 import com.teamz.lab.debugger.utils.RepeatedProbeResult
 import kotlinx.coroutines.launch
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 /**
  * "Check a website" — probes a user-supplied domain [DEFAULT_PROBE_ATTEMPTS] times
@@ -213,7 +214,7 @@ fun CustomDomainProbeCard(
                 result?.let { r ->
                     if (onItemAIClick != null) {
                         IconButton(
-                            modifier = Modifier.size(40.dp),
+                            modifier = Modifier.touchTarget(40.dp),
                             onClick = {
                                 onItemAIClick(
                                     "Website Check",
@@ -661,7 +662,7 @@ private fun ProbeDetails(r: RepeatedProbeResult) {
                     DgText(
                         // English data (also in the copied report); shown in the app language.
                         "     " + InfoTextLocalizer.localize(LocalContext.current, it),
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 3.dp)

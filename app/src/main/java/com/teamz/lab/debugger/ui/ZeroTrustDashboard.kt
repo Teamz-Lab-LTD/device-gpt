@@ -47,6 +47,7 @@ import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.motionTween
+import com.teamz.lab.debugger.ui.theme.dgSemanticColors
 
 /**
  * Zero Trust Dashboard -- a prominent card showing an aggregated trust
@@ -175,8 +176,8 @@ fun ZeroTrustDashboard(
                         color = when {
                             gradeGood && isDark -> DesignSystemColors.NeonGreen
                             gradeGood && !isDark -> MaterialTheme.colorScheme.primaryContainer
-                            gradeOk -> Color(0xFFFF9800)
-                            else -> Color(0xFFF44336)
+                            gradeOk -> dgSemanticColors().warn
+                            else -> MaterialTheme.colorScheme.error
                         }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -187,7 +188,8 @@ fun ZeroTrustDashboard(
                                 color = when {
                                     gradeGood && isDark -> DesignSystemColors.Dark
                                     gradeGood && !isDark -> MaterialTheme.colorScheme.onPrimaryContainer
-                                    else -> Color.White
+                                    gradeOk -> dgSemanticColors().onWarn
+                                    else -> MaterialTheme.colorScheme.onError
                                 },
                                 fontSize = if (report!!.compositeGrade.length > 1) 12.sp else 16.sp
                             )
@@ -208,8 +210,8 @@ fun ZeroTrustDashboard(
             // Expanded content
             AnimatedVisibility(
                 visible = isExpanded && !isLoading && report != null,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(motionTween(DgMotion.standard)) + fadeIn(motionTween(DgMotion.standard)),
+                exit = shrinkVertically(motionTween(DgMotion.quick)) + fadeOut(motionTween(DgMotion.quick))
             ) {
                 report?.let { r ->
                     Column(

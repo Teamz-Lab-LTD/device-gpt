@@ -105,6 +105,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
+import com.teamz.lab.debugger.ui.components.touchTarget
+import com.teamz.lab.debugger.ui.theme.contrastOn
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * Leaderboard Section - Child-friendly UI
@@ -414,8 +417,8 @@ fun LeaderboardSection(activity: Activity) {
             // Animated expandable trust card with swipe to close
             AnimatedVisibility(
                 visible = isTrustExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(motionTween(DgMotion.standard)) + fadeIn(motionTween(DgMotion.standard)),
+                exit = shrinkVertically(motionTween(DgMotion.quick)) + fadeOut(motionTween(DgMotion.quick))
             ) {
                 var totalDrag by remember { mutableStateOf(0f) }
                 val threshold = 100f // pixels
@@ -794,9 +797,9 @@ fun LeaderboardSection(activity: Activity) {
                                             .fillMaxSize()
                                             .background(
                                                 if (isSystemInDarkTheme()) {
-                                                    Color.Black.copy(alpha = 0.5f)
+                                                    MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)
                                                 } else {
-                                                    Color.White.copy(alpha = 0.6f)
+                                                    DesignSystemColors.White.copy(alpha = 0.6f)
                                                 }
                                             )
                                     )
@@ -827,10 +830,10 @@ fun LeaderboardSection(activity: Activity) {
                                             val textLuminance = (0.299 * textColor.red + 0.587 * textColor.green + 0.114 * textColor.blue)
                                             val rankBgColor = if (textLuminance > 0.5) {
                                                 // Text is light (dark mode) → use dark background
-                                                Color.Black.copy(alpha = 0.7f)
+                                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f)
                                             } else {
                                                 // Text is dark (light mode) → use white background
-                                                Color.White.copy(alpha = 0.9f)
+                                                DesignSystemColors.White.copy(alpha = 0.9f)
                                             }
                                             
                                             Box(
@@ -1085,9 +1088,9 @@ fun LeaderboardSection(activity: Activity) {
                                         .fillMaxSize()
                                         .background(
                                             if (isSystemInDarkTheme()) {
-                                                Color.Black.copy(alpha = 0.5f)
+                                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)
                                             } else {
-                                                Color.White.copy(alpha = 0.6f)
+                                                DesignSystemColors.White.copy(alpha = 0.6f)
                                             }
                                         )
                                 )
@@ -1111,10 +1114,10 @@ fun LeaderboardSection(activity: Activity) {
                                         val textLuminance = (0.299 * textColor.red + 0.587 * textColor.green + 0.114 * textColor.blue)
                                         val rankBgColor = if (textLuminance > 0.5) {
                                             // Text is light (dark mode) → use dark background
-                                            Color.Black.copy(alpha = 0.7f)
+                                            MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f)
                                         } else {
                                             // Text is dark (light mode) → use white background
-                                            Color.White.copy(alpha = 0.9f)
+                                            DesignSystemColors.White.copy(alpha = 0.9f)
                                         }
                                         
                                         Box(
@@ -1509,21 +1512,23 @@ fun CategorySelector(
                             style = MaterialTheme.typography.labelMedium
                         )
                         if (onCategoryInfoClick != null) {
+                            // Drawn small, but a finger gets a full 48dp square centred on it.
                             Box(
                                 modifier = Modifier
-                                    .size(12.dp)
+                                    .touchTarget(16.dp)
                                     .clickable(
                                         onClick = {
                                             onCategoryInfoClick(category)
                                         },
                                         indication = null,
                                         interactionSource = remember { MutableInteractionSource() }
-                                    )
+                                    ),
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = stringResource(R.string.lb_cat_what_is, stringResource(category.nameRes())),
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.size(16.dp),
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                             }
@@ -1873,7 +1878,7 @@ fun TrustBadgeIcon(badge: TrustBadge) {
             text = text,
             style = MaterialTheme.typography.labelSmall,
             color = color,
-            fontSize = 10.sp
+            fontSize = 12.sp
         )
     }
 }
@@ -2326,7 +2331,7 @@ fun PremiumUserRankCard(
                         text = "•$rank",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = contrastOn(premiumYellow)
                     )
                 }
                 
@@ -2363,7 +2368,7 @@ fun PremiumUserRankCard(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = premiumYellow,
-                        contentColor = Color.Black
+                        contentColor = contrastOn(premiumYellow)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -2371,14 +2376,14 @@ fun PremiumUserRankCard(
                         imageVector = Icons.Default.Info,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = Color.Black
+                        tint = contrastOn(premiumYellow)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         stringResource(R.string.lb_view_device_insights),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
+                        color = contrastOn(premiumYellow)
                     )
                 }
             }

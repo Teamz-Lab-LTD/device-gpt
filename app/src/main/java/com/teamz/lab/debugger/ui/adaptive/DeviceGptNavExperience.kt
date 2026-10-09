@@ -69,6 +69,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Tab
@@ -508,7 +512,7 @@ fun DeviceGptNavExperience(
             val settingsTooltipState = rememberTooltipState()
             val devTooltipState = rememberTooltipState()
             
-            TopAppBar(title = { DgText(appName) }, navigationIcon = {
+            TopAppBar(title = { FitOneLineTitle(appName) }, navigationIcon = {
                 TooltipBox(
                     state = menuTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -664,15 +668,18 @@ fun DeviceGptNavExperience(
                     exit = slideOutVertically(motionTween(DgMotion.quick, easing = DgMotion.Exit)) { it } +
                         fadeOut(motionTween(DgMotion.quick, easing = DgMotion.Exit)),
                 ) {
+                // Four equal buttons: each takes the same share of the row, so the longest label
+                // ("সার্টিফিকেট") has room on a 320dp phone and no button is wider than another.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly, // Even spacing between all FABs
+                        .padding(vertical = 16.dp, horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                 // Premium FAB - Only show if user is not premium
                 if (!isPremium) {
+                    Box(modifier = Modifier.weight(1f)) {
                     TooltipBox(
                         state = premiumTooltipState,
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -701,6 +708,8 @@ fun DeviceGptNavExperience(
                                 showRevenueCatPaywall = true
                             },
                             modifier = Modifier
+                                .fillMaxWidth()
+                                .height(FabHeight)
                                 .scale(pulseScale) // Continuous subtle pulse
                                 .semantics {
                                     // Make it properly focusable and accessible
@@ -738,14 +747,19 @@ fun DeviceGptNavExperience(
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 2.dp),
-                                    fontSize = 10.sp,
+                                    fontSize = FabLabelSize,
+                                    letterSpacing = 0.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                     color = DesignSystemColors.Dark
                                 )
                             }
                         }
                     }
+                    }
                 }
                 // Certificate FAB
+                Box(modifier = Modifier.weight(1f)) {
                 TooltipBox(
                     state = certTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -758,13 +772,9 @@ fun DeviceGptNavExperience(
                                 showPriceInputDialog = true
                             }
                         },
-                        modifier = Modifier, // Remove padding - spacing handled by Row
-                        containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
-                            DesignSystemColors.White.copy(
-                            ),
-                        contentColor = if (isAIReady) DesignSystemColors.White else DesignSystemColors.NeonGreen.copy(
-                            alpha = 0.12f
-                        ),
+                        modifier = Modifier.fillMaxWidth().height(FabHeight),
+                        containerColor = if (isAIReady) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (isAIReady) DesignSystemColors.Dark else MaterialTheme.colorScheme.onSurfaceVariant,
                     ) {
                         if (isCertificateLoading) {
                             FabLoading()
@@ -778,6 +788,10 @@ fun DeviceGptNavExperience(
                                 Text(
                                     text = context.string(R.string.cert),
                                     style = MaterialTheme.typography.labelSmall,
+                                    fontSize = FabLabelSize,
+                                    letterSpacing = 0.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                     textAlign = TextAlign.Center,
                                     color = DesignSystemColors.Dark,
                                     modifier = Modifier.padding(top = 2.dp)
@@ -786,7 +800,9 @@ fun DeviceGptNavExperience(
                         }
                     }
                 }
+                }
                 // AI FAB (existing)
+                Box(modifier = Modifier.weight(1f)) {
                 TooltipBox(
                     state = aiTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -805,13 +821,9 @@ fun DeviceGptNavExperience(
                                 showAIDialog = true
                             }
                         },
-                        modifier = Modifier, // Remove padding - spacing handled by Row
-                        containerColor = if (isAIReady) DesignSystemColors.NeonGreen else
-                            DesignSystemColors.White.copy(
-                            ),
-                        contentColor = if (isAIReady) DesignSystemColors.White else DesignSystemColors.NeonGreen.copy(
-                            alpha = 0.12f
-                        ),
+                        modifier = Modifier.fillMaxWidth().height(FabHeight),
+                        containerColor = if (isAIReady) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (isAIReady) DesignSystemColors.Dark else MaterialTheme.colorScheme.onSurfaceVariant,
                     ) {
                         if (isAIReady) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -823,6 +835,10 @@ fun DeviceGptNavExperience(
                                 Text(
                                     text = context.string(R.string.ai),
                                     style = MaterialTheme.typography.labelSmall,
+                                    fontSize = FabLabelSize,
+                                    letterSpacing = 0.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(top = 2.dp),
                                     color = DesignSystemColors.Dark
@@ -832,9 +848,10 @@ fun DeviceGptNavExperience(
 
                     }
                 }
+                }
                 // Share FAB (existing)
                 FloatingActionButton(
-                    modifier = Modifier, // No padding - spacing handled by Row
+                    modifier = Modifier.weight(1f).height(FabHeight),
                     onClick = {
                         if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) {
                             AnalyticsUtils.logEvent(AnalyticsEvent.FabShareClicked, mapOf(
@@ -883,12 +900,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             }
                         }
                     },
-                    containerColor = if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) DesignSystemColors.NeonGreen else
-                        DesignSystemColors.White.copy(
-                        ),
-                    contentColor = if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) DesignSystemColors.White else DesignSystemColors.NeonGreen.copy(
-                        alpha = 0.12f
-                    ),
+                    containerColor = if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) DesignSystemColors.Dark else MaterialTheme.colorScheme.onSurfaceVariant,
                 ) {
                     if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
@@ -899,6 +912,10 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         Text(
                             text = context.string(R.string.send),
                             style = MaterialTheme.typography.labelSmall,
+                                    fontSize = FabLabelSize,
+                                    letterSpacing = 0.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                             textAlign = TextAlign.Center,
                             color = DesignSystemColors.Dark,
                             modifier = Modifier.padding(top = 2.dp)
@@ -910,7 +927,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 }
                 }
             }
-        }) { paddingValues ->
+        },
+            // Centred: the row of four is as wide as the screen. At the default (end) position the scaffold
+            // pushes it 16dp to the left, off the edge.
+            floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
+        ) { paddingValues ->
             key(refreshTrigger) {
                 val tabOrder = remember(refreshTrigger) { TabOrderManager.getTabOrder() }
 
@@ -951,10 +972,25 @@ https://play.google.com/store/apps/details?id=${context.packageName}
 
                 @Composable
                 fun TabStrip() {
+                    // The open tab is marked three ways: a thick accent bar, a heavier label, and full-strength
+                    // text against dimmed neighbours.
+                    val tabAccent = com.teamz.lab.debugger.ui.theme.dgSemanticColors().accent
                     ScrollableTabRow(
                         selectedTabIndex = selectedTab,
                         modifier = Modifier.fillMaxWidth(),
                         edgePadding = 0.dp,
+                        indicator = { tabPositions ->
+                            tabPositions.getOrNull(selectedTab)?.let { position ->
+                                androidx.compose.material3.TabRowDefaults.SecondaryIndicator(
+                                    modifier = Modifier
+                                        .tabIndicatorOffset(position)
+                                        .padding(horizontal = 12.dp)
+                                        .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
+                                    height = 3.dp,
+                                    color = tabAccent,
+                                )
+                            }
+                        },
                     ) {
                         // screen_view is driven by SELECTION, not by the click handler.
                         // Verified on a Pixel 8a 2026-09-08: logMainTabSelectionAnalytics is
@@ -975,6 +1011,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                         tabOrder.forEachIndexed { index, tabType ->
                             Tab(
                                 selected = selectedTab == index,
+                                selectedContentColor = MaterialTheme.colorScheme.onSurface,
+                                unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 onClick = {
                                     logMainTabSelectionAnalytics(tabType)
                                     selectedTab = index
@@ -994,6 +1032,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                             TabType.APP_DOCTOR -> context.string(R.string.tab_app_doctor)
                                         },
                                         style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
                                     )
                                 },
                             )
@@ -1936,9 +1975,21 @@ private fun FabLoading() {
     CircularProgressIndicator(
         modifier = Modifier.size(20.dp),
         strokeWidth = 2.dp,
-        color = MaterialTheme.colorScheme.tertiary
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
+
+/** Height of the four floating action buttons; their width is an equal share of the row. */
+private val FabHeight = 56.dp
+
+/** Label size inside a floating action button. Not smaller: it has to stay readable in Bangla. */
+private val FabLabelSize = 11.sp
+
+/**
+ * Room the scrolling tabs leave under their last row so it can be scrolled clear of the floating buttons:
+ * the buttons' height plus the row's padding above and below.
+ */
+val FabClearance = 96.dp
 
 @Composable
 fun HandleSystemMonitorAutoStart() {
@@ -2032,5 +2083,38 @@ fun HandleSystemMonitorAutoStart() {
 private fun startService(context: Context) {
     if (context.isUserEnableMonitoringService()) {
         context.startSystemMonitorService()
+    }
+}
+
+/**
+ * The top bar title on one line. On a narrow phone the five icons leave it little room, so the text steps
+ * down in size until it fits instead of wrapping or being cut; it never goes below 12sp.
+ */
+@Composable
+private fun FitOneLineTitle(text: String) {
+    val style = androidx.compose.material3.LocalTextStyle.current
+    val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // The icon next to the title has 12dp of empty margin inside its 48dp touch area; the title may
+        // use that margin, which on a 320dp phone is what lets the whole name show.
+        val available = constraints.maxWidth + with(androidx.compose.ui.platform.LocalDensity.current) { 12.dp.roundToPx() }
+        val sizes = listOf(style.fontSize, 20.sp, 18.sp, 16.sp, 14.sp, 13.sp, 12.sp)
+            .filter { it.value <= style.fontSize.value }
+        val fitting = remember(text, available, style) {
+            sizes.firstOrNull { size ->
+                measurer.measure(text, style.copy(fontSize = size), maxLines = 1, softWrap = false).size.width <=
+                    available
+            } ?: sizes.last()
+        }
+        DgText(
+            text = text,
+            fontSize = fitting,
+            maxLines = 1,
+            softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier
+                .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                .widthIn(max = with(androidx.compose.ui.platform.LocalDensity.current) { available.toDp() }),
+        )
     }
 }

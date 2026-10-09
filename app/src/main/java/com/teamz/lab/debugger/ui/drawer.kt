@@ -1229,7 +1229,7 @@ fun DrawerContent(
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-                fontSize = 10.sp
+                fontSize = 12.sp
             )
             IconTextButton(
                 icon = Icons.Default.Info,
@@ -1384,7 +1384,7 @@ fun RealtimeMonitorToggle(
                 else 
                     MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 maxLines = 3, // Allow up to 3 lines for long text
                 lineHeight = 15.sp, // Better line spacing
                 modifier = Modifier.fillMaxWidth()
@@ -1465,7 +1465,7 @@ fun PermissionToggleRow(
                     })
                 }
             },
-            modifier = Modifier.scale(0.8f),
+            // Full size: shrunk to 0.8 the switch was a 41 x 38dp target, under the 48dp minimum.
             colors = SwitchDefaults.colors(
                 checkedThumbColor = DesignSystemColors.DarkII,
                 uncheckedThumbColor = DesignSystemColors.DarkII,
@@ -1535,12 +1535,13 @@ fun AnimatedPromotionalButton(
     // Create pulsing animation for the bulb icon
     // Both loops stop, at rest, when the user has turned animations off.
     // Pulsing scale animation - makes the bulb "glow" and pulse
-    val pulseScale by rememberMotionLoop(initialValue = 1f, targetValue = 2.15f, label = "bulb_pulse")
+    // A small pulse: at 2.15 the 16dp bulb grew over the first letters of the label.
+    val pulseScale by rememberMotionLoop(initialValue = 1f, targetValue = 1.25f, label = "bulb_pulse")
 
     // Glow alpha animation - makes the bulb appear to glow
     val glowAlpha by rememberMotionLoop(
-        initialValue = 0.8f,
-        targetValue = 2f,
+        initialValue = 0.7f,
+        targetValue = 1f,
         restingValue = 1f,
         label = "bulb_glow",
     )
@@ -1712,7 +1713,7 @@ fun NotificationToggle(
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 2,
                     lineHeight = 14.sp
                 )
@@ -2119,7 +2120,7 @@ fun LeaderboardAccountStatus() {
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
 
                     // Checkmark badge
@@ -2145,7 +2146,7 @@ fun LeaderboardAccountStatus() {
                                         MaterialTheme.colorScheme.onPrimary
                                     },
                                     style = MaterialTheme.typography.labelSmall,
-                                    fontSize = 8.sp
+                                    fontSize = 8.sp // an icon in a small badge, not text
                                 )
                             }
                         }
@@ -2172,7 +2173,7 @@ fun LeaderboardAccountStatus() {
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         maxLines = 1,
                         modifier = Modifier.weight(1f)
                     )
@@ -2186,7 +2187,7 @@ fun LeaderboardAccountStatus() {
                     text = userDisplayName ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 9.sp,
+                    fontSize = 12.sp,
                     maxLines = 1
                 )
             }
@@ -2226,7 +2227,7 @@ fun LeaderboardAccountStatus() {
                         MaterialTheme.colorScheme.onSurface
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 9.sp,
+                    fontSize = 12.sp,
                     modifier = Modifier.weight(1f),
                     maxLines = 2
                 )
@@ -2260,7 +2261,7 @@ fun LeaderboardAccountStatus() {
                                 context.string(R.string.account_logging_out),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 9.sp
+                                fontSize = 12.sp
                             )
                         } else {
                             Icon(
@@ -2273,7 +2274,7 @@ fun LeaderboardAccountStatus() {
                                 context.string(R.string.account_logout),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 9.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -2298,7 +2299,7 @@ fun LeaderboardAccountStatus() {
                             context.string(R.string.account_delete),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 9.sp
+                            fontSize = 12.sp
                         )
                     }
                     
@@ -2317,7 +2318,7 @@ fun LeaderboardAccountStatus() {
                                 Text(
                                     text = context.string(R.string.account_delete_body),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontSize = 11.sp
+                                    fontSize = 12.sp
                                 )
                             },
                             confirmButton = {
@@ -2374,7 +2375,7 @@ fun LeaderboardAccountStatus() {
                                     }
                                     Text(
                                         context.string(R.string.account_delete),
-                                        fontSize = 11.sp
+                                        fontSize = 12.sp
                                     )
                                 }
                             },
@@ -2385,7 +2386,7 @@ fun LeaderboardAccountStatus() {
                                 ) {
                                     Text(
                                         context.string(R.string.cancel),
-                                        fontSize = 11.sp
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
@@ -2412,7 +2413,7 @@ fun LeaderboardAccountStatus() {
                                 Text(
                                     text = context.string(R.string.account_reauth_body),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontSize = 11.sp
+                                    fontSize = 12.sp
                                 )
                             },
                             confirmButton = {
@@ -2446,7 +2447,7 @@ fun LeaderboardAccountStatus() {
                                     }
                                     Text(
                                         context.string(R.string.account_sign_in),
-                                        fontSize = 11.sp
+                                        fontSize = 12.sp
                                     )
                                 }
                             },
@@ -2461,7 +2462,7 @@ fun LeaderboardAccountStatus() {
                                 ) {
                                     Text(
                                         context.string(R.string.cancel),
-                                        fontSize = 11.sp
+                                        fontSize = 12.sp
                                     )
                                 }
                             }

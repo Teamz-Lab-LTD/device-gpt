@@ -255,7 +255,7 @@ fun DeviceInsightHeader(
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             
@@ -275,7 +275,7 @@ fun DeviceInsightHeader(
                         stringResource(R.string.lb_verified_many, insight.userCount.toString()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
             }
             
@@ -288,7 +288,7 @@ fun DeviceInsightHeader(
                     text = stringResource(R.string.lb_ins_quality),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     modifier = Modifier.padding(end = 10.dp)
                 )
                 Row(

@@ -94,6 +94,7 @@ import com.teamz.lab.debugger.ui.icons.IconTone
 import com.teamz.lab.debugger.ui.icons.displayText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.motionTween
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 @Composable
 fun PowerConsumptionCard(
@@ -333,9 +334,9 @@ Power Statistics:
                         text = context.string(R.string.component_breakdown),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
                     )
-                    Spacer(modifier = Modifier.weight(1f))
                     if (onItemAIClick != null) {
                         IconButton(
                             onClick = {
@@ -351,7 +352,7 @@ Total Power: ${"%.2f".format(data.totalPower)} W
                                 """.trimIndent()
                                 onItemAIClick("Component Breakdown", content)
                             },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.touchTarget(32.dp)
                         ) {
                             Icon(
                                 imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -488,7 +489,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                         text = stringResource(R.string.last_updated, SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(lastUpdateTime))),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                 }
             } ?: run {
@@ -585,7 +586,7 @@ private fun TotalPowerSummary(
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -766,10 +767,25 @@ private fun ComponentPowerItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                // The "per hour" line sits under the name, where it can wrap. Beside the number it took
+                // the name's room, and on a 320dp phone the name broke into single letters.
+                val practicalInfo = PowerConsumptionAggregator.getPracticalPowerInfo(
+                    component.powerConsumption / 1000.0,
+                    context,
+                    component.component
+                )
+                practicalInfo?.let {
+                    DgText(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    )
+                }
             }
-            
-            // Power Consumption with practical info
+
+            // Power consumption: the number over its unit
             Column(
+                modifier = Modifier.padding(start = 8.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 DgText(
@@ -778,31 +794,11 @@ private fun ComponentPowerItem(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = stringResource(R.string.watts),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    // Show practical info if available
-                    val practicalInfo = PowerConsumptionAggregator.getPracticalPowerInfo(
-                        component.powerConsumption / 1000.0,
-                        context,
-                        component.component
-                    )
-                    practicalInfo?.let {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        DgText(
-                            text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            fontSize = 9.sp
-                        )
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.watts),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             
             // AI icon and Info icon
@@ -810,7 +806,7 @@ private fun ComponentPowerItem(
             if (onAIClick != null) {
                 IconButton(
                     onClick = onAIClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.touchTarget(32.dp)
                 ) {
                     Icon(
                         imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -874,7 +870,7 @@ private fun SummaryStatCard(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Visible,
                     lineHeight = 13.sp,
@@ -889,7 +885,7 @@ private fun SummaryStatCard(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 9.sp,
+                fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Visible,
                 lineHeight = 11.sp
@@ -903,7 +899,7 @@ private fun SummaryStatCard(
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
                 color = valueColor,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Visible,
                 lineHeight = 12.sp
@@ -948,7 +944,7 @@ private fun TestResultsFooter(
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -990,7 +986,7 @@ private fun TestResultsFooter(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = context.string(R.string.view_csv),
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1
                 )
@@ -1065,7 +1061,7 @@ private fun SampleDataCard(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 9.sp,
+                        fontSize = 12.sp,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                         maxLines = 2,
                         overflow = TextOverflow.Visible,
@@ -1484,13 +1480,13 @@ private fun AggregatedStatsSection(
                     text = stringResource(R.string.power_statistics),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -1681,7 +1677,7 @@ private fun AggregatedStatsSection(
                             text = trendExplanation,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            fontSize = 10.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
@@ -1748,7 +1744,7 @@ private fun AggregatedStatsSection(
                             repeat(5) { index ->
                                 DgGlyph(
                                     icon = if (index < ratingStars) DgStock.StarFilled else DgStock.StarOutline,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     color = ratingColor
                                 )
                             }
@@ -1758,7 +1754,7 @@ private fun AggregatedStatsSection(
                             text = ratingExplanation,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            fontSize = 10.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
@@ -1831,7 +1827,7 @@ private fun CompactStatCard(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = practicalInfoColor,
-                    fontSize = 9.sp,
+                    fontSize = 12.sp,
                     textAlign = TextAlign.Center
                 )
             }
@@ -1840,7 +1836,7 @@ private fun CompactStatCard(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = labelTextColor,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
@@ -2047,7 +2043,7 @@ Total Tests: ${allResults.size}
                             """.trimIndent()
                             onItemAIClick("Camera Power Test", content)
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -2076,7 +2072,7 @@ Total Tests: ${allResults.size}
                 text = stringResource(R.string.pw_cam_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                fontSize = 10.sp
+                fontSize = 12.sp
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -2088,7 +2084,8 @@ Total Tests: ${allResults.size}
                         .fillMaxWidth()
                         .height(200.dp),
                     shape = RoundedCornerShape(8.dp),
-                    color = Color.Black,
+                    // A camera viewfinder is black until the picture arrives, in either theme.
+                    color = MaterialTheme.colorScheme.scrim,
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
                         DesignSystemColors.NeonGreen.copy(alpha = 0.5f)
@@ -2183,8 +2180,10 @@ Total Tests: ${allResults.size}
                             Text(
                                 text = stringResource(R.string.camera_preview),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.7f),
-                                textAlign = TextAlign.Center
+                                color = DesignSystemColors.White.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center,
+                                // Keeps the Bangla line off the edges of the box on a 320dp phone.
+                                modifier = Modifier.padding(horizontal = 12.dp)
                             )
                         }
                     }
@@ -2237,7 +2236,7 @@ Total Tests: ${allResults.size}
                                 text = stringResource(R.string.preview_live_feed),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 10.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -2593,7 +2592,7 @@ Total Tests: ${allResults.size}
                                         text = stringResource(R.string.pw_cam_more, allTestResults.size - 5),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontSize = 11.sp
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
@@ -2924,7 +2923,8 @@ fun PowerConsumptionSection(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         PowerConsumptionCard(onItemAIClick = onItemAIClick)
-        Spacer(modifier = Modifier.height(80.dp))
+        // Room to scroll the last row clear of the floating buttons.
+        Spacer(modifier = Modifier.height(com.teamz.lab.debugger.ui.adaptive.FabClearance))
     }
 }
 
@@ -3083,7 +3083,7 @@ This shows how different brightness levels affect battery consumption.
                             """.trimIndent()
                             onItemAIClick("Display Brightness Power Test", content)
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -3111,7 +3111,7 @@ This shows how different brightness levels affect battery consumption.
                 text = stringResource(R.string.pw_disp_fast),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp
+                fontSize = 12.sp
             )
             
             Spacer(modifier = Modifier.height(2.dp))
@@ -3120,7 +3120,7 @@ This shows how different brightness levels affect battery consumption.
                 text = stringResource(R.string.pw_disp_full),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp
+                fontSize = 12.sp
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -3157,7 +3157,7 @@ This shows how different brightness levels affect battery consumption.
                             text = stringResource(R.string.pw_disp_perm_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(
@@ -3642,7 +3642,7 @@ This shows how different brightness levels affect battery consumption.
                                     text = "  " + stringResource(R.string.pw_more_measurements, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     modifier = Modifier.padding(12.dp)
                             )
                             }
@@ -3859,19 +3859,19 @@ This shows how different brightness levels affect battery consumption.
                         text = stringResource(R.string.pw_disp_gray1),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                     Text(
                         text = stringResource(R.string.pw_disp_gray2),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                     Text(
                         text = stringResource(R.string.pw_disp_gray3),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     DgIconText(
@@ -3879,7 +3879,7 @@ This shows how different brightness levels affect battery consumption.
                         text = stringResource(R.string.pw_disp_gray_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                 }
             },
@@ -4023,7 +4023,7 @@ This shows how CPU processing speed affects battery consumption.
                             """.trimIndent()
                             onItemAIClick("CPU Performance Power Test", content)
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -4303,7 +4303,7 @@ This shows how CPU processing speed affects battery consumption.
                                 text = stringResource(R.string.pw_cpu_explain),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                 modifier = Modifier.padding(10.dp)
                             )
@@ -4366,7 +4366,7 @@ This shows how CPU processing speed affects battery consumption.
                                     text = "  " + stringResource(R.string.pw_more_levels, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     modifier = Modifier.padding(12.dp)
                             )
                             }
@@ -4425,7 +4425,7 @@ This shows how CPU processing speed affects battery consumption.
                         text = stringResource(R.string.pw_cpu_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 10.sp
+                        fontSize = 12.sp
                     )
                 }
             },
@@ -4665,7 +4665,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             """.trimIndent()
                             onItemAIClick("Network Signal Strength Test", content)
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -5017,7 +5017,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                     text = "  " + stringResource(R.string.pw_more_samples, results.size - 5),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     modifier = Modifier.padding(12.dp)
                                 )
                             }
@@ -5420,7 +5420,7 @@ private fun SimpleLineChart(
                     )
                     // Center dot for clarity
                     drawCircle(
-                        color = Color.White,
+                        color = DesignSystemColors.White,
                         radius = 1.5.dp.toPx(),
                         center = point
                     )
@@ -5453,14 +5453,14 @@ private fun SimpleLineChart(
                         DgText(
                             text = stringResource(R.string.pw_chart_max, String.format("%.2f", maxY)),
                             style = MaterialTheme.typography.labelSmall,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             maxLines = 1
                         )
                         DgText(
                             text = stringResource(R.string.pw_chart_min, String.format("%.2f", minY)),
                             style = MaterialTheme.typography.labelSmall,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             maxLines = 1
                         )
@@ -5490,7 +5490,7 @@ private fun SimpleLineChart(
                     DgText(
                         text = stringResource(R.string.pw_chart_range, String.format("%.0f", minX), String.format("%.0f", maxX)),
                         style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center,
                         maxLines = 1
@@ -5564,7 +5564,7 @@ private fun CsvPreviewDialog(
                             text = stringResource(R.string.pw_csv_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
@@ -5658,7 +5658,7 @@ private fun CsvPreviewDialog(
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 IconButton(
                                                     onClick = { selectedHeaderInfo = Pair(headerText, description) },
-                                                    modifier = Modifier.size(20.dp)
+                                                    modifier = Modifier.touchTarget(20.dp)
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Default.Info,
@@ -5744,7 +5744,7 @@ private fun CsvPreviewDialog(
                                                 text = cellValue,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
-                                                fontSize = 11.sp,
+                                                fontSize = 12.sp,
                                                 maxLines = 3,
                                                 overflow = TextOverflow.Ellipsis,
                                                 lineHeight = 14.sp,
@@ -5782,7 +5782,7 @@ private fun CsvPreviewDialog(
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         }
@@ -5809,7 +5809,7 @@ private fun CsvPreviewDialog(
                             text = stringResource(R.string.pw_csv_columns, headers.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                     }
                     Icon(
@@ -5975,7 +5975,7 @@ Device Sleep Tracker:
                                 }
                                 onItemAIClick("Device Sleep Tracker", content)
                             },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.touchTarget(32.dp)
                         ) {
                             Icon(
                                 imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -6242,7 +6242,7 @@ Device Sleep Tracker:
                             text = stringResource(R.string.pw_sleep_tracking),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
@@ -6345,7 +6345,7 @@ screen time only — not each app's battery consumption.
                             """.trimIndent()
                             onItemAIClick("App Screen Time", content)
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -6590,7 +6590,7 @@ Please answer about usage habits, not battery attribution.
                                                         ))
                                                         onItemAIClick(app.appName, content)
                                                     },
-                                                    modifier = Modifier.size(32.dp)
+                                                    modifier = Modifier.touchTarget(32.dp)
                                                 ) {
                                                     Icon(
                                                         imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -6655,7 +6655,7 @@ Please answer about usage habits, not battery attribution.
                                                     text = usageSeverity,
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = usageColor,
-                                                    fontSize = 11.sp
+                                                    fontSize = 12.sp
                                                 )
                                             }
                                         }
@@ -6699,7 +6699,7 @@ Please answer about usage habits, not battery attribution.
                                                         text = efficiencyLabel,
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = efficiencyColor,
-                                                        fontSize = 11.sp
+                                                        fontSize = 12.sp
                                                     )
                                                 }
                                             }
@@ -6731,7 +6731,7 @@ Please answer about usage habits, not battery attribution.
                                                         text = stringResource(R.string.pw_apps_would_drain, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                                                        fontSize = 11.sp
+                                                        fontSize = 12.sp
                                                     )
                                                 }
                                             }
@@ -6767,7 +6767,7 @@ Please answer about usage habits, not battery attribution.
                                                         text = lastUsedText,
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                                        fontSize = 11.sp
+                                                        fontSize = 12.sp
                                                     )
                                                 }
                                             }
@@ -6794,7 +6794,7 @@ Please answer about usage habits, not battery attribution.
                                                         text = stringResource(R.string.pw_apps_background, serviceText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                                        fontSize = 11.sp
+                                                        fontSize = 12.sp
                                                     )
                                                 }
                                             }
@@ -6836,7 +6836,7 @@ Please answer about usage habits, not battery attribution.
                                                         text = stringResource(R.string.pw_apps_active_for, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                                        fontSize = 11.sp
+                                                        fontSize = 12.sp
                                                     )
                                                     if (bgRatio > 20) {
                                                         Spacer(modifier = Modifier.width(6.dp))
@@ -6844,7 +6844,7 @@ Please answer about usage habits, not battery attribution.
                                                             text = stringResource(R.string.pw_apps_bg_ratio, "%.0f".format(bgRatio)),
                                                             style = MaterialTheme.typography.bodySmall,
                                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                                            fontSize = 10.sp,
+                                                            fontSize = 12.sp,
                                                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                                                         )
                                                     }
@@ -6885,7 +6885,7 @@ Please answer about usage habits, not battery attribution.
                                                             text = frequencyText,
                                                             style = MaterialTheme.typography.bodySmall,
                                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                                            fontSize = 11.sp
+                                                            fontSize = 12.sp
                                                         )
                                                     }
                                                 }
@@ -6922,7 +6922,7 @@ Please answer about usage habits, not battery attribution.
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 11.sp
+                                    fontSize = 12.sp
                                 )
                             }
                         }

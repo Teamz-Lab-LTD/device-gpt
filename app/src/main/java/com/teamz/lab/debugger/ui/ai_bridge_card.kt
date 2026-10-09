@@ -93,6 +93,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 
 /**
  * The AI Bridge tab.
@@ -140,7 +141,9 @@ fun AiBridgeTabSection(
             // exceeds a compact-phone screen height. Without verticalScroll the PIN and Turn off
             // button sit behind the system nav bar and become unreachable on short screens.
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(16.dp)
+            // Room to scroll the last line clear of the floating buttons.
+            .padding(bottom = com.teamz.lab.debugger.ui.adaptive.FabClearance),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Zero-setup path — copies a live device snapshot as plain text the user can paste
@@ -371,7 +374,8 @@ private fun OnCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .background(Color.White, RoundedCornerShape(12.dp))
+                        // A QR code is read against white, in either theme.
+                        .background(DesignSystemColors.White, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                     contentAlignment = Alignment.Center,
                 ) {

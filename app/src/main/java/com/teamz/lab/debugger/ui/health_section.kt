@@ -61,6 +61,7 @@ import com.teamz.lab.debugger.ui.icons.IconTone
 import com.teamz.lab.debugger.ui.icons.splitDisplayLine
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
+import com.teamz.lab.debugger.ui.components.touchTarget
 
 
 @Composable
@@ -1882,14 +1883,14 @@ private fun ImprovementSuggestionsCard(
                             text = context.string(R.string.health_recommendations_basis),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -1977,13 +1978,13 @@ private fun DailyTasksCard(
                         text = context.string(R.string.health_tasks_completed, completedCount, tasks.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                 }
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -2053,7 +2054,7 @@ private fun DailyTasksCard(
                                 text = task.description,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                fontSize = 11.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -2135,13 +2136,13 @@ private fun TemperatureHistoryCard(
                     text = context.string(R.string.health_temperature_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -2195,7 +2196,7 @@ private fun TemperatureHistoryCard(
                         text = HealthDisplayText.temperatureTrend(context, trend),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -2211,7 +2212,7 @@ private fun TemperatureHistoryCard(
                             text = dataPoint.date,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 11.sp
+                            fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         // Temperature bar visualization
@@ -2239,7 +2240,7 @@ private fun TemperatureHistoryCard(
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 11.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -2293,13 +2294,13 @@ private fun HealthHistoryCard(
                     text = context.string(R.string.health_history_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
@@ -2474,7 +2475,7 @@ private fun PrivacyDashboardCard(
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
@@ -2731,7 +2732,7 @@ private fun RamOptimizationCard(
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
@@ -2917,7 +2918,7 @@ private fun StorageCleanupCard(
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
@@ -3126,7 +3127,7 @@ private fun BatteryOptimizationCard(
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
@@ -3303,7 +3304,7 @@ private fun AppCacheCleanerCard(
                 if (onAIClick != null) {
                     IconButton(
                         onClick = onAIClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.touchTarget(32.dp)
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
