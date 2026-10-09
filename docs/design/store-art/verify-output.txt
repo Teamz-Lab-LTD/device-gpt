@@ -1,0 +1,106 @@
+ok   icons/global-1-pulse-tick.svg exists
+ok   icons/global-1-pulse-tick.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-1-pulse-tick.png has no transparency
+ok   icons/global-1-pulse-tick.png stays in the global palette (4% of pixels off-palette)
+ok   icons/global-1-pulse-tick-512.png is 512x512 (is (512, 512))
+ok   icons/global-1-pulse-tick-512.png has no transparency
+ok   icons/global-1-pulse-tick-512.png is under 1 MB (19 KB)
+ok   icons/kry-1-pulse-tick.svg exists
+ok   icons/kry-1-pulse-tick.png is 1024x1024 (is (1024, 1024))
+ok   icons/kry-1-pulse-tick.png has no transparency
+ok   icons/kry-1-pulse-tick.png stays in the kry palette (5% of pixels off-palette)
+ok   icons/kry-1-pulse-tick-512.png is 512x512 (is (512, 512))
+ok   icons/kry-1-pulse-tick-512.png has no transparency
+ok   icons/kry-1-pulse-tick-512.png is under 1 MB (42 KB)
+ok   icons/global-1-pulse-tick-foreground.svg exists
+ok   icons/global-1-pulse-tick-foreground.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-1-pulse-tick-foreground.png has a transparent background
+ok   icons/global-1-pulse-tick-foreground.png art is inside the central 66% safe zone (bbox (185, 180, 835, 842))
+ok   icons/global-1-pulse-tick-monochrome.svg exists
+ok   icons/global-1-pulse-tick-monochrome.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-1-pulse-tick-monochrome.png has a transparent background
+ok   icons/global-1-pulse-tick-monochrome.png art is inside the central 66% safe zone (bbox (185, 180, 835, 842))
+ok   icons/global-1-pulse-tick-monochrome.png is one solid colour (found 1 opaque colours)
+ok   icons/global-2-ring.svg exists
+ok   icons/global-2-ring.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-2-ring.png has no transparency
+ok   icons/global-2-ring.png stays in the global palette (3% of pixels off-palette)
+ok   icons/global-2-ring-512.png is 512x512 (is (512, 512))
+ok   icons/global-2-ring-512.png has no transparency
+ok   icons/global-2-ring-512.png is under 1 MB (22 KB)
+ok   icons/kry-2-ring.svg exists
+ok   icons/kry-2-ring.png is 1024x1024 (is (1024, 1024))
+ok   icons/kry-2-ring.png has no transparency
+ok   icons/kry-2-ring.png stays in the kry palette (5% of pixels off-palette)
+ok   icons/kry-2-ring-512.png is 512x512 (is (512, 512))
+ok   icons/kry-2-ring-512.png has no transparency
+ok   icons/kry-2-ring-512.png is under 1 MB (44 KB)
+ok   icons/global-2-ring-foreground.svg exists
+ok   icons/global-2-ring-foreground.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-2-ring-foreground.png has a transparent background
+ok   icons/global-2-ring-foreground.png art is inside the central 66% safe zone (bbox (197, 197, 827, 827))
+ok   icons/global-2-ring-monochrome.svg exists
+ok   icons/global-2-ring-monochrome.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-2-ring-monochrome.png has a transparent background
+ok   icons/global-2-ring-monochrome.png art is inside the central 66% safe zone (bbox (197, 197, 827, 827))
+ok   icons/global-2-ring-monochrome.png is one solid colour (found 1 opaque colours)
+ok   icons/global-3-found-it.svg exists
+ok   icons/global-3-found-it.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-3-found-it.png has no transparency
+ok   icons/global-3-found-it.png stays in the global palette (4% of pixels off-palette)
+ok   icons/global-3-found-it-512.png is 512x512 (is (512, 512))
+ok   icons/global-3-found-it-512.png has no transparency
+ok   icons/global-3-found-it-512.png is under 1 MB (21 KB)
+ok   icons/kry-3-found-it.svg exists
+ok   icons/kry-3-found-it.png is 1024x1024 (is (1024, 1024))
+ok   icons/kry-3-found-it.png has no transparency
+ok   icons/kry-3-found-it.png stays in the kry palette (5% of pixels off-palette)
+ok   icons/kry-3-found-it-512.png is 512x512 (is (512, 512))
+ok   icons/kry-3-found-it-512.png has no transparency
+ok   icons/kry-3-found-it-512.png is under 1 MB (45 KB)
+ok   icons/global-3-found-it-foreground.svg exists
+ok   icons/global-3-found-it-foreground.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-3-found-it-foreground.png has a transparent background
+ok   icons/global-3-found-it-foreground.png art is inside the central 66% safe zone (bbox (220, 186, 822, 838))
+ok   icons/global-3-found-it-monochrome.svg exists
+ok   icons/global-3-found-it-monochrome.png is 1024x1024 (is (1024, 1024))
+ok   icons/global-3-found-it-monochrome.png has a transparent background
+ok   icons/global-3-found-it-monochrome.png art is inside the central 66% safe zone (bbox (220, 186, 822, 838))
+ok   icons/global-3-found-it-monochrome.png is one solid colour (found 1 opaque colours)
+ok   icons/icon-sizes.png exists
+ok   icons/NOTES.md exists
+ok   feature/kry-feature.svg exists
+ok   feature/kry-feature.png is 1024x500 (is (1024, 500))
+ok   feature/kry-feature.png has no transparency
+ok   feature/global-feature.svg exists
+ok   feature/global-feature.png is 1024x500 (is (1024, 500))
+ok   feature/global-feature.png has no transparency
+ok   screenshots/kry/01-imei-check.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/01-imei-check.png has no transparency
+ok   screenshots/kry/01-imei-check.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/02-display-test.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/02-display-test.png has no transparency
+ok   screenshots/kry/02-display-test.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/03-mic-test.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/03-mic-test.png has no transparency
+ok   screenshots/kry/03-mic-test.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/04-phone-check.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/04-phone-check.png has no transparency
+ok   screenshots/kry/04-phone-check.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/05-camera-test.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/05-camera-test.png has no transparency
+ok   screenshots/kry/05-camera-test.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/06-touch-test.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/06-touch-test.png has no transparency
+ok   screenshots/kry/06-touch-test.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/07-battery.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/07-battery.png has no transparency
+ok   screenshots/kry/07-battery.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/08-report.png is 1080x1920 (is (1080, 1920))
+ok   screenshots/kry/08-report.png has no transparency
+ok   screenshots/kry/08-report.png phone does not run off the bottom edge (0 dark samples)
+ok   screenshots/kry/contact-sheet.png exists
+ok   screenshots/kry/README.md exists
+ok   tools/compose_screenshots.py exists
+
+ALL CHECKS PASSED
