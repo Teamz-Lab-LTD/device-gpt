@@ -1075,7 +1075,7 @@ private fun ComponentInfoDialog(
     val context = LocalContext.current
     val activity = context as? Activity
     val coroutineScope = rememberCoroutineScope()
-    val education = PowerEducation.getEducationForComponent(component.component)
+    val education = PowerEducation.getEducationForComponent(context, component.component)
     
     // Check if permission is required
     val requiresPermission = component.status.contains("Permission required", ignoreCase = true) ||
@@ -1337,7 +1337,7 @@ private fun ComponentInfoDialog(
                     .filter { line -> line.trim().startsWith("•") || line.trim().startsWith("-") }
                     .take(3)
                 if (tips.isEmpty()) {
-                    appendLine(PowerEducation.getQuickTip(component.component) ?: context.string(R.string.pw_info_default_tip))
+                    appendLine(PowerEducation.getQuickTip(context, component.component) ?: context.string(R.string.pw_info_default_tip))
                 } else {
                     tips.forEach { tip -> appendLine(tip.trim()) }
                 }
@@ -2714,7 +2714,7 @@ Total Tests: ${allResults.size}
             },
             text = {
                 Text(
-                    text = PowerConsumptionUtils.formatCameraPowerTestResult(testResult!!),
+                    text = PowerConsumptionUtils.formatCameraPowerTestResult(context, testResult!!),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },

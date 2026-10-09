@@ -2,7 +2,9 @@ package com.teamz.lab.debugger.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.core.content.edit
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.PowerConsumptionAggregator.PowerStats
 import com.teamz.lab.debugger.utils.PowerConsumptionUtils.PowerConsumptionSummary
 
@@ -20,13 +22,25 @@ object PowerAchievements {
     private const val KEY_TOTAL_MONITORING_SESSIONS = "total_sessions"
     private const val KEY_OPTIMIZATION_ACTIONS = "optimization_actions"
     
+    /**
+     * [title] and [description] are the English text. They stay as data: they are logged and
+     * other code may still read them. Show [localizedTitle] / [localizedDescription] to people.
+     */
     data class Achievement(
         val id: String,
         val title: String,
         val description: String,
+        @StringRes val titleRes: Int,
+        @StringRes val descriptionRes: Int,
         val icon: String,
         val category: Category
-    )
+    ) {
+        /** Title in the app language. Pass a context that carries it (see LocaleManager). */
+        fun localizedTitle(context: Context): String = context.getString(titleRes)
+
+        /** Description in the app language. */
+        fun localizedDescription(context: Context): String = context.getString(descriptionRes)
+    }
     
     enum class Category {
         MONITORING, EXPERIMENTS, OPTIMIZATION, RESEARCH
@@ -38,6 +52,8 @@ object PowerAchievements {
             id = "first_power_check",
             title = "Power Explorer",
             description = "Completed your first power consumption check",
+            titleRes = R.string.pw_ach_first_power_check_title,
+            descriptionRes = R.string.pw_ach_first_power_check_desc,
             icon = "🔋",
             category = Category.MONITORING
         ),
@@ -45,6 +61,8 @@ object PowerAchievements {
             id = "monitoring_streak_7",
             title = "Power Monitor",
             description = "Monitored power consumption for 7 consecutive days",
+            titleRes = R.string.pw_ach_monitoring_streak_7_title,
+            descriptionRes = R.string.pw_ach_monitoring_streak_7_desc,
             icon = "📊",
             category = Category.MONITORING
         ),
@@ -52,6 +70,8 @@ object PowerAchievements {
             id = "monitoring_streak_30",
             title = "Power Analyst",
             description = "Monitored power consumption for 30 consecutive days",
+            titleRes = R.string.pw_ach_monitoring_streak_30_title,
+            descriptionRes = R.string.pw_ach_monitoring_streak_30_desc,
             icon = "📈",
             category = Category.MONITORING
         ),
@@ -59,6 +79,8 @@ object PowerAchievements {
             id = "experiment_camera",
             title = "Camera Researcher",
             description = "Completed camera power experiment",
+            titleRes = R.string.pw_ach_experiment_camera_title,
+            descriptionRes = R.string.pw_ach_experiment_camera_desc,
             icon = "📷",
             category = Category.EXPERIMENTS
         ),
@@ -66,6 +88,8 @@ object PowerAchievements {
             id = "experiment_display",
             title = "Display Researcher",
             description = "Completed display power experiment",
+            titleRes = R.string.pw_ach_experiment_display_title,
+            descriptionRes = R.string.pw_ach_experiment_display_desc,
             icon = "📱",
             category = Category.EXPERIMENTS
         ),
@@ -73,6 +97,8 @@ object PowerAchievements {
             id = "experiment_cpu",
             title = "CPU Researcher",
             description = "Completed CPU power experiment",
+            titleRes = R.string.pw_ach_experiment_cpu_title,
+            descriptionRes = R.string.pw_ach_experiment_cpu_desc,
             icon = "🧠",
             category = Category.EXPERIMENTS
         ),
@@ -80,6 +106,8 @@ object PowerAchievements {
             id = "experiment_network",
             title = "Network Researcher",
             description = "Completed network power experiment",
+            titleRes = R.string.pw_ach_experiment_network_title,
+            descriptionRes = R.string.pw_ach_experiment_network_desc,
             icon = "📶",
             category = Category.EXPERIMENTS
         ),
@@ -87,6 +115,8 @@ object PowerAchievements {
             id = "all_experiments",
             title = "Power Research Master",
             description = "Completed all power consumption experiments",
+            titleRes = R.string.pw_ach_all_experiments_title,
+            descriptionRes = R.string.pw_ach_all_experiments_desc,
             icon = "🎓",
             category = Category.EXPERIMENTS
         ),
@@ -94,6 +124,8 @@ object PowerAchievements {
             id = "power_optimized",
             title = "Power Optimizer",
             description = "Reduced power consumption by following recommendations",
+            titleRes = R.string.pw_ach_power_optimized_title,
+            descriptionRes = R.string.pw_ach_power_optimized_desc,
             icon = "⚡",
             category = Category.OPTIMIZATION
         ),
@@ -101,6 +133,8 @@ object PowerAchievements {
             id = "low_power_achieved",
             title = "Efficiency Expert",
             description = "Achieved low power consumption (< 3W)",
+            titleRes = R.string.pw_ach_low_power_achieved_title,
+            descriptionRes = R.string.pw_ach_low_power_achieved_desc,
             icon = "💚",
             category = Category.OPTIMIZATION
         ),
@@ -108,6 +142,8 @@ object PowerAchievements {
             id = "csv_exported",
             title = "Data Exporter",
             description = "Exported power consumption data to CSV",
+            titleRes = R.string.pw_ach_csv_exported_title,
+            descriptionRes = R.string.pw_ach_csv_exported_desc,
             icon = "📤",
             category = Category.RESEARCH
         ),
@@ -115,6 +151,8 @@ object PowerAchievements {
             id = "insights_viewed_10",
             title = "Insight Seeker",
             description = "Viewed power insights 10 times",
+            titleRes = R.string.pw_ach_insights_viewed_10_title,
+            descriptionRes = R.string.pw_ach_insights_viewed_10_desc,
             icon = "💡",
             category = Category.MONITORING
         )

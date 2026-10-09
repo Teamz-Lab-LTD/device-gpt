@@ -2,6 +2,7 @@ package com.teamz.lab.debugger.utils
 
 import android.Manifest
 import android.content.Context
+import com.teamz.lab.debugger.R
 import android.os.BatteryManager
 import android.os.PowerManager
 import android.os.Handler
@@ -1672,7 +1673,7 @@ object PowerConsumptionUtils {
             "${it.icon} ${"%.1f".format(it.powerConsumption)}W"
         }
 
-        return "⚡ Total: ${totalPower}W • Top: $topConsumersText"
+        return LocaleManager.localizedContext(context).getString(R.string.pw_compact_summary, totalPower, topConsumersText)
     }
 
     /**
@@ -2074,23 +2075,23 @@ object PowerConsumptionUtils {
     /**
      * Get formatted string for camera power test results
      */
-    fun formatCameraPowerTestResult(result: CameraPowerTestResult): String {
+    fun formatCameraPowerTestResult(context: Context, result: CameraPowerTestResult): String {
         return buildString {
-            appendLine("📸 Single Photo Power Test Results:")
+            appendLine(context.getString(R.string.pw_cam_res_title))
             appendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            appendLine("🔋 Power Before Capture: ${"%.3f".format(result.beforeCapture)}W")
-            appendLine("🔋 Power After Capture:  ${"%.3f".format(result.afterCapture)}W")
-            appendLine("⚡ Power Consumed:       ${"%.3f".format(result.powerDifference)}W")
-            appendLine("⏱️  Capture Duration:     ${result.captureDuration}ms")
-            appendLine("📊 Energy per Photo:     ${"%.3f".format(result.powerDifference * result.captureDuration / 1000.0)}J")
+            appendLine(context.getString(R.string.pw_cam_res_before, "%.3f".format(result.beforeCapture)))
+            appendLine(context.getString(R.string.pw_cam_res_after, "%.3f".format(result.afterCapture)))
+            appendLine(context.getString(R.string.pw_cam_res_consumed, "%.3f".format(result.powerDifference)))
+            appendLine(context.getString(R.string.pw_cam_res_duration, result.captureDuration.toString()))
+            appendLine(context.getString(R.string.pw_cam_res_energy, "%.3f".format(result.powerDifference * result.captureDuration / 1000.0)))
             appendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             
             // Add interpretation
             when {
-                result.powerDifference > 0.5 -> appendLine("🔴 High power consumption - camera working hard")
-                result.powerDifference > 0.2 -> appendLine("🟡 Moderate power consumption - normal camera usage")
-                result.powerDifference > 0.05 -> appendLine("🟢 Low power consumption - efficient camera")
-                else -> appendLine("⚪ Minimal power consumption - camera idle or efficient")
+                result.powerDifference > 0.5 -> appendLine(context.getString(R.string.pw_cam_res_high))
+                result.powerDifference > 0.2 -> appendLine(context.getString(R.string.pw_cam_res_moderate))
+                result.powerDifference > 0.05 -> appendLine(context.getString(R.string.pw_cam_res_low))
+                else -> appendLine(context.getString(R.string.pw_cam_res_minimal))
             }
         }
     }
