@@ -80,24 +80,23 @@ object DgIcons {
         )
     }
 
-    /** A screen with one marked pixel: the dead-pixel test. */
+    /** A phone screen with one marked dot: the dead-pixel test. */
     val ScreenCheck: ImageVector by lazy {
         dgIcon(
             name = "ScreenCheck",
-            strokes = "M5.5 4h13a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1 -2.5 2.5h-13a2.5 2.5 0 0 1 -2.5 " +
-                "-2.5v-8a2.5 2.5 0 0 1 2.5 -2.5z M12 17v4 M8.5 21h7 M10.3 10.5a3.2 3.2 0 1 0 6.4 " +
-                "0a3.2 3.2 0 1 0 -6.4 0z",
-            dots = "M12.4 10.5a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z",
+            strokes = "M8.5 3h7a2.5 2.5 0 0 1 2.5 2.5v13a2.5 2.5 0 0 1 -2.5 2.5h-7a2.5 2.5 0 0 1 -2.5 " +
+                "-2.5v-13a2.5 2.5 0 0 1 2.5 -2.5z M10.4 9a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0z " +
+                "M10.5 17.5h3",
+            dots = "M11.9 9a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z",
         )
     }
 
-    /** A finger tip with a touch ripple: the touch test. */
+    /** A finger touching a screen, with a ripple: the touch test. */
     val TouchCheck: ImageVector by lazy {
         dgIcon(
             name = "TouchCheck",
-            strokes = "M10 16.5V8.5a2 2 0 0 1 4 0V13l3.5 .8a2 2 0 0 1 1.5 2.3l-.6 3a2.4 2.4 0 0 1-2.4 " +
-                "1.9h-4.3a2.5 2.5 0 0 1-2-1l-2.9-3.6a1.4 1.4 0 0 1 2-1.9L10 16.5 M6.5 8.5a5.5 5.5 0 0 " +
-                "1 11 0",
+            strokes = "M8 16H5.5A2.5 2.5 0 0 1 3 13.5v-8A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5v8a2.5 " +
+                "2.5 0 0 1-2.5 2.5H16 M10 21v-9.5a2 2 0 0 1 4 0V21 M8 8.2a4.6 4.6 0 0 1 8 0",
         )
     }
 
@@ -137,12 +136,12 @@ object DgIcons {
         )
     }
 
-    /** A RAM module: memory. */
+    /** A RAM stick with its notch and three chips: memory. */
     val Memory: ImageVector by lazy {
         dgIcon(
             name = "Memory",
-            strokes = "M5 6h14a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2z M6 " +
-                "16v3.5 M10 16v3.5 M14 16v3.5 M18 16v3.5 M8 10v2 M12 10v2 M16 10v2",
+            strokes = "M3 16V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9 M3 16v3.5h7.5v-2h3v2H21V16 M7.5 9v3 M12 9v3 " +
+                "M16.5 9v3",
         )
     }
 
@@ -171,12 +170,12 @@ object DgIcons {
         )
     }
 
-    /** A page with a seal: the verified report or certificate. */
+    /** A page with a folded corner and a tick: the verified report or certificate. */
     val Report: ImageVector by lazy {
         dgIcon(
             name = "Report",
-            strokes = "M12.5 21h-5A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3H13l5 5v2.5 M8.5 9h3 M8.5 " +
-                "13h2 M14 15.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0z M15 18v3l1.5-1 1.5 1v-3",
+            strokes = "M11 21H7.5A2.5 2.5 0 0 1 5 18.5v-13A2.5 2.5 0 0 1 7.5 3H13l5 5v3.5 M13 3v5h5 M8.5 " +
+                "13h3 M13.5 17.5l2.2 2.2 4-4.6",
         )
     }
 
