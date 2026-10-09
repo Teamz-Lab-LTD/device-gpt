@@ -12,6 +12,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
 import java.util.Calendar
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * RetentionNotificationManager - Handles automatic local notifications for user retention
@@ -291,9 +292,10 @@ object RetentionNotificationManager {
             val notificationId = (channel + title).hashCode()
             
             val notification = NotificationCompat.Builder(context, channel)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                // The title keeps its emoji as data (it is the duplicate key above); here it only picks the icon.
+                .setContentTitle(RemoteIcons.plain(title))
+                .setContentText(RemoteIcons.plain(message))
+                .setSmallIcon(RemoteIcons.forText(title, R.drawable.ic_dg_health))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
                 .build()
@@ -758,9 +760,11 @@ class AchievementWorker(context: Context, params: WorkerParameters) : Worker(con
                 val achievement = PowerAchievements.ALL_ACHIEVEMENTS.find { it.id in newAchievements }
                 
                 if (achievement != null) {
-                    val title = RetentionNotificationManager.localized(applicationContext)
-                        .getString(R.string.mx_notif_achievement_title, achievement.icon, achievement.title)
-                    val message = achievement.description
+                    val localized = RetentionNotificationManager.localized(applicationContext)
+                    val title = localized.getString(
+                        R.string.mx_notif_achievement_title, achievement.icon, achievement.localizedTitle(localized),
+                    )
+                    val message = achievement.localizedDescription(localized)
                     
                     RetentionNotificationManager.sendNotification(
                         title,

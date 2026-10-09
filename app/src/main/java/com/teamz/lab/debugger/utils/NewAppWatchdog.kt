@@ -11,6 +11,7 @@ import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.db.DeviceEventsRepository
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * v3.2.0 R4 — new-app permission-review watchdog (2026-07-10 growth synthesis).
@@ -126,10 +127,10 @@ object NewAppWatchdog {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(localized.getString(R.string.mx_notif_new_app_title))
-            .setContentText(body)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSmallIcon(R.drawable.ic_dg_app)
+            .setContentTitle(RemoteIcons.plain(localized.getString(R.string.mx_notif_new_app_title)))
+            .setContentText(RemoteIcons.plain(body))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(RemoteIcons.plain(body)))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
             .setContentIntent(pi)

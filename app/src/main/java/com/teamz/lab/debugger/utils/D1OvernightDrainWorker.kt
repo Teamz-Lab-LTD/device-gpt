@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import com.teamz.lab.debugger.MainActivity
 import com.teamz.lab.debugger.R
 import java.util.concurrent.TimeUnit
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * D1 Overnight Drain Worker — v3.1.11 retention lever.
@@ -413,10 +414,10 @@ object D1OvernightDrainWorker {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val n = NotificationCompat.Builder(ctx, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_dg_battery)
             .setContentTitle("DeviceGPT")
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentText(RemoteIcons.plain(text))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(RemoteIcons.plain(text)))
             .setContentIntent(pi)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

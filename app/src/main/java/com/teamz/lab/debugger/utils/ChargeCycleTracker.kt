@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * Charge-cycle ritual hook (2026-06-02 habit-loop plan; delivery FIXED in v3.2.0).
@@ -255,10 +256,10 @@ object ChargeCycleTracker {
         }
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(localized.getString(R.string.mx_notif_charge_title))
-            .setContentText(body)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setSmallIcon(R.drawable.ic_dg_battery)
+            .setContentTitle(RemoteIcons.plain(localized.getString(R.string.mx_notif_charge_title)))
+            .setContentText(RemoteIcons.plain(body))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(RemoteIcons.plain(body)))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
         if (pi != null) builder.setContentIntent(pi)

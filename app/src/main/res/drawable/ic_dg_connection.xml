@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DeviceGPT icon voice: 24 grid, 2 unit stroke, round caps and joins. Same path data as DgIcons.Connection. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M4 17.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0z M15 6.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0z M8.5 15.5l7-7"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

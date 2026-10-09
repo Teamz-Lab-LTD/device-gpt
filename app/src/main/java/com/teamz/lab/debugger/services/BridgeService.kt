@@ -28,6 +28,7 @@ import com.teamz.lab.debugger.utils.LocaleManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * Foreground service that owns the AI Bridge HTTP server + mDNS advertisement.
@@ -313,9 +314,9 @@ class BridgeService : Service() {
             this, 0, openIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.ai_bridge_notification_title))
-            .setContentText(status)
-            .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
+            .setContentTitle(RemoteIcons.plain(getString(R.string.ai_bridge_notification_title)))
+            .setContentText(RemoteIcons.plain(status))
+            .setSmallIcon(R.drawable.ic_dg_connection)
             .setContentIntent(openPending)
             .setOngoing(true)
             .setSilent(true)

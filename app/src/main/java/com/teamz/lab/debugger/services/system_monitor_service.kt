@@ -25,6 +25,7 @@ import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.DeviceSleepTracker
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * SystemMonitorService - Real Device Data Monitoring
@@ -486,10 +487,11 @@ class SystemMonitorService : Service() {
             )
 
             NotificationCompat.Builder(this, channelId)
-                .setContentTitle(getString(R.string.mx_monitor_title))
-                .setContentText(getString(R.string.notification_watching_over))
-                .setStyle(NotificationCompat.BigTextStyle().bigText(content))
-                .setSmallIcon(android.R.drawable.stat_notify_sync)
+                // The rows keep their emoji until here: the widget and the localizers read them as data.
+                .setContentTitle(RemoteIcons.plain(getString(R.string.mx_monitor_title)))
+                .setContentText(RemoteIcons.plain(getString(R.string.notification_watching_over)))
+                .setStyle(NotificationCompat.BigTextStyle().bigText(RemoteIcons.plain(content)))
+                .setSmallIcon(R.drawable.ic_dg_health)
                 .setContentIntent(pendingIntent)  // Launch MainActivity on click
                 .setOngoing(true)
                 .build()
