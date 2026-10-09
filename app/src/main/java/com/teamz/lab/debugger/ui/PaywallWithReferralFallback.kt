@@ -1,5 +1,7 @@
 package com.teamz.lab.debugger.ui
 
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -233,14 +235,14 @@ private fun PaywallDismissReasonSheet(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Quick — why did you close?",
+                            text = stringResource(R.string.mx_paywall_why_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "One tap. Helps us make it better.",
+                            text = stringResource(R.string.mx_paywall_why_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -257,18 +259,18 @@ private fun PaywallDismissReasonSheet(
                     ) {
                         Icon(
                             Icons.Filled.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.close),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 Spacer(Modifier.height(16.dp))
                 listOf(
-                    "too_expensive" to "Too expensive",
-                    "not_now" to "Not right now",
-                    "no_value_seen" to "Don't see the value",
-                    "closed_by_mistake" to "Closed by mistake",
-                    "other" to "Other"
+                    "too_expensive" to stringResource(R.string.mx_paywall_why_expensive),
+                    "not_now" to stringResource(R.string.mx_paywall_why_not_now),
+                    "no_value_seen" to stringResource(R.string.mx_paywall_why_no_value),
+                    "closed_by_mistake" to stringResource(R.string.mx_paywall_why_mistake),
+                    "other" to stringResource(R.string.mx_paywall_why_other)
                 ).forEach { (reasonKey, label) ->
                     OutlinedButton(
                         onClick = { logAndFinish(reasonKey) },
@@ -314,18 +316,20 @@ private fun ReferralFallbackScreen(
 
     val rewardLabel: String = nextTier?.let {
         when {
-            it.adFreeHours >= 720 -> "30 days ad-free"
-            it.adFreeHours >= 168 -> "7 days ad-free"
-            it.adFreeHours >= 72 -> "3 days ad-free"
-            else -> "24 hours ad-free"
+            it.adFreeHours >= 720 -> stringResource(R.string.mx_referral_reward_30_days)
+            it.adFreeHours >= 168 -> stringResource(R.string.mx_referral_reward_7_days)
+            it.adFreeHours >= 72 -> stringResource(R.string.mx_referral_reward_3_days)
+            else -> stringResource(R.string.mx_referral_reward_24_hours)
         }
     } ?: "max tier unlocked"
 
     val headlineCopy: String = when {
         nextTier == null || referralsToNext <= 0 ->
-            "You've unlocked every reward — share again to keep it rolling."
-        referralsToNext == 1 -> "1 more friend → unlock $rewardLabel ${nextTier.badge}"
-        else -> "$referralsToNext friends → unlock $rewardLabel ${nextTier.badge}"
+            stringResource(R.string.mx_referral_headline_all)
+        referralsToNext == 1 -> stringResource(R.string.mx_referral_headline_one, rewardLabel, nextTier.badge)
+        else -> stringResource(
+            R.string.mx_referral_headline_many, referralsToNext.toString(), rewardLabel, nextTier.badge,
+        )
     }
 
     val progress: Float = if (nextTier != null && nextTier.requiredReferrals > 0) {
@@ -373,7 +377,7 @@ private fun ReferralFallbackScreen(
                 ) {
                     Icon(
                         Icons.Filled.Close,
-                        contentDescription = "Close",
+                        contentDescription = stringResource(R.string.close),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
@@ -407,7 +411,7 @@ private fun ReferralFallbackScreen(
                     Spacer(Modifier.height(28.dp))
 
                     Text(
-                        text = "Not ready to pay?",
+                        text = stringResource(R.string.mx_referral_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -417,7 +421,7 @@ private fun ReferralFallbackScreen(
                     Spacer(Modifier.height(8.dp))
 
                     Text(
-                        text = "Invite friends and unlock premium for free.",
+                        text = stringResource(R.string.mx_referral_subtitle),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -467,12 +471,13 @@ private fun ReferralFallbackScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "$referralCount referred",
+                                    text = stringResource(R.string.mx_referral_count, referralCount.toString()),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = nextTier?.let { "Goal: ${it.requiredReferrals}" } ?: "Maxed out",
+                                    text = nextTier?.let { stringResource(R.string.mx_referral_goal, it.requiredReferrals.toString()) }
+                                        ?: stringResource(R.string.mx_referral_maxed),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -483,7 +488,7 @@ private fun ReferralFallbackScreen(
                     Spacer(Modifier.height(20.dp))
 
                     Text(
-                        text = "Send your link via WhatsApp, Telegram, SMS or email. Rewards unlock automatically when friends install.",
+                        text = stringResource(R.string.mx_referral_how),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -504,7 +509,7 @@ private fun ReferralFallbackScreen(
                         )
                     ) {
                         Text(
-                            text = "Share with friends",
+                            text = stringResource(R.string.mx_referral_share),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -519,7 +524,7 @@ private fun ReferralFallbackScreen(
                             .height(48.dp)
                     ) {
                         Text(
-                            text = "Maybe later",
+                            text = stringResource(R.string.mx_referral_later),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

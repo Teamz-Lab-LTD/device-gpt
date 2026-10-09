@@ -1,5 +1,7 @@
 package com.teamz.lab.debugger.ui
 
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -38,13 +40,13 @@ import kotlinx.coroutines.launch
 fun PremiumPurchaseDialog(
     onDismiss: () -> Unit,
     activity: android.app.Activity,
-    title: String = "DeviceGPT Premium",
+    title: String = stringResource(R.string.mx_premium_name),
     subtitle: String? = null, // Will be generated dynamically with price
     benefits: List<String> = listOf(
-        "✅ No ads - ever",
-        "✅ Faster app performance",
-        "✅ Support development",
-        "✅ One-time payment - no subscriptions"
+        stringResource(R.string.mx_purchase_benefit_no_ads),
+        stringResource(R.string.mx_purchase_benefit_faster),
+        stringResource(R.string.mx_purchase_benefit_support),
+        stringResource(R.string.mx_purchase_benefit_one_time),
     )
 ) {
     var isPurchasing by remember { mutableStateOf(false) }
@@ -53,6 +55,7 @@ fun PremiumPurchaseDialog(
     var productPrice by remember { mutableStateOf<String?>(null) }
     val premiumStatus by RevenueCatManager.premiumStatusFlow.collectAsState()
     val scope = rememberCoroutineScope()
+    val noPurchasesFound = stringResource(R.string.mx_purchase_none_found)
     
     // Fetch price dynamically from RevenueCat
     LaunchedEffect(Unit) {
@@ -70,9 +73,9 @@ fun PremiumPurchaseDialog(
     
     // Generate subtitle with dynamic price
     val displaySubtitle = subtitle ?: if (productPrice != null) {
-        "Remove Ads Forever - $productPrice • Lifetime Access"
+        stringResource(R.string.mx_purchase_subtitle_price, productPrice.toString())
     } else {
-        "Remove Ads Forever • Lifetime Access"
+        stringResource(R.string.mx_purchase_subtitle)
     }
     
     Dialog(onDismissRequest = onDismiss) {
@@ -105,14 +108,14 @@ fun PremiumPurchaseDialog(
                             tint = DesignSystemColors.NeonGreen
                         )
                         Text(
-                            text = "Welcome to DeviceGPT Premium!",
+                            text = stringResource(R.string.mx_purchase_welcome),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "All ads have been removed. Enjoy your ad-free DeviceGPT experience!",
+                            text = stringResource(R.string.mx_purchase_welcome_body),
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -125,7 +128,7 @@ fun PremiumPurchaseDialog(
                                 contentColor = DesignSystemColors.Dark
                             )
                         ) {
-                            Text("Got it!", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.mx_purchase_got_it), fontWeight = FontWeight.Bold)
                         }
                     }
                 } else {
@@ -140,7 +143,7 @@ fun PremiumPurchaseDialog(
                     
                     // DeviceGPT Premium title
                     Text(
-                        text = "⭐ DeviceGPT Premium",
+                        text = stringResource(R.string.mx_purchase_title_star),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -209,7 +212,7 @@ fun PremiumPurchaseDialog(
                             enabled = !isPurchasing
                         ) {
                             Text(
-                                "Maybe Later",
+                                stringResource(R.string.mx_purchase_later),
                                 style = MaterialTheme.typography.bodyLarge // Larger text
                             )
                         }
@@ -253,9 +256,9 @@ fun PremiumPurchaseDialog(
                             } else {
                                 Text(
                                     text = if (productPrice != null) {
-                                        "Get Premium - $productPrice"
+                                        stringResource(R.string.mx_purchase_get_price, productPrice.toString())
                                     } else {
-                                        "Get Premium"
+                                        stringResource(R.string.mx_purchase_get)
                                     },
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Bold
@@ -285,7 +288,7 @@ fun PremiumPurchaseDialog(
                                                 mapOf("item" to "restore_purchases_success")
                                             )
                                         } else {
-                                            purchaseError = "No previous purchases found"
+                                            purchaseError = noPurchasesFound
                                             // Track failed restore
                                             com.teamz.lab.debugger.utils.AnalyticsUtils.logEvent(
                                                 com.teamz.lab.debugger.utils.AnalyticsEvent.DrawerItemClicked,
@@ -307,7 +310,7 @@ fun PremiumPurchaseDialog(
                         enabled = !isPurchasing
                     ) {
                         Text(
-                            text = "Restore Purchases",
+                            text = stringResource(R.string.mx_purchase_restore),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -342,7 +345,7 @@ fun PremiumStatusBadge() {
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "Premium",
+                    text = stringResource(R.string.mx_purchase_badge),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -381,7 +384,7 @@ fun RemoveAdsButton(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Remove Ads",
+                text = stringResource(R.string.mx_purchase_remove_ads),
                 style = MaterialTheme.typography.labelSmall
             )
         }

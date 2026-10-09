@@ -397,4 +397,142 @@
     <string name="mx_widget_time_one_hour">1 ঘণ্টা আগে</string>
     <string name="mx_widget_time_hours">%1$s ঘণ্টা আগে</string>
     <string name="mx_widget_time_starting">শুরু হচ্ছে</string>
+
+    <!-- Premium card and premium-active dialog in the drawer (ui/drawer.kt). Prices come from the store as %1$s. -->
+    <string name="mx_premium_name">DeviceGPT-এর বাড়তি সুবিধা</string>
+    <string name="mx_premium_lifetime">একবার কিনলে সারা জীবন</string>
+    <string name="mx_premium_price_lifetime">%1$s • একবার কিনলে সারা জীবন</string>
+    <string name="mx_premium_benefits_short">✓ বিজ্ঞাপন থাকবে না • অ্যাপ তাড়াতাড়ি চলবে • অ্যাপ বানাতে সাহায্য হবে</string>
+    <string name="mx_premium_activated">বাড়তি সুবিধা চালু হয়েছে! আর বিজ্ঞাপন আসবে না।</string>
+    <string name="mx_premium_get">বাড়তি সুবিধা নিন</string>
+    <string name="mx_premium_active">বাড়তি সুবিধা চালু আছে</string>
+    <string name="mx_premium_active_headline">আপনি বিজ্ঞাপন ছাড়াই অ্যাপ চালাচ্ছেন!</string>
+    <string name="mx_premium_active_list">✓ সব বিজ্ঞাপন বন্ধ\n✓ সারা জীবনের জন্য\n✓ অ্যাপের সব সুবিধা\n✓ অ্যাপ বানাতে সাহায্য</string>
+    <string name="mx_premium_thanks">DeviceGPT-এর পাশে থাকার জন্য ধন্যবাদ!</string>
+
+    <!-- Ad labels (AdBadge in ui/drawer.kt, res/layout/native_ad_view.xml) -->
+    <string name="mx_ad_badge">বিজ্ঞাপন</string>
+    <string name="mx_ad_sponsored">অন্য কোম্পানির বিজ্ঞাপন</string>
+
+    <!-- Premium button at the bottom and the verified-report gate (ui/adaptive/DeviceGptNavExperience.kt) -->
+    <string name="mx_premium_fab_tooltip_price">⭐ বিজ্ঞাপন সরান - %1$s, সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_tooltip">⭐ বিজ্ঞাপন সরান - সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_cd_price">বিজ্ঞাপন সরান - বাড়তি সুবিধা %1$s, সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_cd">বিজ্ঞাপন সরান - বাড়তি সুবিধা, সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_label">বাড়তি</string>
+    <string name="mx_report_gate_title">1টা যাচাই করা রিপোর্ট বানান</string>
+    <string name="mx_report_gate_body">একটা ছোট বিজ্ঞাপন দেখলে 1টা রিপোর্ট বানাতে পারবেন। বাড়তি সুবিধা নিলে যত খুশি বানানো যায়।</string>
+    <string name="mx_report_gate_watch_ad">বিজ্ঞাপন দেখুন</string>
+    <string name="mx_report_gate_go_premium">বাড়তি সুবিধা নিন</string>
+
+    <!-- After the paywall is closed: one-tap question and the invite screen (ui/PaywallWithReferralFallback.kt) -->
+    <string name="mx_paywall_why_title">একটু বলবেন, কেন বন্ধ করলেন?</string>
+    <string name="mx_paywall_why_subtitle">একবার চাপ দিলেই হবে। এতে অ্যাপ আরও ভালো হবে।</string>
+    <string name="mx_paywall_why_expensive">দাম বেশি</string>
+    <string name="mx_paywall_why_not_now">এখন না</string>
+    <string name="mx_paywall_why_no_value">কী লাভ, বুঝিনি</string>
+    <string name="mx_paywall_why_mistake">ভুলে বন্ধ হয়ে গেছে</string>
+    <string name="mx_paywall_why_other">অন্য কারণ</string>
+    <string name="mx_referral_reward_30_days">30 দিন বিজ্ঞাপন ছাড়া</string>
+    <string name="mx_referral_reward_7_days">7 দিন বিজ্ঞাপন ছাড়া</string>
+    <string name="mx_referral_reward_3_days">3 দিন বিজ্ঞাপন ছাড়া</string>
+    <string name="mx_referral_reward_24_hours">24 ঘণ্টা বিজ্ঞাপন ছাড়া</string>
+    <string name="mx_referral_headline_all">আপনি সব পুরস্কার পেয়ে গেছেন। আরও বন্ধুকে ডাকতে পারেন।</string>
+    <string name="mx_referral_headline_one">আর 1 জন বন্ধু এলেই পাবেন: %1$s %2$s</string>
+    <string name="mx_referral_headline_many">আর %1$s জন বন্ধু এলেই পাবেন: %2$s %3$s</string>
+    <string name="mx_referral_title">এখন টাকা দিতে চান না?</string>
+    <string name="mx_referral_subtitle">বন্ধুদের ডাকুন, টাকা ছাড়াই বাড়তি সুবিধা পান।</string>
+    <string name="mx_referral_count">%1$s জন এসেছে</string>
+    <string name="mx_referral_goal">লাগবে: %1$s জন</string>
+    <string name="mx_referral_maxed">সব পাওয়া হয়ে গেছে</string>
+    <string name="mx_referral_how">আপনার লিংক হোয়াটসঅ্যাপ, টেলিগ্রাম, মেসেজ বা ইমেইলে পাঠান। বন্ধু অ্যাপ বসালে পুরস্কার নিজে থেকেই চালু হবে।</string>
+    <string name="mx_referral_share">বন্ধুদের পাঠান</string>
+    <string name="mx_referral_later">পরে</string>
+
+    <!-- Premium purchase dialog (ui/PremiumPurchaseDialog.kt) -->
+    <string name="mx_purchase_benefit_no_ads">✅ কখনো বিজ্ঞাপন আসবে না</string>
+    <string name="mx_purchase_benefit_faster">✅ অ্যাপ আরও তাড়াতাড়ি চলবে</string>
+    <string name="mx_purchase_benefit_support">✅ অ্যাপ বানাতে সাহায্য হবে</string>
+    <string name="mx_purchase_benefit_one_time">✅ একবারই টাকা দেবেন, মাসে মাসে নয়</string>
+    <string name="mx_purchase_subtitle_price">সব সময়ের জন্য বিজ্ঞাপন সরান - %1$s • একবার কিনলে সারা জীবন</string>
+    <string name="mx_purchase_subtitle">সব সময়ের জন্য বিজ্ঞাপন সরান • একবার কিনলে সারা জীবন</string>
+    <string name="mx_purchase_welcome">বাড়তি সুবিধা চালু হলো!</string>
+    <string name="mx_purchase_welcome_body">সব বিজ্ঞাপন বন্ধ হয়ে গেছে। এখন বিজ্ঞাপন ছাড়াই DeviceGPT চালান!</string>
+    <string name="mx_purchase_got_it">বুঝেছি!</string>
+    <string name="mx_purchase_title_star">⭐ DeviceGPT-এর বাড়তি সুবিধা</string>
+    <string name="mx_purchase_later">পরে</string>
+    <string name="mx_purchase_get_price">বাড়তি সুবিধা নিন - %1$s</string>
+    <string name="mx_purchase_get">বাড়তি সুবিধা নিন</string>
+    <string name="mx_purchase_none_found">আগে কেনা কিছু পাওয়া যায়নি</string>
+    <string name="mx_purchase_restore">আগের কেনা ফিরিয়ে আনুন</string>
+    <string name="mx_purchase_badge">বাড়তি সুবিধা</string>
+    <string name="mx_purchase_remove_ads">বিজ্ঞাপন সরান</string>
+
+    <!-- AI dialog leftovers (ui/ai_assistant_dialog.kt) -->
+    <string name="mx_ai_dialog_title">এআই, আমার ফোন ঠিক আছে তো?</string>
+    <string name="mx_ai_dialog_subtitle">ফোনের অবস্থা নিয়ে সহজ কথায় জেনে নিন। আগে থেকে কিছু জানা লাগবে না।</string>
+    <string name="mx_ai_mode_label">এআই কীভাবে বোঝাবে:</string>
+    <string name="mx_ai_finding_apps">ফোনে কোন কোন এআই অ্যাপ আছে, দেখছি…</string>
+    <string name="mx_ai_no_apps">ফোনে কোনো এআই অ্যাপ পাওয়া যায়নি। নিচের যেকোনো একটা বসিয়ে নিন:</string>
+    <string name="mx_ai_private_name">ফোনের নিজের এআই</string>
+    <string name="mx_ai_private_tagline">তথ্য ফোনের বাইরে যায় না · নেট লাগে না · Gemini-র ছোট এআই</string>
+    <string name="mx_ai_private_download">একবার প্রায় %1$s নামাতে হবে · তারপর নেট ছাড়াই চলবে</string>
+    <string name="mx_ai_live_ready">এই এআই ফোনের এখনকার তথ্য সরাসরি পড়তে পারে</string>
+    <string name="mx_ai_live_badge">সরাসরি</string>
+    <string name="mx_ai_install_cd">বসান</string>
+    <string name="mx_ai_bridge_on_one">এআই সংযোগ চালু আছে · %1$s বার তথ্য দেওয়া হয়েছে</string>
+    <string name="mx_ai_bridge_on_many">এআই সংযোগ চালু আছে · %1$s বার তথ্য দেওয়া হয়েছে</string>
+    <string name="mx_ai_bridge_on_body">ল্যাপটপের কিছু এআই অ্যাপ (যেমন Claude Desktop) ফোনের এখনকার তথ্য সরাসরি পড়তে পারে। বাকিগুলোতে লেখা কপি করে পাঠাতে হয়।</string>
+    <string name="mx_ai_bridge_starting">এআই সংযোগ চালু হচ্ছে…</string>
+    <string name="mx_ai_bridge_error">এআই সংযোগে সমস্যা: %1$s</string>
+    <string name="mx_ai_bridge_tip">একটা উপায়: \"এআই সংযোগ\" পাতা থেকে এআই সংযোগ চালু করুন। তাহলে Claude বা Cursor ফোনের এখনকার তথ্য সরাসরি পড়তে পারবে।</string>
+
+    <!-- On-device AI result dialog (ui/ai/PrivateAiFlow.kt) -->
+    <string name="mx_private_ai_title">ফোনের নিজের এআই · %1$s</string>
+    <string name="mx_private_ai_running">ফোনের নিজের এআই কাজ করছে… আপনার তথ্য ফোনের বাইরে যায় না।</string>
+    <string name="mx_private_ai_failed">ফোনের নিজের এআই এখন চলছে না। তালিকা থেকে অন্য এআইকে জিজ্ঞেস করতে পারেন।</string>
+    <string name="mx_private_ai_not_ready">ফোনের নিজের এআই এখনো তৈরি হয়নি।</string>
+    <string name="mx_private_ai_powered">Gemini-র ছোট এআই দিয়ে চলে · ফোনের ভেতরেই · নেট লাগে না</string>
+    <string name="mx_private_ai_preparing">তৈরি হচ্ছে…</string>
+    <string name="mx_private_ai_copy">কপি করুন</string>
+    <string name="mx_ai_item_device_scan">ফোন দেখা</string>
+    <string name="mx_ai_item_devicegpt_scan">DeviceGPT দিয়ে ফোন দেখা</string>
+    <string name="mx_ai_item_resale_report">ফোন বেচার রিপোর্ট</string>
+    <string name="mx_ai_item_generic">এই তথ্য</string>
+
+    <!-- AI Bridge tab leftovers (ui/ai_bridge_card.kt) -->
+    <string name="mx_bridge_turning_on">এআই সংযোগ চালু হচ্ছে…</string>
+    <string name="mx_bridge_qr_cd">ফোন যোগ করার কিউআর কোড</string>
+    <string name="mx_bridge_auto_off">কিছু না করলে নিজে বন্ধ হবে। বাকি সময়: %1$s</string>
+    <string name="mx_bridge_tab_other">অন্য অ্যাপ</string>
+    <string name="mx_bridge_config_path">সেটিংস ফাইল কোথায়</string>
+    <string name="mx_bridge_paste_block">এই লেখাটা বসান</string>
+    <string name="mx_bridge_open_on_pc">কপি না করেও হয়: ল্যাপটপের ব্রাউজারে এই ঠিকানা খুলুন</string>
+    <string name="mx_bridge_copy_setup_url">ঠিকানা কপি করুন</string>
+
+    <!-- Sharing with an AI app: toasts and the chooser title (utils/robust_ai_sharing.kt). The shared text itself stays English. -->
+    <string name="mx_share_copied">কপি হয়েছে</string>
+    <string name="mx_share_app_not_installed">%1$s ফোনে বসানো নেই। লেখাটা কপি করা হয়েছে। নিজে গিয়ে বসিয়ে দিন।</string>
+    <string name="mx_share_failed_copied">পাঠানো গেল না। লেখাটা কপি করা হয়েছে। নিজে গিয়ে বসিয়ে দিন।</string>
+    <string name="mx_share_chooser">%1$s-এ পাঠান</string>
+
+    <!-- AI Bridge service: errors and notification status (services/BridgeService.kt) -->
+    <string name="mx_bridge_error_start">এআই সংযোগ চালু করা গেল না। আগে অ্যাপটা খুলে দেখুন।</string>
+    <string name="mx_bridge_error_open_app">আগে অ্যাপ খুলুন, তারপর এআই সংযোগ চালু করুন।</string>
+    <string name="mx_bridge_error_notification">এআই সংযোগের নোটিস দেখানো গেল না।</string>
+    <string name="mx_bridge_error_no_wifi">ওয়াইফাই নেই। ওয়াইফাই চালু করে আবার চেষ্টা করুন।</string>
+    <string name="mx_bridge_error_port_busy">সংযোগের রাস্তা (%1$s) অন্য কিছু আটকে রেখেছে। এআই সংযোগ বন্ধ করে আবার চালু করুন।</string>
+    <string name="mx_bridge_status_starting">চালু হচ্ছে…</string>
+    <string name="mx_bridge_status_ready">তৈরি। এই ওয়াইফাইতে যার কাছে পিন আছে, সে যোগ হতে পারবে।</string>
+
+    <!-- AI Bridge: the question shown before a laptop AI may take a photo (services/PhotoCaptureConsentActivity.kt) -->
+    <string name="mx_photo_consent_title">একটা ছবি তুলতে দেবেন?</string>
+    <string name="mx_photo_consent_body">আপনার ল্যাপটপের এআই এই ফোনের পেছনের ক্যামেরা দিয়ে একটা ছবি তুলতে চাইছে।</string>
+    <string name="mx_photo_consent_privacy">ছবিটা শুধু আপনার ল্যাপটপের এআইয়ের কাছে যাবে। ফোনে জমা থাকবে না। DeviceGPT ছবিটা অন্য কোথাও পাঠায় না।</string>
+    <string name="mx_photo_consent_allow">একবার দিন</string>
+    <string name="mx_photo_consent_taking">ছবি তুলছি…</string>
+    <string name="mx_photo_consent_deny">না</string>
+
+    <!-- Invite a friend: the chooser title (utils/referral_manager.kt) -->
+    <string name="mx_referral_share_via">যেভাবে পাঠাবেন</string>
 </resources>

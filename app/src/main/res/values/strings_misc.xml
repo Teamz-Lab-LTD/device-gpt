@@ -397,4 +397,142 @@
     <string name="mx_widget_time_one_hour">1 hr ago</string>
     <string name="mx_widget_time_hours">%1$s hrs ago</string>
     <string name="mx_widget_time_starting">Initializing</string>
+
+    <!-- Premium card and premium-active dialog in the drawer (ui/drawer.kt). Prices come from the store as %1$s. -->
+    <string name="mx_premium_name">DeviceGPT Premium</string>
+    <string name="mx_premium_lifetime">Lifetime Access</string>
+    <string name="mx_premium_price_lifetime">%1$s • Lifetime Access</string>
+    <string name="mx_premium_benefits_short">✓ No ads • Faster DeviceGPT • Support development</string>
+    <string name="mx_premium_activated">Premium activated! Ads removed.</string>
+    <string name="mx_premium_get">Get DeviceGPT Premium</string>
+    <string name="mx_premium_active">Premium Active</string>
+    <string name="mx_premium_active_headline">You\'re enjoying an ad-free experience!</string>
+    <string name="mx_premium_active_list">✓ All ads removed\n✓ Lifetime access\n✓ Full app features\n✓ Support development</string>
+    <string name="mx_premium_thanks">Thank you for supporting DeviceGPT!</string>
+
+    <!-- Ad labels (AdBadge in ui/drawer.kt, res/layout/native_ad_view.xml) -->
+    <string name="mx_ad_badge">Ad</string>
+    <string name="mx_ad_sponsored">Sponsored</string>
+
+    <!-- Premium button at the bottom and the verified-report gate (ui/adaptive/DeviceGptNavExperience.kt) -->
+    <string name="mx_premium_fab_tooltip_price">⭐ Remove Ads - %1$s Lifetime</string>
+    <string name="mx_premium_fab_tooltip">⭐ Remove Ads - Lifetime</string>
+    <string name="mx_premium_fab_cd_price">Remove Ads - Premium %1$s Lifetime</string>
+    <string name="mx_premium_fab_cd">Remove Ads - Premium Lifetime</string>
+    <string name="mx_premium_fab_label">PRO</string>
+    <string name="mx_report_gate_title">Generate 1 Verified Report</string>
+    <string name="mx_report_gate_body">Watch a short ad to generate 1 report — or go Premium for unlimited reports.</string>
+    <string name="mx_report_gate_watch_ad">Watch ad</string>
+    <string name="mx_report_gate_go_premium">Go Premium</string>
+
+    <!-- After the paywall is closed: one-tap question and the invite screen (ui/PaywallWithReferralFallback.kt) -->
+    <string name="mx_paywall_why_title">Quick — why did you close?</string>
+    <string name="mx_paywall_why_subtitle">One tap. Helps us make it better.</string>
+    <string name="mx_paywall_why_expensive">Too expensive</string>
+    <string name="mx_paywall_why_not_now">Not right now</string>
+    <string name="mx_paywall_why_no_value">Don\'t see the value</string>
+    <string name="mx_paywall_why_mistake">Closed by mistake</string>
+    <string name="mx_paywall_why_other">Other</string>
+    <string name="mx_referral_reward_30_days">30 days ad-free</string>
+    <string name="mx_referral_reward_7_days">7 days ad-free</string>
+    <string name="mx_referral_reward_3_days">3 days ad-free</string>
+    <string name="mx_referral_reward_24_hours">24 hours ad-free</string>
+    <string name="mx_referral_headline_all">You\'ve unlocked every reward — share again to keep it rolling.</string>
+    <string name="mx_referral_headline_one">1 more friend → unlock %1$s %2$s</string>
+    <string name="mx_referral_headline_many">%1$s friends → unlock %2$s %3$s</string>
+    <string name="mx_referral_title">Not ready to pay?</string>
+    <string name="mx_referral_subtitle">Invite friends and unlock premium for free.</string>
+    <string name="mx_referral_count">%1$s referred</string>
+    <string name="mx_referral_goal">Goal: %1$s</string>
+    <string name="mx_referral_maxed">Maxed out</string>
+    <string name="mx_referral_how">Send your link via WhatsApp, Telegram, SMS or email. Rewards unlock automatically when friends install.</string>
+    <string name="mx_referral_share">Share with friends</string>
+    <string name="mx_referral_later">Maybe later</string>
+
+    <!-- Premium purchase dialog (ui/PremiumPurchaseDialog.kt) -->
+    <string name="mx_purchase_benefit_no_ads">✅ No ads - ever</string>
+    <string name="mx_purchase_benefit_faster">✅ Faster app performance</string>
+    <string name="mx_purchase_benefit_support">✅ Support development</string>
+    <string name="mx_purchase_benefit_one_time">✅ One-time payment - no subscriptions</string>
+    <string name="mx_purchase_subtitle_price">Remove Ads Forever - %1$s • Lifetime Access</string>
+    <string name="mx_purchase_subtitle">Remove Ads Forever • Lifetime Access</string>
+    <string name="mx_purchase_welcome">Welcome to DeviceGPT Premium!</string>
+    <string name="mx_purchase_welcome_body">All ads have been removed. Enjoy your ad-free DeviceGPT experience!</string>
+    <string name="mx_purchase_got_it">Got it!</string>
+    <string name="mx_purchase_title_star">⭐ DeviceGPT Premium</string>
+    <string name="mx_purchase_later">Maybe Later</string>
+    <string name="mx_purchase_get_price">Get Premium - %1$s</string>
+    <string name="mx_purchase_get">Get Premium</string>
+    <string name="mx_purchase_none_found">No previous purchases found</string>
+    <string name="mx_purchase_restore">Restore Purchases</string>
+    <string name="mx_purchase_badge">Premium</string>
+    <string name="mx_purchase_remove_ads">Remove Ads</string>
+
+    <!-- AI dialog leftovers (ui/ai_assistant_dialog.kt) -->
+    <string name="mx_ai_dialog_title">AI, Is My Phone OK?</string>
+    <string name="mx_ai_dialog_subtitle">Get simple, friendly answers about your phone’s health—no tech skills needed.</string>
+    <string name="mx_ai_mode_label">AI Explanation Mode:</string>
+    <string name="mx_ai_finding_apps">Finding installed AI apps…</string>
+    <string name="mx_ai_no_apps">No AI apps found. Please install one of these apps:</string>
+    <string name="mx_ai_private_name">Private AI (on-device)</string>
+    <string name="mx_ai_private_tagline">Your phone only · offline · powered by Gemini Nano</string>
+    <string name="mx_ai_private_download">One-time ~%1$s download · then fully offline</string>
+    <string name="mx_ai_live_ready">Live-ready — this AI can read live phone data via MCP</string>
+    <string name="mx_ai_live_badge">LIVE</string>
+    <string name="mx_ai_install_cd">Install</string>
+    <string name="mx_ai_bridge_on_one">AI Bridge is ON · %1$s live request served</string>
+    <string name="mx_ai_bridge_on_many">AI Bridge is ON · %1$s live requests served</string>
+    <string name="mx_ai_bridge_on_body">MCP-capable AI clients (e.g. Claude Desktop) can read live phone data. Snapshot text is a fallback for the rest.</string>
+    <string name="mx_ai_bridge_starting">AI Bridge is starting…</string>
+    <string name="mx_ai_bridge_error">AI Bridge error: %1$s</string>
+    <string name="mx_ai_bridge_tip">Tip: turn on AI Bridge (AI Bridge tab) to let Claude/Cursor read live phone data via MCP.</string>
+
+    <!-- On-device AI result dialog (ui/ai/PrivateAiFlow.kt) -->
+    <string name="mx_private_ai_title">Private AI · %1$s</string>
+    <string name="mx_private_ai_running">Running on-device AI… your scan never leaves this phone.</string>
+    <string name="mx_private_ai_failed">On-device AI could not run right now. You can still ask a cloud AI from the list.</string>
+    <string name="mx_private_ai_not_ready">On-device AI is not ready yet.</string>
+    <string name="mx_private_ai_powered">Powered by Gemini Nano · on-device · offline</string>
+    <string name="mx_private_ai_preparing">Preparing…</string>
+    <string name="mx_private_ai_copy">Copy</string>
+    <string name="mx_ai_item_device_scan">Device scan</string>
+    <string name="mx_ai_item_devicegpt_scan">DeviceGPT scan</string>
+    <string name="mx_ai_item_resale_report">Resale Report</string>
+    <string name="mx_ai_item_generic">Item</string>
+
+    <!-- AI Bridge tab leftovers (ui/ai_bridge_card.kt) -->
+    <string name="mx_bridge_turning_on">Turning bridge on…</string>
+    <string name="mx_bridge_qr_cd">Pairing QR code</string>
+    <string name="mx_bridge_auto_off">Turns off in %1$s if no activity</string>
+    <string name="mx_bridge_tab_other">Other</string>
+    <string name="mx_bridge_config_path">Config file path</string>
+    <string name="mx_bridge_paste_block">Paste this block</string>
+    <string name="mx_bridge_open_on_pc">Or skip copying: open this on your PC\'s browser</string>
+    <string name="mx_bridge_copy_setup_url">Copy setup URL</string>
+
+    <!-- Sharing with an AI app: toasts and the chooser title (utils/robust_ai_sharing.kt). The shared text itself stays English. -->
+    <string name="mx_share_copied">Copied to clipboard</string>
+    <string name="mx_share_app_not_installed">%1$s is not installed. Content copied to clipboard. Please paste manually.</string>
+    <string name="mx_share_failed_copied">Sharing failed. Content copied to clipboard. Please paste manually.</string>
+    <string name="mx_share_chooser">Share with %1$s</string>
+
+    <!-- AI Bridge service: errors and notification status (services/BridgeService.kt) -->
+    <string name="mx_bridge_error_start">Could not start the Bridge. Try opening the app first.</string>
+    <string name="mx_bridge_error_open_app">Please open the app first, then turn the Bridge on.</string>
+    <string name="mx_bridge_error_notification">Could not show the Bridge notification.</string>
+    <string name="mx_bridge_error_no_wifi">No WiFi. Connect to WiFi and try again.</string>
+    <string name="mx_bridge_error_port_busy">Port %1$s is busy. Turn the Bridge off, then on again.</string>
+    <string name="mx_bridge_status_starting">Starting…</string>
+    <string name="mx_bridge_status_ready">Ready — anyone with the PIN on this WiFi can connect.</string>
+
+    <!-- AI Bridge: the question shown before a laptop AI may take a photo (services/PhotoCaptureConsentActivity.kt) -->
+    <string name="mx_photo_consent_title">Take a photo?</string>
+    <string name="mx_photo_consent_body">The AI on your laptop wants to take one photo with your back camera through the AI Bridge.</string>
+    <string name="mx_photo_consent_privacy">The photo goes only to your laptop AI. It is not saved to your phone. Nothing is uploaded by DeviceGPT.</string>
+    <string name="mx_photo_consent_allow">Allow once</string>
+    <string name="mx_photo_consent_taking">Taking…</string>
+    <string name="mx_photo_consent_deny">Deny</string>
+
+    <!-- Invite a friend: the chooser title (utils/referral_manager.kt) -->
+    <string name="mx_referral_share_via">Share via</string>
 </resources>

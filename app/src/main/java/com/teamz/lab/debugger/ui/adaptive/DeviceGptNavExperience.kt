@@ -694,9 +694,9 @@ fun DeviceGptNavExperience(
                             PlainTooltip { 
                                 Text(
                                     if (productPrice != null) {
-                                        "⭐ Remove Ads - $productPrice Lifetime"
+                                        context.string(R.string.mx_premium_fab_tooltip_price, productPrice.toString())
                                     } else {
-                                        "⭐ Remove Ads - Lifetime"
+                                        context.string(R.string.mx_premium_fab_tooltip)
                                     }
                                 ) 
                             } 
@@ -718,9 +718,9 @@ fun DeviceGptNavExperience(
                                 .semantics {
                                     // Make it properly focusable and accessible
                                     contentDescription = if (productPrice != null) {
-                                        "Remove Ads - Premium $productPrice Lifetime"
+                                        context.string(R.string.mx_premium_fab_cd_price, productPrice.toString())
                                     } else {
-                                        "Remove Ads - Premium Lifetime"
+                                        context.string(R.string.mx_premium_fab_cd)
                                     }
                                     role = Role.Button
                                 },
@@ -747,7 +747,7 @@ fun DeviceGptNavExperience(
                                         .rotate(if (startRotation) starRotation else 0f) // Rotate star after delay with pause
                                 )
                                 Text(
-                                    text = productPrice ?: "PRO",
+                                    text = productPrice ?: context.string(R.string.mx_premium_fab_label),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 2.dp),
@@ -1645,7 +1645,10 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 selectedItemForAI = null
             },
             context = context,
-            title = context.string(R.string.ai_insights_title, itemTitle),
+            title = context.string(
+                R.string.ai_insights_title,
+                com.teamz.lab.debugger.utils.HealthDisplayText.aiItemTitle(context, itemTitle),
+            ),
             subtitle = context.string(R.string.ai_insights_subtitle),
             showExplanationModeToggle = true
         )
@@ -1819,8 +1822,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
     if (showRewardedReportOffer) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showRewardedReportOffer = false },
-            title = { Text("Generate 1 Verified Report") },
-            text = { Text("Watch a short ad to generate 1 report — or go Premium for unlimited reports.") },
+            title = { Text(context.string(R.string.mx_report_gate_title)) },
+            text = { Text(context.string(R.string.mx_report_gate_body)) },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showRewardedReportOffer = false
@@ -1843,14 +1846,14 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             showGenerateReportDialog = true
                         }
                     )
-                }) { Text("Watch ad") }
+                }) { Text(context.string(R.string.mx_report_gate_watch_ad)) }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showRewardedReportOffer = false
                     paywallAnalyticsSource = "verified_report_gate"
                     showRevenueCatPaywall = true
-                }) { Text("Go Premium") }
+                }) { Text(context.string(R.string.mx_report_gate_go_premium)) }
             }
         )
     }
