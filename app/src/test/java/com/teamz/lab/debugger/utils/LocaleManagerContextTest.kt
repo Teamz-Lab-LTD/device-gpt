@@ -126,7 +126,7 @@ class LocaleManagerContextTest {
 
         LocaleManager.setLanguage(context, LocaleManager.AppLanguage.BENGALI)
         assertEquals("ভাষা", LocaleManager.localizedResources(base).getString(R.string.language))
-        assertEquals("বাতিল", LocaleManager.localizedResources(base).getString(R.string.cancel))
+        assertEquals("বাদ দিন", LocaleManager.localizedResources(base).getString(R.string.cancel))
     }
 
     @Test

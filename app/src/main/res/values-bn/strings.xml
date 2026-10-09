@@ -1,286 +1,300 @@
 <resources>
-    <!-- Bengali (বাংলা) - Complete Translation -->
-    
+    <!-- Bengali (বাংলা) - Easy Bangla.
+         Reader: someone in a phone market who reads Bangla slowly and reads no English.
+         Rules: docs/superpowers/specs/2026-10-09-easy-bangla-design.md ("Bangla style guide").
+         Guarded by BanglaStringsGuardTest. -->
+
     <!-- App Name -->
     <string name="app_name">DeviceGPT</string>
-    
+
     <!-- Widget -->
-    <string name="lock_screen_widget_description">হোম স্ক্রিনে আপনার ডিভাইস মনিটর করুন: পাওয়ার, ব্যাটারি, RAM, CPU, নেটওয়ার্ক, স্বাস্থ্য স্কোর এবং দৈনন্দিন স্ট্রিক</string>
-    
+    <string name="lock_screen_widget_description">ফোনের প্রথম পাতায় বা লক করা স্ক্রিনে এক নজরে দেখুন: ফোনের অবস্থার নম্বর, টানা কত দিন, ব্যাটারি, ফোন কত গরম, চার্জ খরচ, মেমোরি আর নেট</string>
+
     <!-- Common -->
-    <string name="loading">লোড হচ্ছে…</string>
-    <string name="refresh">রিফ্রেশ</string>
-    <string name="refresh_all_data">সব ডেটা রিফ্রেশ করুন</string>
+    <string name="loading">দেখছি…</string>
+    <string name="refresh">আবার দেখুন</string>
+    <string name="refresh_all_data">সব আবার দেখুন</string>
     <string name="settings">সেটিংস</string>
-    <string name="open_device_settings">ডিভাইস সেটিংস খুলুন</string>
-    <string name="cancel">বাতিল</string>
-    <string name="continue_text">চালিয়ে যান</string>
+    <string name="open_device_settings">ফোনের সেটিংস খুলুন</string>
+    <string name="cancel">বাদ দিন</string>
+    <string name="continue_text">এগিয়ে যান</string>
     <string name="ok">ঠিক আছে</string>
     <string name="got_it">বুঝেছি!</string>
+    <string name="premium_unavailable_try_later">বাড়তি সুবিধা এখন কেনা যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।</string>
     <string name="send">পাঠান</string>
-    <string name="share">শেয়ার করুন</string>
+    <string name="share">পাঠান</string>
     <string name="menu">মেনু</string>
     <string name="open_menu">মেনু খুলুন</string>
-    <string name="open_menu_monitor_available">মেনু খুলুন • রিয়েলটাইম মনিটর উপলব্ধ</string>
-    
+    <string name="open_menu_monitor_available">মেনু খুলুন • ফোনে সব সময় নজর রাখা যায়</string>
+
     <!-- Developer Options -->
-    <string name="developer_options">ডেভেলপার অপশন</string>
-    <string name="open_developer_options">ডেভেলপার অপশন খুলুন</string>
+    <string name="developer_options">ডেভেলপার সেটিংস</string>
+    <string name="open_developer_options">ডেভেলপার সেটিংস খুলুন</string>
 
     <!-- AI Bridge -->
-    <string name="tab_ai_bridge">AI Bridge</string>
-    <string name="ai_bridge_title">AI Bridge</string>
-    <string name="ai_bridge_subtitle_off">আপনার laptop এর AI কে এই ফোনের তথ্য পড়তে দিন। শুধু একই WiFi এ কাজ করবে।</string>
-    <string name="ai_bridge_turn_on">AI Bridge চালু করুন</string>
+    <string name="tab_ai_bridge">এআই সংযোগ</string>
+    <string name="ai_bridge_title">এআই সংযোগ</string>
+    <string name="ai_bridge_subtitle_off">আপনার ল্যাপটপের এআই এই ফোনের তথ্য পড়তে পারবে। ফোন আর ল্যাপটপ একই ওয়াইফাইতে থাকতে হবে।</string>
+    <string name="ai_bridge_turn_on">এআই সংযোগ চালু করুন</string>
     <string name="ai_bridge_turn_off">বন্ধ করুন</string>
     <string name="ai_bridge_starting">চালু হচ্ছে…</string>
-    <string name="ai_bridge_state_on">AI Bridge চালু আছে</string>
-    <string name="ai_bridge_add_this_on_laptop">Laptop এ এইটা add করুন:</string>
-    <string name="ai_bridge_address">Address</string>
-    <string name="ai_bridge_pin">PIN</string>
-    <string name="ai_bridge_auto_off_prefix">এতক্ষণ কেউ না ব্যবহার করলে বন্ধ হবে:</string>
-    <string name="ai_bridge_auto_off_suffix"></string>
-    <string name="ai_bridge_open_guide">এইটা কীভাবে কাজ করে?</string>
-    <string name="ai_bridge_setup_guide">Setup গাইড</string>
-    <string name="ai_bridge_copy">Copy</string>
-    <string name="ai_bridge_copied">Copy হয়েছে</string>
-    <string name="ai_bridge_notification_title">AI Bridge চালু আছে</string>
+    <string name="ai_bridge_state_on">এআই সংযোগ চালু আছে</string>
+    <string name="ai_bridge_add_this_on_laptop">ল্যাপটপে এটা বসান:</string>
+    <string name="ai_bridge_address">ঠিকানা</string>
+    <string name="ai_bridge_pin">পিন</string>
+    <string name="ai_bridge_auto_off_prefix">কিছু না করলে নিজে বন্ধ হবে। বাকি</string>
+    <string name="ai_bridge_auto_off_suffix">মিনিট</string>
+    <string name="ai_bridge_open_guide">এটা কীভাবে কাজ করে?</string>
+    <string name="ai_bridge_setup_guide">কীভাবে চালু করবেন</string>
+    <string name="ai_bridge_copy">কপি করুন</string>
+    <string name="ai_bridge_copied">কপি হয়েছে</string>
+    <string name="ai_bridge_notification_title">এআই সংযোগ চালু আছে</string>
     <string name="ai_bridge_notification_stop">বন্ধ করুন</string>
-    <string name="ai_bridge_channel_name">AI Bridge</string>
-    <string name="ai_bridge_channel_description">AI Bridge on থাকলে দেখানো হয়, যাতে বুঝতে পারেন আপনার ফোন local network এ তথ্য share করতেছে।</string>
-    <string name="ai_bridge_error_no_wifi">আগে WiFi এ connect করুন, তারপর আবার চেষ্টা করুন।</string>
-    <string name="ai_bridge_privacy_note">এইটা AI কে ডিভাইসের তথ্য দেয়। AI আপনার settings পাল্টাতে পারে না, screenshot ও নিতে পারে না।</string>
-    <string name="ai_bridge_guide_step1_title">১. Laptop এ একটা compatible AI app install করুন</string>
-    <string name="ai_bridge_guide_step1_body">Claude Desktop, ChatGPT Desktop, Cursor, বা যেকোনো MCP-compatible tool কাজ করে।</string>
-    <string name="ai_bridge_guide_step2_title">২. AI app এ Bridge add করুন</string>
-    <string name="ai_bridge_guide_step2_body">আপনার AI app এর Developer বা MCP settings খুলুন। এই screen এর address আর PIN দিয়ে একটা নতুন MCP server add করুন।</string>
-    <string name="ai_bridge_guide_step3_title">৩. আপনার AI কে ফোন নিয়ে প্রশ্ন করুন</string>
-    <string name="ai_bridge_guide_step3_body">যেমন: "আমার ফোনের battery কেমন?" বা "আমার ফোনে কোন কোন camera আছে?"</string>
+    <string name="ai_bridge_channel_name">এআই সংযোগ</string>
+    <string name="ai_bridge_channel_description">এআই সংযোগ চালু থাকলে এই নোটিস দেখা যায়। এতে বুঝবেন, আপনার ফোন একই ওয়াইফাইতে তথ্য দিচ্ছে।</string>
+    <string name="ai_bridge_error_no_wifi">আগে ফোনে ওয়াইফাই চালু করুন। তারপর আবার চেষ্টা করুন।</string>
+    <string name="ai_bridge_privacy_note">এতে এআই শুধু ফোনের তথ্য পায়। এআই আপনার সেটিংস বদলাতে পারে না। স্ক্রিনের ছবিও নিতে পারে না।</string>
+    <string name="ai_bridge_guide_step1_title">1. ল্যাপটপে একটা এআই অ্যাপ বসান</string>
+    <string name="ai_bridge_guide_step1_body">Claude Desktop, ChatGPT Desktop, Cursor, বা MCP চলে এমন যেকোনো অ্যাপ হলেই হবে।</string>
+    <string name="ai_bridge_guide_step2_title">2. এআই অ্যাপে এই ফোন যোগ করুন</string>
+    <string name="ai_bridge_guide_step2_body">এআই অ্যাপের Developer বা MCP সেটিংস খুলুন। সেখানে নতুন একটা MCP সার্ভার যোগ করুন। এই স্ক্রিনের ঠিকানা আর পিন বসান।</string>
+    <string name="ai_bridge_guide_step3_title">3. এআইকে এই ফোনের কথা জিজ্ঞেস করুন</string>
+    <string name="ai_bridge_guide_step3_body">যেমন: \"আমার ফোনের ব্যাটারি কেমন আছে?\" বা \"আমার ফোনে কী কী ক্যামেরা আছে?\"</string>
     <string name="ai_bridge_guide_close">বন্ধ করুন</string>
-    <string name="ai_share_ask_ai_title">যেকোনো AI কে ফোনের ব্যাপারে জিজ্ঞেস করুন</string>
-    <string name="ai_share_ask_ai_subtitle">ChatGPT, Claude, Gemini বা যেকোনো AI app এ share করার জন্য live snapshot copy করে। কোনো setup লাগবে না।</string>
-    <string name="ai_share_ask_ai_button">যেকোনো AI কে জিজ্ঞেস করুন</string>
-    <string name="ai_share_toast">Copy হইছে। কোথায় পাঠাবেন select করুন।</string>
-    <string name="ai_bridge_advanced_setup">Live connection setup (advanced)</string>
-    <string name="ai_bridge_setup_sheet_title">আপনার AI app এ DeviceGPT add করুন</string>
-    <string name="ai_bridge_setup_sheet_intro">আপনার AI app select করুন। নিচের block টা তার config file এ paste করুন, তারপর app restart করুন।</string>
-    <string name="ai_bridge_setup_copy_block">Block copy করুন</string>
-    <string name="ai_bridge_setup_copied">Config copy হইছে। আপনার AI app এ paste করুন।</string>
-    <string name="ai_bridge_setup_not_affiliated">Claude, Cursor, ChatGPT — এদের trademark এদের নিজ নিজ owner এর। DeviceGPT এদের সাথে affiliated না।</string>
-    
+    <string name="ai_share_ask_ai_title">যেকোনো এআইকে আমার ফোনের কথা জিজ্ঞেস করুন</string>
+    <string name="ai_share_ask_ai_subtitle">ফোনের এখনকার সব তথ্য কপি হবে। সেটা ChatGPT, Claude, Gemini বা যেকোনো এআই অ্যাপে পাঠান। আলাদা কিছু করা লাগবে না।</string>
+    <string name="ai_share_ask_ai_button">এআইকে জিজ্ঞেস করুন</string>
+    <string name="ai_share_toast">কপি হয়েছে। কোথায় পাঠাবেন, বেছে নিন।</string>
+    <string name="ai_bridge_advanced_setup">সরাসরি সংযোগ চালু করুন (যারা ভালো জানেন)</string>
+    <string name="ai_bridge_setup_sheet_title">আপনার এআই অ্যাপে DeviceGPT যোগ করুন</string>
+    <string name="ai_bridge_setup_sheet_intro">আপনার এআই অ্যাপ বেছে নিন। নিচের লেখাটা ওই অ্যাপের সেটিংস ফাইলে বসান। তারপর অ্যাপ বন্ধ করে আবার খুলুন।</string>
+    <string name="ai_bridge_setup_copy_block">লেখাটা কপি করুন</string>
+    <string name="ai_bridge_setup_copied">কপি হয়েছে। এবার আপনার এআই অ্যাপে বসান।</string>
+    <string name="ai_bridge_setup_not_affiliated">Claude, Cursor আর ChatGPT নামগুলো তাদের নিজ নিজ মালিকের। DeviceGPT তাদের কারো সাথে যুক্ত নয়।</string>
+
     <!-- Certificate -->
-    <string name="cert">সার্ট</string>
+    <string name="cert">সার্টিফিকেট</string>
     <string name="certificate">সার্টিফিকেট</string>
-    <string name="generate_device_certificate">ডিভাইস সার্টিফিকেট তৈরি করুন</string>
-    <string name="loading_certificate_data">সার্টিফিকেট ডেটা লোড হচ্ছে…</string>
-    <string name="can_device_get_certified">আপনার ডিভাইস সার্টিফাইড হতে পারে?</string>
-    <string name="certificate_description">রিয়েল রিসেল মান এবং রেটিং সহ একটি ভাইরাল ডিভাইস সার্টিফিকেট পান! আপনার ডিভাইসের মূল মূল্য এবং মুদ্রা লিখুন।</string>
-    <string name="original_price">মূল মূল্য</string>
-    <string name="currency_hint">মুদ্রা (যেমন USD, BDT)</string>
-    <string name="generate_my_device_certificate">আমার ডিভাইস সার্টিফিকেট তৈরি করুন</string>
-    <string name="certificate_subtitle">সেকেন্ডের মধ্যে আপনার অফিসিয়াল ফোন সার্টিফিকেট এবং রিসেল মান পান—শেয়ার বা বিক্রির জন্য পারফেক্ট!</string>
-    
+    <string name="generate_device_certificate">ফোনের সার্টিফিকেট বানান</string>
+    <string name="loading_certificate_data">সার্টিফিকেটের তথ্য আনছি…</string>
+    <string name="can_device_get_certified">আপনার ফোন কি সার্টিফিকেট পাবে?</string>
+    <string name="certificate_description">ফোনের সার্টিফিকেট নিন। তাতে থাকবে ফোন এখন কত দামে বেচা যেতে পারে, আর কত নম্বর পেল। ফোনটা নতুন কত দামে কিনেছিলেন আর কোন টাকায়, লিখুন।</string>
+    <string name="original_price">নতুন কেনার দাম</string>
+    <string name="currency_hint">কোন দেশের টাকা (যেমন BDT, USD)</string>
+    <string name="generate_my_device_certificate">আমার ফোনের সার্টিফিকেট বানান</string>
+    <string name="certificate_subtitle">কয়েক সেকেন্ডে ফোনের সার্টিফিকেট আর বেচার দাম জানুন। কাউকে পাঠাতে বা ফোন বেচতে কাজে লাগবে।</string>
+
     <!-- AI Assistant -->
-    <string name="ai">AI</string>
-    <string name="ai_assistant">AI সহায়ক</string>
-    <string name="open_ai_assistant">AI সহায়ক খুলুন</string>
-    <string name="loading_ai_assistant">AI সহায়ক লোড হচ্ছে…</string>
-    
+    <string name="ai">এআই</string>
+    <string name="ai_assistant">এআই সাহায্য</string>
+    <string name="open_ai_assistant">এআই সাহায্য খুলুন</string>
+    <string name="loading_ai_assistant">এআই সাহায্য আসছে…</string>
+
     <!-- Tabs -->
-    <string name="device_info">ডিভাইস তথ্য</string>
-    <string name="network_info">নেটওয়ার্ক তথ্য</string>
-    <string name="health">স্বাস্থ্য</string>
-    <string name="power">পাওয়ার</string>
-    
+    <string name="device_info">ফোনের তথ্য</string>
+    <string name="network_info">নেটের তথ্য</string>
+    <string name="tab_camera">ক্যামেরা</string>
+    <string name="tab_screen_test">মাইক ও স্ক্রিন</string>
+    <string name="health">ফোনের অবস্থা</string>
+    <string name="power">চার্জ খরচ</string>
+
     <!-- Power Consumption -->
-    <string name="power_consumption">পাওয়ার খরচ</string>
-    <string name="component_breakdown">কম্পোনেন্ট ব্রেকডাউন</string>
-    <string name="total_power_consumption">মোট পাওয়ার খরচ</string>
+    <string name="power_consumption">চার্জ খরচ</string>
+    <string name="component_breakdown">কোন অংশে কত চার্জ যায়</string>
+    <string name="total_power_consumption">মোট চার্জ খরচ</string>
     <string name="watts">W</string>
-    <string name="last_updated">সর্বশেষ আপডেট: %1$s</string>
-    <string name="loading_power_data">পাওয়ার খরচ ডেটা লোড হচ্ছে…</string>
-    <string name="tap_for_more_info">আরও তথ্যের জন্য ট্যাপ করুন</string>
-    <string name="permission_required">অনুমতি প্রয়োজন</string>
-    <string name="grant_permission_description">এই কম্পোনেন্টের জন্য সঠিক পাওয়ার খরচ ডেটা দেখতে অনুমতি দিন।</string>
+    <string name="last_updated">শেষ দেখা হয়েছে: %1$s</string>
+    <string name="loading_power_data">চার্জ খরচ দেখছি…</string>
+    <string name="tap_for_more_info">আরও জানতে চাপ দিন</string>
+    <string name="permission_required">অনুমতি লাগবে</string>
+    <string name="grant_permission_description">এই অংশে ঠিক কত চার্জ যায়, তা দেখতে অনুমতি দিন।</string>
     <string name="grant_permission">অনুমতি দিন</string>
-    
+
     <!-- Power Statistics -->
-    <string name="power_statistics">পাওয়ার পরিসংখ্যান</string>
+    <string name="power_statistics">চার্জ খরচের হিসাব</string>
     <string name="average">গড়</string>
-    <string name="peak">পিক</string>
-    <string name="samples">নমুনা</string>
-    <string name="trend">ট্রেন্ড: %1$s</string>
-    <string name="efficiency_rating">দক্ষতা রেটিং</string>
-    
+    <string name="peak">সবচেয়ে বেশি</string>
+    <string name="samples">কতবার মাপা হলো</string>
+    <string name="trend">বাড়ছে না কমছে: %1$s</string>
+    <string name="efficiency_rating">চার্জ বাঁচানোর নম্বর</string>
+
     <!-- Camera Power Test -->
-    <string name="camera_power_test">ক্যামেরা পাওয়ার টেস্ট</string>
-    <string name="camera_test_description">আপনার ফোন ফটো তোলার সময় কতটা ব্যাটারি পাওয়ার ব্যবহার করে তা পরিমাপ করে</string>
-    <string name="camera_test_info">📷 আমরা পরিমাপ করার সময় আপনি একটি লাইভ ক্যামেরা প্রিভিউ দেখবেন। ক্যামেরা আসলে খোলে এবং একটি আসল ফটো তোলে।</string>
-    <string name="camera_test_accuracy">📊 আমরা নির্ভুলতার জন্য একাধিক পরিমাপ নিই এবং তাদের গড় করি। পরীক্ষার মধ্যে ছোট পার্থক্য স্বাভাবিক - আপনার ফোনের তাপমাত্রা এবং ব্যাটারি স্তর ফলাফলকে প্রভাবিত করতে পারে।</string>
-    <string name="camera_preview">ক্যামেরা প্রিভিউ\n(পরীক্ষার সময় লাইভ ফিড দেখাবে)</string>
-    <string name="preview_live_feed">প্রিভিউ প্রতিটি পরীক্ষার সময় লাইভ ক্যামেরা ফিড দেখায়</string>
-    <string name="testing">পরীক্ষা করা হচ্ছে…</string>
-    <string name="single_test">একক পরীক্ষা</string>
-    <string name="five_tests">৫টি পরীক্ষা</string>
-    <string name="all_test_results">সব পরীক্ষার ফলাফল (%1$d মোট):</string>
-    <string name="test_result_format">পরীক্ষা %1$d: %2$s (%3$dms)</string>
-    <string name="more_tests">… এবং আরও %1$d (সব দেখতে CSV দেখুন)</string>
-    <string name="total_tests">%1$d পরীক্ষা%2$s মোট</string>
-    <string name="view_csv">CSV দেখুন</string>
-    <string name="camera_power_test_data">ক্যামেরা পাওয়ার টেস্ট ডেটা</string>
-    <string name="single_photo_power_test">📸 একক ফটো পাওয়ার টেস্ট</string>
-    <string name="multiple_photo_power_tests">📊 একাধিক ফটো পাওয়ার টেস্ট</string>
-    <string name="test_results">পরীক্ষার ফলাফল:</string>
-    
+    <string name="camera_power_test">ছবি তুললে কত চার্জ যায়</string>
+    <string name="camera_test_description">ছবি তোলার সময় আপনার ফোনের কত চার্জ খরচ হয়, তা মাপে</string>
+    <string name="camera_test_info">📷 মাপার সময় ক্যামেরা খুলবে, সামনে যা আছে তা দেখা যাবে। একটা সত্যিকারের ছবিও তোলা হবে।</string>
+    <string name="camera_test_accuracy">📊 ঠিক হিসাব পেতে আমরা কয়েকবার মাপি, তারপর গড় করি। প্রতিবার একটু কম-বেশি হওয়া স্বাভাবিক। ফোন গরম থাকলে বা চার্জ কম থাকলে ফল বদলাতে পারে।</string>
+    <string name="camera_preview">ক্যামেরার ছবি\n(পরীক্ষার সময় এখানে দেখা যাবে)</string>
+    <string name="preview_live_feed">প্রতিটা পরীক্ষার সময় এখানে ক্যামেরার ছবি দেখা যাবে</string>
+    <string name="testing">পরীক্ষা চলছে…</string>
+    <string name="single_test">1 বার পরীক্ষা</string>
+    <string name="five_tests">5 বার পরীক্ষা</string>
+    <string name="all_test_results">সব পরীক্ষার ফল (মোট %1$d টি):</string>
+    <string name="test_result_format">পরীক্ষা %1$d: %2$s (%3$d মিলিসেকেন্ড)</string>
+    <string name="more_tests">… আরও %1$d টি আছে (সব দেখতে ফাইল খুলুন)</string>
+    <string name="total_tests">মোট %1$d টি পরীক্ষা</string>
+    <string name="view_csv">ফাইল দেখুন</string>
+    <string name="camera_power_test_data">ছবি তোলায় চার্জ খরচের তথ্য</string>
+    <string name="single_photo_power_test">📸 একটা ছবিতে কত চার্জ যায়</string>
+    <string name="multiple_photo_power_tests">📊 কয়েকটা ছবিতে কত চার্জ যায়</string>
+    <string name="test_results">পরীক্ষার ফল:</string>
+
     <!-- Display Power Sweep -->
-    <string name="display_power_sweep">ডিসপ্লে পাওয়ার সুইপ</string>
-    <string name="quick_sweep">দ্রুত সুইপ</string>
-    <string name="full_sweep">পূর্ণ সুইপ</string>
-    <string name="run_levels">লেভেল চালান</string>
-    
+    <string name="display_power_sweep">স্ক্রিনের আলোয় কত চার্জ যায়</string>
+    <string name="quick_sweep">ছোট পরীক্ষা</string>
+    <string name="full_sweep">পুরো পরীক্ষা</string>
+    <string name="run_levels">পরীক্ষা শুরু করুন</string>
+
     <!-- CPU Microbench -->
-    <string name="cpu_microbench">CPU মাইক্রোবেঞ্চ</string>
-    
+    <string name="cpu_microbench">ফোন খাটলে কত চার্জ যায়</string>
+
     <!-- Network RSSI Sampling -->
-    <string name="network_rssi_sampling">নেটওয়ার্ক RSSI স্যাম্পলিং</string>
-    <string name="start_60s_sampling">৬০ সেকেন্ড স্যাম্পলিং শুরু করুন</string>
-    
+    <string name="network_rssi_sampling">নেটের সিগন্যাল মাপা</string>
+    <string name="start_60s_sampling">60 সেকেন্ড মাপুন</string>
+
     <!-- Device Sleep Tracker -->
-    <string name="device_sleep_tracker">ডিভাইস স্লিপ ট্র্যাকার</string>
-    
+    <string name="device_sleep_tracker">ফোন কতক্ষণ ঘুমায়</string>
+
+    <!-- App Power Monitor -->
+    <string name="app_power_monitor">কোন অ্যাপ কতক্ষণ চলে</string>
+    <string name="start_monitoring">নজর রাখুন</string>
+    <string name="stop_monitoring">নজর রাখা বন্ধ করুন</string>
+    <string name="app_power_consumption">কোন অ্যাপ কতক্ষণ চলে</string>
+    <string name="battery_impact_per_hour">মোট সময়ের %1$s%% এই অ্যাপে</string>
+    <string name="usage_stats_permission_required">কোন অ্যাপ কতক্ষণ চলে, তা দেখার অনুমতি লাগবে</string>
+    <string name="no_app_data">এখনো কোনো অ্যাপের তথ্য পাওয়া যায়নি</string>
+
     <!-- Health Score -->
-    <string name="scan_device_health">ডিভাইস স্বাস্থ্য স্ক্যান করুন</string>
-    <string name="scanning_device">ডিভাইস স্ক্যান করা হচ্ছে…</string>
-    <string name="scanning">স্ক্যান করা হচ্ছে</string>
-    <string name="amazing_streak">🔥 অবিশ্বাস্য স্ট্রিক! আপনি একজন স্বাস্থ্য চ্যাম্পিয়ন!</string>
-    <string name="great_consistency">💪 দুর্দান্ত ধারাবাহিকতা! গতি বজায় রাখুন!</string>
-    <string name="good_start">✅ ভালো শুরু! আপনার দৈনন্দিন অভ্যাস গড়ে তুলুন!</string>
-    <string name="ready_to_start">🚀 আপনার স্বাস্থ্য যাত্রা শুরু করতে প্রস্তুত?</string>
-    
+    <string name="scan_device_health">ফোনের অবস্থা দেখে নিন</string>
+    <string name="scanning_device">ফোন দেখছি…</string>
+    <string name="scanning">দেখছি</string>
+    <string name="amazing_streak">🔥 দারুণ! টানা অনেক দিন ফোন দেখে নিচ্ছেন!</string>
+    <string name="great_consistency">💪 খুব ভালো! রোজ এভাবে দেখে নিন!</string>
+    <string name="good_start">✅ ভালো শুরু! রোজ একবার দেখে নিন!</string>
+    <string name="ready_to_start">🚀 ফোনের অবস্থা দেখা শুরু করবেন?</string>
+
     <!-- Permissions -->
-    <string name="location_access">📍 অবস্থান অ্যাক্সেস</string>
-    <string name="phone_info_access">📱 ফোন তথ্য অ্যাক্সেস</string>
-    <string name="network_usage_stats">📊 নেটওয়ার্ক ব্যবহার পরিসংখ্যান</string>
-    <string name="notification_permission_denied">বিজ্ঞপ্তি অনুমতি অস্বীকার করা হয়েছে</string>
-    
+    <string name="location_access">📍 জায়গা জানার অনুমতি</string>
+    <string name="phone_info_access">📱 ফোনের তথ্য জানার অনুমতি</string>
+    <string name="network_usage_stats">📊 নেট কত খরচ হলো</string>
+    <string name="notification_permission_denied">নোটিসের অনুমতি দেননি</string>
+
     <!-- File Names -->
     <string name="my_device_info">my_device_info.txt</string>
     <string name="my_network_info">my_network_info.txt</string>
     <string name="my_health_report">my_health_report.txt</string>
     <string name="my_power_report">my_power_report.txt</string>
-    
+
     <!-- Share -->
-    <string name="share_device_info">ডিভাইস তথ্য শেয়ার করুন</string>
-    <string name="share_with_app">%1$s এর সাথে শেয়ার করুন</string>
-    <string name="unable_to_share_file">ফাইল শেয়ার করতে অক্ষম: %1$s</string>
-    
+    <string name="share_device_info">ফোনের তথ্য পাঠান</string>
+    <string name="share_with_app">%1$s দিয়ে পাঠান</string>
+    <string name="unable_to_share_file">ফাইল পাঠানো গেল না: %1$s</string>
+
     <!-- Updates -->
-    <string name="update_downloaded_restarting">আপডেট ডাউনলোড হয়েছে! পুনরায় শুরু হচ্ছে…</string>
-    
+    <string name="update_downloaded_restarting">অ্যাপ নতুন হয়েছে! আবার খুলছে…</string>
+
     <!-- Content Descriptions -->
-    <string name="cd_power_consumption">পাওয়ার খরচ</string>
-    <string name="cd_refresh">রিফ্রেশ</string>
+    <string name="cd_power_consumption">চার্জ খরচ</string>
+    <string name="cd_refresh">আবার দেখুন</string>
     <string name="cd_settings">সেটিংস</string>
     <string name="cd_certificate">সার্টিফিকেট</string>
-    <string name="cd_ai_assistant">AI সহায়ক</string>
+    <string name="cd_ai_assistant">এআই সাহায্য</string>
     <string name="cd_send_info">তথ্য পাঠান</string>
-    <string name="cd_scan">স্ক্যান</string>
-    <string name="cd_scanning">স্ক্যান করা হচ্ছে</string>
-    <string name="cd_camera_power_test">ক্যামেরা পাওয়ার টেস্ট</string>
-    
+    <string name="cd_scan">দেখে নিন</string>
+    <string name="cd_scanning">দেখছি</string>
+    <string name="cd_camera_power_test">ছবি তুললে কত চার্জ যায়</string>
+
     <!-- Toast Messages -->
-    <string name="toast_unable_to_share">ফাইল শেয়ার করতে অক্ষম: %1$s</string>
-    
+    <string name="toast_unable_to_share">ফাইল পাঠানো গেল না: %1$s</string>
+
     <!-- Language Selection -->
     <string name="language">ভাষা</string>
-    <string name="select_language">ভাষা নির্বাচন করুন</string>
-    
+    <string name="select_language">ভাষা বেছে নিন</string>
+
     <!-- Additional UI Strings -->
     <string name="open_settings">সেটিংস খুলুন</string>
     <string name="close">বন্ধ করুন</string>
     <string name="allow">অনুমতি দিন</string>
-    <string name="export_csv">CSV রপ্তানি করুন</string>
-    <string name="running_cpu_tests">CPU পরীক্ষা চলছে…</string>
-    <string name="sampling_countdown">স্যাম্পলিং… %1$ds</string>
-    <string name="light">হালকা</string>
-    <string name="dark">অন্ধকার</string>
-    <string name="simple">সরল</string>
-    <string name="advanced">উন্নত</string>
-    <string name="unavailable">অনুপলব্ধ</string>
+    <string name="export_csv">ফাইল বানান</string>
+    <string name="running_cpu_tests">পরীক্ষা চলছে…</string>
+    <string name="sampling_countdown">মাপছি… %1$d সেকেন্ড</string>
+    <string name="light">সাদা</string>
+    <string name="dark">কালো</string>
+    <string name="simple">সহজ</string>
+    <string name="advanced">খুঁটিনাটি</string>
+    <string name="unavailable">পাওয়া যায়নি</string>
     <string name="test">পরীক্ষা</string>
-    <string name="want_more_magic">আরও ম্যাজিক চান? এখানে ট্যাপ করুন</string>
-    
+    <string name="want_more_magic">আরও মজার কিছু চান? এখানে চাপ দিন</string>
+
     <!-- Toast Messages -->
-    <string name="toast_monitoring_started">মониটরিং শুরু হয়েছে</string>
-    <string name="toast_permission_denied">অনুমতি অস্বীকার করা হয়েছে</string>
-    <string name="toast_monitoring_stopped">মониটরিং বন্ধ হয়েছে</string>
-    <string name="toast_copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
-    <string name="toast_error_opening_setting">সেটিং খোলার ত্রুটি: %1$s</string>
-    
+    <string name="toast_monitoring_started">নজর রাখা শুরু হলো</string>
+    <string name="toast_permission_denied">অনুমতি দেননি</string>
+    <string name="toast_monitoring_stopped">নজর রাখা বন্ধ হলো</string>
+    <string name="toast_copied_to_clipboard">কপি হয়েছে</string>
+    <string name="toast_error_opening_setting">সেটিংস খোলা গেল না: %1$s</string>
+
     <!-- Notification -->
-    <string name="notification_watching_over">ব্যাটারি, গতি এবং আরও অনেক কিছু দেখছে ⚙</string>
+    <string name="notification_watching_over">ব্যাটারি, গতি আর বাকি সব দিকে নজর রাখছি ⚙</string>
 
     <!-- Website reachability probe (App Doctor release 1, 2026-08-18) -->
-    <string name="probe_custom_title">একটা website check করুন</string>
-    <string name="probe_custom_subtitle">এই ফোন থেকে ওটায় ঢোকা যায় কিনা দেখুন</string>
+    <string name="probe_custom_title">একটা ওয়েবসাইট দেখে নিন</string>
+    <string name="probe_custom_subtitle">এই ফোন থেকে সেটা খোলে কি না, দেখুন</string>
     <string name="probe_custom_hint">example.com</string>
-    <string name="probe_custom_button">Check করুন</string>
-    <string name="probe_checking">দেখছি… %2$d এর %1$d</string>
-    <string name="probe_invalid_domain">এটা website address এর মতো লাগছে না। example.com এভাবে লিখুন</string>
-    <string name="probe_verdict_all_ok">এই ফোন থেকে website টা ঠিকঠাক কাজ করছে</string>
-    <string name="probe_verdict_intermittent">website টা মাঝে মাঝে কাজ করে, মাঝে মাঝে করে না</string>
-    <string name="probe_verdict_intermittent_why">%2$d বারের মধ্যে %1$d বার fail করেছে। একবার check করলে এই সমস্যা ধরা পড়ে না।</string>
-    <string name="probe_verdict_dns_blocked">এই ফোন website টার address খুঁজে পাচ্ছে না</string>
-    <string name="probe_verdict_dns_why">নাম খুঁজে পায়নি। সাধারণত DNS, Private DNS বা VPN setting এর কারণে হয়।</string>
-    <string name="probe_verdict_tls_blocked">secure connection টা আটকে দেওয়া হচ্ছে</string>
-    <string name="probe_verdict_tcp_blocked">address পেয়েছে, কিন্তু connection নেয়নি</string>
-    <string name="probe_verdict_unreachable">এই ফোন থেকে website টায় ঢোকা যাচ্ছে না</string>
-    <string name="probe_verdict_ok_detail">%1$d বারই কাজ করেছে, প্রতিবার প্রায় %2$d ms।</string>
-    <string name="probe_context_private_dns">Private DNS</string>
-    <string name="probe_context_vpn">VPN</string>
-    <string name="probe_context_captive">আগে sign in লাগবে</string>
-    <string name="probe_fix_private_dns">Private DNS settings খুলুন</string>
-    <string name="probe_fix_vpn">VPN settings খুলুন</string>
-    <string name="probe_fix_wifi">Wi-Fi settings খুলুন</string>
-    <string name="probe_show_details">বিস্তারিত দেখুন</string>
-    <string name="probe_hide_details">বিস্তারিত লুকান</string>
-    <string name="probe_copy_report">পুরা report copy করুন</string>
-    <string name="probe_copied">Report copy হয়েছে</string>
-    <string name="probe_detail_servers">DNS server</string>
-    <string name="tab_app_doctor">App Doctor</string>
-    <string name="app_doctor_intro_title">সমস্যাটা এই ফোনে, নাকি website এ?</string>
-    <string name="app_doctor_intro_body">একটা website address লিখুন, এই ফোন থেকে চার বার check করা হবে। একবার check করলে হয় না — যে website পাঁচ বারে একবার fail করে, একবার দেখলে ওটা ঠিকই মনে হয়।</string>
-    <string name="probe_checking_webview">এখন app browser দিয়ে test করছি…</string>
-    <string name="probe_stack_java">সাধারণ check</string>
-    <string name="probe_stack_webview">App browser</string>
-    <string name="probe_stack_disagree">Site টা সাধারণভাবে খোলে, কিন্তু app browser এ খোলে না। যেসব app web view দিয়ে বানানো, সেগুলা fail করবে — যদিও বাকি সব check বলবে site ঠিক আছে।</string>
-    <string name="probe_context_transport">Connection</string>
-    <string name="probe_context_webview">App browser version</string>
+    <string name="probe_custom_button">দেখে নিন</string>
+    <string name="probe_checking">দেখছি… %2$d বারের মধ্যে %1$d নম্বর বার</string>
+    <string name="probe_invalid_domain">এটা ওয়েবসাইটের ঠিকানার মতো লাগছে না। এভাবে লিখুন: example.com</string>
+    <string name="probe_verdict_all_ok">এই ফোন থেকে ওয়েবসাইটটা ঠিকমতো খুলছে</string>
+    <string name="probe_verdict_intermittent">ওয়েবসাইটটা কখনো খোলে, কখনো খোলে না</string>
+    <string name="probe_verdict_intermittent_why">%2$d বারের মধ্যে %1$d বার খোলেনি। এমন সমস্যা একবার দেখলে ধরা পড়ে না।</string>
+    <string name="probe_verdict_dns_blocked">এই ফোন ওয়েবসাইটের ঠিকানা খুঁজে পাচ্ছে না</string>
+    <string name="probe_verdict_dns_why">ফোন ওয়েবসাইটের ঠিকানা খুঁজে বের করতে পারেনি। সাধারণত ফোনের ঠিকানা খোঁজার সেটিংস (DNS, Private DNS) বা ভিপিএন (VPN) এর কারণে এমন হয়।</string>
+    <string name="probe_verdict_tls_blocked">নিরাপদ সংযোগ কেউ আটকে দিচ্ছে</string>
+    <string name="probe_verdict_tcp_blocked">ফোন ঠিকানা পেয়েছে, কিন্তু ওয়েবসাইট ঢুকতে দেয়নি</string>
+    <string name="probe_verdict_unreachable">এই ফোন থেকে ওয়েবসাইটটা খোলা যাচ্ছে না</string>
+    <string name="probe_verdict_ok_detail">%1$d বারই খুলেছে। প্রতিবার প্রায় %2$d মিলিসেকেন্ড লেগেছে।</string>
+    <string name="probe_context_private_dns">ঠিকানা খোঁজার আলাদা সেটিংস (Private DNS)</string>
+    <string name="probe_context_vpn">ভিপিএন (VPN), মানে অন্য পথে নেট চালানো</string>
+    <string name="probe_context_captive">ওয়াইফাইতে আগে লগইন লাগবে</string>
+    <string name="probe_fix_private_dns">ঠিকানা খোঁজার সেটিংস খুলুন (Private DNS)</string>
+    <string name="probe_fix_vpn">ভিপিএন (VPN) সেটিংস খুলুন</string>
+    <string name="probe_fix_wifi">ওয়াইফাই সেটিংস খুলুন</string>
+    <string name="probe_show_details">আরও দেখুন</string>
+    <string name="probe_hide_details">কম দেখুন</string>
+    <string name="probe_copy_report">পুরো রিপোর্ট কপি করুন</string>
+    <string name="probe_copied">রিপোর্ট কপি হয়েছে</string>
+    <string name="probe_detail_servers">ঠিকানা খোঁজার সার্ভার (DNS)</string>
+    <string name="tab_app_doctor">অ্যাপ ডাক্তার</string>
+    <string name="app_doctor_intro_title">সমস্যা এই ফোনে, নাকি ওয়েবসাইটে?</string>
+    <string name="app_doctor_intro_body">একটা ওয়েবসাইটের ঠিকানা লিখুন। এই ফোন থেকে সেটা 4 বার খুলে দেখা হবে। একবার দেখা যথেষ্ট না। যে ওয়েবসাইট 5 বারে 1 বার খোলে না, একবার দেখলে সেটা ঠিকই মনে হয়।</string>
+    <string name="probe_checking_webview">এখন অ্যাপের ভেতর থেকে খুলে দেখছি…</string>
+    <string name="probe_stack_java">সাধারণভাবে খুললে</string>
+    <string name="probe_stack_webview">অ্যাপের ভেতর থেকে খুললে</string>
+    <string name="probe_stack_disagree">ওয়েবসাইটটা সাধারণভাবে খোলে, কিন্তু অ্যাপের ভেতর থেকে খোলে না। তাই কিছু অ্যাপে এটা খুলবে না, যদিও বাকি সব পরীক্ষায় ঠিক দেখাবে।</string>
+    <string name="probe_context_transport">নেট কীসে চলছে</string>
+    <string name="probe_context_webview">অ্যাপের ভেতরের ব্রাউজারের ভার্সন</string>
 
     <!-- Microphone test (2026-08-26) -->
-    <string name="mic_test_title">Microphone test</string>
-    <string name="mic_test_subtitle">আপনার mic record আর playback করে কিনা দেখুন</string>
-    <string name="mic_test_step_ready">৫ সেকেন্ডের মতো লাগবে। প্রথমে চুপ থাকুন, তারপর কিছু বলুন, তারপর শুনুন।</string>
-    <string name="mic_test_step_quiet">চুপ থাকুন — room এর শব্দ মাপছি…</string>
+    <string name="mic_test_title">মাইক পরীক্ষা</string>
+    <string name="mic_test_subtitle">মাইক আপনার কথা ধরে আবার শোনাতে পারে কি না, দেখুন</string>
+    <string name="mic_test_step_ready">5 সেকেন্ডের মতো লাগবে। আগে চুপ থাকুন। তারপর কিছু বলুন। তারপর শুনুন।</string>
+    <string name="mic_test_step_quiet">চুপ থাকুন — আশপাশের শব্দ মাপছি…</string>
     <string name="mic_test_step_speak">এবার কিছু বলুন, স্বাভাবিক গলায়…</string>
-    <string name="mic_test_step_playback">Playback হচ্ছে — শুনুন…</string>
+    <string name="mic_test_step_playback">আপনার কথা বাজছে — শুনুন…</string>
     <string name="mic_test_step_confirm">নিজের গলা শুনতে পেলেন?</string>
-    <string name="mic_test_start">Mic test শুরু করুন</string>
-    <string name="mic_test_again">আবার test করুন</string>
-    <string name="mic_test_replay">আবার play করুন</string>
+    <string name="mic_test_start">মাইক পরীক্ষা শুরু করুন</string>
+    <string name="mic_test_again">আবার পরীক্ষা করুন</string>
+    <string name="mic_test_replay">আবার শুনুন</string>
     <string name="mic_test_heard_yes">হ্যাঁ, শুনেছি</string>
-    <string name="mic_test_heard_no">না, কিছু না</string>
-    <string name="mic_test_room">Room এর শব্দ</string>
+    <string name="mic_test_heard_no">না, কিছু শুনিনি</string>
+    <string name="mic_test_room">আশপাশের শব্দ</string>
     <string name="mic_test_voice">আপনার গলা (সবচেয়ে জোরে)</string>
-    <string name="mic_test_headroom">Room এর চেয়ে কতটা বেশি</string>
-    <string name="mic_test_clipping">আপনার গলা mic এর জন্য বেশি জোরে ছিল, তাই কেটে গেছে। একটু দূরে সরে আবার test করুন।</string>
-    <string name="mic_test_verdict_ok">আপনার mic record করেছে আর playback ও হয়েছে। কাজ করছে।</string>
-    <string name="mic_test_verdict_not_heard">কিছু শুনতে পাননি। সমস্যা mic এ হতে পারে, speaker এ হতে পারে, আবার volume ও হতে পারে — volume বাড়ায়ে দেখুন, তারপর speaker test টা করেন।</string>
-    <string name="mic_test_perm_needed">Mic test করতে হলে record করার permission লাগবে। Recording টা এই ফোনেই থাকে, কোথাও save বা send হয় না।</string>
-    <string name="mic_test_perm_blocked">Microphone permission বন্ধ করা আছে। Android আর জিজ্ঞাসা করবে না, তাই Settings এ গিয়ে on করতে হবে।</string>
-    <string name="mic_test_grant">Microphone allow করুন</string>
-    <string name="mic_test_open_settings">App settings খুলুন</string>
-    <string name="mic_test_unavailable">Mic খোলা গেল না। অন্য কোনো app বা call ওটা use করতেছে হয়তো। বাকি app বন্ধ করে আবার try করুন।</string>
-    <string name="mic_test_retry">আবার try করুন</string>
-    <string name="tab_screen_test">Mic &amp; Screen</string>
+    <string name="mic_test_headroom">আশপাশের চেয়ে কত জোরে</string>
+    <string name="mic_test_clipping">আপনার গলা খুব জোরে ছিল, তাই মাইকে কথা কেটে গেছে। ফোন একটু দূরে ধরে আবার পরীক্ষা করুন।</string>
+    <string name="mic_test_verdict_ok">মাইক আপনার কথা ধরেছে, আবার শুনিয়েছে। মাইক ঠিক আছে।</string>
+    <string name="mic_test_verdict_not_heard">আপনি কিছু শোনেননি। সমস্যা মাইকে, স্পিকারে বা আওয়াজ কমানো থাকায় হতে পারে। আগে ফোনের আওয়াজ বাড়িয়ে দেখুন। তারপর স্পিকার পরীক্ষা করুন।</string>
+    <string name="mic_test_perm_needed">মাইক পরীক্ষা করতে আপনার কথা ধরার অনুমতি লাগবে। আপনার কথা এই ফোনেই থাকে। কোথাও জমা রাখা হয় না, কোথাও পাঠানো হয় না।</string>
+    <string name="mic_test_perm_blocked">মাইকের অনুমতি বন্ধ করা আছে। ফোন আর জিজ্ঞেস করবে না। তাই সেটিংসে গিয়ে নিজে চালু করতে হবে।</string>
+    <string name="mic_test_grant">মাইকের অনুমতি দিন</string>
+    <string name="mic_test_open_settings">অ্যাপের সেটিংস খুলুন</string>
+    <string name="mic_test_unavailable">মাইক চালু করা গেল না। হয়তো অন্য অ্যাপ বা ফোন কল মাইক চালাচ্ছে। বাকি অ্যাপ বন্ধ করে আবার চেষ্টা করুন।</string>
+    <string name="mic_test_retry">আবার চেষ্টা করুন</string>
 </resources>

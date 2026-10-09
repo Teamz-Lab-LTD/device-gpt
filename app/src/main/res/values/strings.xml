@@ -236,7 +236,7 @@
     
     <!-- Google Sign-In -->
     <!-- OAuth Client ID is set from local_config.properties at build time via resValue -->
-    <string name="default_web_client_id">YOUR_OAUTH_CLIENT_ID</string>
+    <string name="default_web_client_id" translatable="false">YOUR_OAUTH_CLIENT_ID</string>
 
     <!-- Website reachability probe (App Doctor release 1, 2026-08-18) -->
     <string name="probe_custom_title">Check a website</string>
