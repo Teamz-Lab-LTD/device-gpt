@@ -96,6 +96,11 @@ fun FirstScanGateScreen(
             }
             // Bounded: wait at most 2 s for the daily record before showing the score.
             kotlinx.coroutines.withTimeoutOrNull(2_000L) { daily.await() }
+            // The first-screen A/B arm is assigned from the server RC value only. On a fresh
+            // install the score used to beat the first fetch by about a second (emulator,
+            // 2026-10-09), leaving the user out of the experiment. Usually already done by now;
+            // bounded so an offline first launch waits at most 2.5 s more.
+            com.teamz.lab.debugger.utils.RcFetchGate.await(2_500L)
             scanResult = result
             val total = result.total
             if (total == null) {

@@ -252,6 +252,7 @@ object RemoteConfigUtils {
 
         AppLog.d("RemoteConfigUtils", "init() - Defaults set, fetching and activating...")
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            RcFetchGate.markDone()
             if (task.isSuccessful) {
                 AppLog.d("RemoteConfigUtils", "init() - ✅ RemoteConfig activated successfully")
                 AppLog.d("RemoteConfigUtils", "init() - show_app_open_ads: ${remoteConfig.getBoolean("show_app_open_ads")}")
