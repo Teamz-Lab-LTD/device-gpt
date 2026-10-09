@@ -343,6 +343,10 @@ fun DeviceInfoSection(
         }
     }
 
+    // The typed number lives above the list so scrolling does not clear it; it is never saved anywhere.
+    val showOfficialCheck = remember { shouldShowOfficialPhoneCheck(context) }
+    val officialCheckState = remember { OfficialPhoneCheckState() }
+
     // Device info list - pass AI callbacks to show AI icons; Zero Trust Dashboard as header
     ExpandableInfoList(
         infoList = deviceInfo,
@@ -358,6 +362,10 @@ fun DeviceInfoSection(
         } else null,
         onItemAIClick = if (state.isFullyLoaded) onItemAIClick else null,
         headerContent = {
+            // First card for people in Bangladesh: "Is this phone official?" (BTRC helper).
+            if (showOfficialCheck) {
+                OfficialPhoneCheckCard(state = officialCheckState, surface = "device_info")
+            }
             ZeroTrustDashboard(onAIClick = onItemAIClick)
         },
         onPremiumGateClick = onPremiumGateClick

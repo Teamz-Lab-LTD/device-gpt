@@ -359,6 +359,14 @@ enum class AnalyticsEvent(val eventName: String) {
     MicTestCompleted("mic_test_completed"),
     MicTestFailed("mic_test_failed"),
     MicTestPlaybackAnswered("mic_test_playback_answered"),
+    // "Is this phone official?" (BTRC / NEIR helper, Bangladesh, 2026-10-09). The only param is
+    // `surface` (health / device_info). The IMEI, or any part of it, is never a value here.
+    OfficialCheckShown("opc_shown"),
+    OfficialCheckImeiValid("opc_imei_valid"),
+    OfficialCheckSmsOpened("opc_sms_opened"),
+    OfficialCheckUssdOpened("opc_ussd_opened"),
+    OfficialCheckWebOpened("opc_web_opened"),
+    OfficialCheckDialImeiOpened("opc_dial_imei_opened"),
     FsTestChosen("fs_test_chosen"),                       // param: test
     FsDoneCardShown("fs_done_card_shown"),
     FsDoneCardAction("fs_done_card_action"),              // param: action

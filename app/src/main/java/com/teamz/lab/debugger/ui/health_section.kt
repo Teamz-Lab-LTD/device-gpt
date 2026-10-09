@@ -342,6 +342,12 @@ fun HealthSection(
     }
     
     
+    // "Is this phone official?" (BTRC helper): for people in Bangladesh only. The typed number lives here,
+    // above the list, so it is not lost when the card scrolls off screen; it is never saved anywhere.
+    val showOfficialCheck = remember { shouldShowOfficialPhoneCheck(context) }
+    val officialCheckState = remember { OfficialPhoneCheckState() }
+    val officialCheckAfterLastScore = remember { FirstScanGate.hasCompletedScan(context) }
+
     LazyColumn(
         state = listState,
         modifier = Modifier
@@ -408,6 +414,13 @@ fun HealthSection(
             }
         }
 
+        // "Is this phone official?": the question a buyer in Bangladesh asks first. It follows the score card
+        // at the top (and the ad under it, whose place on the first screen is deliberate and unchanged).
+        if (showOfficialCheck && officialCheckAfterLastScore) {
+            item(key = "official_phone_check") {
+                OfficialPhoneCheckCard(state = officialCheckState, surface = "health")
+            }
+        }
 
         // Health Score Card
         item(key = "health_score") {
@@ -475,6 +488,13 @@ fun HealthSection(
                 onScoreClick = onScoreClickCallback,
                 onAIClick = onAIClick
             )
+        }
+
+        // No first-scan score card above: the card goes right after this score card instead.
+        if (showOfficialCheck && !officialCheckAfterLastScore) {
+            item(key = "official_phone_check") {
+                OfficialPhoneCheckCard(state = officialCheckState, surface = "health")
+            }
         }
 
         // Verified Report teaser - shown after scan completes

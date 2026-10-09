@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- "Is this phone official?": the BTRC / NEIR helper for Bangladesh. See utils/OfficialPhoneCheck.kt.
+         IMEI, BTRC, KYD, SMS, 16002, *16161# and *#06# are typed or recognised exactly: never translate them. -->
+    <string name="opc_title">Is this phone official?</string>
+    <string name="opc_subtitle">Ask BTRC once before you buy or sell</string>
+    <string name="opc_step1_title">See the IMEI</string>
+    <string name="opc_step1_body">The IMEI is the phone\'s own 15-digit number. Dial *#06# and the phone shows it.</string>
+    <string name="opc_dial_imei">Dial *#06#</string>
+    <string name="opc_about_phone">Or look in the phone\'s settings</string>
+    <string name="opc_step1_tip">The number on the screen should match the number printed on the box or the sticker. Match them once before you buy.</string>
+    <string name="opc_step2_title">Type the IMEI here</string>
+    <string name="opc_imei_label">IMEI, 15 digits</string>
+    <string name="opc_two_sims">A phone with two SIM slots has two IMEIs. Either one can be checked.</string>
+    <string name="opc_state_empty">Type the 15 digits the phone shows.</string>
+    <string name="opc_state_short">%1$s more digits to type</string>
+    <string name="opc_state_invalid">This number is not a valid IMEI. Check for a typing mistake.</string>
+    <string name="opc_state_valid">The number is well-formed. Now ask BTRC.</string>
+    <string name="opc_step3_title">Ask BTRC</string>
+    <string name="opc_step3_locked">Type the full IMEI first.</string>
+    <string name="opc_send_sms">Write the SMS to 16002</string>
+    <string name="opc_sms_note">Your SMS app opens with KYD and the IMEI already written. You press send. Your mobile operator may charge for the SMS. BTRC answers by SMS.</string>
+    <string name="opc_other_ways">Two other ways. You type the IMEI again there.</string>
+    <string name="opc_dial_ussd">Dial *16161#</string>
+    <string name="opc_open_web">Open the BTRC website</string>
+    <string name="opc_meaning_title">What the answer means</string>
+    <string name="opc_meaning_body">BTRC\'s SMS says whether this handset is valid in its register. If it says it is not, find out more before you buy. Only BTRC can give this answer. A well-formed number is not proof.</string>
+    <string name="opc_privacy">The IMEI stays on this phone. DeviceGPT does not read, store or send it. The check is done by BTRC.</string>
+    <string name="opc_no_dialer">No phone app was found on this device. Try from a phone.</string>
+    <string name="opc_no_sms">No SMS app was found on this device. From a phone, send KYD and the IMEI to 16002.</string>
+    <string name="opc_no_browser">No browser was found on this device.</string>
+    <string name="opc_no_settings">The settings page could not be opened.</string>
+</resources>

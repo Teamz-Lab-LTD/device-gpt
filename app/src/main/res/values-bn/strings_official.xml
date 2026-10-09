@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- "Is this phone official?": the BTRC / NEIR helper for Bangladesh. See utils/OfficialPhoneCheck.kt.
+         IMEI, BTRC, KYD, SMS, 16002, *16161# and *#06# are typed or recognised exactly: never translate them. -->
+    <string name="opc_title">ফোনটা অফিসিয়াল তো?</string>
+    <string name="opc_subtitle">কেনা বা বেচার আগে একবার মিলিয়ে নিন</string>
+    <string name="opc_step1_title">IMEI দেখুন</string>
+    <string name="opc_step1_body">IMEI হলো ফোনের নিজের 15 সংখ্যার নম্বর। *#06# চাপলে ফোন নিজেই দেখায়।</string>
+    <string name="opc_dial_imei">*#06# চাপুন</string>
+    <string name="opc_about_phone">অথবা ফোনের সেটিংসে দেখুন</string>
+    <string name="opc_step1_tip">স্ক্রিনের নম্বর আর বাক্সের গায়ে লেখা নম্বর এক হওয়ার কথা। কেনার আগে একবার মিলিয়ে নিন।</string>
+    <string name="opc_step2_title">IMEI এখানে লিখুন</string>
+    <string name="opc_imei_label">IMEI, 15 সংখ্যা</string>
+    <string name="opc_two_sims">দুই সিমের ফোনে দুটো IMEI থাকে। যেকোনো একটা লিখলেই হবে।</string>
+    <string name="opc_state_empty">ফোনে যে 15টা সংখ্যা দেখছেন, সেগুলো লিখুন।</string>
+    <string name="opc_state_short">আরও %1$sটা সংখ্যা বাকি</string>
+    <string name="opc_state_invalid">এই নম্বরটা ঠিক IMEI না। লিখতে ভুল হয়েছে কি না, দেখুন।</string>
+    <string name="opc_state_valid">নম্বরটা ঠিকমতো লেখা হয়েছে। এবার BTRC-কে জিজ্ঞেস করুন।</string>
+    <string name="opc_step3_title">BTRC-কে জিজ্ঞেস করুন</string>
+    <string name="opc_step3_locked">আগে পুরো IMEI লিখুন।</string>
+    <string name="opc_send_sms">16002-এ SMS লিখুন</string>
+    <string name="opc_sms_note">SMS অ্যাপ খুলবে। সেখানে KYD আর IMEI লেখা থাকবে। পাঠানোর বোতাম আপনি চাপবেন। সিম কোম্পানি SMS-এর টাকা কাটতে পারে। উত্তর আসবে BTRC-র SMS-এ।</string>
+    <string name="opc_other_ways">আরও দুই উপায় আছে। সেখানে IMEI আবার লিখতে হবে।</string>
+    <string name="opc_dial_ussd">*16161# চাপুন</string>
+    <string name="opc_open_web">BTRC-র ওয়েবসাইট খুলুন</string>
+    <string name="opc_meaning_title">উত্তরের মানে কী</string>
+    <string name="opc_meaning_body">ফোনটা BTRC-র খাতায় ঠিক আছে কি না, SMS-এ সেটাই লেখা থাকবে। ঠিক নেই লিখলে কেনার আগে আরেকটু জেনে নিন। এই উত্তর শুধু BTRC দিতে পারে। নম্বর ঠিকমতো লেখা মানেই ফোন অফিসিয়াল, তা না।</string>
+    <string name="opc_privacy">IMEI এই ফোনেই থাকে। DeviceGPT এটা পড়ে না, জমা রাখে না, কোথাও পাঠায় না। মিলিয়ে দেখে BTRC।</string>
+    <string name="opc_no_dialer">এখানে কল করার অ্যাপ নেই। অন্য একটা ফোন থেকে চেষ্টা করুন।</string>
+    <string name="opc_no_sms">এখানে SMS-এর অ্যাপ নেই। অন্য একটা ফোন থেকে 16002-এ KYD আর IMEI লিখে পাঠান।</string>
+    <string name="opc_no_browser">এখানে ওয়েবসাইট খোলার অ্যাপ নেই।</string>
+    <string name="opc_no_settings">সেটিংস খোলা গেল না।</string>
+</resources>

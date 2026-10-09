@@ -84,6 +84,20 @@ class BanglaStringsGuardTest {
         "USD",       // currency code the person has to type
         "example",   // example.com, shown as the pattern of a website address
         "com",       // example.com
+        "IMEI",      // printed on the phone's box and shown by the phone itself when *#06# is dialled
+        "BTRC",      // the regulator's name as it appears as the sender of the reply
+        "KYD",       // the exact word the person must see at the start of the message to 16002
+        "SMS",       // the name of the phone's own message app, and what operators call a text
+    )
+
+    /**
+     * Codes the person has to dial or send to exactly. They are digits and signs, so the Latin-word check
+     * never sees them; this list is what keeps a later rewrite from changing or dropping one in Bangla.
+     */
+    private val exactCodes = listOf(
+        "16002",   // BTRC's short number for the message
+        "*16161#", // BTRC's dial code
+        "*#06#",   // the code every phone answers with its own IMEI
     )
 
     /**
@@ -163,6 +177,20 @@ class BanglaStringsGuardTest {
                 problems.joinToString("\n"),
             problems.isEmpty(),
         )
+    }
+
+    @Test
+    fun `a code to dial or send to is the same in Bangla as in English`() {
+        val problems = mutableListOf<String>()
+        for (code in exactCodes) {
+            val keys = en.filter { it.value.value.contains(code) }.keys
+            assertTrue("exact code $code is in no English string any more", keys.isNotEmpty())
+            keys.filter { bn[it]?.value?.contains(code) != true }.forEach { problems += "$it: $code" }
+        }
+        // And no Bangla digits inside the feature that asks the person to type digits.
+        bn.filter { it.key.startsWith("opc_") && Regex("[\\u09E6-\\u09EF]").containsMatchIn(it.value.value) }
+            .keys.forEach { problems += "$it: Bangla digits" }
+        assertTrue("code changed or missing in values-bn:\n" + problems.joinToString("\n"), problems.isEmpty())
     }
 
     @Test
