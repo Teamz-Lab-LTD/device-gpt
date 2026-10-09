@@ -12,6 +12,7 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.LocaleManager
+import com.teamz.lab.debugger.ui.icons.RemoteIcons
 
 /**
  * Device Monitor Widget
@@ -203,6 +204,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             else -> 0xFFAAAAAA.toInt()                // grey — no data yet
         }
         views.setInt(R.id.widget_health_score, "setTextColor", healthColor)
+        views.setInt(R.id.widget_health_icon, "setColorFilter", healthColor)
         
         // Play policy 2026-07-10: streak row removed — FOMO mechanic on a utility
         // widget is manufactured urgency. View kept in XML for layout stability,
@@ -213,10 +215,17 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         // hook, not urgency. v1: factual alert from the monitor service.
         val alertLine = if (widgetV2 && v2DeltaLine != null) v2DeltaLine else alertMessage
         if (alertLine.isNotEmpty()) {
-            views.setViewVisibility(R.id.widget_alert, android.view.View.VISIBLE)
-            views.setTextViewText(R.id.widget_alert, alertLine)
+            // The stored line still starts with its emoji (data, and old installs have it saved): it picks
+            // the row's icon and is never drawn. An "all normal" line is not an alarm, so it is not red.
+            val alertIcon = RemoteIcons.forText(alertLine, R.drawable.ic_dg_warning)
+            val alertColor = if (alertIcon == R.drawable.ic_dg_check) ALERT_CALM_COLOR else ALERT_COLOR
+            views.setViewVisibility(R.id.widget_alert_row, android.view.View.VISIBLE)
+            views.setImageViewResource(R.id.widget_alert_icon, alertIcon)
+            views.setInt(R.id.widget_alert_icon, "setColorFilter", alertColor)
+            views.setInt(R.id.widget_alert, "setTextColor", alertColor)
+            views.setTextViewText(R.id.widget_alert, RemoteIcons.plain(alertLine))
         } else {
-            views.setViewVisibility(R.id.widget_alert, android.view.View.GONE)
+            views.setViewVisibility(R.id.widget_alert_row, android.view.View.GONE)
         }
         
         // Get additional info
@@ -251,6 +260,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             else -> 0xFFFFFFFF.toInt()                       // white — normal (matches XML default)
         }
         views.setInt(R.id.widget_battery, "setTextColor", batteryColor)
+        views.setInt(R.id.widget_battery_icon, "setColorFilter", batteryColor)
         
         // Temperature with clear label - show "---" on errors
         val tempDisplay = if (tempValue != "--" && tempValue.isNotEmpty()) {
@@ -278,6 +288,7 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             else -> 0xFFFFFFFF.toInt()             // white — normal
         }
         views.setInt(R.id.widget_thermal, "setTextColor", tempColor)
+        views.setInt(R.id.widget_thermal_icon, "setColorFilter", tempColor)
 
         // RAM with clear label - show "---" on errors
         views.setTextViewText(
@@ -345,7 +356,8 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         )
         
         // Compelling CTA (Click Trigger)
-        views.setTextViewText(R.id.widget_cta, ctaMessage)
+        // The layout draws the "go" arrow as an icon, so the typed one (also in text saved earlier) goes.
+        views.setTextViewText(R.id.widget_cta, RemoteIcons.plain(ctaMessage))
         
         // Status indicator in Row 3 - show most meaningful actionable info
         // When alert is showing primary issue, show secondary critical info to avoid redundancy
@@ -411,7 +423,12 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             // No alert shown, so show primary status here
             primaryStatus(text, hasScore, tempValue, ramPercent, healthScore)
         }
-        views.setTextViewText(R.id.widget_status, statusText)
+        // The status words keep their leading emoji as data; it picks the cell's icon and is not drawn.
+        views.setImageViewResource(
+            R.id.widget_status_icon,
+            RemoteIcons.forText(statusText, R.drawable.ic_dg_bar_chart),
+        )
+        views.setTextViewText(R.id.widget_status, RemoteIcons.plain(statusText))
         
         // Update time in bottom right (user-friendly format)
         val timeAgo = if (lastUpdate > 0) {
@@ -480,6 +497,10 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
 
     companion object {
         const val ACTION_UPDATE_WIDGET = "com.teamz.lab.debugger.UPDATE_LOCK_SCREEN_WIDGET"
+
+        /** Alert row: the same red-coral as the layout default, and the calm green for "all normal". */
+        private const val ALERT_COLOR = 0xFFFF6B6B.toInt()
+        private const val ALERT_CALM_COLOR = 0xFF34D399.toInt()
 
         /**
          * Play policy 2026-07-10: prefs written by a pre-v3.2 APK can still contain
