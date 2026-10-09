@@ -38,7 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
+import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.BuildConfig
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
@@ -49,9 +51,26 @@ import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AIPromptGenerator
 import com.teamz.lab.debugger.utils.AdConfig
 
+/**
+ * One row of the phone-info or network-info list.
+ *
+ * The English text and the shown text are kept apart on purpose. [id] and [englishContent] are
+ * what analytics, the AI prompt and its file name receive; [title] and [content] are what the
+ * person reads, in the app language.
+ */
+data class InfoRow(
+    val id: String,
+    val title: String,
+    val content: String,
+    val englishContent: String,
+)
+
+/** The first words of the premium teaser line, in every language. Kept as data: the list looks for it. */
+internal const val PREMIUM_TEASER_MARK = "⭐"
+
 // Sealed class to represent list items (info or ad)
 private sealed class ListItem {
-    data class InfoItem(val index: Int, val key: String, val value: String) : ListItem()
+    data class InfoItem(val index: Int, val row: InfoRow) : ListItem()
     data class AdItem(val index: Int, val ad: NativeAd) : ListItem()
 }
 
@@ -73,7 +92,7 @@ fun generateItemPrompt(itemTitle: String, itemContent: String, appName: String, 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExpandableInfoList(
-    infoList: List<Pair<String, String>>,
+    infoList: List<InfoRow>,
     activity: Activity,
     onAIClick: (() -> Unit)? = null,
     onItemAIClick: ((String, String) -> Unit)? = null,
@@ -94,18 +113,19 @@ fun ExpandableInfoList(
         if (searchQuery.isEmpty()) {
             infoList
         } else {
-            infoList.filter { (title, detail) ->
-                title.contains(searchQuery, ignoreCase = true) || detail.contains(
-                    searchQuery,
-                    ignoreCase = true
-                )
+            // Both the shown text and the English are searched, so a word typed in either finds the row.
+            infoList.filter { row ->
+                row.title.contains(searchQuery, ignoreCase = true) ||
+                    row.content.contains(searchQuery, ignoreCase = true) ||
+                    row.id.contains(searchQuery, ignoreCase = true) ||
+                    row.englishContent.contains(searchQuery, ignoreCase = true)
             }
         }
     }
     
     // Create index map once for O(1) lookup instead of O(n) indexOfFirst
     val originalIndexMap = remember(infoList) {
-        infoList.mapIndexed { index, (key, _) -> key to index }.toMap()
+        infoList.mapIndexed { index, row -> row.id to index }.toMap()
     }
     
     // Subscribe to NativeAdManager.cacheGeneration so adPositionCache + flattenedList
@@ -118,8 +138,8 @@ fun ExpandableInfoList(
     val adPositionCache = remember(filteredInfo.value, originalIndexMap, adCacheGen) {
         val cache = mutableMapOf<Int, NativeAd?>()
         val filtered = filteredInfo.value
-        filtered.forEachIndexed { filteredIndex, (key, _) ->
-            val actualIndex = originalIndexMap[key] ?: filteredIndex
+        filtered.forEachIndexed { filteredIndex, row ->
+            val actualIndex = originalIndexMap[row.id] ?: filteredIndex
             if (actualIndex % 5 == 0 && actualIndex != 0 && actualIndex < infoList.size) {
                 val positionId = "device_info_list_$actualIndex"
                 // Cache ad lookup to prevent blocking during composition
@@ -139,9 +159,9 @@ fun ExpandableInfoList(
     val flattenedList = remember(filteredInfo.value, originalIndexMap, adPositionCache, adCacheGen) {
         val list = mutableListOf<ListItem>()
         val filtered = filteredInfo.value
-        filtered.forEachIndexed { filteredIndex, (key, value) ->
+        filtered.forEachIndexed { filteredIndex, row ->
             // Use O(1) map lookup instead of O(n) indexOfFirst
-            val actualIndex = originalIndexMap[key] ?: filteredIndex
+            val actualIndex = originalIndexMap[row.id] ?: filteredIndex
             
             // Add ad before item if it's a 5th item (except first)
             // Use cached ad to prevent blocking during composition
@@ -151,7 +171,7 @@ fun ExpandableInfoList(
             }
             
             // Add the info item
-            list.add(ListItem.InfoItem(actualIndex, key, value))
+            list.add(ListItem.InfoItem(actualIndex, row))
         }
         list
     }
@@ -218,7 +238,7 @@ fun ExpandableInfoList(
                 // Include hashCode to ensure keys are unique and stable
                 when (item) {
                     is ListItem.AdItem -> "ad_${item.index}_${item.ad.hashCode()}"
-                    is ListItem.InfoItem -> "info_${item.index}_${item.key.hashCode()}"
+                    is ListItem.InfoItem -> "info_${item.index}_${item.row.id.hashCode()}"
                 }
             }
         ) { index, item ->
@@ -242,8 +262,11 @@ fun ExpandableInfoList(
                 is ListItem.InfoItem -> {
                     // Render info item
                     val actualIndex = item.index
-                    val key = item.key
-                    val value = item.value
+                    // key = English id (analytics, AI prompt, premium gate). title / value = what is shown.
+                    val key = item.row.id
+                    val title = item.row.title
+                    val value = item.row.content
+                    val englishValue = item.row.englishContent
                     val expanded = expandedItems[actualIndex] ?: false
                     val inlineAd = inlineAds[actualIndex]
                     
@@ -291,7 +314,7 @@ fun ExpandableInfoList(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = key,
+                                text = title,
                                 style = titleTextStyle,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.weight(1f)
@@ -303,7 +326,7 @@ fun ExpandableInfoList(
                                 if (onItemAIClick != null) {
                                     IconButton(
                                         onClick = {
-                                            onItemAIClick(key, value)
+                                            onItemAIClick(key, englishValue)
                                             AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf(
                                                 "source" to "device_info_item",
                                                 "item_title" to key
@@ -313,7 +336,7 @@ fun ExpandableInfoList(
                                     ) {
                                         Icon(
                                             imageVector = AIIcon.icon,
-                                            contentDescription = "Get AI insights about $key",
+                                            contentDescription = stringResource(R.string.info_cd_ai_insights, title),
                                             tint = AIIcon.color(),
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -322,7 +345,9 @@ fun ExpandableInfoList(
                                 if (value.length > 50) {
                                     Icon(
                                         imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                        contentDescription = if (expanded) "Collapse" else "Expand",
+                                        contentDescription = stringResource(
+                                            if (expanded) R.string.info_cd_collapse else R.string.info_cd_expand
+                                        ),
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
@@ -331,11 +356,12 @@ fun ExpandableInfoList(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Check if this is a premium-gated section (contains teaser marker)
-                        val isPremiumGated = value.contains("⭐ Unlock Premium to see")
+                        // Read from the English text, which always carries the same teaser words.
+                        val isPremiumGated = englishValue.contains("⭐ Unlock Premium to see")
 
                         if (expanded && isPremiumGated && onPremiumGateClick != null) {
                             // Show free lines + unlock button (not just plain text)
-                            val parts = value.split("\n\n⭐")
+                            val parts = value.split("\n\n$PREMIUM_TEASER_MARK")
                             val freeContent = parts.firstOrNull() ?: value
                             Text(
                                 text = freeContent,
@@ -366,7 +392,7 @@ fun ExpandableInfoList(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "Unlock Full Report",
+                                    stringResource(R.string.info_unlock_full_report),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -393,7 +419,7 @@ fun ExpandableInfoList(
                                         onLongClick = {
                                             copyToClipboard(
                                                 context = activity,
-                                                title = key,
+                                                title = title,
                                                 body = value
                                             )
                                         }

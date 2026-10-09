@@ -26,11 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.TrustCheckResult
 import com.teamz.lab.debugger.utils.TrustCheckStatus
 import com.teamz.lab.debugger.utils.TrustSection
@@ -128,7 +131,7 @@ fun ZeroTrustDashboard(
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Security,
-                            contentDescription = "Trust",
+                            contentDescription = stringResource(R.string.info_zt_cd),
                             modifier = Modifier.size(24.dp),
                             tint = when {
                                 isLoading -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,15 +148,16 @@ fun ZeroTrustDashboard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Security Dashboard",
+                        text = stringResource(R.string.info_zt_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = when {
-                            isLoading -> "Checking how safe your phone is..."
-                            report != null -> "One simple score for your phone and connection: ${report!!.compositeScore}/100"
-                            else -> "Tap to see details"
+                            isLoading -> stringResource(R.string.info_zt_checking)
+                            report != null ->
+                                stringResource(R.string.info_zt_summary, report!!.compositeScore.toString())
+                            else -> stringResource(R.string.info_zt_tap)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -250,7 +254,7 @@ fun ZeroTrustDashboard(
                             ) {
                                 Icon(Icons.Default.Share, null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Share", style = MaterialTheme.typography.labelLarge)
+                                Text(stringResource(R.string.share), style = MaterialTheme.typography.labelLarge)
                             }
 
                             if (onAIClick != null) {
@@ -271,7 +275,7 @@ fun ZeroTrustDashboard(
                                         tint = com.teamz.lab.debugger.utils.AIIcon.color()
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Ask AI", style = MaterialTheme.typography.labelLarge)
+                                    Text(stringResource(R.string.info_ask_ai), style = MaterialTheme.typography.labelLarge)
                                 }
                             }
                         }
@@ -370,7 +374,8 @@ private fun TrustSectionCard(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = section.displayName,
+                    // displayName is English data (share text, AI prompt); shown in the app language.
+                    text = InfoTextLocalizer.localize(LocalContext.current, section.displayName),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -405,6 +410,13 @@ private fun TrustSectionCard(
 @Composable
 private fun TrustCheckRow(check: TrustCheckResult) {
     var showDetail by remember { mutableStateOf(false) }
+    // The check's own text is English data: the share text and the AI prompt are built from it.
+    val context = LocalContext.current
+    val shownName = remember(check.displayName) { InfoTextLocalizer.localize(context, check.displayName) }
+    val shownDetail = remember(check.detail) { InfoTextLocalizer.localize(context, check.detail) }
+    val shownRecommendation = remember(check.recommendation) {
+        check.recommendation?.let { InfoTextLocalizer.localize(context, it) }
+    }
     val statusColor = when (check.status) {
         TrustCheckStatus.PASS -> Color(0xFF4CAF50)
         TrustCheckStatus.WARNING -> Color(0xFFFF9800)
@@ -418,9 +430,9 @@ private fun TrustCheckRow(check: TrustCheckResult) {
         TrustCheckStatus.ERROR -> Icons.Default.Help
     }
     val statusLabel = when (check.status) {
-        TrustCheckStatus.PASS -> "OK"
-        TrustCheckStatus.WARNING -> "Careful"
-        TrustCheckStatus.FAIL -> "Issue"
+        TrustCheckStatus.PASS -> stringResource(R.string.info_zt_ok)
+        TrustCheckStatus.WARNING -> stringResource(R.string.info_zt_careful)
+        TrustCheckStatus.FAIL -> stringResource(R.string.info_zt_issue)
         TrustCheckStatus.ERROR -> "?"
     }
 
@@ -439,7 +451,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
             Icon(statusIcon, contentDescription = statusLabel, modifier = Modifier.size(20.dp), tint = statusColor)
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = check.displayName,
+                text = shownName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
@@ -462,11 +474,11 @@ private fun TrustCheckRow(check: TrustCheckResult) {
         AnimatedVisibility(visible = showDetail) {
             Column(modifier = Modifier.padding(top = 8.dp, start = 30.dp)) {
                 Text(
-                    text = check.detail,
+                    text = shownDetail,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (check.recommendation != null) {
+                if (shownRecommendation != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(
@@ -477,7 +489,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = check.recommendation,
+                            text = shownRecommendation,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFFF9800),
                             fontWeight = FontWeight.Medium

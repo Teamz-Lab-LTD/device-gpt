@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.calculateInternetHealthScore
 import com.teamz.lab.debugger.utils.string
 import com.teamz.lab.debugger.R
@@ -252,29 +253,37 @@ fun NetworkInfoSection(
     }
 
     val networkInfo = listOf(
-        "Network Usage Breakdown" to networkUsageStats,
-        "ISP Details" to ispDetails, // ✅ ISP Name & ASN
-        "ISP Streaming/CDN Servers" to ispStreamingServers,
-        "Network Privacy Checks" to govSurveillance,
-        "Internet Health Score" to healthScore,
-        "Mobile Data Speed" to mobileSpeed,
-        "Download Speed" to downloadSpeed,
-        "Upload Speed" to uploadSpeed,
-        "Network Packet Loss" to packetLoss,
-        "Connection Stability (Jitter)" to jitter,
-        "Response Speed (Latency)" to latencyText,
-        "Ping Test to Popular Servers" to pingResults,
-        "Internet Protocol Support" to ipvSupport,
-        "Local IP Addresses" to localIpAddress,
-        "Public IP Address" to ipAddress,
-        "Router IP Address (Gateway)" to gatewayAddress,
-        "Complete Wi-Fi Information" to wifiInfo,
-        "Connected Network" to networkType,
-        "Requires Login to Use Internet (Captive Portal)" to captivePortalStatus, // Non-Tech: Redirect on connect, Tech: Captive Portal
-        "DNS Servers" to dnsServers, // ✅ Shows DNS Details
-        "Data Packet Limit (MTU)" to mtuSize, // Tech: MTU, Non-Tech: Packet Size Limit
-        "Internet Active Time" to internetUptime, // Non-Tech: How long the internet has been active
-    )
+        Triple("Network Usage Breakdown", R.string.info_net_sec_usage, networkUsageStats),
+        Triple("ISP Details", R.string.info_net_sec_isp, ispDetails), // ✅ ISP Name & ASN
+        Triple("ISP Streaming/CDN Servers", R.string.info_net_sec_streaming, ispStreamingServers),
+        Triple("Network Privacy Checks", R.string.info_net_sec_privacy, govSurveillance),
+        Triple("Internet Health Score", R.string.info_net_sec_health, healthScore),
+        Triple("Mobile Data Speed", R.string.info_net_sec_mobile_speed, mobileSpeed),
+        Triple("Download Speed", R.string.info_net_sec_download, downloadSpeed),
+        Triple("Upload Speed", R.string.info_net_sec_upload, uploadSpeed),
+        Triple("Network Packet Loss", R.string.info_net_sec_packet_loss, packetLoss),
+        Triple("Connection Stability (Jitter)", R.string.info_net_sec_jitter, jitter),
+        Triple("Response Speed (Latency)", R.string.info_net_sec_latency, latencyText),
+        Triple("Ping Test to Popular Servers", R.string.info_net_sec_ping, pingResults),
+        Triple("Internet Protocol Support", R.string.info_net_sec_ip_support, ipvSupport),
+        Triple("Local IP Addresses", R.string.info_net_sec_local_ip, localIpAddress),
+        Triple("Public IP Address", R.string.info_net_sec_public_ip, ipAddress),
+        Triple("Router IP Address (Gateway)", R.string.info_net_sec_gateway, gatewayAddress),
+        Triple("Complete Wi-Fi Information", R.string.info_net_sec_wifi, wifiInfo),
+        Triple("Connected Network", R.string.info_net_sec_connected, networkType),
+        Triple("Requires Login to Use Internet (Captive Portal)", R.string.info_net_sec_captive, captivePortalStatus), // Non-Tech: Redirect on connect, Tech: Captive Portal
+        Triple("DNS Servers", R.string.info_net_sec_dns, dnsServers), // ✅ Shows DNS Details
+        Triple("Data Packet Limit (MTU)", R.string.info_net_sec_mtu, mtuSize), // Tech: MTU, Non-Tech: Packet Size Limit
+        Triple("Internet Active Time", R.string.info_net_sec_uptime, internetUptime), // Non-Tech: How long the internet has been active
+    ).map { (id, titleRes, english) ->
+        // English stays for share, AI and analytics; only what is drawn follows the app language.
+        InfoRow(
+            id = id,
+            title = context.string(titleRes),
+            content = InfoTextLocalizer.localize(context, english),
+            englishContent = english,
+        )
+    }
 
     // Check if all network data is fully loaded
     // All items should have data (not equal to loadingText)
@@ -285,15 +294,16 @@ fun NetworkInfoSection(
         gatewayAddress, wifiInfo, captivePortalStatus, dnsServers,
         mtuSize, internetUptime
     ) {
-        networkInfo.all { (_, content) -> 
-            content.isNotEmpty() && content != loadingText
+        networkInfo.all { row ->
+            row.englishContent.isNotEmpty() && row.englishContent != loadingText
         }
     }
 
     // Generate share content only when ALL data is fully loaded
     val shareContent = if (isFullyLoaded) {
-        networkInfo.joinToString("\n\n") { (title, content) ->
-            "$title\n$content"
+        // English on purpose: this text is shared to other apps and handed to an AI.
+        networkInfo.joinToString("\n\n") { row ->
+            "${row.id}\n${row.englishContent}"
         }
     } else {
         loadingText
