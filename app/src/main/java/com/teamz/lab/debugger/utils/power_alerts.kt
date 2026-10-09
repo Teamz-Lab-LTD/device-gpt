@@ -1,6 +1,7 @@
 package com.teamz.lab.debugger.utils
 
 import android.content.Context
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.PowerConsumptionAggregator.PowerStats
 import com.teamz.lab.debugger.utils.PowerConsumptionUtils.PowerConsumptionSummary
 
@@ -48,23 +49,27 @@ object PowerAlerts {
         val alerts = mutableListOf<PowerAlert>()
         
         if (powerData == null) return alerts
+
+        // The caller is often the monitor service, whose context may predate a language switch.
+        val ctx = LocaleManager.localizedContext(context)
         
         // Check total power consumption
-        alerts.addAll(checkTotalPowerAlerts(powerData, aggregatedStats))
+        alerts.addAll(checkTotalPowerAlerts(ctx, powerData, aggregatedStats))
         
         // Check component-specific alerts
-        alerts.addAll(checkComponentAlerts(powerData))
+        alerts.addAll(checkComponentAlerts(ctx, powerData))
         
         // Check power spikes
-        alerts.addAll(checkPowerSpikes(powerData, aggregatedStats))
+        alerts.addAll(checkPowerSpikes(ctx, powerData, aggregatedStats))
         
         // Check trend warnings
-        alerts.addAll(checkTrendWarnings(aggregatedStats))
+        alerts.addAll(checkTrendWarnings(ctx, aggregatedStats))
         
         return alerts
     }
     
     private fun checkTotalPowerAlerts(
+        context: Context,
         powerData: PowerConsumptionSummary,
         stats: PowerStats?
     ): List<PowerAlert> {
@@ -75,10 +80,8 @@ object PowerAlerts {
             alerts.add(
                 PowerAlert(
                     type = AlertType.HIGH_POWER_CONSUMPTION,
-                    title = "Critical Power Consumption",
-                    message = "Your device is consuming ${String.format("%.1f", totalPower / 1000)}W, " +
-                            "which is critically high. This will drain your battery very quickly. " +
-                            "Consider closing apps and enabling battery saver mode.",
+                    title = context.getString(R.string.pw_alert_critical_title),
+                    message = context.getString(R.string.pw_alert_critical_msg, String.format("%.1f", totalPower / 1000)),
                     severity = Severity.CRITICAL,
                     powerValue = totalPower
                 )
@@ -87,9 +90,8 @@ object PowerAlerts {
             alerts.add(
                 PowerAlert(
                     type = AlertType.HIGH_POWER_CONSUMPTION,
-                    title = "High Power Consumption",
-                    message = "Your device is consuming ${String.format("%.1f", totalPower / 1000)}W, " +
-                            "which is above normal. Monitor your battery usage and close unnecessary apps.",
+                    title = context.getString(R.string.pw_alert_high_title),
+                    message = context.getString(R.string.pw_alert_high_msg, String.format("%.1f", totalPower / 1000)),
                     severity = Severity.WARNING,
                     powerValue = totalPower
                 )
@@ -100,6 +102,7 @@ object PowerAlerts {
     }
     
     private fun checkComponentAlerts(
+        context: Context,
         powerData: PowerConsumptionSummary
     ): List<PowerAlert> {
         val alerts = mutableListOf<PowerAlert>()
@@ -109,9 +112,11 @@ object PowerAlerts {
                 alerts.add(
                     PowerAlert(
                         type = AlertType.COMPONENT_ANOMALY,
-                        title = "High ${component.component} Power",
-                        message = "${component.component} is consuming ${String.format("%.1f", component.powerConsumption / 1000)}W, " +
-                                "which is unusually high. Check if this component is being used unnecessarily.",
+                        title = context.getString(R.string.pw_alert_component_title, PowerStrings.component(context, component.component)),
+                        message = context.getString(R.string.pw_alert_component_msg,
+                            PowerStrings.component(context, component.component),
+                            String.format("%.1f", component.powerConsumption / 1000)
+                        ),
                         severity = Severity.WARNING,
                         component = component.component,
                         powerValue = component.powerConsumption
@@ -124,6 +129,7 @@ object PowerAlerts {
     }
     
     private fun checkPowerSpikes(
+        context: Context,
         powerData: PowerConsumptionSummary,
         stats: PowerStats?
     ): List<PowerAlert> {
@@ -138,10 +144,11 @@ object PowerAlerts {
                 alerts.add(
                     PowerAlert(
                         type = AlertType.POWER_SPIKE,
-                        title = "Power Consumption Spike Detected",
-                        message = "Power consumption has spiked to ${String.format("%.1f", currentPower / 1000)}W, " +
-                                "which is ${String.format("%.1f", (currentPower / averagePower))}x your average. " +
-                                "This may indicate a background process or app consuming excessive power.",
+                        title = context.getString(R.string.pw_alert_spike_title),
+                        message = context.getString(R.string.pw_alert_spike_msg,
+                            String.format("%.1f", currentPower / 1000),
+                            String.format("%.1f", (currentPower / averagePower))
+                        ),
                         severity = Severity.WARNING,
                         powerValue = currentPower
                     )
@@ -153,6 +160,7 @@ object PowerAlerts {
     }
     
     private fun checkTrendWarnings(
+        context: Context,
         stats: PowerStats?
     ): List<PowerAlert> {
         val alerts = mutableListOf<PowerAlert>()
@@ -164,9 +172,8 @@ object PowerAlerts {
                         alerts.add(
                             PowerAlert(
                                 type = AlertType.TREND_WARNING,
-                                title = "Increasing Power Trend",
-                                message = "Your power consumption is trending upward and is already high. " +
-                                        "This may lead to faster battery drain. Consider optimizing your device usage.",
+                                title = context.getString(R.string.pw_alert_trend_title),
+                                message = context.getString(R.string.pw_alert_trend_msg),
                                 severity = Severity.WARNING
                             )
                         )
@@ -183,6 +190,7 @@ object PowerAlerts {
      * Get battery drain warning based on power consumption
      */
     fun getBatteryDrainEstimate(
+        context: Context,
         powerData: PowerConsumptionSummary?,
         batteryCapacityMah: Int = 4000 // Default 4000mAh
     ): String? {
@@ -200,7 +208,8 @@ object PowerAlerts {
         val hoursUntilDrain = batteryCapacityMah / currentMah
         
         if (hoursUntilDrain < 4) {
-            return "⚠️ Battery will drain in approximately ${String.format("%.1f", hoursUntilDrain)} hours at current power consumption"
+            return LocaleManager.localizedContext(context)
+                .getString(R.string.pw_alert_drain_estimate, String.format("%.1f", hoursUntilDrain))
         }
         
         return null

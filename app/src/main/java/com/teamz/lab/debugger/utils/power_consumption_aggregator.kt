@@ -3,6 +3,7 @@ package com.teamz.lab.debugger.utils
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.teamz.lab.debugger.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -193,22 +194,23 @@ object PowerConsumptionAggregator {
     /**
      * Get power consumption recommendations
      */
-    fun getPowerRecommendations(stats: PowerStats): List<String> {
+    fun getPowerRecommendations(context: Context, stats: PowerStats): List<String> {
+        val ctx = LocaleManager.localizedContext(context)
         val recommendations = mutableListOf<String>()
         
         when (stats.powerTrend) {
             PowerTrend.INCREASING -> {
-                recommendations.add("📈 Power consumption is increasing. Close unused apps.")
-                recommendations.add("🔋 Consider enabling battery saver mode.")
+                recommendations.add(ctx.getString(R.string.pw_agg_up))
+                recommendations.add(ctx.getString(R.string.pw_agg_saver))
             }
             PowerTrend.DECREASING -> {
-                recommendations.add("📉 Power consumption is decreasing. Good optimization!")
+                recommendations.add(ctx.getString(R.string.pw_agg_down))
             }
             PowerTrend.STABLE -> {
-                recommendations.add("📊 Power consumption is stable.")
+                recommendations.add(ctx.getString(R.string.pw_agg_stable))
             }
             PowerTrend.UNKNOWN -> {
-                recommendations.add("📊 Collecting more data for analysis...")
+                recommendations.add(ctx.getString(R.string.pw_agg_collecting))
             }
         }
         
@@ -216,10 +218,10 @@ object PowerConsumptionAggregator {
         stats.topConsumers.take(3).forEach { component ->
             when {
                 component.averagePower > 1.5 -> {
-                    recommendations.add("⚠️ ${component.component} is using ${"%.1f".format(component.averagePower)}W - consider optimizing")
+                    recommendations.add(ctx.getString(R.string.pw_agg_component_using, PowerStrings.component(ctx, component.component), "%.1f".format(component.averagePower)))
                 }
                 component.usagePercentage > 30 -> {
-                    recommendations.add("📊 ${component.component} accounts for ${"%.1f".format(component.usagePercentage)}% of total power")
+                    recommendations.add(ctx.getString(R.string.pw_agg_component_share, PowerStrings.component(ctx, component.component), "%.1f".format(component.usagePercentage)))
                 }
             }
         }
@@ -227,11 +229,11 @@ object PowerConsumptionAggregator {
         // General recommendations based on average power
         when {
             stats.averagePower > 6.0 -> {
-                recommendations.add("🔋 High power consumption detected. Enable battery optimization.")
-                recommendations.add("📱 Reduce screen brightness and close background apps.")
+                recommendations.add(ctx.getString(R.string.pw_agg_high))
+                recommendations.add(ctx.getString(R.string.pw_agg_dim))
             }
             stats.averagePower < 2.0 -> {
-                recommendations.add("✅ Excellent power efficiency! Keep up the good work.")
+                recommendations.add(ctx.getString(R.string.pw_agg_excellent))
             }
         }
         
@@ -592,9 +594,9 @@ object PowerConsumptionAggregator {
                 if (percentPerHour > 0 && percentPerHour < 100) {
                     // Use more precision for very small values
                     when {
-                        percentPerHour >= 0.1 -> "%.1f%% per hour".format(percentPerHour)
-                        percentPerHour >= 0.01 -> "%.2f%% per hour".format(percentPerHour)
-                        else -> "%.3f%% per hour".format(percentPerHour)
+                        percentPerHour >= 0.1 -> context.getString(R.string.pw_per_hour, "%.1f".format(percentPerHour))
+                        percentPerHour >= 0.01 -> context.getString(R.string.pw_per_hour, "%.2f".format(percentPerHour))
+                        else -> context.getString(R.string.pw_per_hour, "%.3f".format(percentPerHour))
                     }
                 } else null
             } else null
@@ -661,7 +663,7 @@ object PowerConsumptionAggregator {
         val percentPerHour = calculateBatteryPercentPerHour(powerWatts, context)
         return percentPerHour?.let {
             when {
-                componentName.lowercase().contains("camera") -> "~$it per photo"
+                componentName.lowercase().contains("camera") -> context.getString(R.string.pw_per_photo, it)
                 componentName.lowercase().contains("display") || componentName.lowercase().contains("screen") -> "~$it"
                 componentName.lowercase().contains("cpu") -> "~$it"
                 else -> "~$it"
