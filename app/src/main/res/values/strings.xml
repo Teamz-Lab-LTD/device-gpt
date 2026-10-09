@@ -337,4 +337,18 @@
     <string name="done_weekly_turn_on_notifications">Turn on notifications to get the weekly check-up</string>
     <string name="done_weekly_needs_notifications">The weekly check-up needs notifications. You can turn them on in Settings.</string>
     <string name="done_widget_how_to">Long-press your home screen, tap Widgets, then pick DeviceGPT</string>
+
+    <!-- Navigation shell: tabs, wide-screen side pane, export (task 3, 2026-10-09) -->
+    <string name="tab_leaderboard">Leaderboard</string>
+    <string name="nav_ai_and_actions">AI &amp; actions</string>
+    <string name="nav_search_scan_result">Search in scan result (Ctrl+F)</string>
+    <string name="nav_open_ai_assistant">Open AI assistant</string>
+    <string name="nav_export_summary_csv">Export summary CSV (E)</string>
+    <string name="nav_export_refresh_first">Refresh a tab first to export scan text.</string>
+    <string name="nav_export_csv_failed">Could not create CSV.</string>
+    <string name="nav_export_chooser_title">Export scan CSV</string>
+    <string name="nav_export_no_activity">Cannot share without activity context.</string>
+    <string name="ai_insights_title">AI Insights: %1$s</string>
+    <string name="ai_insights_subtitle">Get detailed explanations about this device information.</string>
+    <string name="ask_ai">Ask AI</string>
 </resources>

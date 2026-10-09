@@ -334,4 +334,18 @@
     <string name="done_weekly_turn_on_notifications">সপ্তাহের খবর পেতে নোটিস চালু করুন</string>
     <string name="done_weekly_needs_notifications">নোটিস চালু না থাকলে সপ্তাহের খবর আসবে না। সেটিংস থেকে চালু করতে পারবেন।</string>
     <string name="done_widget_how_to">ফোনের প্রথম পাতার ফাঁকা জায়গায় আঙুল চেপে ধরুন। উইজেট লেখায় চাপ দিন। তারপর DeviceGPT বেছে নিন।</string>
+
+    <!-- Navigation shell: tabs, wide-screen side pane, export (task 3, 2026-10-09) -->
+    <string name="tab_leaderboard">সেরাদের তালিকা</string>
+    <string name="nav_ai_and_actions">এআই আর বাকি কাজ</string>
+    <string name="nav_search_scan_result">ফলের ভেতর খুঁজুন</string>
+    <string name="nav_open_ai_assistant">এআই সাহায্য খুলুন</string>
+    <string name="nav_export_summary_csv">ছোট রিপোর্টের ফাইল বানান</string>
+    <string name="nav_export_refresh_first">আগে একবার \"আবার দেখুন\" চাপুন। তারপর ফাইল বানান।</string>
+    <string name="nav_export_csv_failed">ফাইল বানানো গেল না।</string>
+    <string name="nav_export_chooser_title">ফাইল পাঠান</string>
+    <string name="nav_export_no_activity">এখন পাঠানো যাচ্ছে না। অ্যাপ বন্ধ করে আবার খুলুন।</string>
+    <string name="ai_insights_title">এআই বুঝিয়ে দেবে: %1$s</string>
+    <string name="ai_insights_subtitle">ফোনের এই তথ্যের মানে সহজ করে জেনে নিন।</string>
+    <string name="ask_ai">এআইকে জিজ্ঞেস করুন</string>
 </resources>

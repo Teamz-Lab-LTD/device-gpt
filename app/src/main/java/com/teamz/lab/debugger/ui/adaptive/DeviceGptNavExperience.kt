@@ -880,7 +880,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     }
                                     context.startActivity(
                                         Intent.createChooser(
-                                            shareIntent, "Share Device Info"
+                                            shareIntent, context.string(R.string.share_device_info)
                                         )
                                     )
                                     AnalyticsUtils.logEvent(AnalyticsEvent.ShareDeviceInfo)
@@ -888,7 +888,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     ErrorHandler.handleError(e, context = "MainActivity.shareDeviceInfo")
                                     Toast.makeText(
                                         context,
-                                        "Unable to share file: ${e.localizedMessage}",
+                                        context.string(R.string.unable_to_share_file, e.localizedMessage ?: ""),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     handleError(e)
@@ -996,9 +996,9 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                 text = {
                                     Text(
                                         when (tabType) {
-                                            TabType.LEADERBOARD -> "Leaderboard"
-                                            TabType.HEALTH -> "Health"
-                                            TabType.POWER -> "Power"
+                                            TabType.LEADERBOARD -> context.string(R.string.tab_leaderboard)
+                                            TabType.HEALTH -> context.string(R.string.health)
+                                            TabType.POWER -> context.string(R.string.power)
                                             TabType.DEVICE_INFO -> context.string(R.string.device_info)
                                             TabType.NETWORK_INFO -> context.string(R.string.network_info)
                                             TabType.CAMERA -> context.string(R.string.tab_camera)
@@ -1082,7 +1082,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                 .verticalScroll(rememberScrollState()),
                         ) {
                             Text(
-                                "AI & actions",
+                                context.string(R.string.nav_ai_and_actions),
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Spacer(Modifier.height(8.dp))
@@ -1092,7 +1092,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .focusRequester(searchFieldFocusRequester),
-                                label = { Text("Search in scan result (Ctrl+F)") },
+                                label = { Text(context.string(R.string.nav_search_scan_result)) },
                                 singleLine = true,
                             )
                             Spacer(Modifier.height(8.dp))
@@ -1118,13 +1118,13 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                             ) {
                                 Icon(AIIcon.icon, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Open AI assistant")
+                                Text(context.string(R.string.nav_open_ai_assistant))
                             }
                             Spacer(Modifier.height(8.dp))
                             OutlinedButton(
                                 onClick = { exportScanSummaryCsv(context, activity, shareText) },
                                 modifier = Modifier.fillMaxWidth(),
-                            ) { Text("Export summary CSV (E)") }
+                            ) { Text(context.string(R.string.nav_export_summary_csv)) }
                         }
                     }
                 }
@@ -1645,8 +1645,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 selectedItemForAI = null
             },
             context = context,
-            title = "AI Insights: $itemTitle",
-            subtitle = "Get detailed explanations about this device information.",
+            title = context.string(R.string.ai_insights_title, itemTitle),
+            subtitle = context.string(R.string.ai_insights_subtitle),
             showExplanationModeToggle = true
         )
     }
@@ -1783,8 +1783,8 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 }
             },
             context = context,
-            title = "Generate My Device Certificate",
-            subtitle = "Get your official phone certificate and resale value in seconds—perfect for sharing or selling!",
+            title = context.string(R.string.generate_my_device_certificate),
+            subtitle = context.string(R.string.certificate_subtitle),
             showExplanationModeToggle = false
         )
     }
@@ -1906,7 +1906,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
 private fun exportScanSummaryCsv(context: Context, activity: ComponentActivity?, body: String) {
     val loading = context.getString(R.string.loading)
     if (body.isBlank() || body.contains(loading)) {
-        Toast.makeText(context, "Refresh a tab first to export scan text.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.string(R.string.nav_export_refresh_first), Toast.LENGTH_SHORT).show()
         return
     }
     val rows = body.lines().map { listOf(it.replace(",", ";")) }
@@ -1917,7 +1917,7 @@ private fun exportScanSummaryCsv(context: Context, activity: ComponentActivity?,
         rows,
     )
     if (uri == null) {
-        Toast.makeText(context, "Could not create CSV.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.string(R.string.nav_export_csv_failed), Toast.LENGTH_SHORT).show()
         return
     }
     if (activity != null) {
@@ -1927,10 +1927,12 @@ private fun exportScanSummaryCsv(context: Context, activity: ComponentActivity?,
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            activity.startActivity(Intent.createChooser(share, "Export scan CSV"))
+            activity.startActivity(
+                Intent.createChooser(share, context.string(R.string.nav_export_chooser_title))
+            )
         }
     } else {
-        Toast.makeText(context, "Cannot share without activity context.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.string(R.string.nav_export_no_activity), Toast.LENGTH_SHORT).show()
     }
 }
 
