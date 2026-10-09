@@ -32,9 +32,10 @@ fun SearchBar(
         placeholder = {
             DgText(
                 text = placeholderText,
-                style = MaterialTheme.typography.bodyMedium,
+                // Two lines at most: the Bangla hint does not fit on one line on a 320dp phone.
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         },

@@ -44,6 +44,13 @@ import com.teamz.lab.debugger.ui.components.popOnce
 import com.teamz.lab.debugger.ui.components.shakeOnce
 import com.teamz.lab.debugger.ui.components.riseInOnAppear
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.teamz.lab.debugger.ui.components.touchTarget
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 
 /**
  * Microphone test — the feature the store listing has been promising.
@@ -244,7 +251,7 @@ fun MicTestCard(
                 result?.let { r ->
                     if (onItemAIClick != null) {
                         IconButton(
-                            modifier = Modifier.size(40.dp),
+                            modifier = Modifier.touchTarget(40.dp),
                             onClick = { onItemAIClick("Mic Test", buildReport(r, heard)) }
                         ) {
                             Icon(AIIcon.icon, contentDescription = stringResource(R.string.ask_ai), tint = AIIcon.color())
@@ -418,16 +425,38 @@ private fun MicPhaseBody(
 
     when (phase) {
         MicPhase.ASK_HEARD -> {
-            Row(Modifier.fillMaxWidth()) {
+            // The answer is needed now, so bring the two buttons up clear of the floating buttons: they
+            // used to appear underneath them (emulator, 320dp, 2026-10-09).
+            val answerRequester = remember { BringIntoViewRequester() }
+            var answerSize by remember { mutableStateOf(IntSize.Zero) }
+            val clearancePx = with(LocalDensity.current) {
+                com.teamz.lab.debugger.ui.adaptive.FabClearance.toPx()
+            }
+            LaunchedEffect(answerSize) {
+                if (answerSize != IntSize.Zero) {
+                    answerRequester.bringIntoView(
+                        Rect(0f, 0f, answerSize.width.toFloat(), answerSize.height + clearancePx)
+                    )
+                }
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { answerSize = it }
+                    .bringIntoViewRequester(answerRequester)
+            ) {
+                // Little side padding and centred labels, so the Bangla answers fit a 320dp phone.
                 Button(
                     onClick = { onHeard(true) },
-                    modifier = Modifier.weight(1f).heightIn(min = 48.dp)
-                ) { Text(stringResource(R.string.mic_test_heard_yes)) }
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                ) { Text(stringResource(R.string.mic_test_heard_yes), textAlign = TextAlign.Center) }
                 Spacer(Modifier.width(8.dp))
                 OutlinedButton(
                     onClick = { onHeard(false) },
-                    modifier = Modifier.weight(1f).heightIn(min = 48.dp)
-                ) { Text(stringResource(R.string.mic_test_heard_no)) }
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                ) { Text(stringResource(R.string.mic_test_heard_no), textAlign = TextAlign.Center) }
             }
             Spacer(Modifier.height(6.dp))
             TextButton(onClick = onReplay, modifier = Modifier.fillMaxWidth()) {
@@ -515,7 +544,7 @@ private fun LevelMeter(db: Double) {
         Spacer(Modifier.height(4.dp))
         DgText(
             "${db.roundToInt()} dBFS",
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

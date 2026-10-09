@@ -68,6 +68,14 @@ import com.teamz.lab.debugger.ui.components.pressScale
 import com.teamz.lab.debugger.ui.components.rememberResultFeedback
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.heightIn
+import com.teamz.lab.debugger.ui.components.touchTarget
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.style.TextAlign
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * Screen Test tab: colour/dead-pixel check, grid/scratch check, touch check. Split out of the
@@ -228,7 +236,7 @@ fun ScreenTestSection(
                 )
                 if (hasAnyResult && onItemAIClick != null) {
                     IconButton(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.touchTarget(32.dp),
                         onClick = {
                             val content = CameraHealthUtils.buildScreenTestAiContext(
                                 lastPixelResult,
@@ -448,8 +456,8 @@ private fun ScreenPixelTestDialog(
             ) {
                 AnimatedVisibility(
                     visible = controlsVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = fadeIn(motionTween(DgMotion.quick)),
+                    exit = fadeOut(motionTween(DgMotion.quick)),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
@@ -470,19 +478,23 @@ private fun ScreenPixelTestDialog(
                             color = textColor,
                         )
                         Spacer(Modifier.weight(1f))
+                        // Equal height, little side padding and centred labels: on a 320dp phone the longer
+                        // Bangla label wraps, and the two buttons must still look like a pair.
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
                         ) {
                             Button(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                 onClick = {
                                     onResult(true, colorName)
                                     onDismiss()
                                 },
-                            ) { Text(stringResource(R.string.screen_pixel_bad_spot)) }
+                            ) { Text(stringResource(R.string.screen_pixel_bad_spot), textAlign = TextAlign.Center) }
                             OutlinedButton(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor),
                                 onClick = {
                                     if (index < SCREEN_TEST_COLORS.lastIndex) {
@@ -498,7 +510,8 @@ private fun ScreenPixelTestDialog(
                                     stringResource(
                                         if (index < SCREEN_TEST_COLORS.lastIndex) R.string.screen_pixel_next
                                         else R.string.screen_pixel_done
-                                    )
+                                    ),
+                                    textAlign = TextAlign.Center,
                                 )
                             }
                         }
@@ -557,8 +570,8 @@ private fun GridTestDialog(onDismiss: () -> Unit) {
                 }
                 AnimatedVisibility(
                     visible = controlsVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = fadeIn(motionTween(DgMotion.quick)),
+                    exit = fadeOut(motionTween(DgMotion.quick)),
                     modifier = Modifier.align(Alignment.TopStart).padding(20.dp),
                 ) {
                     Text(
@@ -569,8 +582,8 @@ private fun GridTestDialog(onDismiss: () -> Unit) {
                 }
                 AnimatedVisibility(
                     visible = controlsVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = fadeIn(motionTween(DgMotion.quick)),
+                    exit = fadeOut(motionTween(DgMotion.quick)),
                     modifier = Modifier.align(Alignment.BottomCenter).padding(20.dp),
                 ) {
                     Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {

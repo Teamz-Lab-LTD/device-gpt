@@ -187,9 +187,16 @@ fun LastScoreCard(
                         containerColor = DgSemanticColorsDark.accent,
                         contentColor = DgSemanticColorsDark.onAccent
                     ),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    // Less side padding so the Bangla label stays on one line on a 320dp phone.
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 ) {
-                    Text(stringResource(R.string.last_score_run_again), fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(R.string.last_score_run_again),
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
                 }
                 OutlinedButton(
                     onClick = {
@@ -202,9 +209,10 @@ fun LastScoreCard(
                         onShareClick(score)
                     },
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 ) {
-                    Text(stringResource(R.string.share))
+                    Text(stringResource(R.string.share), maxLines = 1, softWrap = false)
                 }
             }
         }

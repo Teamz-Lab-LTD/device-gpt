@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -139,7 +142,13 @@ fun FirstScanGateScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            // Keeps the title out from under the status bar and the last button above the gesture bar.
+            .safeDrawingPadding()
+            .padding(
+                horizontal = 24.dp,
+                // A short phone gives up some of the margin so the actions fit on the first screen.
+                vertical = if (LocalConfiguration.current.screenHeightDp < COMPACT_HEIGHT_DP) 8.dp else 24.dp,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         when (Phase.valueOf(phase)) {
@@ -261,6 +270,8 @@ private fun ScoredUi(
     val playReveal = remember { !revealed }
     val settled = revealed || reduceMotion
     val title = stringResource(R.string.first_scan_title)
+    // A short phone gets a smaller ring so the actions stay on the first screen.
+    val compact = LocalConfiguration.current.screenHeightDp < COMPACT_HEIGHT_DP
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -278,8 +289,8 @@ private fun ScoredUi(
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
             ScoreRing(
                 score = score,
-                size = 168.dp,
-                strokeWidth = 12.dp,
+                size = if (compact) 128.dp else 168.dp,
+                strokeWidth = if (compact) 10.dp else 12.dp,
                 color = grade.color,
                 animate = playReveal,
                 contentDescription = "$title: $score, ${grade.label}",
@@ -294,14 +305,14 @@ private fun ScoredUi(
                     value = shown,
                     finalValue = score,
                     style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = 56.sp,
-                        lineHeight = 64.sp,
+                        fontSize = if (compact) 44.sp else 56.sp,
+                        lineHeight = if (compact) 52.sp else 64.sp,
                         fontWeight = FontWeight.Bold,
                     ),
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(if (compact) 4.dp else 8.dp))
         DgText(
             text = grade.label,
             fontSize = 22.sp,
@@ -309,7 +320,7 @@ private fun ScoredUi(
             color = grade.color,
             modifier = Modifier.popIn(settled),
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(if (compact) 8.dp else 16.dp))
         val subScores = listOf(
             R.string.first_scan_battery to subBattery,
             R.string.first_scan_memory to subMemory,
@@ -337,7 +348,7 @@ private fun ScoredUi(
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             modifier = Modifier.riseIn(settled, delayMillis = REVEAL_ROWS_DELAY + subScores.size * DgMotion.stagger),
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(if (compact) 12.dp else 24.dp))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -369,12 +380,16 @@ private fun ScoredUi(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
+                        // Little side padding: three buttons share a 320dp phone and the longest
+                        // Bangla label must not be cut.
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                     ) {
                         DgText(
                             stringResource(labelRes),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             maxLines = 1,
+                            softWrap = false,
                         )
                     }
                 }
@@ -412,6 +427,9 @@ private fun ScoredUi(
         }
     }
 }
+
+/** Screens shorter than this many dp get the compact score layout. */
+private const val COMPACT_HEIGHT_DP = 720
 
 /** After the ring stops: the sub-score rows start this much later, so the verdict word lands first. */
 private const val REVEAL_ROWS_DELAY = DgMotion.stagger * 2
