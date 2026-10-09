@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.*
+import com.teamz.lab.debugger.R
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -172,6 +173,13 @@ object RetentionNotificationManager {
     }
     
     /**
+     * A context that resolves strings in the language the person chose in the app. A worker's
+     * `applicationContext` and a context kept from before a language switch can still be in the
+     * old language, and a notification is read outside the app, so it must not depend on either.
+     */
+    internal fun localized(context: Context): Context = LocaleManager.localizedContext(context)
+
+    /**
      * Send immediate notification (for when app is open) - with smart logic and deduplication
      */
     fun sendDailyHealthReminder(context: Context) {
@@ -187,8 +195,9 @@ object RetentionNotificationManager {
             // Play policy 2026-07-10: streak FOMO removed. Only notify on a factual,
             // low-score state — never on a healthy device, never to protect a streak.
             if (healthScore in 1..5) {
-                val title = "📉 Health score ${healthScore}/10"
-                val message = "Lower than usual — open the app to see what changed."
+                val text = localized(context)
+                val title = text.getString(R.string.mx_notif_low_score_title, healthScore.toString())
+                val message = text.getString(R.string.mx_notif_low_score_body)
                 // sendNotification has deduplication built-in, so just call it
                 sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
             }
@@ -264,12 +273,14 @@ object RetentionNotificationManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channelObj = NotificationChannel(
                     channel,
-                    when (channel) {
-                        DAILY_HEALTH_CHANNEL -> "Daily Health Reminders"
-                        ENGAGEMENT_CHANNEL -> "Engagement Notifications"
-                        RETENTION_CHANNEL -> "Retention Notifications"
-                        else -> "General Notifications"
-                    },
+                    localized(context).getString(
+                        when (channel) {
+                            DAILY_HEALTH_CHANNEL -> R.string.mx_notif_channel_daily
+                            ENGAGEMENT_CHANNEL -> R.string.mx_notif_channel_engagement
+                            RETENTION_CHANNEL -> R.string.mx_notif_channel_retention
+                            else -> R.string.mx_notif_channel_general
+                        }
+                    ),
                     NotificationManager.IMPORTANCE_DEFAULT
                 )
                 notificationManager.createNotificationChannel(channelObj)
@@ -345,29 +356,30 @@ object RetentionNotificationManager {
     private fun setupNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val text = localized(context)
             
             val dailyChannel = NotificationChannel(
                 DAILY_HEALTH_CHANNEL,
-                "Daily Health Reminders",
+                text.getString(R.string.mx_notif_channel_daily),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Daily reminders to check your device health"
+                description = text.getString(R.string.mx_notif_channel_daily_desc)
             }
             
             val engagementChannel = NotificationChannel(
                 ENGAGEMENT_CHANNEL,
-                "Engagement Notifications",
+                text.getString(R.string.mx_notif_channel_engagement),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Notifications about streaks, improvements, and new features"
+                description = text.getString(R.string.mx_notif_channel_engagement_desc)
             }
             
             val retentionChannel = NotificationChannel(
                 RETENTION_CHANNEL,
-                "Retention Notifications",
+                text.getString(R.string.mx_notif_channel_retention),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Reminders to come back and check your device health"
+                description = text.getString(R.string.mx_notif_channel_retention_desc)
             }
             
             notificationManager.createNotificationChannel(dailyChannel)
@@ -512,13 +524,15 @@ object RetentionNotificationManager {
         
         // Only send if critical temperature and not already alerted today
         if (temperature > 40f && lastAlertDate != today) {
+            val text = localized(context)
+            val degrees = temperature.toInt().toString()
             val title = when {
-                temperature > 45f -> "🔥 Critical: Phone Overheating!"
-                else -> "🌡️ Phone Getting Hot"
+                temperature > 45f -> text.getString(R.string.mx_notif_temp_critical_title)
+                else -> text.getString(R.string.mx_notif_temp_hot_title)
             }
             val message = when {
-                temperature > 45f -> "Your phone is ${temperature.toInt()}°C! Stop using it and let it cool down immediately."
-                else -> "Your phone is ${temperature.toInt()}°C. Close apps and let it cool down."
+                temperature > 45f -> text.getString(R.string.mx_notif_temp_critical_body, degrees)
+                else -> text.getString(R.string.mx_notif_temp_hot_body, degrees)
             }
             
             sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
@@ -539,14 +553,15 @@ object RetentionNotificationManager {
         
         // Only send once per day
         if (lastAlertDate != today) {
+            val text = localized(context)
             val title = when (threatType) {
-                "mic" -> "🎤 Microphone Used Unexpectedly"
-                "camera" -> "📷 Camera Used Unexpectedly"
-                else -> "🔐 Privacy Alert"
+                "mic" -> text.getString(R.string.mx_notif_privacy_mic_title)
+                "camera" -> text.getString(R.string.mx_notif_privacy_camera_title)
+                else -> text.getString(R.string.mx_notif_privacy_other_title)
             }
             val message = when (threatType) {
-                "mic" -> "An app used your microphone. Review permissions in settings."
-                "camera" -> "An app accessed your camera. Check which app and why."
+                "mic" -> text.getString(R.string.mx_notif_privacy_mic_body)
+                "camera" -> text.getString(R.string.mx_notif_privacy_camera_body)
                 else -> details
             }
             
@@ -572,8 +587,12 @@ object RetentionNotificationManager {
         
         if (currentHour >= 18 && lastReminderDate != today && completedCount < totalTasks) {
             val remaining = totalTasks - completedCount
-            val title = "📋 Daily Tasks"
-            val message = "You have $remaining task${if (remaining > 1) "s" else ""} remaining today."
+            val text = localized(context)
+            val title = text.getString(R.string.mx_notif_tasks_title)
+            val message = text.getString(
+                if (remaining > 1) R.string.mx_notif_tasks_body_many else R.string.mx_notif_tasks_body_one,
+                remaining.toString(),
+            )
             
             sendNotification(title, message, ENGAGEMENT_CHANNEL, context)
             
@@ -593,8 +612,11 @@ object RetentionNotificationManager {
         
         // Only send if score dropped by 2+ points and not already alerted today
         if ((previousScore - currentScore) >= 2 && lastAlertDate != today) {
-            val title = "⚠️ Health Score Dropped"
-            val message = "Your device health dropped from $previousScore/10 to $currentScore/10. Check what needs attention!"
+            val text = localized(context)
+            val title = text.getString(R.string.mx_notif_score_drop_title)
+            val message = text.getString(
+                R.string.mx_notif_score_drop_body, previousScore.toString(), currentScore.toString(),
+            )
             
             sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
             
@@ -614,8 +636,9 @@ object RetentionNotificationManager {
         
         // Only send if critical power consumption and not already alerted today
         if (powerWatts > 10.0 && lastAlertDate != today) {
-            val title = "⚡ High Battery Drain Detected"
-            val message = "Your phone is using ${String.format("%.1f", powerWatts)}W. Close apps to save battery!"
+            val text = localized(context)
+            val title = text.getString(R.string.mx_notif_drain_title)
+            val message = text.getString(R.string.mx_notif_drain_body, String.format("%.1f", powerWatts))
             
             sendNotification(title, message, DAILY_HEALTH_CHANNEL, context)
             
@@ -662,8 +685,13 @@ class WeeklyReportWorker(context: Context, params: WorkerParameters) : Worker(co
             // Play policy 2026-07-10: factual weekly summary only — no streak FOMO.
             // Skip entirely if there is nothing real to report.
             if (totalScans > 0) {
-                val title = "📊 Your weekly device health report"
-                val message = "$totalScans scan${if (totalScans > 1) "s" else ""} so far. Best score: ${bestScore}/10."
+                val text = RetentionNotificationManager.localized(applicationContext)
+                val title = text.getString(R.string.mx_notif_weekly_title)
+                val message = text.getString(
+                    if (totalScans > 1) R.string.mx_notif_weekly_body_many else R.string.mx_notif_weekly_body_one,
+                    totalScans.toString(),
+                    bestScore.toString(),
+                )
                 RetentionNotificationManager.sendNotification(title, message, RetentionNotificationManager.ENGAGEMENT_CHANNEL, applicationContext)
             }
             Result.success()
@@ -730,7 +758,8 @@ class AchievementWorker(context: Context, params: WorkerParameters) : Worker(con
                 val achievement = PowerAchievements.ALL_ACHIEVEMENTS.find { it.id in newAchievements }
                 
                 if (achievement != null) {
-                    val title = "🎉 Achievement Unlocked: ${achievement.icon} ${achievement.title}!"
+                    val title = RetentionNotificationManager.localized(applicationContext)
+                        .getString(R.string.mx_notif_achievement_title, achievement.icon, achievement.title)
                     val message = achievement.description
                     
                     RetentionNotificationManager.sendNotification(
@@ -772,20 +801,22 @@ class MilestoneWorker(context: Context, params: WorkerParameters) : Worker(conte
             val currentStreakMilestone = streakMilestones.find { streak >= it && streak < it + 1 }
             
             if (currentStreakMilestone != null && lastCelebratedMilestone != "streak_$currentStreakMilestone") {
+                val text = RetentionNotificationManager.localized(applicationContext)
+                val days = currentStreakMilestone.toString()
                 val title = when {
-                    currentStreakMilestone >= 50 -> "🏆 LEGENDARY ${currentStreakMilestone}-Day Streak!"
-                    currentStreakMilestone >= 30 -> "🔥 INCREDIBLE ${currentStreakMilestone}-Day Streak!"
-                    currentStreakMilestone >= 20 -> "⭐ AMAZING ${currentStreakMilestone}-Day Streak!"
-                    currentStreakMilestone >= 10 -> "⚡ IMPRESSIVE ${currentStreakMilestone}-Day Streak!"
-                    else -> "🎯 Great ${currentStreakMilestone}-Day Streak!"
+                    currentStreakMilestone >= 50 -> text.getString(R.string.mx_notif_streak_legendary_title, days)
+                    currentStreakMilestone >= 30 -> text.getString(R.string.mx_notif_streak_incredible_title, days)
+                    currentStreakMilestone >= 20 -> text.getString(R.string.mx_notif_streak_amazing_title, days)
+                    currentStreakMilestone >= 10 -> text.getString(R.string.mx_notif_streak_impressive_title, days)
+                    else -> text.getString(R.string.mx_notif_streak_great_title, days)
                 }
                 
                 val message = when {
-                    currentStreakMilestone >= 50 -> "You're a true champion! Keep it going!"
-                    currentStreakMilestone >= 30 -> "Outstanding dedication! You're unstoppable!"
-                    currentStreakMilestone >= 20 -> "Incredible consistency! Keep it up!"
-                    currentStreakMilestone >= 10 -> "Double digits! You're on fire!"
-                    else -> "Nice milestone! Keep building your streak!"
+                    currentStreakMilestone >= 50 -> text.getString(R.string.mx_notif_streak_legendary_body)
+                    currentStreakMilestone >= 30 -> text.getString(R.string.mx_notif_streak_incredible_body)
+                    currentStreakMilestone >= 20 -> text.getString(R.string.mx_notif_streak_amazing_body)
+                    currentStreakMilestone >= 10 -> text.getString(R.string.mx_notif_streak_impressive_body)
+                    else -> text.getString(R.string.mx_notif_streak_great_body)
                 }
                 
                 RetentionNotificationManager.sendNotification(
@@ -805,8 +836,9 @@ class MilestoneWorker(context: Context, params: WorkerParameters) : Worker(conte
             val currentScanMilestone = scanMilestones.find { totalScans >= it && totalScans < it + 5 }
             
             if (currentScanMilestone != null && lastCelebratedMilestone != "scans_$currentScanMilestone") {
-                val title = "📊 ${currentScanMilestone} Scans Milestone!"
-                val message = "You've completed ${totalScans} health scans! Your dedication is impressive!"
+                val text = RetentionNotificationManager.localized(applicationContext)
+                val title = text.getString(R.string.mx_notif_scans_title, currentScanMilestone.toString())
+                val message = text.getString(R.string.mx_notif_scans_body, totalScans.toString())
                 
                 RetentionNotificationManager.sendNotification(
                     title,
@@ -846,24 +878,37 @@ class PersonalizedTipWorker(context: Context, params: WorkerParameters) : Worker
             // Only send tips if user hasn't scanned today (gentle reminder)
             if (lastScanDate != today) {
                 val tips = mutableListOf<Pair<String, String>>()
+                val text = RetentionNotificationManager.localized(applicationContext)
 
                 // Play policy 2026-07-10: streak-FOMO tips removed (insight #7).
                 // Only factual, state-based tips below survive.
 
                 // Tip based on health score
                 if (healthScore < 6) {
-                    tips.add("🚨 Device Health Alert" to "Your device health score is ${healthScore}/10. Check what needs attention!")
+                    tips.add(
+                        text.getString(R.string.mx_notif_tip_alert_title) to
+                            text.getString(R.string.mx_notif_tip_alert_body, healthScore.toString())
+                    )
                 } else if (healthScore >= 9) {
-                    tips.add("✨ Excellent Health" to "Your device is in great shape (${healthScore}/10)! Keep up the good maintenance.")
+                    tips.add(
+                        text.getString(R.string.mx_notif_tip_excellent_title) to
+                            text.getString(R.string.mx_notif_tip_excellent_body, healthScore.toString())
+                    )
                 }
                 
                 // Tip based on total scans
                 when {
                     totalScans >= 50 && totalScans < 100 -> {
-                        tips.add("📊 Halfway to 100" to "You've completed ${totalScans} scans! You're halfway to 100!")
+                        tips.add(
+                            text.getString(R.string.mx_notif_tip_halfway_title) to
+                                text.getString(R.string.mx_notif_tip_halfway_body, totalScans.toString())
+                        )
                     }
                     totalScans >= 100 -> {
-                        tips.add("🎯 Power User" to "Wow! ${totalScans} scans completed! You're a true power user!")
+                        tips.add(
+                            text.getString(R.string.mx_notif_tip_power_user_title) to
+                                text.getString(R.string.mx_notif_tip_power_user_body, totalScans.toString())
+                        )
                     }
                 }
                 

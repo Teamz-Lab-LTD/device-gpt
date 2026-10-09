@@ -319,10 +319,13 @@ object D1OvernightDrainWorker {
         }
         val current = readBatteryPctSafe(ctx) ?: return true
         val drainPct = (baseline - current).coerceAtLeast(0)
+        // The alarm path hands in a receiver context and the worker path an application context;
+        // neither is sure to be in the language the person chose in the app.
+        val localized = LocaleManager.localizedContext(ctx)
         val text = if (drainPct >= 1) {
-            "Your battery used $drainPct% in the last 20 hours — tap to see what drained it."
+            localized.getString(R.string.mx_notif_d1_drain, drainPct.toString())
         } else {
-            "Your battery is steady overnight — tap to see today's device health score."
+            localized.getString(R.string.mx_notif_d1_steady)
         }
         postNotification(ctx, text)
         try {
@@ -437,12 +440,13 @@ object D1OvernightDrainWorker {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService<NotificationManager>() ?: return
         if (nm.getNotificationChannel(CHANNEL_ID) != null) return
+        val localized = LocaleManager.localizedContext(context)
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Battery Overnight Drain",
+            localized.getString(R.string.mx_notif_d1_channel),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "One-time notification ~20 hours after install showing your overnight battery drain."
+            description = localized.getString(R.string.mx_notif_d1_channel_desc)
         }
         nm.createNotificationChannel(channel)
     }

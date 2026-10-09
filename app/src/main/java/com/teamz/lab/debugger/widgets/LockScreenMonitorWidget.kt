@@ -11,6 +11,7 @@ import com.teamz.lab.debugger.MainActivity
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.LocaleManager
 
 /**
  * Device Monitor Widget
@@ -80,6 +81,10 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
     ) {
         android.util.Log.d("DeviceGPT_Widget", "Updating widget $appWidgetId")
         val views = RemoteViews(context.packageName, R.layout.widget_lock_screen_monitor)
+        // A launcher inflates this layout with the phone's own language, not the app's. So every
+        // line is set from here with a context in the language the person chose in the app; the
+        // text in the XML is only what shows before the first update.
+        val text = LocaleManager.localizedContext(context)
         
         // Read data from SharedPreferences (stored by SystemMonitorService)
         val prefs = context.getSharedPreferences("lock_screen_widget_data", Context.MODE_PRIVATE)
@@ -121,10 +126,9 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         
         // Factual status messages. Play policy 2026-07-10: stale prefs may still hold
         // pre-v3.2 "optimize" strings — sanitize on read so no banned word ever renders.
-        val alertMessage = sanitizeLegacyVocab(svc("alert_message", ""))
-        val ctaMessage = sanitizeLegacyVocab(
-            svc("cta_message", "Open health check →")
-        )
+        val alertMessage = sanitizeLegacyVocab(svc("alert_message", ""), text.getString(R.string.mx_widget_cta_open))
+        val openHealthCheck = text.getString(R.string.mx_widget_cta_open)
+        val ctaMessage = sanitizeLegacyVocab(svc("cta_message", openHealthCheck), openHealthCheck)
         
         // Extract temperature - use stored value first, fallback to parsing thermal string
         val tempValue = prefs.getString("temperature_value", null) ?: try {
@@ -181,16 +185,16 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
                         else -> ""
                     }
                     v2DeltaLine = when {
-                        diff > 0 -> "Health +$diff vs yesterday"
-                        diff < 0 -> "Health $diff vs yesterday — see what changed"
-                        else -> "Nothing changed — all steady"
+                        diff > 0 -> text.getString(R.string.mx_widget_delta_up, diff.toString())
+                        diff < 0 -> text.getString(R.string.mx_widget_delta_down, diff.toString())
+                        else -> text.getString(R.string.mx_widget_delta_same)
                     }
                 }
             } catch (e: Exception) {
                 android.util.Log.w("DeviceGPT_Widget", "widget v2 delta failed: ${e.message}")
             }
         }
-        views.setTextViewText(R.id.widget_health_score, healthScoreLabel(hasScore, healthScore, trendArrow))
+        views.setTextViewText(R.id.widget_health_score, healthScoreLabel(text, hasScore, healthScore, trendArrow))
         val healthColor = when {
             !hasScore -> 0xFFAAAAAA.toInt()
             healthScore >= 7 -> 0xFFD9FE06.toInt()   // lime — original "good" color preserved
@@ -228,13 +232,15 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val batteryDisplay = when {
             batteryPercent >= 0 -> {
                 when {
-                    isFull -> "Battery: 100%"
-                    isCharging && chargingType.isNotEmpty() -> "Battery: $batteryPercent% (Charging via $chargingType)"
-                    isCharging -> "Battery: $batteryPercent% (Charging)"
-                    else -> "Battery: $batteryPercent%"
+                    isFull -> text.getString(R.string.mx_widget_battery, "100")
+                    isCharging && chargingType.isNotEmpty() -> text.getString(
+                        R.string.mx_widget_battery_charging_via, batteryPercent.toString(), chargerName(text, chargingType),
+                    )
+                    isCharging -> text.getString(R.string.mx_widget_battery_charging, batteryPercent.toString())
+                    else -> text.getString(R.string.mx_widget_battery, batteryPercent.toString())
                 }
             }
-            else -> "Battery: ---"
+            else -> text.getString(R.string.mx_widget_battery_none)
         }
         views.setTextViewText(R.id.widget_battery, batteryDisplay)
         // v3.1.11 W2 — tint battery text red when ≤20% so user notices at a glance.
@@ -252,15 +258,15 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             when {
                 temp > 0f -> {
                     when {
-                        temp > 45f -> "Temp: ${temp.toInt()}°C (Hot!)"
-                        temp > 40f -> "Temp: ${temp.toInt()}°C (Warm)"
-                        else -> "Temp: ${temp.toInt()}°C"
+                        temp > 45f -> text.getString(R.string.mx_widget_temp_hot, temp.toInt().toString())
+                        temp > 40f -> text.getString(R.string.mx_widget_temp_warm, temp.toInt().toString())
+                        else -> text.getString(R.string.mx_widget_temp, temp.toInt().toString())
                     }
                 }
-                else -> "Temp: ---"
+                else -> text.getString(R.string.mx_widget_temp_none)
             }
         } else {
-            "Temp: ---"
+            text.getString(R.string.mx_widget_temp_none)
         }
         views.setTextViewText(R.id.widget_thermal, tempDisplay)
         // v3.1.11 W2 — tint temperature red when overheating (>45°C) so the warning
@@ -274,29 +280,43 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         views.setInt(R.id.widget_thermal, "setTextColor", tempColor)
 
         // RAM with clear label - show "---" on errors
-        views.setTextViewText(R.id.widget_ram, "RAM: ${if (ramPercent != "--" && ramPercent.isNotEmpty()) "${ramPercent}%" else "---"}")
+        views.setTextViewText(
+            R.id.widget_ram,
+            if (ramPercent != "--" && ramPercent.isNotEmpty()) {
+                text.getString(R.string.mx_widget_ram, ramPercent)
+            } else {
+                text.getString(R.string.mx_widget_ram_none)
+            },
+        )
         
         // Key Metrics Row 2 (Additional Info) - Show storage in used/total format
-        views.setTextViewText(R.id.widget_storage, "Disk: $storageUsedTotal")
+        views.setTextViewText(R.id.widget_storage, text.getString(R.string.mx_widget_disk, storageUsedTotal))
         
         // Beautify network - show speed like system monitor (download ↓ • upload ↑)
         val networkDisplay = when {
-            !hasInternet -> 
-                "Internet: ---"
-            downloadSpeed == "---" && uploadSpeed == "---" -> 
-                "Internet: ---"
-            downloadSpeed != "---" && uploadSpeed != "---" -> 
-                "Internet: $downloadSpeed ↓ • $uploadSpeed ↑"
-            downloadSpeed != "---" -> 
-                "Internet: $downloadSpeed ↓"
-            uploadSpeed != "---" -> 
-                "Internet: $uploadSpeed ↑"
-            else -> 
-                "Internet: ---"
+            !hasInternet ->
+                text.getString(R.string.mx_widget_net_none)
+            downloadSpeed == "---" && uploadSpeed == "---" ->
+                text.getString(R.string.mx_widget_net_none)
+            downloadSpeed != "---" && uploadSpeed != "---" ->
+                text.getString(R.string.mx_widget_net_both, downloadSpeed, uploadSpeed)
+            downloadSpeed != "---" ->
+                text.getString(R.string.mx_widget_net_down, downloadSpeed)
+            uploadSpeed != "---" ->
+                text.getString(R.string.mx_widget_net_up, uploadSpeed)
+            else ->
+                text.getString(R.string.mx_widget_net_none)
         }
         views.setTextViewText(R.id.widget_network, networkDisplay)
         
-        views.setTextViewText(R.id.widget_power, "Drain: ${if (powerValue != "---") "${powerValue}W" else "---"}")
+        views.setTextViewText(
+            R.id.widget_power,
+            if (powerValue != "---") {
+                text.getString(R.string.mx_widget_drain, powerValue)
+            } else {
+                text.getString(R.string.mx_widget_drain_none)
+            },
+        )
         
         // Key Metrics Row 3 (CPU & FPS) - show "---" on errors
         // Extract CPU percentage from cpu string (format: "CPU: X.XX / Y.YY GHz (Z%) • N active cores")
@@ -304,7 +324,14 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             val cpuPercentMatch = Regex("\\((\\d+)%\\)").find(cpu)
             cpuPercentMatch?.groupValues?.get(1) ?: "---"
         } catch (e: Exception) { "---" }
-        views.setTextViewText(R.id.widget_cpu, "CPU: ${if (cpuPercent != "---" && cpuPercent.isNotEmpty()) "${cpuPercent}%" else "---"}")
+        views.setTextViewText(
+            R.id.widget_cpu,
+            if (cpuPercent != "---" && cpuPercent.isNotEmpty()) {
+                text.getString(R.string.mx_widget_cpu, cpuPercent)
+            } else {
+                text.getString(R.string.mx_widget_cpu_none)
+            },
+        )
         
         // Extract FPS from fps_data (format: "FPS: 59 • Drop Rate: 1.0%")
         val fpsData = svc("fps_data", "")
@@ -312,7 +339,10 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             val fpsMatch = Regex("FPS:\\s*(\\d+)").find(fpsData)
             fpsMatch?.groupValues?.get(1) ?: "---"
         } catch (e: Exception) { "---" }
-        views.setTextViewText(R.id.widget_fps, "FPS: ${if (fpsValue != "---" && fpsValue.isNotEmpty()) fpsValue else "---"}")
+        views.setTextViewText(
+            R.id.widget_fps,
+            text.getString(R.string.mx_widget_fps, if (fpsValue != "---" && fpsValue.isNotEmpty()) fpsValue else "---"),
+        )
         
         // Compelling CTA (Click Trigger)
         views.setTextViewText(R.id.widget_cta, ctaMessage)
@@ -333,8 +363,8 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
                         val totalGB = storageMatch.groupValues[2].toIntOrNull() ?: 1
                         val storagePercent = if (totalGB > 0) (usedGB * 100) / totalGB else 0
                         secondaryStatus = when {
-                            storagePercent > 90 -> "💾 Low Space"
-                            storagePercent > 80 -> "💾 Storage Full"
+                            storagePercent > 90 -> text.getString(R.string.mx_widget_status_low_space)
+                            storagePercent > 80 -> text.getString(R.string.mx_widget_status_storage_full)
                             else -> null
                         }
                     }
@@ -346,8 +376,8 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
                 try {
                     val drain = powerValue.toFloatOrNull() ?: 0f
                     secondaryStatus = when {
-                        drain > 10f -> "⚡ High Drain"
-                        drain > 7f -> "⚡ High Power"
+                        drain > 10f -> text.getString(R.string.mx_widget_status_high_drain)
+                        drain > 7f -> text.getString(R.string.mx_widget_status_high_power)
                         else -> null
                     }
                 } catch (e: Exception) { /* Continue to next check */ }
@@ -356,11 +386,11 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             // Priority 3: Check network quality
             if (secondaryStatus == null) {
                 secondaryStatus = when {
-                    !hasInternet -> "📶 No Net"
+                    !hasInternet -> text.getString(R.string.mx_widget_status_no_net)
                     downloadSpeed != "---" -> {
                         try {
                             val speed = downloadSpeed.toFloatOrNull() ?: 0f
-                            if (speed < 0.5f) "📶 Slow Net" else null
+                            if (speed < 0.5f) text.getString(R.string.mx_widget_status_slow_net) else null
                         } catch (e: Exception) { null }
                     }
                     else -> null
@@ -369,15 +399,17 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
             
             // Fallback: Always show something meaningful - positive status or monitoring status
             // This ensures the field is never empty
-            secondaryStatus ?: when {
-                !hasScore -> "📊 Open app to scan"
-                healthScore >= 8 -> "✅ Good"
-                healthScore >= 7 -> "📊 OK"
-                else -> "📊 Monitoring"
-            }
+            secondaryStatus ?: text.getString(
+                when {
+                    !hasScore -> R.string.mx_widget_status_open_app
+                    healthScore >= 8 -> R.string.mx_widget_status_good_check
+                    healthScore >= 7 -> R.string.mx_widget_status_ok
+                    else -> R.string.mx_widget_status_watching
+                }
+            )
         } else {
             // No alert shown, so show primary status here
-            primaryStatus(hasScore, tempValue, ramPercent, healthScore)
+            primaryStatus(text, hasScore, tempValue, ramPercent, healthScore)
         }
         views.setTextViewText(R.id.widget_status, statusText)
         
@@ -385,15 +417,15 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         val timeAgo = if (lastUpdate > 0) {
             val secondsAgo = (System.currentTimeMillis() - lastUpdate) / 1000
             when {
-                secondsAgo < 5 -> "Just now"
-                secondsAgo < 60 -> "${secondsAgo}s ago"
-                secondsAgo < 120 -> "1 min ago"
-                secondsAgo < 3600 -> "${secondsAgo / 60} mins ago"
-                secondsAgo < 7200 -> "1 hr ago"
-                else -> "${secondsAgo / 3600} hrs ago"
+                secondsAgo < 5 -> text.getString(R.string.mx_widget_time_just_now)
+                secondsAgo < 60 -> text.getString(R.string.mx_widget_time_seconds, secondsAgo.toString())
+                secondsAgo < 120 -> text.getString(R.string.mx_widget_time_one_minute)
+                secondsAgo < 3600 -> text.getString(R.string.mx_widget_time_minutes, (secondsAgo / 60).toString())
+                secondsAgo < 7200 -> text.getString(R.string.mx_widget_time_one_hour)
+                else -> text.getString(R.string.mx_widget_time_hours, (secondsAgo / 3600).toString())
             }
         } else {
-            "Initializing"
+            text.getString(R.string.mx_widget_time_starting)
         }
         views.setTextViewText(R.id.widget_last_update, timeAgo)
         
@@ -454,11 +486,11 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
          * banned "optimize" vocabulary after upgrade. Sanitize on read — the new
          * writer never produces these, so this only fires once per upgrade window.
          */
-        fun sanitizeLegacyVocab(text: String): String {
+        fun sanitizeLegacyVocab(text: String, replacement: String = "Open health check →"): String {
             if (text.isEmpty()) return text
             val banned = listOf("optimize", "optimized", "boost", "clean up", "speed up", "junk", "free up ram")
             val lower = text.lowercase()
-            return if (banned.any { lower.contains(it) }) "Open health check →" else text
+            return if (banned.any { lower.contains(it) }) replacement else text
         }
 
         /**
@@ -474,27 +506,48 @@ class LockScreenMonitorWidget : AppWidgetProvider() {
         internal fun scoreIsCurrent(hasStoredScore: Boolean, scoreDay: String?, today: String, serviceFresh: Boolean): Boolean =
             hasStoredScore && (serviceFresh || scoreDay == today)
 
-        internal fun primaryStatus(hasScore: Boolean, tempValue: String, ramPercent: String, healthScore: Int): String = when {
-            !hasScore -> "📊 Open app to scan"
-            // Critical issues (highest priority)
-            tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 45f -> "🌡️ Hot"
-            ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 85 -> "📊 High Memory"
-            healthScore < 5 -> "⚠️ Low Score"
-            // Warnings (medium priority)
-            tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 40f -> "🌡️ Warm"
-            ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 70 -> "📊 High Usage"
-            healthScore < 7 -> "📉 Below Normal"
-            // Positive status (when everything is good)
-            healthScore >= 8 -> "✅ Healthy"
-            else -> "📊 Good"
+        /** [text] is a context in the app language; see `LocaleManager.localizedContext`. */
+        internal fun primaryStatus(
+            text: Context,
+            hasScore: Boolean,
+            tempValue: String,
+            ramPercent: String,
+            healthScore: Int,
+        ): String = text.getString(
+            when {
+                !hasScore -> R.string.mx_widget_status_open_app
+                // Critical issues (highest priority)
+                tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 45f -> R.string.mx_widget_status_hot
+                ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 85 -> R.string.mx_widget_status_high_memory
+                healthScore < 5 -> R.string.mx_widget_status_low_score
+                // Warnings (medium priority)
+                tempValue != "--" && (tempValue.toFloatOrNull() ?: 0f) > 40f -> R.string.mx_widget_status_warm
+                ramPercent != "--" && (ramPercent.toIntOrNull() ?: 0) > 70 -> R.string.mx_widget_status_high_usage
+                healthScore < 7 -> R.string.mx_widget_status_below_normal
+                // Positive status (when everything is good)
+                healthScore >= 8 -> R.string.mx_widget_status_healthy
+                else -> R.string.mx_widget_status_good
+            }
+        )
+
+        /** The stored charger type ("AC", "USB", "Wireless") is data; this is the word shown for it. */
+        internal fun chargerName(text: Context, chargingType: String): String = when (chargingType) {
+            "AC" -> text.getString(R.string.mx_widget_charger_ac)
+            "USB" -> text.getString(R.string.mx_widget_charger_usb)
+            "Wireless" -> text.getString(R.string.mx_widget_charger_wireless)
+            else -> chargingType
         }
 
         /** "🧠 RAM: 5468 MB / 7572 MB (72%)" -> "72"; anything without "(N%)" -> "--". */
         internal fun ramPercentFrom(ram: String): String =
             Regex("\\((\\d+)%\\)").find(ram)?.groupValues?.get(1) ?: "--"
 
-        internal fun healthScoreLabel(hasScore: Boolean, score: Int, trendArrow: String): String =
-            if (hasScore) "Health: $score/10$trendArrow" else "Health: --/10"
+        internal fun healthScoreLabel(text: Context, hasScore: Boolean, score: Int, trendArrow: String): String =
+            if (hasScore) {
+                text.getString(R.string.mx_widget_health, score.toString(), trendArrow)
+            } else {
+                text.getString(R.string.mx_widget_health_none)
+            }
 
         fun updateWidget(context: Context) {
             android.util.Log.d("DeviceGPT_Widget", "Triggering widget update from SystemMonitorService")

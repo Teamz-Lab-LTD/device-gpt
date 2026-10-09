@@ -42,7 +42,6 @@ object ChargeCycleTracker {
     private const val KEY_LAST_SUMMARY_TIME = "last_summary_ms"
 
     private const val CHANNEL_ID = "charge_cycle_summary"
-    private const val CHANNEL_NAME = "Charge cycle summary"
     private const val NOTIFICATION_ID = 11_001
 
     private const val TAG = "ChargeCycleTracker"
@@ -211,14 +210,16 @@ object ChargeCycleTracker {
         durationMs: Long
     ) {
         val nm = context.getSystemService<NotificationManager>() ?: return
+        // Posted from a broadcast receiver: resolve the text in the language chosen in the app.
+        val localized = LocaleManager.localizedContext(context)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                CHANNEL_NAME,
+                localized.getString(R.string.mx_notif_charge_channel),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Plain-English summary after every charge cycle."
+                description = localized.getString(R.string.mx_notif_charge_channel_desc)
                 setShowBadge(false)
             }
             nm.createNotificationChannel(channel)
@@ -242,17 +243,20 @@ object ChargeCycleTracker {
 
         val hours = durationMs / (60L * 60L * 1000L)
         val mins = (durationMs / (60L * 1000L)) % 60L
-        val durationText = when {
-            hours > 0 -> "${hours}h ${mins}m"
-            else -> "${mins}m"
+        val body = if (hours > 0) {
+            localized.getString(
+                R.string.mx_notif_charge_body_hours,
+                startPct.toString(), endPct.toString(), hours.toString(), mins.toString(),
+            )
+        } else {
+            localized.getString(
+                R.string.mx_notif_charge_body_minutes, startPct.toString(), endPct.toString(), mins.toString(),
+            )
         }
-
-        val body = "Charge complete: $startPct% → $endPct% in $durationText. " +
-                "Tap to scan for overnight anomalies."
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("DeviceGPT charge summary")
+            .setContentTitle(localized.getString(R.string.mx_notif_charge_title))
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -262,7 +266,7 @@ object ChargeCycleTracker {
 
         try {
             nm.notify(NOTIFICATION_ID, notification)
-            android.util.Log.i(TAG, "📣 Posted charge summary: $startPct→$endPct ($durationText)")
+            android.util.Log.i(TAG, "📣 Posted charge summary: $startPct→$endPct (${hours}h ${mins}m)")
         } catch (e: SecurityException) {
             // POST_NOTIFICATIONS not granted (Android 13+ opt-in). Silently swallow.
             android.util.Log.d(TAG, "📣 Charge summary suppressed (no notification permission)")

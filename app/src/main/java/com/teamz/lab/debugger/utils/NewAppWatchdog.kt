@@ -90,12 +90,16 @@ object NewAppWatchdog {
 
     private fun postReviewNotification(context: Context, packages: Set<String>) {
         val nm = context.getSystemService<NotificationManager>() ?: return
+        // Posted from background work: resolve the text in the language chosen in the app.
+        val localized = LocaleManager.localizedContext(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             nm.createNotificationChannel(
                 NotificationChannel(
-                    CHANNEL_ID, "New app review", NotificationManager.IMPORTANCE_LOW
+                    CHANNEL_ID,
+                    localized.getString(R.string.mx_notif_new_app_channel),
+                    NotificationManager.IMPORTANCE_LOW,
                 ).apply {
-                    description = "Facts about newly installed apps — permissions, installer source."
+                    description = localized.getString(R.string.mx_notif_new_app_channel_desc)
                     setShowBadge(false)
                 }
             )
@@ -107,9 +111,9 @@ object NewAppWatchdog {
         } ?: return
         val extra = packages.size - 1
         val body = if (extra > 0) {
-            "$firstLabel and $extra more installed since your last check. Review what they can access."
+            localized.getString(R.string.mx_notif_new_app_body_many, firstLabel, extra.toString())
         } else {
-            "$firstLabel installed since your last check. Review what it can access."
+            localized.getString(R.string.mx_notif_new_app_body_one, firstLabel)
         }
 
         val launchIntent = pm.getLaunchIntentForPackage(context.packageName)?.apply {
@@ -123,7 +127,7 @@ object NewAppWatchdog {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("📦 New app on this device")
+            .setContentTitle(localized.getString(R.string.mx_notif_new_app_title))
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_LOW)
