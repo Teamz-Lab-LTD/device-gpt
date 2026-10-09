@@ -1,0 +1,1 @@
+Now in Bangla for Bangladesh, with an English switch in the menu. New: check if a phone is official through BTRC (IMEI). Clearer icons, a new score screen, and layout fixes for small phones.
