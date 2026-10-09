@@ -47,8 +47,8 @@ class DrawerWidgetReorderContractTest {
 
     @Test
     fun widgetSectionHeaderAppearsBeforeAppPermissionsHeader() {
-        val widgetIdx = drawerSrc.indexOf("text = \"Widget\",")
-        val permsIdx = drawerSrc.indexOf("text = \"App Permissions\",")
+        val widgetIdx = drawerSrc.indexOf("text = context.string(R.string.drawer_widget),")
+        val permsIdx = drawerSrc.indexOf("text = context.string(R.string.drawer_app_permissions),")
         assertTrue("'Widget' section header must exist in drawer.kt", widgetIdx > 0)
         assertTrue("'App Permissions' section header must exist in drawer.kt", permsIdx > 0)
         assertTrue(
@@ -68,12 +68,33 @@ class DrawerWidgetReorderContractTest {
         assertTrue(
             "Drawer must contain the literal label 'Add to Home Screen' — renaming would " +
                 "silently invalidate the GA4 dashboard query for WidgetAddToHomeScreenClicked.",
-            drawerSrc.contains("label = \"Add to Home Screen\"")
+            drawerSrc.contains("label = context.string(R.string.drawer_add_to_home)")
         )
         assertTrue(
             "Drawer must contain the literal label 'Add to Lock Screen' on Android 14+ — " +
                 "same dashboard-query stability concern.",
-            drawerSrc.contains("label = \"Add to Lock Screen\"")
+            drawerSrc.contains("label = context.string(R.string.drawer_add_to_lock)")
         )
+    }
+
+    /**
+     * The labels moved to string resources (Bangla + English, 2026-10-09), so the tests above
+     * look for the resource key. This one keeps the English wording itself locked.
+     */
+    @Test
+    fun englishLabelsAreStillTheExactStrings() {
+        val strings = File(projectRoot(), "app/src/main/res/values/strings.xml").readText()
+        val locked = mapOf(
+            "drawer_widget" to "Widget",
+            "drawer_app_permissions" to "App Permissions",
+            "drawer_add_to_home" to "Add to Home Screen",
+            "drawer_add_to_lock" to "Add to Lock Screen",
+        )
+        for ((key, text) in locked) {
+            assertTrue(
+                "$key must still read \"$text\" in values/strings.xml",
+                strings.contains("<string name=\"$key\">$text</string>")
+            )
+        }
     }
 }

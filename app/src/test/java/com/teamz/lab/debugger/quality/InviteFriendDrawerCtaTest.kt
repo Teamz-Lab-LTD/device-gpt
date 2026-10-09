@@ -44,7 +44,7 @@ class InviteFriendDrawerCtaTest {
             "Drawer must contain the 'Invite Friends — Earn ad-free' section header. " +
                 "Renaming silently invalidates any GA4 dashboard query that filters by " +
                 "the section title.",
-            drawerSrc.contains("text = \"Invite Friends — Earn ad-free\"")
+            drawerSrc.contains("text = context.string(R.string.drawer_invite_title)")
         )
     }
 
@@ -54,7 +54,7 @@ class InviteFriendDrawerCtaTest {
         assertTrue(
             "Drawer must contain the literal label 'Invite a Friend' on the share button. " +
                 "Without it, click attribution in any per-label dashboard breaks silently.",
-            drawerSrc.contains("label = \"Invite a Friend\"")
+            drawerSrc.contains("label = context.string(R.string.drawer_invite_button)")
         )
     }
 
@@ -76,8 +76,8 @@ class InviteFriendDrawerCtaTest {
     fun drawer_inviteSection_appearsAboveAppPermissions() {
         // Placement matters: the whole point of the fix is making the CTA visible
         // in normal drawer scrolling, not buried below other sections.
-        val inviteIdx = drawerSrc.indexOf("text = \"Invite Friends — Earn ad-free\"")
-        val permsIdx = drawerSrc.indexOf("text = \"App Permissions\",")
+        val inviteIdx = drawerSrc.indexOf("text = context.string(R.string.drawer_invite_title)")
+        val permsIdx = drawerSrc.indexOf("text = context.string(R.string.drawer_app_permissions),")
         assertTrue("'Invite Friends' section must exist", inviteIdx > 0)
         assertTrue("'App Permissions' section must exist", permsIdx > 0)
         assertTrue(
@@ -85,5 +85,24 @@ class InviteFriendDrawerCtaTest {
                 "in drawer.kt. Below the fold = back to <7% reach.",
             inviteIdx < permsIdx
         )
+    }
+
+    /**
+     * The labels moved to string resources (Bangla + English, 2026-10-09), so the tests above
+     * look for the resource key. This one keeps the English wording itself locked.
+     */
+    @Test
+    fun englishLabelsAreStillTheExactStrings() {
+        val strings = File(projectRoot(), "app/src/main/res/values/strings.xml").readText()
+        val locked = mapOf(
+            "drawer_invite_title" to "Invite Friends — Earn ad-free",
+            "drawer_invite_button" to "Invite a Friend",
+        )
+        for ((key, text) in locked) {
+            assertTrue(
+                "$key must still read \"$text\" in values/strings.xml",
+                strings.contains("<string name=\"$key\">$text</string>")
+            )
+        }
     }
 }

@@ -44,7 +44,7 @@ class VerifiedReportPromotionTest {
         assertTrue(
             "Drawer must contain 'Verified Reports — Pro Feature' section header. " +
                 "Renaming silently invalidates GA4 dashboard queries that filter by section.",
-            src.contains("text = \"Verified Reports — Pro Feature\"")
+            src.contains("text = context.string(R.string.drawer_verified_title)")
         )
     }
 
@@ -53,7 +53,7 @@ class VerifiedReportPromotionTest {
         assertTrue(
             "Drawer must contain literal label 'Generate Verified Report' — drives " +
                 "DrawerItemClicked event with item=generate_verified_report.",
-            src.contains("label = \"Generate Verified Report\"")
+            src.contains("label = context.string(R.string.drawer_verified_generate)")
         )
     }
 
@@ -62,14 +62,14 @@ class VerifiedReportPromotionTest {
         assertTrue(
             "Drawer must contain literal label 'Verify a Report' — drives " +
                 "DrawerItemClicked event with item=verify_report.",
-            src.contains("label = \"Verify a Report\"")
+            src.contains("label = context.string(R.string.drawer_verified_verify)")
         )
     }
 
     @Test
     fun drawer_verifiedReportsSection_appearsAboveAppPermissions() {
-        val verifiedIdx = src.indexOf("text = \"Verified Reports — Pro Feature\"")
-        val permsIdx = src.indexOf("text = \"App Permissions\",")
+        val verifiedIdx = src.indexOf("text = context.string(R.string.drawer_verified_title)")
+        val permsIdx = src.indexOf("text = context.string(R.string.drawer_app_permissions),")
         assertTrue("'Verified Reports' section must exist", verifiedIdx > 0)
         assertTrue("'App Permissions' section must exist", permsIdx > 0)
         assertTrue(
@@ -85,8 +85,8 @@ class VerifiedReportPromotionTest {
         // (Widget + Invite Friends). Putting it ABOVE Widget would distract from the
         // app's #1 surface. Putting it AFTER Invite Friends keeps the natural flow:
         // engagement → growth → pro features → settings.
-        val inviteIdx = src.indexOf("text = \"Invite Friends — Earn ad-free\"")
-        val verifiedIdx = src.indexOf("text = \"Verified Reports — Pro Feature\"")
+        val inviteIdx = src.indexOf("text = context.string(R.string.drawer_invite_title)")
+        val verifiedIdx = src.indexOf("text = context.string(R.string.drawer_verified_title)")
         assertTrue("'Invite Friends' must exist", inviteIdx > 0)
         assertTrue("'Verified Reports' must exist", verifiedIdx > 0)
         assertTrue(
@@ -101,7 +101,7 @@ class VerifiedReportPromotionTest {
         // After the promotion, the OLD buried copy must be deleted — otherwise the
         // drawer has 4 buttons (2 in new section + 2 buried) and the move accomplished
         // nothing.
-        val count = Regex("""label = "Generate Verified Report"""").findAll(src).count()
+        val count = Regex("""label = context\.string\(R\.string\.drawer_verified_generate\)""").findAll(src).count()
         assertTrue(
             "Exactly 1 'Generate Verified Report' button must exist. Found $count. " +
                 "More than 1 means the old buried copy was not removed — duplicates dilute " +
@@ -112,11 +112,31 @@ class VerifiedReportPromotionTest {
 
     @Test
     fun drawer_verifyAReportButton_existsExactlyOnce() {
-        val count = Regex("""label = "Verify a Report"""").findAll(src).count()
+        val count = Regex("""label = context\.string\(R\.string\.drawer_verified_verify\)""").findAll(src).count()
         assertTrue(
             "Exactly 1 'Verify a Report' button must exist. Found $count. " +
                 "More than 1 means the old buried copy was not removed.",
             count == 1
         )
+    }
+
+    /**
+     * The labels moved to string resources (Bangla + English, 2026-10-09), so the tests above
+     * look for the resource key. This one keeps the English wording itself locked.
+     */
+    @Test
+    fun englishLabelsAreStillTheExactStrings() {
+        val strings = File(projectRoot(), "app/src/main/res/values/strings.xml").readText()
+        val locked = mapOf(
+            "drawer_verified_title" to "Verified Reports — Pro Feature",
+            "drawer_verified_generate" to "Generate Verified Report",
+            "drawer_verified_verify" to "Verify a Report",
+        )
+        for ((key, text) in locked) {
+            assertTrue(
+                "$key must still read \"$text\" in values/strings.xml",
+                strings.contains("<string name=\"$key\">$text</string>")
+            )
+        }
     }
 }

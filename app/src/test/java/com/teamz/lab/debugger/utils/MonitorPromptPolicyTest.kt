@@ -53,7 +53,7 @@ class MonitorPromptPolicyTest {
         val fn = s.substring(s.indexOf("fun NotificationPermissionDialog"), s.indexOf("fun NotificationToggle"))
         val body = fn.indexOf("text = {")
         val confirm = fn.indexOf("confirmButton = {")
-        val checkbox = fn.indexOf("Don't ask me again")
+        val checkbox = fn.indexOf("R.string.drawer_dont_ask_again")
         assertTrue("checkbox must render inside text = { }", checkbox in body until confirm)
     }
 }

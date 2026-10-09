@@ -142,9 +142,9 @@ fun DrawerContent(
 ) {
     val context = LocalContext.current
     val permissions = mutableListOf(
-        Manifest.permission.ACCESS_FINE_LOCATION to "📍 Location Access",
-        Manifest.permission.READ_PHONE_STATE to "📱 Phone Info Access",
-        Manifest.permission.PACKAGE_USAGE_STATS to "📊 Network Usage Stats"
+        Manifest.permission.ACCESS_FINE_LOCATION to context.string(R.string.location_access),
+        Manifest.permission.READ_PHONE_STATE to context.string(R.string.phone_info_access),
+        Manifest.permission.PACKAGE_USAGE_STATS to context.string(R.string.network_usage_stats)
     )
 
     var grantedPermission by remember { mutableStateOf<String?>(null) }
@@ -164,7 +164,7 @@ fun DrawerContent(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.POST_NOTIFICATIONS
         else null
     if (postNotificationPermission != null) {
-        permissions.plus(postNotificationPermission to "🔔 Notification Access")
+        permissions.plus(postNotificationPermission to context.string(R.string.drawer_notification_access))
     }
 
     val permissionStates = remember(drawerOpenTrigger) {
@@ -632,7 +632,7 @@ fun DrawerContent(
                                 contentColor = DesignSystemColors.Dark
                             )
                         ) {
-                            Text("Got it")
+                            Text(context.string(R.string.got_it_plain))
                         }
                     }
                 )
@@ -650,7 +650,7 @@ fun DrawerContent(
             containerColor = DesignSystemColors.NeonGreen,
             contentColor = DesignSystemColors.Dark,
             colorText = DesignSystemColors.Dark,
-            label = "Want to launch your own app or web?"
+            label = context.string(R.string.drawer_launch_app)
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerUpworkClicked)
             val urlIntent = Intent(
@@ -700,7 +700,7 @@ fun DrawerContent(
 
         // Widget Setup Section
         Text(
-            text = "Widget",
+            text = context.string(R.string.drawer_widget),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
@@ -714,7 +714,7 @@ fun DrawerContent(
         // Add to Home Screen Button (Programmatic - Android 8.0+)
         IconTextButton(
             icon = Icons.Default.Star,
-            label = "Add to Home Screen"
+            label = context.string(R.string.drawer_add_to_home)
         ) {
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.WidgetAddToHomeScreenClicked, mapOf(
@@ -771,7 +771,7 @@ fun DrawerContent(
         if (Build.VERSION.SDK_INT >= 34) { // Android 14+ (API 34+)
             IconTextButton(
                 icon = Icons.Default.Verified,
-                label = "Add to Lock Screen"
+                label = context.string(R.string.drawer_add_to_lock)
             ) {
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.WidgetAddToLockScreenClicked, mapOf(
@@ -811,7 +811,7 @@ fun DrawerContent(
                 },
                 title = {
                     Text(
-                        text = "Add Device Monitor Widget",
+                        text = context.string(R.string.drawer_widget_dialog_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -822,92 +822,92 @@ fun DrawerContent(
                     ) {
                         if (widgetInstructionType == "home") {
                             Text(
-                                text = "Add Widget to Home Screen",
+                                text = context.string(R.string.drawer_widget_home_title),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "📱 Manual Steps:",
+                                text = context.string(R.string.drawer_widget_manual_steps),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "1. Long-press on home screen\n2. Tap 'Widgets'\n3. Find 'DeviceGPT'\n4. Drag to home screen",
+                                text = context.string(R.string.drawer_widget_home_steps),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "📊 What the Widget Shows:",
+                                text = context.string(R.string.drawer_widget_shows_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "• Today's Health Score (most prominent)\n• Battery % with charging status (AC/USB/Wireless)\n• Battery temperature (°C)\n• RAM and storage use\n• With Real-time Monitor on: power (Watts), network speed (Mbps), CPU and FPS\n• When it was last updated",
+                                text = context.string(R.string.drawer_widget_shows_body),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "🔄 Data Updates:",
+                                text = context.string(R.string.drawer_widget_updates_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "• Updates about every 15 minutes, and each time you scan\n• Real-time Monitor adds power, CPU and FPS (every 30 seconds) and a speed test on Wi-Fi about every 30 minutes\n• Shows how long ago it was updated\n• All data comes from real system APIs (not estimates)",
+                                text = context.string(R.string.drawer_widget_updates_body),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "💡 Tip: Tap the widget to open Health section directly!",
+                                text = context.string(R.string.drawer_widget_tip_tap),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                             )
                         } else if (widgetInstructionType == "lock") {
                             Text(
-                                text = "Add Widget to Lock Screen",
+                                text = context.string(R.string.drawer_widget_lock_title),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "🔒 Lock Screen Widgets (Android 14+):",
+                                text = context.string(R.string.drawer_widget_lock_subtitle),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Lock screen widgets must be added manually:\n\n1. Lock your phone\n2. Long-press on lock screen\n3. Tap 'Customize' or 'Edit'\n4. Tap 'Add Widget' or 'Widgets'\n5. Find 'DeviceGPT'\n6. Add to lock screen\n\n⚠️ Note: Lock screen widgets may not be available on all devices or Android versions.",
+                                text = context.string(R.string.drawer_widget_lock_steps),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         } else {
                             // Fallback - show both
                             Text(
-                                text = "See your health score & streak on your home screen or lock screen!",
+                                text = context.string(R.string.drawer_widget_generic_intro),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "📱 For Home Screen:",
+                                text = context.string(R.string.drawer_widget_for_home),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "1. Long-press on home screen\n2. Tap 'Widgets'\n3. Find 'DeviceGPT'\n4. Drag to home screen",
+                                text = context.string(R.string.drawer_widget_home_steps),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             if (Build.VERSION.SDK_INT >= 34) {
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "🔒 For Lock Screen (Android 14+):",
+                                    text = context.string(R.string.drawer_widget_for_lock),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = "1. Long-press on lock screen\n2. Tap 'Customize' or 'Edit'\n3. Tap 'Add Widget' or 'Widgets'\n4. Find 'DeviceGPT'\n5. Add to lock screen\n\nNote: Lock screen widgets may not be available on all devices.",
+                                    text = context.string(R.string.drawer_widget_lock_steps_short),
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
                         }
                         Text(
-                            text = "💡 Tip: Widget shows health score, streak, battery, temperature & more!",
+                            text = context.string(R.string.drawer_widget_tip_shows),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -922,7 +922,7 @@ fun DrawerContent(
                             contentColor = DesignSystemColors.Dark
                         )
                     ) {
-                        Text("Got it")
+                        Text(context.string(R.string.got_it_plain))
                     }
                 }
             )
@@ -940,7 +940,7 @@ fun DrawerContent(
         // tiers (24h → 30 days ad-free at 1/3/5/10 referrals) handled server-side
         // via Install Referrer API attribution.
         Text(
-            text = "Invite Friends — Earn ad-free",
+            text = context.string(R.string.drawer_invite_title),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
@@ -949,14 +949,14 @@ fun DrawerContent(
         )
         IconTextButton(
             icon = Icons.Default.Share,
-            label = "Invite a Friend"
+            label = context.string(R.string.drawer_invite_button)
         ) {
             try {
                 com.teamz.lab.debugger.utils.ReferralManager.shareReferralLink(context)
             } catch (e: Exception) {
                 Toast.makeText(
                     context,
-                    "Couldn't open share dialog — try again",
+                    context.string(R.string.drawer_invite_failed),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -975,7 +975,7 @@ fun DrawerContent(
         // discovery is zero. Moving to top-third of drawer gives it a real shot at reach.
         // "Pro Feature" label sets expectation since both actions trigger paywall gate.
         Text(
-            text = "Verified Reports — Pro Feature",
+            text = context.string(R.string.drawer_verified_title),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
@@ -984,7 +984,7 @@ fun DrawerContent(
         )
         IconTextButton(
             icon = Icons.Default.Verified,
-            label = "Generate Verified Report"
+            label = context.string(R.string.drawer_verified_generate)
         ) {
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.DrawerItemClicked,
@@ -995,7 +995,7 @@ fun DrawerContent(
         }
         IconTextButton(
             icon = Icons.Default.Info,
-            label = "Verify a Report"
+            label = context.string(R.string.drawer_verified_verify)
         ) {
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.DrawerItemClicked,
@@ -1011,7 +1011,7 @@ fun DrawerContent(
         )
 
         Text(
-            text = "App Permissions",
+            text = context.string(R.string.drawer_app_permissions),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
@@ -1038,7 +1038,7 @@ fun DrawerContent(
             Spacer(modifier = Modifier.height(6.dp))
             IconTextButton(
                 icon = Icons.Default.Warning,
-                label = "Grant Permissions"
+                label = context.string(R.string.drawer_grant_permissions)
             ) {
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.DrawerSettingsOpened, mapOf(
@@ -1058,7 +1058,7 @@ fun DrawerContent(
 
         // Notification Toggle
         Text(
-            text = "Notifications",
+            text = context.string(R.string.drawer_notifications),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
@@ -1102,13 +1102,13 @@ fun DrawerContent(
                         if (enabled) {
                             Toast.makeText(
                                 context,
-                                "Notifications enabled",
+                                context.string(R.string.drawer_notifications_enabled),
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {
                             Toast.makeText(
                                 context,
-                                "Notifications disabled",
+                                context.string(R.string.drawer_notifications_disabled),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -1145,7 +1145,7 @@ fun DrawerContent(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         ) {
             Text(
-                text = "Leaderboard",
+                text = context.string(R.string.tab_leaderboard),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 4.dp),
@@ -1167,7 +1167,7 @@ fun DrawerContent(
         }
         IconTextButton(
             icon = Icons.Default.AutoAwesome,
-            label = "More Apps by Teamz Lab",
+            label = context.string(R.string.drawer_more_apps),
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerMoreAppsClicked)
             val urlIntent = Intent(
@@ -1179,7 +1179,7 @@ fun DrawerContent(
 
         IconTextButton(
             icon = Icons.Filled.RateReview,
-            label = "Help us grow — leave feedback",
+            label = context.string(R.string.drawer_feedback),
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerReviewClicked)
             activity.showInAppReview()
@@ -1194,7 +1194,7 @@ fun DrawerContent(
 
         IconTextButton(
             icon = Icons.Default.Share,
-            label = "Share with Friends"
+            label = context.string(R.string.drawer_share_friends)
         ) {
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.DrawerItemClicked, mapOf(
@@ -1219,7 +1219,7 @@ fun DrawerContent(
         Column {
             // Small "Open Source" label
             Text(
-                text = "Open Source",
+                text = context.string(R.string.drawer_open_source),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
@@ -1228,7 +1228,7 @@ fun DrawerContent(
             )
             IconTextButton(
                 icon = Icons.Default.Info,
-                label = "View Source Code on GitHub"
+                label = context.string(R.string.drawer_view_source)
             ) {
                 AnalyticsUtils.logEvent(
                     AnalyticsEvent.DrawerItemClicked, mapOf(
@@ -1290,15 +1290,14 @@ fun DrawerContent(
             textContentColor = MaterialTheme.colorScheme.onSurface,
             title = {
                 Text(
-                    "Network Usage Access",
+                    context.string(R.string.drawer_usage_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 Text(
-                    "To show your network usage statistics, we need access to usage data. " +
-                            "This helps us display accurate network usage information in the app.",
+                    context.string(R.string.drawer_usage_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -1335,7 +1334,7 @@ fun DrawerContent(
                 data = "package:${context.packageName}".toUri()
             })
             Toast.makeText(
-                context, "Please enable notification permission manually", Toast.LENGTH_LONG
+                context, context.string(R.string.drawer_enable_notification_manually), Toast.LENGTH_LONG
             ).show()
         }
     }
@@ -1345,6 +1344,7 @@ fun DrawerContent(
 fun RealtimeMonitorToggle(
     isRunning: Boolean, onToggle: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1359,7 +1359,7 @@ fun RealtimeMonitorToggle(
         ) {
             // Title - no badge needed, switch position shows state
             Text(
-                text = "Realtime Monitor",
+                text = context.string(R.string.drawer_realtime_monitor),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
@@ -1370,9 +1370,9 @@ fun RealtimeMonitorToggle(
             // Description - full text visible with proper wrapping
             Text(
                 text = if (isRunning) 
-                    "Live stats active: battery, speed, fps, network" 
+                    context.string(R.string.drawer_realtime_on) 
                 else 
-                    "Tap to enable live monitoring of battery, speed, fps, network",
+                    context.string(R.string.drawer_realtime_off),
                 style = MaterialTheme.typography.labelSmall,
                 color = if (isRunning) 
                     MaterialTheme.colorScheme.primary 
@@ -1432,7 +1432,7 @@ fun PermissionToggleRow(
                     )
                     Toast.makeText(
                         context,
-                        "To disable usage stats, go to Usage Access settings.",
+                        context.string(R.string.drawer_disable_usage),
                         Toast.LENGTH_SHORT
                     ).show()
                     context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
@@ -1445,7 +1445,7 @@ fun PermissionToggleRow(
                     )
                     Toast.makeText(
                         context,
-                        "To disable this permission, go to App Settings.",
+                        context.string(R.string.drawer_disable_permission),
                         Toast.LENGTH_SHORT
                     ).show()
                     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -1589,6 +1589,7 @@ fun NotificationPermissionDialog(
     onRequestPermission: () -> Unit,
 ) {
     if (!showDialog) return
+    val context = LocalContext.current
     var isCheck by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1597,7 +1598,7 @@ fun NotificationPermissionDialog(
         textContentColor = MaterialTheme.colorScheme.onSurface,
         title = {
             Text(
-                text = "Allow Realtime Monitor",
+                text = context.string(R.string.drawer_allow_monitor_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -1607,7 +1608,7 @@ fun NotificationPermissionDialog(
             // rendered 16px tall — the opt-out existed but could not be seen.
             Column {
                 Text(
-                    text = "To show live system data in the notification bar, the app needs permission to post notifications.",
+                    text = context.string(R.string.drawer_allow_monitor_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -1635,7 +1636,7 @@ fun NotificationPermissionDialog(
                         )
                     )
                     Text(
-                        "Don't ask me again",
+                        context.string(R.string.drawer_dont_ask_again),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 8.dp)
@@ -1685,7 +1686,7 @@ fun NotificationToggle(
         ) {
             Icon(
                 imageVector = if (isEnabled) Icons.Default.Notifications else Icons.Default.NotificationsOff,
-                contentDescription = if (isEnabled) "Notifications enabled" else "Notifications disabled",
+                contentDescription = if (isEnabled) context.string(R.string.drawer_notifications_enabled) else context.string(R.string.drawer_notifications_disabled),
                 tint = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
@@ -1695,7 +1696,7 @@ fun NotificationToggle(
                     .padding(end = 8.dp)
             ) {
                 Text(
-                    text = "App Notifications",
+                    text = context.string(R.string.drawer_app_notifications),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
@@ -1705,9 +1706,9 @@ fun NotificationToggle(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = if (isEnabled)
-                        "Receive daily health reminders and engagement notifications"
+                        context.string(R.string.drawer_app_notifications_on)
                     else
-                        "Notifications are disabled. Enable to receive daily reminders",
+                        context.string(R.string.drawer_app_notifications_off),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium,
@@ -1881,20 +1882,20 @@ fun LeaderboardAccountStatus() {
                         userDisplayName = null
                         android.widget.Toast.makeText(
                             context,
-                            "Account deleted successfully",
+                            context.string(R.string.account_deleted),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     } else if (needsReauth) {
                         // Still needs re-authentication (shouldn't happen, but handle it)
                         android.widget.Toast.makeText(
                             context,
-                            "Re-authentication required. Please try again.",
+                            context.string(R.string.account_reauth_required),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     } else {
                         android.widget.Toast.makeText(
                             context,
-                            "Failed to delete account. Please try again.",
+                            context.string(R.string.account_delete_failed),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -1903,7 +1904,7 @@ fun LeaderboardAccountStatus() {
                     pendingDeleteAfterReauth = false
                     android.widget.Toast.makeText(
                         context,
-                        "Re-authentication failed. Please try again.",
+                        context.string(R.string.account_reauth_failed),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -1912,7 +1913,7 @@ fun LeaderboardAccountStatus() {
                 pendingDeleteAfterReauth = false
                 android.widget.Toast.makeText(
                     context,
-                    "Re-authentication failed. Please try again.",
+                    context.string(R.string.account_reauth_failed),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1937,27 +1938,27 @@ fun LeaderboardAccountStatus() {
                         userDisplayName = LeaderboardManager.getUserDisplayName()
                         android.widget.Toast.makeText(
                             context,
-                            "Account linked successfully!",
+                            context.string(R.string.account_linked),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     } else {
                         android.widget.Toast.makeText(
                             context,
-                            "Failed to link account. Please try again.",
+                            context.string(R.string.account_link_failed),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
                 } else {
                     android.widget.Toast.makeText(
                         context,
-                        "Sign-in failed. Please try again.",
+                        context.string(R.string.account_sign_in_failed),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
             } catch (e: Exception) {
                 android.widget.Toast.makeText(
                     context,
-                    "Sign-in failed. Please try again.",
+                    context.string(R.string.account_sign_in_failed),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } finally {
@@ -2040,13 +2041,13 @@ fun LeaderboardAccountStatus() {
                     userDisplayName = null
                     android.widget.Toast.makeText(
                         context,
-                        "Logged out successfully",
+                        context.string(R.string.account_logged_out),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 } else {
                     android.widget.Toast.makeText(
                         context,
-                        "Failed to logout. Please try again.",
+                        context.string(R.string.account_logout_failed),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -2054,7 +2055,7 @@ fun LeaderboardAccountStatus() {
                 android.util.Log.e("LeaderboardAccountStatus", "Error during logout", e)
                 android.widget.Toast.makeText(
                     context,
-                    "An error occurred during logout",
+                    context.string(R.string.account_logout_error),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } finally {
@@ -2096,7 +2097,7 @@ fun LeaderboardAccountStatus() {
                     ) {
                         Icon(
                             imageVector = if (isEmailLinked) Icons.Default.AccountCircle else Icons.Default.Info,
-                            contentDescription = "Account status",
+                            contentDescription = context.string(R.string.account_status_cd),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
@@ -2111,9 +2112,9 @@ fun LeaderboardAccountStatus() {
                 ) {
                     Text(
                         text = when {
-                            isEmailLinked -> "Account Linked"
-                            userId.isNotEmpty() -> "Anonymous Account"
-                            else -> "Setting up..."
+                            isEmailLinked -> context.string(R.string.account_status_linked)
+                            userId.isNotEmpty() -> context.string(R.string.account_status_anonymous)
+                            else -> context.string(R.string.account_status_setting_up)
                         },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2206,20 +2207,20 @@ fun LeaderboardAccountStatus() {
                 )
                 Text(
                     text = when {
-                        isEmailLinked -> "Your data is safe and will be kept forever"
+                        isEmailLinked -> context.string(R.string.account_data_safe)
                         userId.isNotEmpty() -> {
                             val daysUntilRemoval =
                                 LeaderboardManager.getDaysUntilDataRemoval(context)
                             if (daysUntilRemoval == -1L) {
-                                "Your data is anonymous and will be kept as long as possible"
+                                context.string(R.string.account_data_anonymous)
                             } else if (daysUntilRemoval > 0) {
-                                "Link Gmail to keep data safe forever (${daysUntilRemoval} days remaining)"
+                                context.string(R.string.account_link_to_keep_days, daysUntilRemoval)
                             } else {
-                                "Link Gmail to keep your leaderboard data safe forever"
+                                context.string(R.string.account_link_to_keep)
                             }
                         }
 
-                        else -> "Setting up your anonymous account..."
+                        else -> context.string(R.string.account_setting_up_anonymous)
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isEmailLinked)
@@ -2257,7 +2258,7 @@ fun LeaderboardAccountStatus() {
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Logging out...",
+                                context.string(R.string.account_logging_out),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 9.sp
@@ -2270,7 +2271,7 @@ fun LeaderboardAccountStatus() {
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Logout",
+                                context.string(R.string.account_logout),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 9.sp
@@ -2295,7 +2296,7 @@ fun LeaderboardAccountStatus() {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            "Delete",
+                            context.string(R.string.account_delete),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             fontSize = 9.sp
@@ -2308,14 +2309,14 @@ fun LeaderboardAccountStatus() {
                             onDismissRequest = { if (!isDeleting) showDeleteDialog = false },
                             title = {
                                 Text(
-                                    text = "Delete Account",
+                                    text = context.string(R.string.account_delete_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 14.sp
                                 )
                             },
                             text = {
                                 Text(
-                                    text = "This will permanently delete your account and all associated data. This action cannot be undone.\n\nAre you sure you want to delete your account?",
+                                    text = context.string(R.string.account_delete_body),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontSize = 11.sp
                                 )
@@ -2344,7 +2345,7 @@ fun LeaderboardAccountStatus() {
                                                 userDisplayName = null
                                                 android.widget.Toast.makeText(
                                                     context,
-                                                    "Account deleted successfully",
+                                                    context.string(R.string.account_deleted),
                                                     android.widget.Toast.LENGTH_SHORT
                                                 ).show()
                                             } else {
@@ -2353,7 +2354,7 @@ fun LeaderboardAccountStatus() {
                                                 isDeleting = false
                                                 android.widget.Toast.makeText(
                                                     context,
-                                                    "Failed to delete account. Please try again.",
+                                                    context.string(R.string.account_delete_failed),
                                                     android.widget.Toast.LENGTH_SHORT
                                                 ).show()
                                             }
@@ -2373,7 +2374,7 @@ fun LeaderboardAccountStatus() {
                                         Spacer(modifier = Modifier.width(4.dp))
                                     }
                                     Text(
-                                        "Delete",
+                                        context.string(R.string.account_delete),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -2384,7 +2385,7 @@ fun LeaderboardAccountStatus() {
                                     enabled = !isDeleting
                                 ) {
                                     Text(
-                                        "Cancel",
+                                        context.string(R.string.cancel),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -2403,14 +2404,14 @@ fun LeaderboardAccountStatus() {
                             },
                             title = {
                                 Text(
-                                    text = "Re-authentication Required",
+                                    text = context.string(R.string.account_reauth_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 14.sp
                                 )
                             },
                             text = {
                                 Text(
-                                    text = "For security reasons, you need to sign in again to delete your account. This helps protect your account from unauthorized deletion.",
+                                    text = context.string(R.string.account_reauth_body),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontSize = 11.sp
                                 )
@@ -2426,7 +2427,7 @@ fun LeaderboardAccountStatus() {
                                             pendingDeleteAfterReauth = false
                                             android.widget.Toast.makeText(
                                                 context,
-                                                "Unable to start re-authentication. Please try again.",
+                                                context.string(R.string.account_reauth_start_failed),
                                                 android.widget.Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -2445,7 +2446,7 @@ fun LeaderboardAccountStatus() {
                                         Spacer(modifier = Modifier.width(4.dp))
                                     }
                                     Text(
-                                        "Sign In",
+                                        context.string(R.string.account_sign_in),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -2460,7 +2461,7 @@ fun LeaderboardAccountStatus() {
                                     enabled = !isDeleting
                                 ) {
                                     Text(
-                                        "Cancel",
+                                        context.string(R.string.cancel),
                                         fontSize = 11.sp
                                     )
                                 }
@@ -2483,7 +2484,7 @@ fun LeaderboardAccountStatus() {
                                     userDisplayName = LeaderboardManager.getUserDisplayName()
                                     android.widget.Toast.makeText(
                                         context,
-                                        "Account linked successfully!",
+                                        context.string(R.string.account_linked),
                                         android.widget.Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -2518,7 +2519,7 @@ fun LeaderboardAccountStatus() {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "Linking...",
+                            context.string(R.string.account_linking),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -2530,7 +2531,7 @@ fun LeaderboardAccountStatus() {
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            "Link Gmail Account",
+                            context.string(R.string.account_link_gmail),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -2567,7 +2568,7 @@ private fun linkGmailAccountFromDrawer(
     } catch (e: Exception) {
         android.widget.Toast.makeText(
             activity,
-            "Failed to start sign-in. Please try again.",
+            activity.string(R.string.account_sign_in_start_failed),
             android.widget.Toast.LENGTH_SHORT
         ).show()
     }
@@ -2596,7 +2597,7 @@ private fun startGoogleSignInForReauth(
     } catch (e: Exception) {
         android.widget.Toast.makeText(
             activity,
-            "Failed to start re-authentication. Please try again.",
+            activity.string(R.string.account_reauth_start_failed_2),
             android.widget.Toast.LENGTH_SHORT
         ).show()
     }
