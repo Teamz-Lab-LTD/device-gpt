@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.teamz.lab.debugger.utils.LocaleManager
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Transparent consent Activity for [PhotoCaptureBridge]. Launched from the AI Bridge
@@ -141,7 +142,7 @@ private fun ConsentDialog(onAllow: () -> Unit, onDeny: () -> Unit) {
                 enabled = !busy,
                 colors = ButtonDefaults.buttonColors(),
             ) {
-                Text(
+                DgText(
                     stringResource(if (busy) R.string.mx_photo_consent_taking else R.string.mx_photo_consent_allow),
                 )
             }

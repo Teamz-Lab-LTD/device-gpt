@@ -74,6 +74,8 @@ import com.teamz.lab.debugger.utils.string
 import androidx.compose.ui.res.stringResource
 import androidx.annotation.StringRes
 import com.teamz.lab.debugger.utils.LocaleManager
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.displayText
 
 /**
  * Viral Share Dialog - Makes sharing easy, shows reward progress, and tracks viral growth
@@ -340,7 +342,7 @@ fun ViralShareDialog(
                     border = closeBorder,
                     colors = if (isDark) ButtonDefaults.outlinedButtonColors(contentColor = DesignSystemColors.NeonGreen) else ButtonDefaults.outlinedButtonColors()
                 ) {
-                    Text(
+                    DgText(
                         LocalContext.current.string(R.string.close),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
@@ -392,13 +394,13 @@ private fun RewardProgressCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (currentTier.badge.isNotEmpty()) {
-                            Text(
+                            DgText(
                                 currentTier.badge,
                                 style = MaterialTheme.typography.titleLarge
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
-                        Text(
+                        DgText(
                             stringResource(currentTier.titleRes()),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -406,7 +408,7 @@ private fun RewardProgressCard(
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgText(
                         stringResource(
                             if (referralCount != 1) R.string.lb_vs_friends_many else R.string.lb_vs_friends_one,
                             referralCount.toString()
@@ -447,7 +449,7 @@ private fun RewardProgressCard(
                     shape = RoundedCornerShape(8.dp),
                     color = accentColor.copy(alpha = 0.15f)
                 ) {
-                    Text(
+                    DgText(
                         adFreeText,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
@@ -461,7 +463,7 @@ private fun RewardProgressCard(
             if (nextTier != null) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
+                DgText(
                     stringResource(R.string.lb_vs_next, nextTier.badge, stringResource(nextTier.titleRes()), stringResource(nextTier.descriptionRes())),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
@@ -492,7 +494,7 @@ private fun RewardProgressCard(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
+                DgText(
                     stringResource(
                         if (referralsToNext != 1) {
                             R.string.lb_vs_more_invites_many
@@ -546,13 +548,13 @@ private fun RewardTiersList(referralCount: Int, isDark: Boolean) {
                     .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                DgText(
                     tier.badge,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.width(28.dp)
                 )
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    DgText(
                         stringResource(
                             if (tier.requiredReferrals != 1) {
                                 R.string.lb_vs_tier_row_many
@@ -566,7 +568,7 @@ private fun RewardTiersList(referralCount: Int, isDark: Boolean) {
                         fontWeight = if (unlocked) FontWeight.Bold else FontWeight.Normal,
                         color = if (unlocked) accentColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    DgText(
                         when {
                             tier.adFreeHours >= 48 -> stringResource(R.string.lb_vs_days_adfree, (tier.adFreeHours / 24).toString())
                             else -> stringResource(R.string.lb_vs_hours_adfree, tier.adFreeHours.toString())
@@ -638,7 +640,7 @@ private fun ReferralCodeSection(
                         shape = RoundedCornerShape(10.dp),
                         color = codeBoxBg
                     ) {
-                        Text(
+                        DgText(
                             referralCode,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
@@ -651,7 +653,7 @@ private fun ReferralCodeSection(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             clipboard.setPrimaryClip(ClipData.newPlainText("Referral Code", referralCode))
-                            Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, displayText(copiedText), Toast.LENGTH_SHORT).show()
                             AnalyticsUtils.logEvent(AnalyticsEvent.ReferralShared, mapOf("method" to "copy"))
                         },
                         modifier = Modifier.height(48.dp),
@@ -682,7 +684,7 @@ private fun ReferralCodeSection(
                 } else {
                     stringResource(R.string.lb_vs_legend)
                 }
-                Text(
+                DgText(
                     motivationText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -731,7 +733,7 @@ private fun ShareButton(
                 tint = contentColor
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
+            DgText(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,

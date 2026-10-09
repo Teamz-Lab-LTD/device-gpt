@@ -50,6 +50,7 @@ import com.teamz.lab.debugger.ui.theme.useThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Network Privacy Report Card - a prominent card that shows a privacy
@@ -163,7 +164,7 @@ fun NetworkPrivacyReportCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else if (report != null) {
-                        Text(
+                        DgText(
                             // threatLevel is English data ("Low" …), also used in the AI prompt.
                             text = stringResource(
                                 R.string.info_npr_summary,
@@ -236,7 +237,7 @@ fun NetworkPrivacyReportCard(
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(
+                                DgText(
                                     text = ispText,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -358,7 +359,7 @@ private fun GradeBadge(grade: String, score: Int, isDark: Boolean = false) {
         color = bgColor
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(
+            DgText(
                 text = grade,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
@@ -435,7 +436,7 @@ private fun PrivacyScoreArc(score: Int, isDark: Boolean = false) {
 
         // Center text (neon in dark mode so number is readable on dark background)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
+            DgText(
                 text = "$score",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -509,13 +510,13 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
                 tint = statusColor
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(
+            DgText(
                 text = shownName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
-            Text(
+            DgText(
                 text = statusLabel,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
@@ -532,7 +533,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
 
         AnimatedVisibility(visible = showDetail) {
             Column(modifier = Modifier.padding(top = 8.dp, start = 30.dp)) {
-                Text(
+                DgText(
                     text = shownDetail,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -547,7 +548,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
                             tint = Color(0xFFFF9800)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
+                        DgText(
                             text = shownRecommendation,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFFF9800),

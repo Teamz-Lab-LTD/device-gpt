@@ -63,6 +63,7 @@ import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.CameraHealthUtils
 import kotlinx.coroutines.delay
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Screen Test tab: colour/dead-pixel check, grid/scratch check, touch check. Split out of the
@@ -339,7 +340,7 @@ private fun ScreenTestSummaryCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, contentDescription = null, tint = contentColor)
                     Spacer(Modifier.size(8.dp))
-                    Text(
+                    DgText(
                         if (hasProblem) {
                             val colour = lastPixelResult.colorShownWhenReported
                             if (colour != null) {
@@ -357,7 +358,7 @@ private fun ScreenTestSummaryCard(
             }
             if (lastTouchPointCount != null) {
                 if (lastPixelResult != null) Spacer(Modifier.size(4.dp))
-                Text(
+                DgText(
                     stringResource(R.string.screen_test_summary_touch, lastTouchPointCount),
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor,
@@ -444,7 +445,7 @@ private fun ScreenPixelTestDialog(
                             color = textColor,
                         )
                         Spacer(Modifier.size(4.dp))
-                        Text(
+                        DgText(
                             stringResource(
                                 R.string.screen_pixel_showing,
                                 screenColorLabel(colorName),
@@ -479,7 +480,7 @@ private fun ScreenPixelTestDialog(
                                     }
                                 },
                             ) {
-                                Text(
+                                DgText(
                                     stringResource(
                                         if (index < SCREEN_TEST_COLORS.lastIndex) R.string.screen_pixel_next
                                         else R.string.screen_pixel_done
@@ -563,7 +564,7 @@ private fun GridTestDialog(onDismiss: () -> Unit) {
                             isWhiteBackground = !isWhiteBackground
                             controlsVisible = true
                         }) {
-                            Text(
+                            DgText(
                                 stringResource(
                                     if (isWhiteBackground) R.string.screen_grid_switch_dark
                                     else R.string.screen_grid_switch_bright
@@ -624,7 +625,7 @@ private fun TouchTestDialog(
                         color = Color.White,
                     )
                     Spacer(Modifier.size(4.dp))
-                    Text(
+                    DgText(
                         stringResource(R.string.screen_touch_count, pointerPositions.size, maxTouches),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,

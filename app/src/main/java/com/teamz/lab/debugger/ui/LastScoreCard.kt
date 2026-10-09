@@ -41,6 +41,10 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.IconTone
 
 /**
  * v3.1.12 — closes the "one-shot FirstScanGate" gap.
@@ -117,7 +121,7 @@ fun LastScoreCard(
             )
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                DgText(
                     text = score.toString(),
                     fontSize = 56.sp,
                     fontWeight = FontWeight.Bold,
@@ -125,13 +129,13 @@ fun LastScoreCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text(
+                    DgText(
                         text = verdict,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = verdictColor
                     )
-                    Text(
+                    DgText(
                         text = agoLabel,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -141,8 +145,10 @@ fun LastScoreCard(
             // v3.2.0 R6 insight line — renders only when real data supports it.
             insightLine?.let { line ->
                 Spacer(Modifier.height(10.dp))
-                Text(
-                    text = "💡 $line",
+                DgIconText(
+                    icon = DgIcons.Tip,
+                    tone = IconTone.Accent,
+                    text = line,
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
                 )

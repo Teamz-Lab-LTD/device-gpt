@@ -36,6 +36,11 @@ import com.teamz.lab.debugger.utils.RevenueCatManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.teamz.lab.debugger.ui.icons.DgText
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
 
 /**
  * v3.2.0 R5 — Device Timeline (2026-07-10 growth synthesis).
@@ -89,7 +94,7 @@ fun DeviceTimelineSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
-            Text(
+            DgText(
                 text = if (isPremium) context.string(R.string.timeline_subtitle_premium)
                 else context.string(R.string.timeline_subtitle_free),
                 style = MaterialTheme.typography.bodySmall,
@@ -103,7 +108,7 @@ fun DeviceTimelineSection(
                 events.groupBy { dayFmt.format(Date(it.timestamp)) }
             }
             grouped.forEach { (day, dayEvents) ->
-                Text(
+                DgText(
                     text = day,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -117,12 +122,14 @@ fun DeviceTimelineSection(
                             .padding(vertical = 3.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(
-                            text = "${typeIcon(event.type)} ${timelineLabel(context, event)}",
+                        DgIconText(
+                            icon = typeIcon(event.type),
+                            text = timelineLabel(context, event),
+                            modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Text(
+                        DgText(
                             text = timeFmt.format(Date(event.timestamp)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -147,7 +154,8 @@ fun DeviceTimelineSection(
                         }
                         .padding(vertical = 6.dp),
                 ) {
-                    Text(
+                    DgIconText(
+                        icon = DgIcons.Lock,
                         text = context.string(
                             if (totalCount - events.size == 1) R.string.timeline_older_one
                             else R.string.timeline_older_many,
@@ -229,12 +237,12 @@ private fun timelineTypeName(context: Context, type: String): String = when (typ
     else -> type
 }
 
-private fun typeIcon(type: String): String = when (type) {
-    DeviceEvent.TYPE_SCORE_SCAN -> "📊"
-    DeviceEvent.TYPE_CHARGE_SESSION -> "🔌"
-    DeviceEvent.TYPE_APP_INSTALLED -> "📦"
-    DeviceEvent.TYPE_BASELINE_SNAPSHOT -> "📈"
-    else -> "•"
+private fun typeIcon(type: String): ImageVector = when (type) {
+    DeviceEvent.TYPE_SCORE_SCAN -> DgIcons.BarChart
+    DeviceEvent.TYPE_CHARGE_SESSION -> DgIcons.ChargeFlow
+    DeviceEvent.TYPE_APP_INSTALLED -> DgStock.Box
+    DeviceEvent.TYPE_BASELINE_SNAPSHOT -> DgIcons.Chart
+    else -> DgIcons.Info
 }
 
 /**
@@ -269,14 +277,15 @@ fun ChargeSummaryCard() {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
+            DgIconText(
+                icon = DgIcons.ChargeFlow,
                 text = context.string(R.string.timeline_last_charge),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
-            Text(
+            DgText(
                 text = if (s.label == null) {
                     context.string(R.string.timeline_charge_recorded)
                 } else {

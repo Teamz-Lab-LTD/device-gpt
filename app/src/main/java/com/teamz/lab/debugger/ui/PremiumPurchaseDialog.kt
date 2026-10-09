@@ -17,6 +17,10 @@ import androidx.compose.ui.window.Dialog
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
 
 /**
  * Premium Purchase Dialog
@@ -142,7 +146,8 @@ fun PremiumPurchaseDialog(
                     )
                     
                     // DeviceGPT Premium title
-                    Text(
+                    DgIconText(
+                        icon = DgIcons.Star,
                         text = stringResource(R.string.mx_purchase_title_star),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
@@ -177,7 +182,9 @@ fun PremiumPurchaseDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Start
                             ) {
-                                Text(
+                                DgIconText(
+                                    icon = DgStock.CheckCircle,
+                                    tone = IconTone.Good,
                                     text = benefit,
                                     style = MaterialTheme.typography.bodyLarge,
                                     modifier = Modifier.weight(1f),

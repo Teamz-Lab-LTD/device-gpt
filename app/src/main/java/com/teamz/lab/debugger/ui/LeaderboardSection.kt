@@ -100,6 +100,13 @@ import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.TrustBadge
 import com.teamz.lab.debugger.utils.string
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.teamz.lab.debugger.ui.icons.DgIconText
 
 /**
  * Leaderboard Section - Child-friendly UI
@@ -494,7 +501,7 @@ fun LeaderboardSection(activity: Activity) {
                         }
                         
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(
+                        DgText(
                             text = stringResource(
                                 if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
                                     R.string.lb_search_count_apps
@@ -715,8 +722,8 @@ fun LeaderboardSection(activity: Activity) {
                                         .padding(24.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        text = "🔍",
+                                    DgGlyph(
+                                        icon = DgStock.Search,
                                         fontSize = 48.sp,
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     )
@@ -842,7 +849,7 @@ fun LeaderboardSection(activity: Activity) {
                                                     ),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                Text(
+                                                DgText(
                                                     text = "• $originalRank",
                                                     style = MaterialTheme.typography.headlineLarge,
                                                     fontWeight = FontWeight.Bold,
@@ -871,7 +878,7 @@ fun LeaderboardSection(activity: Activity) {
                                                         },
                                                         modifier = Modifier.size(20.dp)
                                                     )
-                                                    Text(
+                                                    DgText(
                                                         text = stringResource(R.string.lb_gate_app_title, originalRank.toString()),
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
@@ -881,7 +888,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 }
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 val totalApps = filteredAppPowerEntriesWithRank.size
-                                                Text(
+                                                DgText(
                                                     text = stringResource(R.string.lb_gate_app_body, originalRank.toString(), totalApps.toString()),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -912,7 +919,7 @@ fun LeaderboardSection(activity: Activity) {
                                                             style = MaterialTheme.typography.labelMedium,
                                                             fontWeight = FontWeight.Bold
                                                         )
-                                                        Text(
+                                                        DgText(
                                                             if (premiumPriceAppPower.isNotEmpty()) {
                                                                 stringResource(R.string.lb_gate_price_see_everything, premiumPriceAppPower)
                                                             } else {
@@ -960,8 +967,8 @@ fun LeaderboardSection(activity: Activity) {
                                     .padding(24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    text = "🔍",
+                                DgGlyph(
+                                    icon = DgStock.Search,
                                     fontSize = 48.sp,
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
@@ -1126,7 +1133,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 ),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(
+                                            DgText(
                                                 text = "#$originalRank",
                                                 style = MaterialTheme.typography.headlineLarge,
                                                 fontWeight = FontWeight.Bold,
@@ -1153,7 +1160,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 )
                                                 // Get score to tease without revealing the device name
                                                 val score = entry.score.toInt().takeIf { it > 0 }
-                                                Text(
+                                                DgText(
                                                     text = if (score != null) {
                                                         stringResource(R.string.lb_gate_device_title_score, originalRank.toString(), score.toString())
                                                     } else {
@@ -1168,7 +1175,7 @@ fun LeaderboardSection(activity: Activity) {
                                             Spacer(modifier = Modifier.height(4.dp))
                                             // Curiosity hook: tease the score, hide the device name
                                             val totalDevices = filteredLeaderboardEntriesWithRank.size
-                                            Text(
+                                            DgText(
                                                 text = stringResource(R.string.lb_gate_device_body, originalRank.toString(), totalDevices.toString()),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -1199,7 +1206,7 @@ fun LeaderboardSection(activity: Activity) {
                                                         style = MaterialTheme.typography.labelMedium,
                                                         fontWeight = FontWeight.Bold
                                                     )
-                                                    Text(
+                                                    DgText(
                                                         if (premiumPrice.isNotEmpty()) {
                             stringResource(R.string.lb_gate_price_see_everything, premiumPrice)
                         } else {
@@ -1375,8 +1382,8 @@ fun CategoryInfoDialog(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(category.icon, fontSize = 24.sp)
-                Text(
+                DgText(category.icon, fontSize = 24.sp)
+                DgText(
                     text = stringResource(R.string.lb_cat_what_is, stringResource(category.nameRes())),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -1399,13 +1406,14 @@ fun CategoryInfoDialog(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
+                        DgIconText(
+                            icon = DgIcons.Phone,
                             text = stringResource(R.string.lb_cat_simple_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Text(
+                        DgText(
                             text = stringResource(category.simpleExplanationRes()),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -1423,23 +1431,25 @@ fun CategoryInfoDialog(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
+                        DgIconText(
+                            icon = DgStock.Settings,
                             text = stringResource(R.string.lb_cat_tech_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
+                        DgText(
                             text = stringResource(category.questionRes()),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
+                        DgIconText(
+                            icon = DgIcons.BarChart,
                             text = stringResource(R.string.lb_cat_how_measured),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
-                        Text(
+                        DgText(
                             text = stringResource(category.howMeasuredRes()),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -1495,8 +1505,8 @@ fun CategorySelector(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(category.icon, fontSize = 16.sp)
-                        Text(
+                        DgText(category.icon, fontSize = 16.sp)
+                        DgText(
                             stringResource(category.nameRes()),
                             style = MaterialTheme.typography.labelMedium
                         )
@@ -1550,7 +1560,7 @@ fun LeaderboardEntryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Rank badge
-            Text(
+            DgText(
                 text = "•$rank",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -1561,7 +1571,7 @@ fun LeaderboardEntryCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 // Device name
-                Text(
+                DgText(
                     text = entry.displayName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
@@ -1574,8 +1584,8 @@ fun LeaderboardEntryCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.padding(top = 4.dp)
                     ) {
-                        Text(
-                            text = "🤖",
+                        DgGlyph(
+                            icon = DgStock.Android,
                             fontSize = 14.sp
                         )
                         // Show OS version(s) with scores per OS
@@ -1588,7 +1598,7 @@ fun LeaderboardEntryCard(
                                     val scoreInt = it.value.toInt()
                                     context.getString(R.string.lb_os_score, it.key, scoreInt.toString())
                                 }
-                            Text(
+                            DgText(
                                 text = osScoresText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1597,7 +1607,7 @@ fun LeaderboardEntryCard(
                         } else if (entry.osScores.isNotEmpty()) {
                             // Single version: Show "Android 13 (85/100)"
                             val score = entry.osScores[entry.androidVersion] ?: entry.avgScore
-                            Text(
+                            DgText(
                                 text = stringResource(R.string.lb_os_score, entry.androidVersion, score.toInt().toString()),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1609,14 +1619,14 @@ fun LeaderboardEntryCard(
                                 val versionCounts = entry.androidVersions.entries
                                     .sortedByDescending { it.value }
                                     .joinToString(", ") { context.getString(R.string.lb_os_count, it.key, it.value.toString()) }
-                                Text(
+                                DgText(
                                     text = versionCounts,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
                                 )
                             } else {
-                                Text(
+                                DgText(
                                     text = stringResource(R.string.lb_os_only, entry.androidVersion),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1633,7 +1643,7 @@ fun LeaderboardEntryCard(
                 } else {
                     stringResource(R.string.lb_score_value, entry.avgScore.toInt().toString())
                 }
-                Text(
+                DgText(
                     text = scoreText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (entry.avgScore == 0.0) 
@@ -1649,7 +1659,7 @@ fun LeaderboardEntryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TrustBadgeIcon(badge = trustBadge)
-                    Text(
+                    DgText(
                         text = if (entry.userCount == 1) 
                             stringResource(R.string.lb_verified_one)
                         else 
@@ -1740,13 +1750,13 @@ fun TrustExplanationCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TrustPointCard(
-                        icon = "📱",
+                        icon = DgIcons.Phone,
                         title = stringResource(R.string.lb_trust_real_title),
                         description = stringResource(R.string.lb_trust_real_body),
                         modifier = Modifier.weight(1f)
                     )
                     TrustPointCard(
-                        icon = "🌐",
+                        icon = DgIcons.Globe,
                         title = stringResource(R.string.lb_trust_net_title),
                         description = stringResource(R.string.lb_trust_net_body),
                         modifier = Modifier.weight(1f)
@@ -1757,13 +1767,13 @@ fun TrustExplanationCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TrustPointCard(
-                        icon = "👥",
+                        icon = DgStock.Group,
                         title = stringResource(R.string.lb_trust_users_title),
                         description = stringResource(R.string.lb_trust_users_body),
                         modifier = Modifier.weight(1f)
                     )
                     TrustPointCard(
-                        icon = "🛡️",
+                        icon = DgIcons.PrivacyShield,
                         title = stringResource(R.string.lb_trust_privacy_title),
                         description = stringResource(R.string.lb_trust_privacy_body),
                         modifier = Modifier.weight(1f)
@@ -1776,7 +1786,7 @@ fun TrustExplanationCard(
 
 @Composable
 fun TrustPointCard(
-    icon: String,
+    icon: ImageVector,
     title: String,
     description: String,
     modifier: Modifier = Modifier
@@ -1800,19 +1810,20 @@ fun TrustPointCard(
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Text(
-                text = icon,
-                fontSize = 28.sp,
+            DgGlyph(
+                icon = icon,
+                fontSize = 24.sp,
+                tone = IconTone.Accent,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            Text(
+            DgText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            Text(
+            DgText(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1832,14 +1843,14 @@ fun TrustPoint(
         modifier = Modifier.padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Text(text = icon, fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+        DgText(text = icon, fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            DgText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
+            DgText(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1858,9 +1869,9 @@ fun TrustBadgeIcon(badge: TrustBadge) {
     }
     
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = icon, fontSize = 14.sp)
+        DgText(text = icon, fontSize = 14.sp)
         Spacer(modifier = Modifier.width(4.dp))
-        Text(
+        DgText(
             text = text,
             style = MaterialTheme.typography.labelSmall,
             color = color,
@@ -1898,18 +1909,19 @@ fun UserRankCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "🏆",
+                DgGlyph(
+                    icon = DgIcons.Trophy,
+                    tone = IconTone.Accent,
                     fontSize = 32.sp,
                     modifier = Modifier.padding(end = 16.dp)
                 )
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_rank_yours, rank.toString()),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
+                    DgText(
                         text = if (totalEntries > 0) {
                             val percentile = calculateTopPercent(rank, totalEntries)
                             stringResource(R.string.lb_rank_top_percent, percentile.toString(), stringResource(category.nameRes()))
@@ -1995,19 +2007,20 @@ fun UserRankCardPremiumGate(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "🏆",
+                DgGlyph(
+                    icon = DgIcons.Trophy,
+                    tone = IconTone.Accent,
                     fontSize = 32.sp,
                     modifier = Modifier.padding(end = 16.dp)
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     if (userRank > 0) {
-                        Text(
+                        DgText(
                             text = stringResource(R.string.lb_gate_your_device, userRank.toString(), totalEntries.toString()),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
+                        DgText(
                             text = stringResource(R.string.lb_gate_top_for, topPercent.toString(), stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2018,7 +2031,7 @@ fun UserRankCardPremiumGate(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
+                        DgText(
                             text = stringResource(R.string.lb_gate_top_hidden, stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2027,7 +2040,7 @@ fun UserRankCardPremiumGate(
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
+            DgText(
                 text = stringResource(
                     if (userRank > 0) R.string.lb_gate_teaser_ranked else R.string.lb_gate_teaser_unranked
                 ),
@@ -2052,7 +2065,7 @@ fun UserRankCardPremiumGate(
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
+                    DgText(
                         if (premiumPrice.isNotEmpty()) {
                             stringResource(R.string.lb_gate_price_see_everything, premiumPrice)
                         } else {
@@ -2114,8 +2127,8 @@ fun ShouldYouUpdateCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "🚀",
+                DgGlyph(
+                    icon = DgStock.SystemUpdate,
                     fontSize = 32.sp,
                     modifier = Modifier.padding(end = 16.dp)
                 )
@@ -2135,7 +2148,7 @@ fun ShouldYouUpdateCard(
                         }
                         osRecommendation != null -> {
                             val (recommendedOS, improvement) = osRecommendation!!
-                            Text(
+                            DgText(
                                 text = if (isPremium) {
                                     stringResource(R.string.lb_os_update_to, recommendedOS.toString())
                                 } else {
@@ -2145,7 +2158,7 @@ fun ShouldYouUpdateCard(
                                 fontWeight = FontWeight.Bold
                             )
                             if (isPremium) {
-                                Text(
+                                DgText(
                                     text = stringResource(R.string.lb_os_could_improve, improvement.toInt().toString()),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2161,7 +2174,7 @@ fun ShouldYouUpdateCard(
                         }
                         else -> {
                             // No recommendation available (no data or no better version)
-                            Text(
+                            DgText(
                                 text = if (isPremium) {
                                     stringResource(R.string.lb_os_compare_available)
                                 } else {
@@ -2170,7 +2183,7 @@ fun ShouldYouUpdateCard(
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
-                            Text(
+                            DgText(
                                 text = if (isPremium) {
                                     stringResource(R.string.lb_os_compare_body)
                                 } else {
@@ -2311,7 +2324,7 @@ fun PremiumUserRankCard(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    DgText(
                         text = "•$rank",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
@@ -2329,13 +2342,13 @@ fun PremiumUserRankCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     if (totalEntries > 0) {
                         val percentile = calculateTopPercent(rank, totalEntries)
-                        Text(
+                        DgText(
                             text = stringResource(R.string.lb_top_percent_cat, percentile.toString(), stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
-                        Text(
+                        DgText(
                             text = stringResource(category.nameRes()),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2406,8 +2419,8 @@ fun EmptyLeaderboardCard(
             modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "📊",
+            DgGlyph(
+                icon = DgIcons.BarChart,
                 fontSize = 48.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -2417,7 +2430,7 @@ fun EmptyLeaderboardCard(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            DgText(
                 text = stringResource(R.string.lb_empty_body, stringResource(category.nameRes())),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2434,7 +2447,8 @@ fun EmptyLeaderboardCard(
                 Text(stringResource(R.string.lb_empty_upload))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            DgIconText(
+                icon = DgIcons.Tip,
                 text = stringResource(R.string.lb_empty_auto),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
@@ -2565,8 +2579,9 @@ fun ErrorStateCard(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "⚠️",
+            DgGlyph(
+                icon = DgStock.Warning,
+                tone = IconTone.Warn,
                 fontSize = 48.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -2577,7 +2592,7 @@ fun ErrorStateCard(
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            DgText(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer,
@@ -2612,7 +2627,7 @@ fun SearchBar(
         onValueChange = onQueryChange,
         modifier = modifier,
         placeholder = {
-            Text(
+            DgText(
                 text = placeholder,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -2670,7 +2685,7 @@ fun AppPowerLeaderboardEntryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Rank badge
-            Text(
+            DgText(
                 text = "•$rank",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
@@ -2681,7 +2696,7 @@ fun AppPowerLeaderboardEntryCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 // App name
-                Text(
+                DgText(
                     text = entry.appName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
@@ -2692,12 +2707,12 @@ fun AppPowerLeaderboardEntryCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 4.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_power_label) + " ",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    DgText(
                         text = "%.2f W".format(entry.avgPowerConsumption),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
@@ -2707,7 +2722,7 @@ fun AppPowerLeaderboardEntryCard(
                 
                 // Battery impact
                 if (entry.avgBatteryImpact > 0) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_battery_drain, "%.1f".format(entry.avgBatteryImpact)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -2721,8 +2736,8 @@ fun AppPowerLeaderboardEntryCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.padding(top = 4.dp)
                     ) {
-                        Text(
-                            text = "🤖",
+                        DgGlyph(
+                            icon = DgStock.Android,
                             fontSize = 14.sp
                         )
                         // Show OS version(s) with power consumption per OS
@@ -2735,7 +2750,7 @@ fun AppPowerLeaderboardEntryCard(
                                     val power = "%.2f".format(it.value)
                                     context.getString(R.string.lb_os_power, it.key, power)
                                 }
-                            Text(
+                            DgText(
                                 text = osPowerText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2744,7 +2759,7 @@ fun AppPowerLeaderboardEntryCard(
                         } else if (entry.osPowerConsumption.isNotEmpty()) {
                             // Single version: Show "Android 13 (2.5W)"
                             val power = entry.osPowerConsumption[entry.androidVersion] ?: entry.avgPowerConsumption
-                            Text(
+                            DgText(
                                 text = stringResource(R.string.lb_os_power, entry.androidVersion, "%.2f".format(power)),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2756,14 +2771,14 @@ fun AppPowerLeaderboardEntryCard(
                                 val versionCounts = entry.androidVersions.entries
                                     .sortedByDescending { it.value }
                                     .joinToString(", ") { context.getString(R.string.lb_os_count, it.key, it.value.toString()) }
-                                Text(
+                                DgText(
                                     text = versionCounts,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
                                 )
                             } else {
-                                Text(
+                                DgText(
                                     text = stringResource(R.string.lb_os_only, entry.androidVersion),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2781,7 +2796,7 @@ fun AppPowerLeaderboardEntryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TrustBadgeIcon(badge = trustBadge)
-                    Text(
+                    DgText(
                         text = if (entry.userCount == 1) 
                             stringResource(R.string.lb_reported_one)
                         else 
@@ -2809,8 +2824,8 @@ fun EmptyAppPowerLeaderboardCard(
             modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "📱",
+            DgGlyph(
+                icon = DgIcons.Phone,
                 fontSize = 48.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -2827,7 +2842,8 @@ fun EmptyAppPowerLeaderboardCard(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
+            DgIconText(
+                icon = DgIcons.Tip,
                 text = stringResource(R.string.lb_app_empty_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,

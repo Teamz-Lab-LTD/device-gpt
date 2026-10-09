@@ -29,6 +29,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.utils.string
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgStock
 
 /**
  * Data Retention Reminder Dialog
@@ -92,7 +95,8 @@ fun DataRetentionReminderDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
+            DgIconText(
+                icon = DgStock.Notifications,
                 text = stringResource(R.string.lb_dr_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
@@ -102,7 +106,7 @@ fun DataRetentionReminderDialog(
             Column {
                 val daysUntilRemoval = LeaderboardManager.getDaysUntilDataRemoval(context)
                 if (daysUntilRemoval > 0) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_dr_remove_in_days, daysUntilRemoval.toString()),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)

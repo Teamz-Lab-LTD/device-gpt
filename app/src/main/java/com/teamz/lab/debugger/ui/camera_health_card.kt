@@ -60,6 +60,7 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.CameraHealthUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.PermissionManager
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Camera tab: fact sheet + per-lens liveness check. Screen tests moved to their own tab
@@ -237,7 +238,7 @@ fun CameraHealthSection(
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(R.string.camera_checking))
                 } else {
-                    Text(
+                    DgText(
                         stringResource(
                             if (latestResult == null) R.string.camera_check_button
                             else R.string.camera_check_again
@@ -256,7 +257,7 @@ fun CameraHealthSection(
                             .clickable { showDetail = !showDetail },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
+                        DgText(
                             stringResource(
                                 if (showDetail) R.string.camera_hide_detail else R.string.camera_show_detail
                             ),
@@ -374,7 +375,7 @@ private fun CameraProblemReportCard(
                         mapOf("symptom" to symptom, "selected" to nowSelected),
                     )
                 },
-                label = { Text(stringResource(symptomLabel), style = MaterialTheme.typography.bodySmall) },
+                label = { DgText(stringResource(symptomLabel), style = MaterialTheme.typography.bodySmall) },
             )
         }
     }
@@ -534,7 +535,7 @@ private fun ColorCastCheckCard(
             Spacer(Modifier.size(8.dp))
             Text(stringResource(R.string.checking))
         } else {
-            Text(
+            DgText(
                 stringResource(
                     if (result == null) R.string.camera_bw_check_button else R.string.camera_check_again
                 )
@@ -609,7 +610,7 @@ private fun ColorCastResultCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = contentColor)
                 Spacer(Modifier.size(8.dp))
-                Text(
+                DgText(
                     headline,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
@@ -617,14 +618,14 @@ private fun ColorCastResultCard(
                 )
             }
             Spacer(Modifier.size(6.dp))
-            Text(subtext, style = MaterialTheme.typography.bodySmall, color = contentColor)
+            DgText(subtext, style = MaterialTheme.typography.bodySmall, color = contentColor)
             if (settingsAction != null) {
                 Spacer(Modifier.size(10.dp))
                 Button(
                     onClick = { context.startActivity(Intent(settingsAction.first)) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(settingsAction.second)
+                    DgText(settingsAction.second)
                 }
             }
         }
@@ -676,7 +677,7 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = contentColor)
                 Spacer(Modifier.size(8.dp))
-                Text(
+                DgText(
                     headline,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
@@ -692,7 +693,7 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
                     lens.autofocusConverged == false -> stringResource(R.string.camera_line_focus, name)
                     else -> stringResource(R.string.camera_line_ok, name)
                 }
-                Text(line, style = MaterialTheme.typography.bodySmall, color = contentColor)
+                DgText(line, style = MaterialTheme.typography.bodySmall, color = contentColor)
             }
         }
     }
@@ -743,7 +744,7 @@ private fun CapturedPhotosRow(
                             .height(105.dp)
                             .clip(RoundedCornerShape(8.dp)),
                     )
-                    Text(
+                    DgText(
                         cameraName(lens.facing),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -790,7 +791,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
         shape = RoundedCornerShape(8.dp),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text(
+            DgText(
                 stringResource(R.string.camera_lens_reports, cameraName(lens.facing)),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -809,12 +810,12 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
             } else {
                 stringResource(R.string.camera_lens_aperture_none)
             }
-            Text(
+            DgText(
                 stringResource(R.string.camera_lens_line_hardware, hardwareLevelName(lens.hardwareLevel), focal, aperture, zoom),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
+            DgText(
                 stringResource(
                     R.string.camera_lens_line_sensor,
                     lens.sensorSizeMm?.toString() ?: notReported,
@@ -823,7 +824,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
+            DgText(
                 stringResource(
                     R.string.camera_lens_line_stabilization,
                     if (lens.hasOpticalStabilization) reported else notReported,
@@ -833,7 +834,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
+            DgText(
                 stringResource(
                     R.string.camera_lens_line_raw,
                     stringResource(if (lens.rawAvailableToThisApp) R.string.camera_yes else R.string.camera_no),
@@ -841,7 +842,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
+            DgText(
                 stringResource(
                     R.string.camera_lens_line_shutter,
                     lens.exposureTimeRangeSec?.toString() ?: notReported,
@@ -851,7 +852,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (lens.jpegResolutions.isNotEmpty()) {
-                Text(
+                DgText(
                     stringResource(
                         R.string.camera_lens_line_resolutions,
                         lens.jpegResolutions.size,
@@ -862,7 +863,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(
+            DgText(
                 if (lens.videoRecordingSupported) {
                     lens.maxVideoResolution
                         ?.let { stringResource(R.string.camera_lens_video_supported_up_to, it.toString()) }
@@ -879,7 +880,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
             // reported", never as "this phone has only one lens".
             if (lens.physicalLenses.isNotEmpty()) {
                 Spacer(Modifier.size(4.dp))
-                Text(
+                DgText(
                     stringResource(R.string.camera_lens_physical_count, lens.physicalLenses.size),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
@@ -889,7 +890,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                     val isActive = phys.physicalId == activePhysicalCameraId
                     val physFocal = phys.focalLengthsMm.joinToString(", ").ifEmpty { notReported }
                     val physAperture = phys.aperturesF.joinToString(", f/").ifEmpty { notReported }
-                    Text(
+                    DgText(
                         "  • " + stringResource(
                             if (isActive) R.string.camera_lens_physical_row_active
                             else R.string.camera_lens_physical_row,

@@ -66,6 +66,7 @@ import com.teamz.lab.debugger.utils.AIIcon
 import com.teamz.lab.debugger.utils.string
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.teamz.lab.debugger.ui.icons.DgText
 
 // Package name of the Claude Android app. Isolated so the "Live-ready" badge in
 // the AI-app list stays in sync with the entry in [aiApps] below without a
@@ -153,10 +154,10 @@ fun AIAssistantDialog(
         onDismissRequest = onDismiss,
         title = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(title, style = MaterialTheme.typography.titleLarge)
+                DgText(title, style = MaterialTheme.typography.titleLarge)
                 if (subtitle.isNotBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
+                    DgText(
                         subtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.fillMaxWidth(),
@@ -251,14 +252,14 @@ fun AIAssistantDialog(
                                 }
                                 ListItem(
                                     headlineContent = {
-                                        Text(
+                                        DgText(
                                             // The AIApp keeps the English name: it is logged.
                                             stringResource(R.string.mx_ai_private_name),
                                             style = MaterialTheme.typography.titleMedium,
                                         )
                                     },
                                     supportingContent = {
-                                        Text(
+                                        DgText(
                                             onDeviceSubtitle,
                                             style = MaterialTheme.typography.bodySmall,
                                         )
@@ -282,7 +283,7 @@ fun AIAssistantDialog(
                             val isMcpCapable = bridgeOn && app.packageName == CLAUDE_PACKAGE
                             ListItem(
                                 headlineContent = {
-                                    Text(app.name, style = MaterialTheme.typography.titleMedium)
+                                    DgText(app.name, style = MaterialTheme.typography.titleMedium)
                                 },
                                 supportingContent = if (isMcpCapable) {
                                     {
@@ -322,7 +323,7 @@ fun AIAssistantDialog(
                             items(aiApps) { app ->
                                 ListItem(
                                     headlineContent = {
-                                        Text(app.name, style = MaterialTheme.typography.titleMedium)
+                                        DgText(app.name, style = MaterialTheme.typography.titleMedium)
                                     },
                                     leadingContent = {
                                         Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color())
@@ -381,7 +382,7 @@ private fun RadioRow(
             .padding(end = 4.dp),
     ) {
         RadioButton(selected = selected, onClick = null)
-        Text(label, style = MaterialTheme.typography.bodySmall)
+        DgText(label, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -390,7 +391,7 @@ private fun AiInstallList(apps: List<AIApp>, context: Context) {
     LazyColumn {
         items(apps) { app ->
             ListItem(
-                headlineContent = { Text(app.name, style = MaterialTheme.typography.titleMedium) },
+                headlineContent = { DgText(app.name, style = MaterialTheme.typography.titleMedium) },
                 leadingContent = { Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color()) },
                 trailingContent = {
                     Icon(
@@ -439,7 +440,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                             modifier = Modifier.size(18.dp),
                         )
                         Spacer(Modifier.size(8.dp))
-                        Text(
+                        DgText(
                             stringResource(
                                 if (state.requestCount == 1) R.string.mx_ai_bridge_on_one else R.string.mx_ai_bridge_on_many,
                                 state.requestCount.toString(),
@@ -480,7 +481,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                         modifier = Modifier.size(18.dp),
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text(
+                    DgText(
                         stringResource(R.string.mx_ai_bridge_error, state.reason.take(80)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
@@ -518,7 +519,7 @@ private fun SubtlePill(icon: @Composable () -> Unit, text: String) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(18.dp), contentAlignment = Alignment.Center) { icon() }
             Spacer(Modifier.size(8.dp))
-            Text(
+            DgText(
                 text,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

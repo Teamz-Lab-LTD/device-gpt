@@ -24,6 +24,10 @@ import com.teamz.lab.debugger.utils.string
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
 
 
 @Composable
@@ -66,7 +70,7 @@ fun HealthScoreCard(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                DgText(
                     text = context.string(
                         if (hasScannedToday) R.string.health_today_score else R.string.health_daily_check
                     ),
@@ -146,13 +150,13 @@ fun HealthScoreCard(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
+                    DgText(
                         text = "$healthScore/10",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = DesignSystemColors.Dark
                     )
-                    Text(
+                    DgText(
                         text = context.string(healthScoreMessageRes(healthScore)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = DesignSystemColors.Dark,
@@ -228,7 +232,8 @@ fun HealthScoreCard(
             
             // Streak Message (always shown)
             if (!hasScannedToday) {
-                Text(
+                DgIconText(
+                    icon = if (dailyStreak >= 1) DgIcons.Streak else DgStock.Search,
                     text = when {
                         dailyStreak > 1 -> context.string(R.string.health_streak_many, dailyStreak)
                         dailyStreak == 1 -> context.string(R.string.health_streak_one, dailyStreak)
@@ -242,7 +247,12 @@ fun HealthScoreCard(
                 Spacer(modifier = Modifier.height(8.dp))
             } else {
                 // Motivational message for users who already scanned today
-                Text(
+                DgIconText(
+                    icon = when {
+                        dailyStreak >= 3 -> DgIcons.Streak
+                        dailyStreak >= 1 -> DgStock.CheckCircle
+                        else -> DgIcons.PhoneCheck
+                    },
                     text = when {
                         dailyStreak >= 7 -> context.string(R.string.amazing_streak)
                         dailyStreak >= 3 -> context.string(R.string.great_consistency)
@@ -320,12 +330,12 @@ private fun StatItem(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
+        DgText(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
-        Text(
+        DgText(
             text = value,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,

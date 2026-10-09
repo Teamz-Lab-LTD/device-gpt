@@ -52,6 +52,13 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.debounce
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
+import com.teamz.lab.debugger.ui.icons.splitDisplayLine
 
 
 @Composable
@@ -489,8 +496,9 @@ fun HealthSection(
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "📋",
+                        DgGlyph(
+                            icon = DgIcons.Report,
+                            tone = IconTone.Accent,
                             fontSize = 28.sp
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -533,8 +541,8 @@ fun HealthSection(
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "🔍",
+                        DgGlyph(
+                            icon = DgStock.Search,
                             fontSize = 28.sp
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -1761,12 +1769,12 @@ private fun QuickStatCard(
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            DgText(
                 text = title,
                 style = MaterialTheme.typography.labelSmall,
                 color = DesignSystemColors.Dark,
             )
-            Text(
+            DgText(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -1814,7 +1822,7 @@ private fun PerformanceInsightsCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
+            DgText(
                 text = insights,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -1822,7 +1830,7 @@ private fun PerformanceInsightsCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
+            DgText(
                 text = motivationalMessage,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -1900,14 +1908,18 @@ private fun ImprovementSuggestionsCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Top
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = context.string(R.string.health_cd_tip),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    // A tip that brings its own icon uses it as the bullet; the tick is for tips without one.
+                    val ownIcon = remember(suggestion) { splitDisplayLine(suggestion).icon != null }
+                    if (!ownIcon) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = context.string(R.string.health_cd_tip),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    DgText(
                         text = suggestion,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -1961,7 +1973,7 @@ private fun DailyTasksCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    DgText(
                         text = context.string(R.string.health_tasks_completed, completedCount, tasks.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -2019,12 +2031,12 @@ private fun DailyTasksCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
+                            DgText(
                                 text = task.icon,
                                 fontSize = 16.sp
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            DgText(
                                 text = task.title,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = if (task.priority == HealthScoreUtils.TaskPriority.HIGH) FontWeight.Bold else FontWeight.Normal,
@@ -2037,7 +2049,7 @@ private fun DailyTasksCard(
                         }
                         if (!isCompleted) {
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
+                            DgText(
                                 text = task.description,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -2164,7 +2176,8 @@ private fun TemperatureHistoryCard(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
+                            DgIconText(
+                                icon = DgStock.Warning,
                                 text = context.string(R.string.health_temperature_peak, peak.toInt()),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
@@ -2178,7 +2191,7 @@ private fun TemperatureHistoryCard(
                 
                 // Trend indicator
                 if (trend.isNotEmpty() && trend != "Not enough data") {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.temperatureTrend(context, trend),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2194,7 +2207,7 @@ private fun TemperatureHistoryCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
+                        DgText(
                             text = dataPoint.date,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -2221,7 +2234,7 @@ private fun TemperatureHistoryCard(
                                     )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
+                            DgText(
                                 text = "${dataPoint.avgTemp.toInt()}°C",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
@@ -2307,7 +2320,7 @@ private fun HealthHistoryCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
+                        DgText(
                             text = date,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -2316,7 +2329,7 @@ private fun HealthHistoryCard(
                             color = getScoreColor(score).copy(alpha = 0.1f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(
+                            DgText(
                                 text = "$score/10",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
@@ -2512,7 +2525,7 @@ private fun PrivacyDashboardCard(
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        DgText(
                             text = "$privacyScore/100",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -2594,7 +2607,7 @@ private fun PrivacyDashboardCard(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
+                        DgText(
                             text = HealthDisplayText.privacyThreat(context, threat),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -2709,7 +2722,7 @@ private fun RamOptimizationCard(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgText(
                         text = ramUsage,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -2752,7 +2765,7 @@ private fun RamOptimizationCard(
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        DgText(
                             text = "$ramPercent%",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -2825,7 +2838,7 @@ private fun RamOptimizationCard(
                     color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2895,7 +2908,7 @@ private fun StorageCleanupCard(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgText(
                         text = storageUsage,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -2938,7 +2951,7 @@ private fun StorageCleanupCard(
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        DgText(
                             text = "$storagePercent%",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -3011,7 +3024,7 @@ private fun StorageCleanupCard(
                     color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -3093,7 +3106,7 @@ private fun BatteryOptimizationCard(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            DgText(
                                 text = HealthDisplayText.batteryInfo(context, batteryInfo),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -3101,7 +3114,7 @@ private fun BatteryOptimizationCard(
                             )
                         }
                     } else {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.batteryInfo(context, batteryInfo),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -3147,7 +3160,7 @@ private fun BatteryOptimizationCard(
                         },
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        DgText(
                             text = "$batteryHealth%",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -3219,7 +3232,7 @@ private fun BatteryOptimizationCard(
                     color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.actionResult(context, lastOptimizeResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -3281,7 +3294,7 @@ private fun AppCacheCleanerCard(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgText(
                         text = context.string(R.string.health_cache_in_apps, cacheSize, appCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -3320,7 +3333,7 @@ private fun AppCacheCleanerCard(
                         color = DesignSystemColors.NeonGreen,
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(
+                        DgText(
                             text = cacheSize,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -3330,7 +3343,7 @@ private fun AppCacheCleanerCard(
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                DgText(
                     text = context.string(R.string.health_cache_apps_have, appCount),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -3378,7 +3391,7 @@ private fun AppCacheCleanerCard(
                     color = DesignSystemColors.NeonGreen.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,

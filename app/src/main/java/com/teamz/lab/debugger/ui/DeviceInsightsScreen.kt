@@ -21,6 +21,11 @@ import com.teamz.lab.debugger.utils.*
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.DgIconText
 
 /**
  * Device Insights Screen - Comprehensive device analysis
@@ -105,11 +110,10 @@ fun DeviceInsightsScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 32.dp, vertical = 24.dp)
                     ) {
-                        Text(
-                            text = "📊",
+                        DgGlyph(
+                            icon = DgIcons.BarChart,
                             fontSize = 56.sp,
                             modifier = Modifier.padding(bottom = 20.dp),
-                            textAlign = TextAlign.Center
                         )
                         Text(
                             text = stringResource(R.string.lb_ins_none_title),
@@ -232,7 +236,7 @@ fun DeviceInsightHeader(
             )
         ) {
             // Device name - smaller
-            Text(
+            DgText(
                 text = insight.displayName,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -243,7 +247,8 @@ fun DeviceInsightHeader(
             )
             
             // Clarification text about aggregated data
-            Text(
+            DgIconText(
+                icon = DgIcons.BarChart,
                 text = stringResource(
                     if (insight.userCount == 1) R.string.lb_ins_aggregated_one else R.string.lb_ins_aggregated_many,
                     insight.userCount.toString()
@@ -263,7 +268,7 @@ fun DeviceInsightHeader(
             ) {
                 TrustBadgeIcon(badge = trustBadge)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                DgText(
                     text = if (insight.userCount == 1) 
                         stringResource(R.string.lb_verified_one)
                     else 
@@ -290,8 +295,8 @@ fun DeviceInsightHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     repeat(5) { index ->
-                        Text(
-                            text = if (index < insight.dataQuality) "⭐" else "☆",
+                        DgGlyph(
+                            icon = if (index < insight.dataQuality) DgStock.StarFilled else DgStock.StarOutline,
                             fontSize = 16.sp,
                             color = if (index < insight.dataQuality) 
                                 MaterialTheme.colorScheme.onSurface
@@ -351,13 +356,13 @@ fun CategoryScoreCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     // Category icon - smaller
-                    Text(
+                    DgText(
                         text = category.icon,
                         fontSize = 22.sp,
                         modifier = Modifier.padding(end = 10.dp, top = 1.dp)
                     )
                     // Category name - smaller font, allow wrapping
-                    Text(
+                    DgText(
                         text = stringResource(category.nameRes()),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
@@ -374,7 +379,7 @@ fun CategoryScoreCard(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Text(
+                    DgText(
                         text = "${score.toInt()}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -396,7 +401,7 @@ fun CategoryScoreCard(
             Spacer(modifier = Modifier.height(8.dp))
             
             // Description - full width, smaller font, allow multiple lines
-            Text(
+            DgText(
                 text = category.childFriendlyExplanation,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

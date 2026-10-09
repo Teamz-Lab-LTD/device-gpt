@@ -131,6 +131,13 @@ import kotlinx.coroutines.tasks.await
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import com.teamz.lab.debugger.widgets.LockScreenMonitorWidget
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.displayText
 
 @Composable
 fun DrawerContent(
@@ -466,7 +473,7 @@ fun DrawerContent(
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 14.sp
                                 )
-                                Text(
+                                DgText(
                                     text = if (productPrice != null) {
                                         context.string(R.string.mx_premium_price_lifetime, productPrice.toString())
                                     } else {
@@ -481,7 +488,8 @@ fun DrawerContent(
                     }
                     
                     // Benefits row - DeviceGPT focused
-                    Text(
+                    DgIconText(
+                        icon = DgStock.Check,
                         text = context.string(R.string.mx_premium_benefits_short),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
@@ -503,7 +511,7 @@ fun DrawerContent(
                                     Toast.makeText(context, context.string(R.string.mx_premium_activated), Toast.LENGTH_SHORT).show()
                                 },
                                 onError = { error ->
-                                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, displayText(error), Toast.LENGTH_LONG).show()
                                 },
                                 onDismiss = {}
                             )
@@ -591,8 +599,9 @@ fun DrawerContent(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = "✅",
+                            DgGlyph(
+                                icon = DgStock.CheckCircle,
+                                tone = IconTone.Good,
                                 fontSize = 48.sp,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
@@ -612,11 +621,16 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
-                                text = context.string(R.string.mx_premium_active_list),
-                                style = MaterialTheme.typography.bodyMedium,
-                                lineHeight = 24.sp
-                            )
+                            // One benefit per line, each with a real tick in front of it.
+                            context.string(R.string.mx_premium_active_list).lines().forEach { benefit ->
+                                DgIconText(
+                                    icon = DgStock.CheckCircle,
+                                    tone = IconTone.Good,
+                                    text = benefit,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    lineHeight = 24.sp
+                                )
+                            }
                             Text(
                                 text = context.string(R.string.mx_premium_thanks),
                                 style = MaterialTheme.typography.bodySmall,
@@ -827,7 +841,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Phone,
                                 text = context.string(R.string.drawer_widget_manual_steps),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -837,7 +852,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.BarChart,
                                 text = context.string(R.string.drawer_widget_shows_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -847,7 +863,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
+                            DgIconText(
+                                icon = DgStock.Refresh,
                                 text = context.string(R.string.drawer_widget_updates_title),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -857,7 +874,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Tip,
                                 text = context.string(R.string.drawer_widget_tip_tap),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
@@ -869,7 +887,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Lock,
                                 text = context.string(R.string.drawer_widget_lock_subtitle),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -885,7 +904,8 @@ fun DrawerContent(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Phone,
                                 text = context.string(R.string.drawer_widget_for_home),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
@@ -896,7 +916,8 @@ fun DrawerContent(
                             )
                             if (Build.VERSION.SDK_INT >= 34) {
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(
+                                DgIconText(
+                                    icon = DgIcons.Lock,
                                     text = context.string(R.string.drawer_widget_for_lock),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
@@ -907,7 +928,8 @@ fun DrawerContent(
                                 )
                             }
                         }
-                        Text(
+                        DgIconText(
+                            icon = DgIcons.Tip,
                             text = context.string(R.string.drawer_widget_tip_shows),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
@@ -1369,7 +1391,7 @@ fun RealtimeMonitorToggle(
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             // Description - full text visible with proper wrapping
-            Text(
+            DgText(
                 text = if (isRunning) 
                     context.string(R.string.drawer_realtime_on) 
                 else 
@@ -1412,12 +1434,19 @@ fun PermissionToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        DgIconText(
+            icon = when (permission) {
+                Manifest.permission.ACCESS_FINE_LOCATION -> DgStock.Location
+                Manifest.permission.READ_PHONE_STATE -> DgIcons.Phone
+                Manifest.permission.PACKAGE_USAGE_STATS -> DgIcons.BarChart
+                else -> DgStock.Notifications
+            },
             text = label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Medium,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            modifier = Modifier.weight(1f)
         )
 
         Switch(
@@ -1500,7 +1529,7 @@ fun IconTextButton(
                     .size(16.dp),
                 tint = colorText
             )
-            Text(
+            DgText(
                 label,
                 color = colorText,
                 fontWeight = FontWeight.Medium,
@@ -1571,7 +1600,7 @@ fun AnimatedPromotionalButton(
                     .alpha(glowAlpha),
                 tint = colorText
             )
-            Text(
+            DgText(
                 label,
                 color = colorText,
                 fontWeight = FontWeight.Medium,
@@ -1650,7 +1679,7 @@ fun NotificationPermissionDialog(
                 onDismiss()
                 onRequestPermission()
             }) {
-                Text(
+                DgText(
                     LocalContext.current.string(R.string.allow),
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -1658,7 +1687,7 @@ fun NotificationPermissionDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(
+                DgText(
                     LocalContext.current.string(R.string.cancel),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -1705,7 +1734,7 @@ fun NotificationToggle(
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
+                DgText(
                     text = if (isEnabled)
                         context.string(R.string.drawer_app_notifications_on)
                     else
@@ -1765,7 +1794,7 @@ fun LanguageSelector(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
+                DgText(
                     text = currentLanguage.displayName,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1814,7 +1843,7 @@ fun LanguageSelector(
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
+                            DgText(
                                 text = language.displayName,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = if (currentLanguage == language)
@@ -2111,7 +2140,7 @@ fun LeaderboardAccountStatus() {
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(
+                    DgText(
                         text = when {
                             isEmailLinked -> context.string(R.string.account_status_linked)
                             userId.isNotEmpty() -> context.string(R.string.account_status_anonymous)
@@ -2138,15 +2167,14 @@ fun LeaderboardAccountStatus() {
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "✓",
+                                DgGlyph(
+                                    icon = DgStock.Check,
                                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) {
                                         DesignSystemColors.Dark
                                     } else {
                                         MaterialTheme.colorScheme.onPrimary
                                     },
                                     style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
                                     fontSize = 8.sp
                                 )
                             }
@@ -2169,7 +2197,7 @@ fun LeaderboardAccountStatus() {
                         modifier = Modifier.size(12.dp),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    DgText(
                         text = userEmail ?: "",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2184,7 +2212,7 @@ fun LeaderboardAccountStatus() {
             // Display Name (if different from email)
             if (isEmailLinked && userDisplayName != null && userDisplayName != userEmail) {
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
+                DgText(
                     text = userDisplayName ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2206,7 +2234,7 @@ fun LeaderboardAccountStatus() {
                     modifier = Modifier.size(12.dp),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
+                DgText(
                     text = when {
                         isEmailLinked -> context.string(R.string.account_data_safe)
                         userId.isNotEmpty() -> {

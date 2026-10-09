@@ -92,6 +92,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * The AI Bridge tab.
@@ -392,7 +393,7 @@ private fun OnCard(
                 monospace = true,
                 onCopy = { onCopy("bridge_pin", state.pin) },
             )
-            Text(
+            DgText(
                 text = stringResource(R.string.mx_bridge_auto_off, remainingLabel),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -450,7 +451,7 @@ private fun ErrorCard(reason: String, onRetry: () -> Unit) {
                     modifier = Modifier.size(28.dp),
                 )
                 Spacer(Modifier.width(12.dp))
-                Text(
+                DgText(
                     text = reason,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onErrorContainer,
@@ -517,8 +518,8 @@ private fun SetupGuideSheet(onDismiss: () -> Unit) {
 @Composable
 private fun GuideStep(title: String, body: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-        Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        DgText(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        DgText(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -551,8 +552,8 @@ private fun LabeledValueRow(
                     .weight(1f)
                     .padding(end = 8.dp),
             ) {
-                Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(
+                DgText(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DgText(
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
                     fontFamily = if (monospace) FontFamily.Monospace else FontFamily.Default,
@@ -764,7 +765,7 @@ private fun McpSetupSheet(
                                 modifier = Modifier.size(22.dp),
                             )
                             Spacer(Modifier.height(4.dp))
-                            Text(
+                            DgText(
                                 text = if (client == McpClient.Other) {
                                     stringResource(R.string.mx_bridge_tab_other)
                                 } else {
@@ -788,7 +789,7 @@ private fun McpSetupSheet(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
-                    Text(
+                    DgText(
                         text = selected.configPath(),
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
@@ -805,7 +806,7 @@ private fun McpSetupSheet(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
-                    Text(
+                    DgText(
                         text = jsonBlock,
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
@@ -838,7 +839,7 @@ private fun McpSetupSheet(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
-                    Text(
+                    DgText(
                         text = "$urlOrPlaceholder/setup",
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,

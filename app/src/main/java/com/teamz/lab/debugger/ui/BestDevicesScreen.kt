@@ -21,6 +21,12 @@ import com.teamz.lab.debugger.utils.*
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
+import com.teamz.lab.debugger.ui.icons.DgRankBadge
 
 /**
  * Best Devices Screen - Shows top 10 devices per category
@@ -76,12 +82,13 @@ fun BestDevicesScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 4.dp)
             ) {
-                Text(
-                    text = "🏆",
+                DgGlyph(
+                    icon = DgIcons.Trophy,
+                    tone = IconTone.Accent,
                     fontSize = 20.sp,
                     modifier = Modifier.padding(end = 6.dp)
                 )
-                Text(
+                DgText(
                     text = stringResource(R.string.lb_best_top_title, stringResource(category.nameRes())),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
@@ -125,14 +132,14 @@ fun BestDevicesScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("⚠️", fontSize = 48.sp)
+                        DgGlyph(icon = DgStock.Warning, fontSize = 48.sp, tone = IconTone.Warn)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = stringResource(R.string.lb_best_load_failed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
+                        DgText(
                             text = errorMessage ?: stringResource(R.string.lb_best_try_later),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -191,7 +198,7 @@ fun BestDevicesScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("📊", fontSize = 48.sp)
+                        DgGlyph(icon = DgIcons.BarChart, fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = stringResource(R.string.lb_empty_title),
@@ -239,24 +246,16 @@ fun BestDeviceCardFromEntry(
             verticalAlignment = Alignment.Top
         ) {
             // Rank badge with medal for top 3 - properly aligned
-            val medal = when(rank) {
-                1 -> "🥇"
-                2 -> "🥈"
-                3 -> "🥉"
-                else -> "• $rank"
-            }
             Box(
                 modifier = Modifier
                     .width(36.dp)
                     .padding(top = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = medal,
-                    fontSize = if (isTopThree) 24.sp else 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isTopThree) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
+                DgRankBadge(
+                    rank = rank,
+                    topColor = DesignSystemColors.NeonGreen,
+                    otherColor = MaterialTheme.colorScheme.primary,
                 )
             }
             
@@ -266,7 +265,7 @@ fun BestDeviceCardFromEntry(
                 modifier = Modifier.weight(1f)
             ) {
                 // Device name - ensure proper wrapping and alignment
-                Text(
+                DgText(
                     text = entry.displayName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
@@ -286,20 +285,20 @@ fun BestDeviceCardFromEntry(
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_score_label) + " ",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
-                    Text(
+                    DgText(
                         text = "${score.toInt()}/100",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 12.sp
                     )
-                    Text(
+                    DgText(
                         text = " " + stringResource(R.string.lb_avg_suffix),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -316,7 +315,7 @@ fun BestDeviceCardFromEntry(
                 ) {
                     TrustBadgeIcon(badge = trustBadge)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    DgText(
                         text = if (entry.userCount == 1) 
                             stringResource(R.string.lb_verified_one)
                         else 
@@ -360,24 +359,16 @@ fun BestDeviceCard(
             verticalAlignment = Alignment.Top
         ) {
             // Rank badge with medal for top 3 - properly aligned
-            val medal = when(rank) {
-                1 -> "🥇"
-                2 -> "🥈"
-                3 -> "🥉"
-                else -> "• $rank"
-            }
             Box(
                 modifier = Modifier
                     .width(36.dp)
                     .padding(top = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = medal,
-                    fontSize = if (isTopThree) 24.sp else 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isTopThree) DesignSystemColors.NeonGreen else MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
+                DgRankBadge(
+                    rank = rank,
+                    topColor = DesignSystemColors.NeonGreen,
+                    otherColor = MaterialTheme.colorScheme.primary,
                 )
             }
             
@@ -387,7 +378,7 @@ fun BestDeviceCard(
                 modifier = Modifier.weight(1f)
             ) {
                 // Device name - ensure proper wrapping and alignment
-                Text(
+                DgText(
                     text = device.displayName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
@@ -407,13 +398,13 @@ fun BestDeviceCard(
                         .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
+                    DgText(
                         text = stringResource(R.string.lb_score_label) + " ",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
-                    Text(
+                    DgText(
                         text = "${score.toInt()}/100",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
@@ -430,7 +421,7 @@ fun BestDeviceCard(
                 ) {
                     TrustBadgeIcon(badge = trustBadge)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    DgText(
                         text = if (device.userCount == 1) 
                             stringResource(R.string.lb_verified_one)
                         else 

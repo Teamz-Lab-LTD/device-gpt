@@ -43,6 +43,10 @@ import com.teamz.lab.debugger.ui.theme.useThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.teamz.lab.debugger.ui.icons.DgText
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
 
 @Composable
 fun NetworkReachabilityCard(
@@ -147,7 +151,7 @@ fun NetworkReachabilityCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
+                    DgText(
                         text = when {
                             isLoading -> stringResource(R.string.info_reach_testing)
                             hasRun && report != null ->
@@ -181,7 +185,7 @@ fun NetworkReachabilityCard(
                         color = badgeBg
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
+                            DgText(
                                 text = "${report!!.opennessScore}",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
@@ -223,8 +227,13 @@ fun NetworkReachabilityCard(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                ContextLine(stringResource(R.string.info_reach_dns), r.dnsServers.take(30))
                                 ContextLine(
+                                    DgIcons.Sensor,
+                                    stringResource(R.string.info_reach_dns),
+                                    r.dnsServers.take(30)
+                                )
+                                ContextLine(
+                                    DgIcons.Lock,
                                     stringResource(R.string.info_reach_private_dns),
                                     stringResource(
                                         if (r.privateDnsEnabled) R.string.info_state_enabled
@@ -234,11 +243,13 @@ fun NetworkReachabilityCard(
                             }
                             Column(modifier = Modifier.weight(1f)) {
                                 ContextLine(
+                                    DgIcons.PrivacyShield,
                                     stringResource(R.string.info_reach_vpn),
                                     stringResource(if (r.vpnActive) R.string.info_state_active else R.string.info_state_off)
                                 )
                                 r.quicHint?.let {
                                     ContextLine(
+                                        DgIcons.Connection,
                                         stringResource(R.string.info_reach_quic),
                                         stringResource(
                                             if (it.udpOpen) R.string.info_reach_udp_open
@@ -351,8 +362,9 @@ private fun restrictionLevelLabel(level: String): String = when (level) {
 }
 
 @Composable
-private fun ContextLine(label: String, value: String) {
-    Text(
+private fun ContextLine(icon: ImageVector, label: String, value: String) {
+    DgIconText(
+        icon = icon,
         text = "$label: $value",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -382,13 +394,13 @@ private fun DomainResultRow(probe: com.teamz.lab.debugger.utils.DomainProbeResul
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            DgText(
                 text = probe.domain,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium
             )
         }
-        Text(
+        DgText(
             text = when (probe.overallStatus) {
                 ReachabilityStatus.REACHABLE -> "${probe.httpsLatencyMs}ms"
                 ReachabilityStatus.DNS_BLOCKED -> stringResource(R.string.info_reach_dns_blocked)

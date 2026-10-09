@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
 
 @Composable
 fun DeviceLeaderboardCard(
@@ -49,7 +52,7 @@ fun DeviceLeaderboardCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
+                DgText(
                     text = deviceModel,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
@@ -67,7 +70,7 @@ fun DeviceLeaderboardCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
-                Text(
+                DgText(
                     text = "$userScore/10",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -79,7 +82,7 @@ fun DeviceLeaderboardCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
-                Text(
+                DgText(
                     text = String.format("%.1f/10", averageScore),
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -90,7 +93,7 @@ fun DeviceLeaderboardCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
-                Text(
+                DgText(
                     text = "$topScore/10",
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -102,7 +105,14 @@ fun DeviceLeaderboardCard(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(
+            DgIconText(
+                icon = when {
+                    totalDevices == 1 -> DgIcons.Star
+                    percentile >= 90 -> DgIcons.Trophy
+                    percentile >= 70 -> DgIcons.Medal
+                    percentile >= 50 -> DgIcons.BarChart
+                    else -> DgIcons.Chart
+                },
                 text = when {
                     totalDevices == 1 -> stringResource(R.string.lb_dlc_first, deviceModel)
                     percentile >= 90 -> stringResource(R.string.lb_dlc_top_gold, percentile.toString(), deviceModel)
@@ -118,7 +128,7 @@ fun DeviceLeaderboardCard(
         
         if (totalDevices > 1) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            DgText(
                 text = stringResource(R.string.lb_dlc_based_on, totalDevices.toString(), deviceModel),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),

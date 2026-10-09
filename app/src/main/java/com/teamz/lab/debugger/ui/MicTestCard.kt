@@ -37,6 +37,7 @@ import com.teamz.lab.debugger.utils.MicTestUtils
 import com.teamz.lab.debugger.utils.PermissionManager
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Microphone test — the feature the store listing has been promising.
@@ -250,7 +251,7 @@ fun MicTestCard(
 
             when {
                 !hasPermission -> {
-                    Text(
+                    DgText(
                         stringResource(
                             if (permanentlyDenied) R.string.mic_test_perm_blocked
                             else R.string.mic_test_perm_needed
@@ -277,7 +278,7 @@ fun MicTestCard(
                         },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     ) {
-                        Text(
+                        DgText(
                             stringResource(
                                 if (permanentlyDenied) R.string.mic_test_open_settings
                                 else R.string.mic_test_grant
@@ -377,7 +378,7 @@ private fun MicPhaseBody(
         MicPhase.ASK_HEARD -> stringResource(R.string.mic_test_step_confirm)
         MicPhase.IDLE -> stringResource(R.string.mic_test_step_ready)
     }
-    Text(
+    DgText(
         instruction,
         fontSize = 14.sp,
         fontWeight = if (phase == MicPhase.IDLE) FontWeight.Normal else FontWeight.SemiBold,
@@ -438,7 +439,7 @@ private fun MicPhaseBody(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(
+                    DgText(
                         stringResource(
                             if (yes) R.string.mic_test_verdict_ok
                             else R.string.mic_test_verdict_not_heard
@@ -453,7 +454,7 @@ private fun MicPhaseBody(
                 onClick = onStart,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
             ) {
-                Text(
+                DgText(
                     stringResource(
                         if (heard == null) R.string.mic_test_start else R.string.mic_test_again
                     ),
@@ -501,7 +502,7 @@ private fun LevelMeter(db: Double) {
             )
         }
         Spacer(Modifier.height(4.dp))
-        Text(
+        DgText(
             "${db.roundToInt()} dBFS",
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
@@ -513,13 +514,13 @@ private fun LevelMeter(db: Double) {
 @Composable
 private fun MeasureRow(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-        Text(
+        DgText(
             label,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
-        Text(
+        DgText(
             value,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,

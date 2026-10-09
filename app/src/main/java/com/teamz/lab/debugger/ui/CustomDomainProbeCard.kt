@@ -42,6 +42,7 @@ import com.teamz.lab.debugger.utils.NetworkReachabilityTester
 import com.teamz.lab.debugger.utils.ReachabilityStatus
 import com.teamz.lab.debugger.utils.RepeatedProbeResult
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * "Check a website" — probes a user-supplied domain [DEFAULT_PROBE_ATTEMPTS] times
@@ -287,9 +288,9 @@ fun CustomDomainProbeCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(Modifier.width(10.dp))
-                    Text(
+                    DgText(
                         if (phase == 2) stringResource(R.string.probe_checking_webview)
-                        else stringResource(R.string.probe_checking, attemptProgress, attempts),
+                        else stringResource(R.string.probe_checking, attemptProgress.toString(), attempts.toString()),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
@@ -315,7 +316,7 @@ fun CustomDomainProbeCard(
 
                 Spacer(Modifier.height(4.dp))
                 TextButton(onClick = { showDetails = !showDetails }) {
-                    Text(
+                    DgText(
                         stringResource(
                             if (showDetails) R.string.probe_hide_details
                             else R.string.probe_show_details
@@ -417,7 +418,7 @@ private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(10.dp))
         Column {
-            Text(
+            DgText(
                 headline,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -425,7 +426,7 @@ private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
             )
             Spacer(Modifier.height(4.dp))
             // The honest headline number — "3/4 OK, avg 240ms", never a bare tick.
-            Text(
+            DgText(
                 r.summaryLine,
                 fontSize = 13.sp,
                 fontFamily = FontFamily.Monospace,
@@ -435,17 +436,17 @@ private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
             val why = when {
                 r.isIntermittent -> stringResource(
                     R.string.probe_verdict_intermittent_why,
-                    r.attempts - r.successCount, r.attempts
+                    (r.attempts - r.successCount).toString(), r.attempts.toString()
                 )
                 r.successCount == r.attempts && r.attempts > 0 -> stringResource(
-                    R.string.probe_verdict_ok_detail, r.attempts, r.avgLatencyMs.toInt()
+                    R.string.probe_verdict_ok_detail, r.attempts.toString(), r.avgLatencyMs.toInt().toString()
                 )
                 r.overallStatus == ReachabilityStatus.DNS_BLOCKED ->
                     stringResource(R.string.probe_verdict_dns_why)
                 else -> r.errorDetail.orEmpty()
             }
             if (why.isNotBlank()) {
-                Text(
+                DgText(
                     why,
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -522,13 +523,13 @@ private fun StackRow(label: String, value: String, ok: Boolean) {
             modifier = Modifier.size(16.dp)
         )
         Spacer(Modifier.width(8.dp))
-        Text(
+        DgText(
             label,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
-        Text(
+        DgText(
             value,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
@@ -601,13 +602,13 @@ private fun ContextRow(label: String, value: String) {
             .fillMaxWidth()
             .padding(vertical = 2.dp)
     ) {
-        Text(
+        DgText(
             label,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
-        Text(
+        DgText(
             value,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
@@ -644,7 +645,7 @@ private fun ProbeDetails(r: RepeatedProbeResult) {
                     a.httpsResponseCode?.let { append("  ").append(it) }
                 }
             }
-            Text(
+            DgText(
                 line,
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
@@ -657,7 +658,7 @@ private fun ProbeDetails(r: RepeatedProbeResult) {
             // worth reading in full, so it must never be truncated to fit a column.
             if (!ok) {
                 a.errorDetail?.let {
-                    Text(
+                    DgText(
                         // English data (also in the copied report); shown in the app language.
                         "     " + InfoTextLocalizer.localize(LocalContext.current, it),
                         fontSize = 11.sp,
@@ -706,7 +707,7 @@ private fun FixButton(label: String, onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
-        Text(label)
+        DgText(label)
     }
 }
 

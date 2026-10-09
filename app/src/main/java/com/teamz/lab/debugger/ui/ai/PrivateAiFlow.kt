@@ -40,6 +40,7 @@ import com.teamz.lab.debugger.ui.PromptMode
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Encapsulates the on-device Private AI flow that AI-chooser call-sites plug in
@@ -194,7 +195,7 @@ private fun PrivateAiResultDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.padding(horizontal = 4.dp))
-                Text(
+                DgText(
                     // `subject` stays English for analytics and the clipboard label.
                     stringResource(
                         R.string.mx_private_ai_title,
@@ -226,14 +227,14 @@ private fun PrivateAiResultDialog(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(Modifier.height(8.dp))
-                        Text(
+                        DgText(
                             errorMsg,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     result != null -> {
-                        Text(result, style = MaterialTheme.typography.bodyMedium)
+                        DgText(result, style = MaterialTheme.typography.bodyMedium)
                         Spacer(Modifier.height(8.dp))
                         Text(
                             stringResource(R.string.mx_private_ai_powered),

@@ -23,6 +23,9 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.TestDoneCard
 import com.teamz.lab.debugger.utils.WidgetPinPrompt
 import com.teamz.lab.debugger.utils.string
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
 
 /**
  * One-time card after the first completed test (arm B). Spec 2026-10-09.
@@ -73,7 +76,9 @@ fun TestDoneSheet() {
     }
     AlertDialog(
         onDismissRequest = { action("dismiss"); TestDoneCard.dismiss() },
-        title = { Text(stringResource(R.string.done_title)) },
+        title = {
+            DgIconText(icon = DgStock.CheckCircle, tone = IconTone.Good, text = stringResource(R.string.done_title))
+        },
         text = { Text(stringResource(R.string.done_body)) },
         confirmButton = {
             TextButton(onClick = {

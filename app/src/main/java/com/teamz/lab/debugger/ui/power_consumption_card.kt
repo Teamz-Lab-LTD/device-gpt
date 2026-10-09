@@ -84,6 +84,14 @@ import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.ui.PowerConsumptionViewModel
 import com.teamz.lab.debugger.utils.ErrorHandler
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.teamz.lab.debugger.ui.icons.DgGlyph
+import com.teamz.lab.debugger.ui.icons.DgStock
+import com.teamz.lab.debugger.ui.icons.IconTone
+import com.teamz.lab.debugger.ui.icons.displayText
 
 @Composable
 fun PowerConsumptionCard(
@@ -474,7 +482,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    DgText(
                         text = stringResource(R.string.last_updated, SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(lastUpdateTime))),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -603,7 +611,7 @@ private fun TotalPowerSummary(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(
+                DgText(
                     text = "%.1f".format(animatedPower),
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold,
@@ -641,7 +649,7 @@ private fun TotalPowerSummary(
                 // Show practical info if available
                 practicalInfo?.let {
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    DgText(
                         text = stringResource(R.string.pw_drains, it),
                         style = MaterialTheme.typography.bodySmall,
                         color = secondaryTextColor,
@@ -682,7 +690,7 @@ private fun PowerLevelIndicator(power: Double) {
                 )
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        DgText(
             text = powerLevel.first,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
@@ -736,7 +744,7 @@ private fun ComponentPowerItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Component Icon
-            Text(
+            DgText(
                 text = component.icon,
                 fontSize = 24.sp,
                 modifier = Modifier.padding(end = 12.dp)
@@ -746,12 +754,12 @@ private fun ComponentPowerItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
+                DgText(
                     text = PowerStrings.component(context, component.component),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
+                DgText(
                     text = PowerStrings.status(context, component.status),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
@@ -762,7 +770,7 @@ private fun ComponentPowerItem(
             Column(
                 horizontalAlignment = Alignment.End
             ) {
-                Text(
+                DgText(
                     text = "%.1f".format(animatedPower),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
@@ -785,7 +793,7 @@ private fun ComponentPowerItem(
                     )
                     practicalInfo?.let {
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
+                        DgText(
                             text = it,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -830,7 +838,7 @@ private fun ComponentPowerItem(
 
 @Composable
 private fun SummaryStatCard(
-    icon: String,
+    icon: ImageVector,
     title: String,
     value: String,
     description: String,
@@ -855,12 +863,12 @@ private fun SummaryStatCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = icon,
+                DgGlyph(
+                    icon = icon,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(
+                DgText(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
@@ -875,7 +883,7 @@ private fun SummaryStatCard(
             Spacer(modifier = Modifier.height(4.dp))
             
             // Description - full width, can wrap
-            Text(
+            DgText(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -888,7 +896,7 @@ private fun SummaryStatCard(
             Spacer(modifier = Modifier.height(4.dp))
             
             // Value - full width, smaller font
-            Text(
+            DgText(
                 text = value,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
@@ -933,7 +941,7 @@ private fun TestResultsFooter(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                DgText(
                     text = PowerStrings.countLabel(context, count, countLabel),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
@@ -991,7 +999,7 @@ private fun TestResultsFooter(
 
 @Composable
 private fun SampleDataCard(
-    icon: String,
+    icon: ImageVector,
     title: String,
     value: String,
     subtitle: String? = null,
@@ -1013,8 +1021,8 @@ private fun SampleDataCard(
             verticalAlignment = Alignment.Top
         ) {
             // Icon - smaller size
-            Text(
-                text = icon,
+            DgGlyph(
+                icon = icon,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(end = 10.dp, top = 2.dp)
             )
@@ -1024,7 +1032,7 @@ private fun SampleDataCard(
                 modifier = Modifier.weight(1f)
             ) {
                 // Title on first line - allow wrapping to show full text
-                Text(
+                DgText(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.SemiBold,
@@ -1037,7 +1045,7 @@ private fun SampleDataCard(
                 
                 // Value on second line with proper wrapping - smaller and not bold
                 Spacer(modifier = Modifier.height(3.dp))
-                Text(
+                DgText(
                     text = value,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
@@ -1051,7 +1059,7 @@ private fun SampleDataCard(
                 // Subtitle on third line if present
                 if (subtitle != null) {
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    DgText(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -1116,7 +1124,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    successMessage,
+                    displayText(successMessage),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -1130,7 +1138,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    denialMessage,
+                    displayText(denialMessage),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1165,7 +1173,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    successMessage,
+                    displayText(successMessage),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } else if (grantedCount > 0) {
@@ -1176,7 +1184,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    partialMessage,
+                    displayText(partialMessage),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -1188,7 +1196,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    denialMessage,
+                    displayText(denialMessage),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1223,7 +1231,7 @@ private fun ComponentInfoDialog(
             }
             android.widget.Toast.makeText(
                 context,
-                message,
+                displayText(message),
                 android.widget.Toast.LENGTH_SHORT
             ).show()
             return
@@ -1271,7 +1279,7 @@ private fun ComponentInfoDialog(
                 }
                 android.widget.Toast.makeText(
                     context,
-                    message,
+                    displayText(message),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -1349,12 +1357,12 @@ private fun ComponentInfoDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                DgText(
                     text = component.icon,
                     fontSize = 32.sp,
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(
+                DgText(
                     text = PowerStrings.component(context, component.component),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -1363,7 +1371,7 @@ private fun ComponentInfoDialog(
         },
         text = {
             Column {
-                Text(
+                DgText(
                     text = userFriendlyInfo,
                     style = MaterialTheme.typography.bodyMedium,
                     lineHeight = 20.sp
@@ -1511,7 +1519,7 @@ private fun AggregatedStatsSection(
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
-                                icon = "📊",
+                                icon = DgIcons.BarChart,
                                 label = stringResource(R.string.pw_stat_average),
                                 value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                                 valueColor = MaterialTheme.colorScheme.primary,
@@ -1521,7 +1529,7 @@ private fun AggregatedStatsSection(
                         }
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
-                                icon = "⚡",
+                                icon = DgIcons.Bolt,
                                 label = stringResource(R.string.pw_stat_highest),
                                 value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                                 valueColor = Color(0xFFFF5722),
@@ -1531,7 +1539,7 @@ private fun AggregatedStatsSection(
                         }
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
-                                icon = "📈",
+                                icon = DgIcons.Chart,
                                 label = stringResource(R.string.pw_stat_points),
                                 value = stats.totalSamples.toString(),
                                 valueColor = MaterialTheme.colorScheme.tertiary
@@ -1550,7 +1558,7 @@ private fun AggregatedStatsSection(
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "📊",
+                                    icon = DgIcons.BarChart,
                                     label = stringResource(R.string.pw_stat_average),
                                     value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                                     valueColor = MaterialTheme.colorScheme.primary,
@@ -1560,7 +1568,7 @@ private fun AggregatedStatsSection(
                             }
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "⚡",
+                                    icon = DgIcons.Bolt,
                                     label = stringResource(R.string.pw_stat_highest),
                                     value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                                     valueColor = Color(0xFFFF5722),
@@ -1576,7 +1584,7 @@ private fun AggregatedStatsSection(
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "📈",
+                                    icon = DgIcons.Chart,
                                     label = stringResource(R.string.pw_stat_points),
                                     value = stats.totalSamples.toString(),
                                     valueColor = MaterialTheme.colorScheme.tertiary
@@ -1592,7 +1600,7 @@ private fun AggregatedStatsSection(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CompactStatCard(
-                            icon = "📊",
+                            icon = DgIcons.BarChart,
                             label = stringResource(R.string.pw_stat_average),
                             value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                             valueColor = MaterialTheme.colorScheme.primary,
@@ -1600,7 +1608,7 @@ private fun AggregatedStatsSection(
                             context = context
                         )
                         CompactStatCard(
-                            icon = "⚡",
+                            icon = DgIcons.Bolt,
                             label = stringResource(R.string.pw_stat_highest),
                             value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                             valueColor = Color(0xFFFF5722),
@@ -1608,7 +1616,7 @@ private fun AggregatedStatsSection(
                             context = context
                         )
                         CompactStatCard(
-                            icon = "📈",
+                            icon = DgIcons.Chart,
                             label = stringResource(R.string.pw_stat_points),
                             value = stats.totalSamples.toString(),
                             valueColor = MaterialTheme.colorScheme.tertiary
@@ -1637,28 +1645,29 @@ private fun AggregatedStatsSection(
                 ) {
                     val trendData = when (stats.powerTrend) {
                         PowerConsumptionAggregator.PowerTrend.INCREASING -> 
-                            Triple("📈", stringResource(R.string.pw_trend_up), Color(0xFFFF5722)) to 
+                            Triple(DgIcons.Chart, stringResource(R.string.pw_trend_up), Color(0xFFFF5722)) to 
                             stringResource(R.string.pw_trend_up_why)
                         PowerConsumptionAggregator.PowerTrend.DECREASING -> 
-                            Triple("📉", stringResource(R.string.pw_trend_down), Color(0xFF4CAF50)) to 
+                            Triple(DgIcons.ChartDown, stringResource(R.string.pw_trend_down), Color(0xFF4CAF50)) to 
                             stringResource(R.string.pw_trend_down_why)
                         PowerConsumptionAggregator.PowerTrend.STABLE -> 
-                            Triple("📊", stringResource(R.string.pw_trend_stable), MaterialTheme.colorScheme.primary) to 
+                            Triple(DgIcons.BarChart, stringResource(R.string.pw_trend_stable), MaterialTheme.colorScheme.primary) to 
                             stringResource(R.string.pw_trend_stable_why)
                         PowerConsumptionAggregator.PowerTrend.UNKNOWN -> 
-                            Triple("❓", stringResource(R.string.pw_trend_unknown), MaterialTheme.colorScheme.onSurfaceVariant) to 
+                            Triple(DgStock.Help, stringResource(R.string.pw_trend_unknown), MaterialTheme.colorScheme.onSurfaceVariant) to 
                             stringResource(R.string.pw_trend_unknown_why)
                     }
                     val (trendIcon, trendText, trendColor) = trendData.first
                     val trendExplanation = trendData.second
                     
-                    Text(
-                        text = trendIcon,
-                        fontSize = 18.sp
+                    DgGlyph(
+                        icon = trendIcon,
+                        fontSize = 18.sp,
+                        color = trendColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        DgText(
                             text = trendText,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
@@ -1666,7 +1675,7 @@ private fun AggregatedStatsSection(
                             fontSize = 12.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(
+                        DgText(
                             text = trendExplanation,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -1712,21 +1721,38 @@ private fun AggregatedStatsSection(
                     }
                     val (ratingText, ratingColor, ratingExplanation) = ratingData
                     
-                    Text(
-                        text = "🔋",
+                    DgGlyph(
+                        icon = DgIcons.Battery,
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        DgText(
                             text = ratingText,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = ratingColor,
                             fontSize = 12.sp
                         )
+                        // The level as stars, drawn (they used to be typed at the end of the text).
+                        val ratingStars = when {
+                            stats.averagePower < 2.0 -> 5
+                            stats.averagePower < 4.0 -> 4
+                            stats.averagePower < 6.0 -> 3
+                            stats.averagePower < 8.0 -> 2
+                            else -> 1
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            repeat(5) { index ->
+                                DgGlyph(
+                                    icon = if (index < ratingStars) DgStock.StarFilled else DgStock.StarOutline,
+                                    fontSize = 11.sp,
+                                    color = ratingColor
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(
+                        DgText(
                             text = ratingExplanation,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -1741,7 +1767,7 @@ private fun AggregatedStatsSection(
 
 @Composable
 private fun CompactStatCard(
-    icon: String,
+    icon: ImageVector,
     label: String,
     value: String,
     valueColor: Color = MaterialTheme.colorScheme.primary,
@@ -1784,12 +1810,12 @@ private fun CompactStatCard(
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = icon,
+            DgGlyph(
+                icon = icon,
                 fontSize = 20.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
+            DgText(
                 text = value,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
@@ -1799,7 +1825,7 @@ private fun CompactStatCard(
             // Show practical info if available
             practicalInfo?.let {
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
+                DgText(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = practicalInfoColor,
@@ -1808,7 +1834,7 @@ private fun CompactStatCard(
                 )
             }
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
+            DgText(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = labelTextColor,
@@ -1831,13 +1857,13 @@ private fun StatItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
+        DgText(
             text = value,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = color
         )
-        Text(
+        DgText(
             text = label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2043,7 +2069,8 @@ Total Tests: ${allResults.size}
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            Text(
+            DgIconText(
+                icon = DgIcons.Tip,
                 text = stringResource(R.string.pw_cam_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -2190,7 +2217,8 @@ Total Tests: ${allResults.size}
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Camera,
                                 text = if (totalTests > 1) {
                                     stringResource(R.string.pw_cam_progress_n, currentTestNumber, totalTests)
                                 } else {
@@ -2475,7 +2503,7 @@ Total Tests: ${allResults.size}
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(
+                                DgText(
                                     text = stringResource(R.string.pw_cam_all_results, allTestResults.size),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.SemiBold,
@@ -2532,7 +2560,7 @@ Total Tests: ${allResults.size}
                             }
                             
                             SampleDataCard(
-                                icon = "📷",
+                                icon = DgIcons.Camera,
                                 title = stringResource(R.string.pw_test_n, testNumber),
                                 value = valueText,
                                 subtitle = subtitleText,
@@ -2559,7 +2587,7 @@ Total Tests: ${allResults.size}
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
+                                    DgText(
                                         text = stringResource(R.string.pw_cam_more, allTestResults.size - 5),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2706,14 +2734,15 @@ Total Tests: ${allResults.size}
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgIcons.Camera,
                     text = stringResource(R.string.single_photo_power_test),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
-                Text(
+                DgText(
                     text = PowerConsumptionUtils.formatCameraPowerTestResult(context, testResult!!),
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -2738,7 +2767,8 @@ Total Tests: ${allResults.size}
         AlertDialog(
             onDismissRequest = { showMultipleTestDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgIcons.BarChart,
                     text = stringResource(R.string.multiple_photo_power_tests),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -2759,7 +2789,7 @@ Total Tests: ${allResults.size}
                     ) {
                         items(results.size) { index ->
                             val result = results[index]
-                    Text(
+                    DgText(
                                 text = stringResource(R.string.pw_cam_result_line, index + 1, PowerConsumptionAggregator.formatPower(result.powerDifference), result.captureDuration),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -2788,14 +2818,16 @@ Total Tests: ${allResults.size}
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
             title = {
-                    Text(
+                    DgIconText(
+                    icon = if (currentPermission) DgStock.CheckCircle else DgStock.Cancel,
+                    tone = if (currentPermission) IconTone.Good else IconTone.Bad,
                     text = if (currentPermission) stringResource(R.string.pw_cam_perm_granted_title) else stringResource(R.string.pw_cam_perm_required_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                     )
             },
             text = {
-                    Text(
+                    DgText(
                     text = if (currentPermission) {
                         stringResource(R.string.pw_cam_perm_granted_body)
                     } else {
@@ -3486,7 +3518,7 @@ This shows how different brightness levels affect battery consumption.
                     
                     // Beautiful summary cards with proper spacing and non-tech friendly data
                     SummaryStatCard(
-                        icon = "🔋",
+                        icon = DgIcons.Battery,
                         title = stringResource(R.string.pw_disp_best),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(minPower))
@@ -3497,7 +3529,7 @@ This shows how different brightness levels affect battery consumption.
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     SummaryStatCard(
-                        icon = "⚡",
+                        icon = DgIcons.Bolt,
                         title = stringResource(R.string.pw_disp_worst),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(maxPower))
@@ -3508,7 +3540,7 @@ This shows how different brightness levels affect battery consumption.
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     SummaryStatCard(
-                        icon = "📊",
+                        icon = DgIcons.BarChart,
                         title = stringResource(R.string.pw_disp_avg),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(avgPower))
@@ -3590,7 +3622,7 @@ This shows how different brightness levels affect battery consumption.
                             }
                             
                             SampleDataCard(
-                                icon = "🔆",
+                                icon = DgStock.Sun,
                                 title = stringResource(R.string.pw_disp_point_title, point.brightnessLevel, brightnessDesc),
                                 value = valueText,
                                 subtitle = subtitleText,
@@ -3604,7 +3636,7 @@ This shows how different brightness levels affect battery consumption.
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.DarkII.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                            Text(
+                            DgText(
                                     text = "  " + stringResource(R.string.pw_more_measurements, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3635,7 +3667,8 @@ This shows how different brightness levels affect battery consumption.
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgStock.Sun,
                     text = stringResource(R.string.pw_disp_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -3647,7 +3680,7 @@ This shows how different brightness levels affect battery consumption.
                 val maxPower = results.maxOfOrNull { it.powerW } ?: 0.0
                 val avgPower = results.map { it.powerW }.average()
                 
-                Text(
+                DgText(
                     text = buildString {
                         appendLine(stringResource(R.string.pw_disp_done, results.size))
                         appendLine()
@@ -3771,7 +3804,9 @@ This shows how different brightness levels affect battery consumption.
         AlertDialog(
             onDismissRequest = { showPermissionDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgStock.Warning,
+                    tone = IconTone.Warn,
                     text = stringResource(R.string.pw_perm_required_warn),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -3809,7 +3844,9 @@ This shows how different brightness levels affect battery consumption.
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    DgIconText(
+                        icon = DgStock.Warning,
+                        tone = IconTone.Warn,
                         text = stringResource(R.string.pw_disp_gray),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
@@ -3835,7 +3872,8 @@ This shows how different brightness levels affect battery consumption.
                         fontSize = 10.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgIconText(
+                        icon = DgIcons.Tip,
                         text = stringResource(R.string.pw_disp_gray_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -4151,7 +4189,7 @@ This shows how CPU processing speed affects battery consumption.
                             
                             // Beautiful summary cards with proper spacing
                             SummaryStatCard(
-                                icon = "🔋",
+                                icon = DgIcons.Battery,
                                 title = stringResource(R.string.pw_cpu_lowest),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(minDelta))
@@ -4164,7 +4202,7 @@ This shows how CPU processing speed affects battery consumption.
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             SummaryStatCard(
-                                icon = "⚡",
+                                icon = DgIcons.Bolt,
                                 title = stringResource(R.string.pw_cpu_highest),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(maxDelta))
@@ -4177,7 +4215,7 @@ This shows how CPU processing speed affects battery consumption.
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             SummaryStatCard(
-                                icon = "📊",
+                                icon = DgIcons.BarChart,
                                 title = stringResource(R.string.pw_cpu_avg),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(avgDelta))
@@ -4200,8 +4238,8 @@ This shows how CPU processing speed affects battery consumption.
                                         .padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                        Text(
-                                        text = "ℹ️",
+                        DgGlyph(
+                                        icon = DgIcons.Info,
                                         fontSize = 24.sp,
                                         modifier = Modifier.padding(end = 12.dp)
                         )
@@ -4258,7 +4296,8 @@ This shows how CPU processing speed affects battery consumption.
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.DarkII.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Tip,
                                 text = stringResource(R.string.pw_cpu_explain),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
@@ -4307,7 +4346,7 @@ This shows how CPU processing speed affects battery consumption.
                             }
                             
                             SampleDataCard(
-                                icon = "⚙️",
+                                icon = DgStock.Settings,
                                 title = stringResource(R.string.pw_cpu_point_title, point.targetUtilPercent),
                                 value = powerText,
                                 subtitle = subtitle,
@@ -4321,7 +4360,7 @@ This shows how CPU processing speed affects battery consumption.
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.DarkII.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                            Text(
+                            DgText(
                                     text = "  " + stringResource(R.string.pw_more_levels, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -4352,7 +4391,8 @@ This shows how CPU processing speed affects battery consumption.
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgIcons.Bolt,
                     text = stringResource(R.string.pw_cpu_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -4364,7 +4404,7 @@ This shows how CPU processing speed affects battery consumption.
                 val avgDelta = results.map { it.deltaPowerW }.average()
                 
                 Column {
-                Text(
+                DgText(
                     text = buildString {
                             appendLine(stringResource(R.string.pw_cpu_done, results.size))
                         appendLine()
@@ -4378,7 +4418,8 @@ This shows how CPU processing speed affects battery consumption.
                     style = MaterialTheme.typography.bodyMedium
                 )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    DgIconText(
+                        icon = DgIcons.Tip,
                         text = stringResource(R.string.pw_cpu_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -4727,7 +4768,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         color = DesignSystemColors.Dark
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(context.string(R.string.sampling_countdown, countdown))
+                    DgText(context.string(R.string.sampling_countdown, countdown.toString()))
                 } else {
                     Icon(
                         imageVector = Icons.Default.SignalWifi4Bar,
@@ -4822,7 +4863,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 else -> Color(0xFFFF5722) // Red
                             }
                             SummaryStatCard(
-                                icon = "📶",
+                                icon = DgIcons.Signal,
                                 title = stringResource(R.string.pw_net_wifi_signal),
                                 value = PowerStrings.signal(context, signalStrength),
                                 description = stringResource(R.string.pw_net_wifi_signal_d),
@@ -4837,7 +4878,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         val avgBatteryPercent = PowerConsumptionAggregator.calculateBatteryPercentPerHour(avgPower, context)
                         
                         SummaryStatCard(
-                            icon = "🔋",
+                            icon = DgIcons.Battery,
                             title = stringResource(R.string.pw_net_lowest),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(minPower))
@@ -4848,7 +4889,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         SummaryStatCard(
-                            icon = "⚡",
+                            icon = DgIcons.Bolt,
                             title = stringResource(R.string.pw_net_highest),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(maxPower))
@@ -4859,7 +4900,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         SummaryStatCard(
-                            icon = "📊",
+                            icon = DgIcons.BarChart,
                             title = stringResource(R.string.pw_net_avg),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(avgPower))
@@ -4956,7 +4997,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             } ?: MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             
                             SampleDataCard(
-                                icon = "📶",
+                                icon = DgIcons.Signal,
                                 title = stringResource(R.string.pw_net_point_title, point.timeSeconds, timeDesc),
                                 value = powerValue,
                                 subtitle = subtitle,
@@ -4970,7 +5011,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.DarkII.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text(
+                                DgText(
                                     text = "  " + stringResource(R.string.pw_more_samples, results.size - 5),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -5001,7 +5042,8 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
             title = {
-                Text(
+                DgIconText(
+                    icon = DgIcons.Signal,
                     text = stringResource(R.string.pw_net_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -5012,7 +5054,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                 val wifiRssiValues = results.mapNotNull { it.wifiRssiDbm }
                 val powerValues = results.map { it.powerW }
                 
-                Text(
+                DgText(
                     text = buildString {
                         appendLine(stringResource(R.string.pw_net_done, results.size))
                         appendLine()
@@ -5391,7 +5433,7 @@ private fun SimpleLineChart(
                     .padding(horizontal = 50.dp, vertical = 2.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
+                DgText(
                     text = yLabel,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -5406,14 +5448,14 @@ private fun SimpleLineChart(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
+                        DgText(
                             text = stringResource(R.string.pw_chart_max, String.format("%.2f", maxY)),
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             maxLines = 1
                         )
-                        Text(
+                        DgText(
                             text = stringResource(R.string.pw_chart_min, String.format("%.2f", minY)),
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 10.sp,
@@ -5432,7 +5474,7 @@ private fun SimpleLineChart(
                     .padding(horizontal = 50.dp, vertical = 2.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
+                DgText(
                     text = xLabel,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -5443,7 +5485,7 @@ private fun SimpleLineChart(
                 )
                 if (hasVariation) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    DgText(
                         text = stringResource(R.string.pw_chart_range, String.format("%.0f", minX), String.format("%.0f", maxX)),
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp,
@@ -5490,7 +5532,7 @@ private fun CsvPreviewDialog(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                DgText(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -5527,7 +5569,7 @@ private fun CsvPreviewDialog(
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                Text(
+                DgText(
                     text = if (rows.size <= 20) {
                         stringResource(R.string.pw_csv_preview, rows.size)
                     } else {
@@ -5601,7 +5643,7 @@ private fun CsvPreviewDialog(
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 8.dp)
                                         ) {
-                                            Text(
+                                            DgText(
                                                 text = headerText,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontWeight = FontWeight.Bold,
@@ -5654,7 +5696,7 @@ private fun CsvPreviewDialog(
                                                 modifier = Modifier.size(24.dp)
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
+                                            DgText(
                                                 text = headerTitle,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold
@@ -5662,7 +5704,7 @@ private fun CsvPreviewDialog(
                                         }
                                     },
                                     text = {
-                                        Text(
+                                        DgText(
                                             text = headerDesc,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
@@ -5696,7 +5738,7 @@ private fun CsvPreviewDialog(
                                         Box(
                                             modifier = Modifier.width(columnWidth.dp)
                                         ) {
-                                            Text(
+                                            DgText(
                                                 text = cellValue,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
@@ -5729,7 +5771,8 @@ private fun CsvPreviewDialog(
                             
                             // Show message about total rows
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
+                            DgIconText(
+                                icon = DgIcons.Report,
                                 text = if (rows.size <= 20) {
                                     stringResource(if (rows.size == 1) R.string.pw_csv_all_row else R.string.pw_csv_all_rows, rows.size)
                                 } else {
@@ -5752,13 +5795,15 @@ private fun CsvPreviewDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(
+                        DgIconText(
+                            icon = DgIcons.BarChart,
                             text = stringResource(R.string.pw_csv_total_rows, rows.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
                         )
-                        Text(
+                        DgIconText(
+                            icon = DgStock.Clipboard,
                             text = stringResource(R.string.pw_csv_columns, headers.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -5779,7 +5824,7 @@ private fun CsvPreviewDialog(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text(LocalContext.current.string(R.string.close))
+                    DgText(LocalContext.current.string(R.string.close))
                 }
                 Button(
                     onClick = {
@@ -5797,7 +5842,7 @@ private fun CsvPreviewDialog(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(LocalContext.current.string(R.string.export_csv), fontWeight = FontWeight.SemiBold)
+                    DgText(LocalContext.current.string(R.string.export_csv), fontWeight = FontWeight.SemiBold)
                 }
             }
         },
@@ -5949,7 +5994,8 @@ Device Sleep Tracker:
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.align(Alignment.Start)
                 ) {
-                    Text(
+                    DgIconText(
+                        icon = if (isDeviceAwake) DgStock.Sun else DgStock.Moon,
                         text = if (isDeviceAwake) stringResource(R.string.pw_sleep_awake) else stringResource(R.string.pw_sleep_sleeping),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
@@ -5991,7 +6037,7 @@ Device Sleep Tracker:
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "🌙",
+                                    icon = DgStock.Moon,
                                     label = stringResource(R.string.pw_sleep_total),
                                     value = stats.formatSleepTime(),
                                     valueColor = MaterialTheme.colorScheme.primary
@@ -5999,7 +6045,7 @@ Device Sleep Tracker:
                             }
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "🟢",
+                                    icon = DgStock.Sun,
                                     label = stringResource(R.string.pw_sleep_total_wake),
                                     value = stats.formatWakeTime(),
                                     valueColor = MaterialTheme.colorScheme.primary
@@ -6012,13 +6058,13 @@ Device Sleep Tracker:
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             CompactStatCard(
-                                icon = "🌙",
+                                icon = DgStock.Moon,
                                 label = stringResource(R.string.pw_sleep_total),
                                 value = stats.formatSleepTime(),
                                 valueColor = MaterialTheme.colorScheme.primary
                             )
                             CompactStatCard(
-                                icon = "🟢",
+                                icon = DgStock.Sun,
                                 label = stringResource(R.string.pw_sleep_total_wake),
                                 value = stats.formatWakeTime(),
                                 valueColor = MaterialTheme.colorScheme.onSurface
@@ -6046,7 +6092,7 @@ Device Sleep Tracker:
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "⚡",
+                                    icon = DgIcons.Bolt,
                                     label = stringResource(R.string.pw_sleep_efficiency),
                                     value = "${stats.sleepEfficiency}%",
                                     valueColor = MaterialTheme.colorScheme.primary
@@ -6054,7 +6100,7 @@ Device Sleep Tracker:
                             }
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "🌙",
+                                    icon = DgStock.Moon,
                                     label = stringResource(R.string.pw_sleep_sessions),
                                     value = "${stats.sleepSessions}",
                                     valueColor = MaterialTheme.colorScheme.primary
@@ -6062,7 +6108,7 @@ Device Sleep Tracker:
                             }
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
-                                    icon = "🟢",
+                                    icon = DgStock.Sun,
                                     label = stringResource(R.string.pw_sleep_wake_sessions),
                                     value = "${stats.wakeSessions}",
                                     valueColor = MaterialTheme.colorScheme.primary
@@ -6081,7 +6127,7 @@ Device Sleep Tracker:
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
                                     CompactStatCard(
-                                        icon = "⚡",
+                                        icon = DgIcons.Bolt,
                                         label = stringResource(R.string.pw_sleep_efficiency),
                                         value = "${stats.sleepEfficiency}%",
                                         valueColor = MaterialTheme.colorScheme.primary
@@ -6089,7 +6135,7 @@ Device Sleep Tracker:
                                 }
                                 Box(modifier = Modifier.weight(1f)) {
                                     CompactStatCard(
-                                        icon = "🌙",
+                                        icon = DgStock.Moon,
                                         label = stringResource(R.string.pw_sleep_sessions),
                                         value = "${stats.sleepSessions}",
                                         valueColor = MaterialTheme.colorScheme.primary
@@ -6098,7 +6144,7 @@ Device Sleep Tracker:
                             }
                             // Second row: Wake Sessions (full width for better visual balance)
                             CompactStatCard(
-                                icon = "🟢",
+                                icon = DgStock.Sun,
                                 label = stringResource(R.string.pw_sleep_wake_sessions),
                                 value = "${stats.wakeSessions}",
                                 valueColor = MaterialTheme.colorScheme.primary
@@ -6131,7 +6177,7 @@ Device Sleep Tracker:
                                 if (hasSleep) {
                                     Box(modifier = Modifier.weight(1f)) {
                                         CompactStatCard(
-                                            icon = "⏱️",
+                                            icon = DgIcons.Clock,
                                             label = stringResource(R.string.pw_sleep_avg),
                                             value = formatDurationSeconds(stats.averageSleepDuration / 1000, context),
                                             valueColor = MaterialTheme.colorScheme.primary
@@ -6141,7 +6187,7 @@ Device Sleep Tracker:
                                 if (hasWake) {
                                     Box(modifier = Modifier.weight(1f)) {
                                         CompactStatCard(
-                                            icon = "⏱️",
+                                            icon = DgIcons.Clock,
                                             label = stringResource(R.string.pw_sleep_avg_wake),
                                             value = formatDurationSeconds(stats.averageWakeDuration / 1000, context),
                                             valueColor = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface
@@ -6156,7 +6202,7 @@ Device Sleep Tracker:
                             ) {
                                 if (hasSleep) {
                                     CompactStatCard(
-                                        icon = "⏱️",
+                                        icon = DgIcons.Clock,
                                         label = stringResource(R.string.pw_sleep_avg),
                                         value = formatDurationSeconds(stats.averageSleepDuration / 1000, context),
                                         valueColor = MaterialTheme.colorScheme.primary
@@ -6164,7 +6210,7 @@ Device Sleep Tracker:
                                 }
                                 if (hasWake) {
                                     CompactStatCard(
-                                        icon = "⏱️",
+                                        icon = DgIcons.Clock,
                                         label = stringResource(R.string.pw_sleep_avg_wake),
                                         value = formatDurationSeconds(stats.averageWakeDuration / 1000, context),
                                         valueColor = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface
@@ -6492,7 +6538,7 @@ screen time only — not each app's battery consumption.
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Text(
+                                            DgText(
                                                 text = app.appName,
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
@@ -6597,13 +6643,13 @@ Please answer about usage habits, not battery attribution.
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Column(modifier = Modifier.weight(1f)) {
-                                                Text(
+                                                DgText(
                                                     text = stringResource(R.string.pw_apps_share, screenTimeLabel, "%.1f".format(usageShare)),
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     color = headerTextColor,
                                                     fontWeight = FontWeight.Medium
                                                 )
-                                                Text(
+                                                DgText(
                                                     text = usageSeverity,
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = usageColor,
@@ -6647,7 +6693,7 @@ Please answer about usage habits, not battery attribution.
                                                         modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
+                                                    DgText(
                                                         text = efficiencyLabel,
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = efficiencyColor,
@@ -6679,7 +6725,7 @@ Please answer about usage habits, not battery attribution.
                                                         modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
+                                                    DgText(
                                                         text = stringResource(R.string.pw_apps_would_drain, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
@@ -6715,7 +6761,7 @@ Please answer about usage habits, not battery attribution.
                                                         modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
+                                                    DgText(
                                                         text = lastUsedText,
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -6742,7 +6788,7 @@ Please answer about usage habits, not battery attribution.
                                                         modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
+                                                    DgText(
                                                         text = stringResource(R.string.pw_apps_background, serviceText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -6784,7 +6830,7 @@ Please answer about usage habits, not battery attribution.
                                                         modifier = Modifier.size(14.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
+                                                    DgText(
                                                         text = stringResource(R.string.pw_apps_active_for, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -6792,7 +6838,7 @@ Please answer about usage habits, not battery attribution.
                                                     )
                                                     if (bgRatio > 20) {
                                                         Spacer(modifier = Modifier.width(6.dp))
-                                                        Text(
+                                                        DgText(
                                                             text = stringResource(R.string.pw_apps_bg_ratio, "%.0f".format(bgRatio)),
                                                             style = MaterialTheme.typography.bodySmall,
                                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -6833,7 +6879,7 @@ Please answer about usage habits, not battery attribution.
                                                             modifier = Modifier.size(14.dp)
                                                         )
                                                         Spacer(modifier = Modifier.width(4.dp))
-                                                        Text(
+                                                        DgText(
                                                             text = frequencyText,
                                                             style = MaterialTheme.typography.bodySmall,
                                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -6869,7 +6915,7 @@ Please answer about usage habits, not battery attribution.
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(
+                                DgText(
                                     text = stringResource(if (apps.size > 1) R.string.pw_n_apps else R.string.pw_n_app, apps.size),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,

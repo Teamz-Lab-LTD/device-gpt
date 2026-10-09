@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.icons.DgText
 
 @Composable
 fun SearchBar(
@@ -29,7 +30,7 @@ fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         placeholder = {
-            Text(
+            DgText(
                 text = placeholderText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

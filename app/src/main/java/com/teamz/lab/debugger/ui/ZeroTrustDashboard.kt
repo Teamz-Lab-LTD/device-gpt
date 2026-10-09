@@ -45,6 +45,7 @@ import com.teamz.lab.debugger.utils.ZeroTrustScorer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Zero Trust Dashboard -- a prominent card showing an aggregated trust
@@ -152,7 +153,7 @@ fun ZeroTrustDashboard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
+                    DgText(
                         text = when {
                             isLoading -> stringResource(R.string.info_zt_checking)
                             report != null ->
@@ -178,7 +179,7 @@ fun ZeroTrustDashboard(
                         }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
+                            DgText(
                                 text = report!!.compositeGrade,
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
@@ -322,7 +323,7 @@ private fun TrustScoreArc(score: Int, isDark: Boolean) {
             drawArc(arcColor, 135f, 270f * animatedProgress, false, topLeft, arcSize, style = Stroke(strokeWidth, cap = StrokeCap.Round))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("$score", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = scoreTextColor)
+            DgText("$score", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = scoreTextColor)
             Text("/ 100", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -370,17 +371,17 @@ private fun TrustSectionCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = section.icon, fontSize = 20.sp)
+            DgText(text = section.icon, fontSize = 20.sp)
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                DgText(
                     // displayName is English data (share text, AI prompt); shown in the app language.
                     text = InfoTextLocalizer.localize(LocalContext.current, section.displayName),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            Text(
+            DgText(
                 text = "${section.score}/100",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
@@ -450,13 +451,13 @@ private fun TrustCheckRow(check: TrustCheckResult) {
         ) {
             Icon(statusIcon, contentDescription = statusLabel, modifier = Modifier.size(20.dp), tint = statusColor)
             Spacer(modifier = Modifier.width(10.dp))
-            Text(
+            DgText(
                 text = shownName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
-            Text(
+            DgText(
                 text = statusLabel,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
@@ -473,7 +474,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
 
         AnimatedVisibility(visible = showDetail) {
             Column(modifier = Modifier.padding(top = 8.dp, start = 30.dp)) {
-                Text(
+                DgText(
                     text = shownDetail,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -488,7 +489,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
                             tint = Color(0xFFFF9800)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
+                        DgText(
                             text = shownRecommendation,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFFF9800),

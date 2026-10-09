@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.R
 import kotlinx.coroutines.async
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * v3.2.0 honest FirstScanGate UI.
@@ -190,7 +191,7 @@ private fun ScanningUi(progress: Float, checkLabel: String) {
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(8.dp))
-        Text(
+        DgText(
             text = checkLabel,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
@@ -205,7 +206,7 @@ private fun ScanningUi(progress: Float, checkLabel: String) {
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
         Spacer(Modifier.height(12.dp))
-        Text(
+        DgText(
             text = stringResource(R.string.first_scan_checks_done, (progress * 4).toInt(), 4),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
@@ -258,14 +259,14 @@ private fun ScoredUi(
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         )
         Spacer(Modifier.height(12.dp))
-        Text(
+        DgText(
             text = "$animatedScore",
             fontSize = 96.sp,
             fontWeight = FontWeight.Bold,
             color = grade.color,
         )
         Spacer(Modifier.height(4.dp))
-        Text(
+        DgText(
             text = grade.label,
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
@@ -277,7 +278,7 @@ private fun ScoredUi(
         SubScoreRow(stringResource(R.string.first_scan_storage), subStorage)
         SubScoreRow(stringResource(R.string.first_scan_network), subNetwork)
         Spacer(Modifier.height(12.dp))
-        Text(
+        DgText(
             text = stringResource(
                 R.string.first_scan_weights,
                 FirstScanGate.WEIGHT_BATTERY,
@@ -316,7 +317,7 @@ private fun ScoredUi(
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
                     ) {
-                        Text(
+                        DgText(
                             stringResource(labelRes),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -366,12 +367,12 @@ private fun SubScoreRow(label: String, value: Int) {
             .padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(
+        DgText(
             text = label,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
         )
-        Text(
+        DgText(
             text = if (value >= 0) "$value" else stringResource(R.string.first_scan_not_readable),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,

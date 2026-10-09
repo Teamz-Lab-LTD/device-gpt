@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.string
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * Dialog for generating a verified device report.
@@ -152,7 +153,7 @@ fun GenerateReportDialog(
                         textAlign = TextAlign.Center
                     )
                 } else if (error != null) {
-                    Text(
+                    DgText(
                         error!!,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
@@ -250,7 +251,7 @@ fun ReportReadyDialog(
                     ) {
                         Text(stringResource(R.string.lb_vr_code_label), style = MaterialTheme.typography.labelMedium)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
+                        DgText(
                             text = report.verificationCode,
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
@@ -372,13 +373,13 @@ private fun SummaryRow(label: String, value: String) {
             .fillMaxWidth()
             .padding(vertical = 2.dp)
     ) {
-        Text(
+        DgText(
             text = label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.width(120.dp)
         )
-        Text(
+        DgText(
             text = value,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
@@ -463,7 +464,7 @@ fun VerifyReportDialog(
                     value = code,
                     onValueChange = { code = it.uppercase() },
                     label = { Text(stringResource(R.string.lb_vr_paste_label)) },
-                    placeholder = { Text(stringResource(R.string.lb_vr_code_example, "DG-A1B2C3D4")) },
+                    placeholder = { DgText(stringResource(R.string.lb_vr_code_example, "DG-A1B2C3D4")) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp)
@@ -532,11 +533,11 @@ fun VerifyReportDialog(
                                     )
                                     reportInfo?.let { info ->
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
+                                        DgText(
                                             stringResource(R.string.lb_vr_signed, info["signedAt"].toString()),
                                             style = MaterialTheme.typography.labelSmall
                                         )
-                                        Text(
+                                        DgText(
                                             stringResource(R.string.lb_vr_app_version, info["appVersion"].toString()),
                                             style = MaterialTheme.typography.labelSmall
                                         )

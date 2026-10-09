@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.teamz.lab.debugger.ui.icons.DgDisplayLines
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -50,6 +51,7 @@ import com.teamz.lab.debugger.utils.AdRevenueOptimizer
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AIPromptGenerator
 import com.teamz.lab.debugger.utils.AdConfig
+import com.teamz.lab.debugger.ui.icons.DgText
 
 /**
  * One row of the phone-info or network-info list.
@@ -313,7 +315,7 @@ fun ExpandableInfoList(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            DgText(
                                 text = title,
                                 style = titleTextStyle,
                                 color = MaterialTheme.colorScheme.primary,
@@ -363,7 +365,7 @@ fun ExpandableInfoList(
                             // Show free lines + unlock button (not just plain text)
                             val parts = value.split("\n\n$PREMIUM_TEASER_MARK")
                             val freeContent = parts.firstOrNull() ?: value
-                            Text(
+                            DgDisplayLines(
                                 text = freeContent,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -399,13 +401,14 @@ fun ExpandableInfoList(
                             }
                         } else {
                             // Normal content (free or premium user)
-                            Text(
+                            // The value keeps its emoji as data; here each line gets a real icon instead.
+                            DgDisplayLines(
                                 text = value,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = if (expanded) Int.MAX_VALUE else 1,
-                                overflow = if (value.length > 50) TextOverflow.Ellipsis else TextOverflow.Clip,
+                                collapsed = !expanded,
                                 modifier = Modifier
+                                    .fillMaxWidth()
                                     .combinedClickable(
                                         interactionSource = interactionSource,
                                         indication = null,

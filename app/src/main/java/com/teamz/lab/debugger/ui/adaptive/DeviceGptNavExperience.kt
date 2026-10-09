@@ -173,6 +173,10 @@ import com.teamz.lab.debugger.utils.string
 import com.revenuecat.purchases.ui.revenuecatui.ExperimentalPreviewRevenueCatUIPurchasesAPI
 import java.io.File
 import kotlinx.coroutines.launch
+import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.icons.DgIcons
+import com.teamz.lab.debugger.ui.icons.displayText
 
 /**
  * GA4 screen name per tab. Kept next to the analytics call so a new TabType cannot be
@@ -290,7 +294,7 @@ fun DeviceGptNavExperience(
             // A fullscreen ad between tapping the widget and seeing the memory report
             // is the disruptive-ads pattern — and this is the #1 surface (59 displays/user).
             val (success, message) = com.teamz.lab.debugger.utils.clearRam(context)
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, displayText(message), Toast.LENGTH_LONG).show()
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.WidgetTapped,
                 mapOf(
@@ -507,12 +511,12 @@ fun DeviceGptNavExperience(
             val settingsTooltipState = rememberTooltipState()
             val devTooltipState = rememberTooltipState()
             
-            TopAppBar(title = { Text(appName) }, navigationIcon = {
+            TopAppBar(title = { DgText(appName) }, navigationIcon = {
                 TooltipBox(
                     state = menuTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                     tooltip = { PlainTooltip { 
-                        Text(if (context.isSystemMonitorRunning()) context.string(R.string.open_menu) else context.string(R.string.open_menu_monitor_available))
+                        DgText(if (context.isSystemMonitorRunning()) context.string(R.string.open_menu) else context.string(R.string.open_menu_monitor_available))
                     } }
                 ) {
                     Box {
@@ -692,8 +696,9 @@ fun DeviceGptNavExperience(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                         tooltip = { 
                             PlainTooltip { 
-                                Text(
-                                    if (productPrice != null) {
+                                DgIconText(
+                                    icon = DgIcons.Star,
+                                    text = if (productPrice != null) {
                                         context.string(R.string.mx_premium_fab_tooltip_price, productPrice.toString())
                                     } else {
                                         context.string(R.string.mx_premium_fab_tooltip)
@@ -746,7 +751,7 @@ fun DeviceGptNavExperience(
                                         .size(20.dp)
                                         .rotate(if (startRotation) starRotation else 0f) // Rotate star after delay with pause
                                 )
-                                Text(
+                                DgText(
                                     text = productPrice ?: context.string(R.string.mx_premium_fab_label),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
@@ -762,7 +767,7 @@ fun DeviceGptNavExperience(
                 TooltipBox(
                     state = certTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text(if (isAIReady) context.string(R.string.generate_device_certificate) else context.string(R.string.loading_certificate_data)) } }
+                    tooltip = { PlainTooltip { DgText(if (isAIReady) context.string(R.string.generate_device_certificate) else context.string(R.string.loading_certificate_data)) } }
                 ) {
                     FloatingActionButton(
                         onClick = {
@@ -803,7 +808,7 @@ fun DeviceGptNavExperience(
                 TooltipBox(
                     state = aiTooltipState,
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text(if (isAIReady) context.string(R.string.open_ai_assistant) else context.string(R.string.loading_ai_assistant)) } }
+                    tooltip = { PlainTooltip { DgText(if (isAIReady) context.string(R.string.open_ai_assistant) else context.string(R.string.loading_ai_assistant)) } }
                 ) {
                     FloatingActionButton(
                         onClick = {
@@ -994,7 +999,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     shareText = context.string(R.string.loading)
                                 },
                                 text = {
-                                    Text(
+                                    DgText(
                                         when (tabType) {
                                             TabType.LEADERBOARD -> context.string(R.string.tab_leaderboard)
                                             TabType.HEALTH -> context.string(R.string.health)
@@ -1035,7 +1040,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                 val selected = selectedTab == category.tabIndex()
                                 NavigationDrawerItem(
                                     selected = selected,
-                                    label = { Text(category.displayLabel) },
+                                    label = { DgText(category.displayLabel) },
                                     icon = {
                                         Icon(
                                             imageVector = when (category) {
@@ -1096,7 +1101,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                 singleLine = true,
                             )
                             Spacer(Modifier.height(8.dp))
-                            Text(
+                            DgText(
                                 text = filteredPreview.take(4000).let { t ->
                                     if (t.length == 4000) t + "…" else t
                                 },
