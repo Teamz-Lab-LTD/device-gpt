@@ -53,6 +53,23 @@ class FirstScreenExperimentTest {
 
     // Review 2026-10-09 I1: only the score screen assigns. Reading the arm anywhere else must not.
     @Test fun `isB and peekArm never assign an arm`() {
+        val real = FirstScreenExperiment.serverFlagSource
+        FirstScreenExperiment.serverFlagSource = { true }   // server has answered B
+        try {
+            assertNull(FirstScreenExperiment.peekArm(context))
+            assertFalse(FirstScreenExperiment.isB(context))
+            assertNull("peek must not persist", stored())
+        } finally { FirstScreenExperiment.serverFlagSource = real }
+    }
+
+    @Test fun `the score screen assigns from the server value`() {
+        val real = FirstScreenExperiment.serverFlagSource
+        FirstScreenExperiment.serverFlagSource = { true }
+        try { assertEquals("B", FirstScreenExperiment.arm(context)) }
+        finally { FirstScreenExperiment.serverFlagSource = real }
+    }
+
+    @Test fun `peek on a fresh install stays empty`() {
         assertNull(FirstScreenExperiment.peekArm(context))
         assertFalse(FirstScreenExperiment.isB(context))
         assertNull("peek must not persist", stored())

@@ -51,8 +51,11 @@ object FirstScreenExperiment {
     }
 
     // RC unreadable (Firebase not initialised) -> unknown, never a crash on the score screen.
-    private fun serverFlag(): Boolean? =
-        try { RemoteConfigUtils.firstScreenTestChooserFromServer() } catch (_: Throwable) { null }
+    // A var so tests can stand in for a fetched server value.
+    internal var serverFlagSource: () -> Boolean? =
+        { try { RemoteConfigUtils.firstScreenTestChooserFromServer() } catch (_: Throwable) { null } }
+
+    private fun serverFlag(): Boolean? = serverFlagSource()
 
     fun tabFor(choice: String): String = when (choice) {
         "camera" -> "camera"
