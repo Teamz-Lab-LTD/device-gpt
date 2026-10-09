@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Leaderboard tab, verified report, invite dialog and score picture card (batch: leaderboard, 2026-10-09).
+         Every key starts with lb_. Bangla lives in values-bn/strings_leaderboard.xml. -->
+
+    <!-- Leaderboard tab: loading, errors, search -->
+    <string name="lb_err_auth">Leaderboard access requires authentication. Please wait a moment...</string>
+    <string name="lb_err_unavailable">Leaderboard is temporarily unavailable. Please try again later.</string>
+    <string name="lb_err_connection">Unable to load leaderboard. Please check your connection.</string>
+    <string name="lb_err_generic">Something went wrong. Please try again.</string>
+    <string name="lb_err_upload">Failed to upload data. Please try again.</string>
+    <string name="lb_err_load_fallback">Unable to load leaderboard</string>
+    <string name="lb_error_title">Oops! Something went wrong</string>
+    <string name="lb_error_try_again">An error occurred. Please try again.</string>
+    <string name="lb_try_again">Try Again</string>
+    <string name="lb_search_apps">Search apps...</string>
+    <string name="lb_search_devices">Search devices...</string>
+    <string name="lb_search_count_apps">%1$s of %2$s apps</string>
+    <string name="lb_search_count_devices">%1$s of %2$s devices</string>
+    <string name="lb_no_results_title">No results found</string>
+    <string name="lb_no_results_body">Try searching with a different term</string>
+    <string name="lb_cd_search">Search</string>
+    <string name="lb_cd_clear_search">Clear search</string>
+
+    <!-- Leaderboard tab: locked rows and the buy prompt -->
+    <string name="lb_gate_app_title">#%1$s App</string>
+    <string name="lb_gate_app_body">Which app ranks #%1$s out of %2$s for power usage? Unlock to find out.</string>
+    <string name="lb_gate_device_title_score">#%1$s Device — Score: %2$s/100</string>
+    <string name="lb_gate_device_title">#%1$s Device</string>
+    <string name="lb_gate_device_body">Which device ranks #%1$s out of %2$s? Unlock to find out.</string>
+    <string name="lb_gate_unlock">Unlock Lifetime Access</string>
+    <string name="lb_gate_see_everything">See Everything Forever</string>
+    <string name="lb_gate_price_see_everything">%1$s • See Everything Forever</string>
+    <string name="lb_gate_your_device">Your device: #%1$s out of %2$s</string>
+    <string name="lb_gate_top_for">Top %1$s%% for %2$s</string>
+    <string name="lb_gate_rank_hidden">Your rank: ---</string>
+    <string name="lb_gate_top_hidden">You\'re in the top --%% for %1$s</string>
+    <string name="lb_gate_teaser_ranked">See what the #1 device has that yours doesn\'t</string>
+    <string name="lb_gate_teaser_unranked">Unlock to see your full ranking details</string>
+
+    <!-- Leaderboard tab: dialogs -->
+    <string name="lb_insights_title">Device Insights</string>
+    <string name="lb_best_devices">Best Devices</string>
+    <string name="lb_cat_what_is">What is %1$s?</string>
+    <string name="lb_cat_simple_title">📱 Simple Explanation</string>
+    <string name="lb_cat_tech_title">⚙️ Technical Details</string>
+    <string name="lb_cat_how_measured">📊 How It\'s Measured:</string>
+
+    <!-- Category names (chips). The ids in LeaderboardCategory are Firestore keys and stay English. -->
+    <string name="lb_cat_name_power_efficiency">Battery Saver</string>
+    <string name="lb_cat_name_cpu_performance">Speed Champion</string>
+    <string name="lb_cat_name_camera_efficiency">Photo Saver</string>
+    <string name="lb_cat_name_display_efficiency">Bright Screen</string>
+    <string name="lb_cat_name_health_score">Healthy Phone</string>
+    <string name="lb_cat_name_power_trend">Getting Better</string>
+    <string name="lb_cat_name_component_optimization">Balanced Power</string>
+    <string name="lb_cat_name_thermal_efficiency">Cool Phone</string>
+    <string name="lb_cat_name_performance_consistency">Smooth Runner</string>
+    <string name="lb_cat_name_app_power_monitoring">App Screen Time</string>
+    <string name="lb_cat_name_best_device">Best Device</string>
+
+    <!-- Category question (shown under “Technical Details”) -->
+    <string name="lb_cat_q_power_efficiency">Which phones use the least battery?</string>
+    <string name="lb_cat_q_cpu_performance">Which phones are the fastest?</string>
+    <string name="lb_cat_q_camera_efficiency">Which phones take photos without using much battery?</string>
+    <string name="lb_cat_q_display_efficiency">Which phones have bright screens that don\'t use much battery?</string>
+    <string name="lb_cat_q_health_score">Which phones are in the best health?</string>
+    <string name="lb_cat_q_power_trend">Which phones are using less battery over time?</string>
+    <string name="lb_cat_q_component_optimization">Which phones use power evenly across all parts?</string>
+    <string name="lb_cat_q_thermal_efficiency">Which phones stay cool?</string>
+    <string name="lb_cat_q_performance_consistency">Which phones run smoothly without lag?</string>
+    <string name="lb_cat_q_app_power_monitoring">Which apps get the most screen time?</string>
+    <string name="lb_cat_q_best_device">Which phones are the best overall?</string>
+
+    <!-- Category simple explanation -->
+    <string name="lb_cat_simple_power_efficiency">Like a car that uses less gas - these phones save battery!</string>
+    <string name="lb_cat_simple_cpu_performance">Like a race car - these phones are super fast!</string>
+    <string name="lb_cat_simple_camera_efficiency">Like taking photos without draining your battery!</string>
+    <string name="lb_cat_simple_display_efficiency">Like a bright light that doesn\'t use much electricity!</string>
+    <string name="lb_cat_simple_health_score">Like a health checkup - these phones are doing great!</string>
+    <string name="lb_cat_simple_power_trend">These phones are getting better at saving battery!</string>
+    <string name="lb_cat_simple_component_optimization">Like a balanced meal - these phones use power wisely!</string>
+    <string name="lb_cat_simple_thermal_efficiency">These phones don\'t get hot even when working hard!</string>
+    <string name="lb_cat_simple_performance_consistency">These phones never slow down or stutter!</string>
+    <string name="lb_cat_simple_app_power_monitoring">See which apps you use the most!</string>
+    <string name="lb_cat_simple_best_device">These phones are the best across all categories!</string>
+
+    <!-- Category: how it is measured. Bangla says what it means for the person, not the formula. -->
+    <string name="lb_cat_how_power_efficiency">Based on total power consumption (Watts) measured using Android BatteryManager API. Lower power usage = better rank.</string>
+    <string name="lb_cat_how_cpu_performance">Based on CPU benchmark scores and processing speed. Higher performance = better rank.</string>
+    <string name="lb_cat_how_camera_efficiency">Based on power consumed per photo taken. Lower power per photo = better rank.</string>
+    <string name="lb_cat_how_display_efficiency">Based on screen brightness vs power consumption ratio. Higher brightness with lower power = better rank.</string>
+    <string name="lb_cat_how_health_score">Based on overall device health metrics including battery health, storage, and system performance.</string>
+    <string name="lb_cat_how_power_trend">Based on power consumption trends over time. Devices showing improvement = better rank.</string>
+    <string name="lb_cat_how_component_optimization">Based on balanced power distribution across CPU, GPU, Display, and Network components.</string>
+    <string name="lb_cat_how_thermal_efficiency">Based on device temperature during heavy usage. Cooler devices = better rank.</string>
+    <string name="lb_cat_how_performance_consistency">Based on frame rate stability and absence of lag. Smoother performance = better rank.</string>
+    <string name="lb_cat_how_app_power_monitoring">Based on screen time from Android UsageStats. Android does not expose per-app battery draw to third-party apps, so this ranks usage, not battery.</string>
+    <string name="lb_cat_how_best_device" formatted="false">Based on composite score across all categories using market-research-based weights. Power Efficiency (22%), CPU Performance (18%), Thermal Efficiency (15%), Performance Consistency (14%), Health Score (12%), Component Optimization (8%), Power Trend (5%), Display Efficiency (4%), Camera Efficiency (2%).</string>
+
+    <!-- Rank rows -->
+    <string name="lb_os_score">Android %1$s (%2$s/100)</string>
+    <string name="lb_os_count">Android %1$s (%2$s)</string>
+    <string name="lb_os_only">Android %1$s</string>
+    <string name="lb_os_power">Android %1$s (%2$s W)</string>
+    <string name="lb_score_no_data">Score: No data</string>
+    <string name="lb_score_value">Score: %1$s/100</string>
+    <string name="lb_score_label">Score:</string>
+    <string name="lb_avg_suffix">(Avg)</string>
+    <string name="lb_verified_one">Verified by 1 user</string>
+    <string name="lb_verified_many">Verified by %1$s users</string>
+    <string name="lb_reported_one">Reported by 1 user</string>
+    <string name="lb_reported_many">Reported by %1$s users</string>
+    <string name="lb_badge_verified">Verified</string>
+    <string name="lb_badge_high">High Trust</string>
+    <string name="lb_badge_medium">Medium Trust</string>
+    <string name="lb_badge_low">Low Trust</string>
+    <string name="lb_power_label">Power:</string>
+    <string name="lb_battery_drain">Battery drain: %1$s%% per hour</string>
+
+    <!-- “Why you can trust this data” -->
+    <string name="lb_trust_cd">Trust info</string>
+    <string name="lb_trust_header">Why you can trust this data</string>
+    <string name="lb_cd_collapse">Collapse</string>
+    <string name="lb_cd_expand">Expand</string>
+    <string name="lb_trust_real_title">Real system measurements</string>
+    <string name="lb_trust_real_body">Uses Android BatteryManager API (P = V × I) for actual power consumption, not estimates</string>
+    <string name="lb_trust_net_title">Real network tests</string>
+    <string name="lb_trust_net_body">Actually downloads/uploads data to measure speed - not estimated from signal strength</string>
+    <string name="lb_trust_users_title">From real users</string>
+    <string name="lb_trust_users_body">Data comes from actual device measurements by users like you</string>
+    <string name="lb_trust_privacy_title">Privacy protected</string>
+    <string name="lb_trust_privacy_body">Your data is anonymous - we don\'t know who you are</string>
+
+    <!-- Your rank cards -->
+    <string name="lb_rank_yours">Your Rank: #%1$s</string>
+    <string name="lb_rank_top_percent">You\'re in the top %1$s%% for %2$s!</string>
+    <string name="lb_rank_ranked_for">Ranked #%1$s for %2$s!</string>
+    <string name="lb_view_insights">View Insights</string>
+    <string name="lb_premium">Premium</string>
+    <string name="lb_your_device">Your Device</string>
+    <string name="lb_your_ranking">Your Ranking</string>
+    <string name="lb_top_percent_cat">Top %1$s%% • %2$s</string>
+    <string name="lb_view_device_insights">View Device Insights</string>
+
+    <!-- “Should you update?” card -->
+    <string name="lb_os_checking">Checking OS updates...</string>
+    <string name="lb_os_analyzing">Analyzing your device performance</string>
+    <string name="lb_os_update_to">Update to Android %1$s</string>
+    <string name="lb_os_should_update">Should you update?</string>
+    <string name="lb_os_could_improve">Could improve performance by %1$s%%</string>
+    <string name="lb_os_see_if">See if updating OS will improve your device</string>
+    <string name="lb_os_compare_available">OS Comparison Available</string>
+    <string name="lb_os_compare_body">Compare your device across different Android versions</string>
+    <string name="lb_os_view_compare">View OS Comparison</string>
+    <string name="lb_os_unlock_compare">Unlock OS Comparison</string>
+    <string name="lb_os_premium_detail">See detailed comparison [Premium]</string>
+
+    <!-- Empty states -->
+    <string name="lb_empty_title">No data yet</string>
+    <string name="lb_empty_body">Be the first to share your %1$s score!</string>
+    <string name="lb_empty_upload">Upload My Data Now</string>
+    <string name="lb_empty_auto">💡 Your data will be uploaded automatically in the background</string>
+    <string name="lb_app_empty_title">No app screen time data yet</string>
+    <string name="lb_app_empty_body">Start monitoring app power consumption in the Power Consumption tab to see which apps rank highest!</string>
+    <string name="lb_app_empty_tip">💡 Enable App Screen Time to contribute data</string>
+
+    <!-- Small leaderboard card (device_leaderboard_card.kt) -->
+    <string name="lb_dlc_cd">Leaderboard</string>
+    <string name="lb_dlc_title">Device Leaderboard</string>
+    <string name="lb_dlc_your_score">Your Score</string>
+    <string name="lb_dlc_model_avg">Model Avg.</string>
+    <string name="lb_dlc_top_score">Top Score</string>
+    <string name="lb_dlc_first">🚀 First %1$s user! Set the benchmark!</string>
+    <string name="lb_dlc_top_gold">🏆 Top %1$s%% of %2$ss!</string>
+    <string name="lb_dlc_top_bronze">🥉 Top %1$s%% of %2$ss!</string>
+    <string name="lb_dlc_above_avg">📊 Above average %1$s user!</string>
+    <string name="lb_dlc_top_plain">📈 Top %1$s%% of %2$ss</string>
+    <string name="lb_dlc_based_on">Based on %1$s %2$s devices</string>
+
+    <!-- Best devices screen -->
+    <string name="lb_best_top_title">Top %1$s Devices</string>
+    <string name="lb_best_intro">These are the best devices based on real measurements from users like you!</string>
+    <string name="lb_best_load_failed">Failed to load data</string>
+    <string name="lb_best_try_later">Please try again later</string>
+    <string name="lb_best_empty_body">Upload your data to see the best devices!</string>
+
+    <!-- Device insights screen -->
+    <string name="lb_ins_scores">Performance Scores</string>
+    <string name="lb_ins_none_title">No insights available</string>
+    <string name="lb_ins_none_body">Device data is being collected. Check back soon!</string>
+    <string name="lb_ins_aggregated_one">📊 Aggregated data from %1$s user with this device model</string>
+    <string name="lb_ins_aggregated_many">📊 Aggregated data from %1$s users with this device model</string>
+    <string name="lb_ins_quality">Data Quality:</string>
+
+    <!-- Reminder to link Gmail -->
+    <string name="lb_dr_title">🔔 Keep Your Data Safe</string>
+    <string name="lb_dr_remove_in_days">Your leaderboard data will be removed in %1$s days if you don\'t link your Gmail account.</string>
+    <string name="lb_dr_kept">Your leaderboard data is currently kept indefinitely, but linking your Gmail account ensures it\'s always safe.</string>
+    <string name="lb_dr_dont_worry">Don\'t worry! If you link your Gmail account now, we\'ll keep all your data safe forever.</string>
+    <string name="lb_dr_free">Linking your account is free and takes just a few seconds!</string>
+    <string name="lb_dr_later">Maybe Later</string>
+
+    <!-- Search box above the phone-info rows (search_bar.kt) -->
+    <string name="lb_sb_placeholder">Enter keyword (e.g. CPU, RAM, Network)</string>
+    <string name="lb_sb_cd">Search Icon</string>
+
+    <!-- Verified report: the report a seller makes and a buyer checks -->
+    <string name="lb_vr_upload_failed">Report generated but upload failed. You can still share the code.</string>
+    <string name="lb_vr_generate_failed">Failed to generate report: %1$s</string>
+    <string name="lb_vr_generating_title">Generating Verified Report</string>
+    <string name="lb_vr_generating_body">We\'re creating a snapshot of your phone\'s health and safety that you can share with others.</string>
+    <string name="lb_vr_collecting">Collecting device data and signing...</string>
+    <string name="lb_vr_uploading">Uploading for verification...</string>
+    <string name="lb_vr_ready_title">Report Ready</string>
+    <string name="lb_vr_ready_body">Your device report was created. Share the code below so someone else can check it — like a ticket number.</string>
+    <string name="lb_vr_when_title">When to use this:</string>
+    <string name="lb_vr_ready_when">• Sending to support so they can see your phone\'s status\n• Selling your phone — show the buyer it\'s healthy\n• Proving to work or school that your device is safe</string>
+    <string name="lb_vr_code_label">Your shareable code</string>
+    <string name="lb_code_copied">Code copied!</string>
+    <string name="lb_vr_copy_code">Copy Code</string>
+    <string name="lb_vr_recorded_title" formatted="false">What was recorded (100% full device insight)</string>
+    <string name="lb_vr_recorded_body">All fields below were saved from your phone — device, OS, speeds, network, battery, storage, RAM. Good for resale proof, tech support, or showing your device is in good shape.</string>
+    <string name="lb_vr_cannot_change">Nobody can change this report. Anyone with this app can enter your code and see the same details.</string>
+    <string name="lb_vr_done">Done</string>
+    <string name="lb_vr_row_device">Device</string>
+    <string name="lb_vr_row_android">Android</string>
+    <string name="lb_vr_row_api">API level</string>
+    <string name="lb_vr_api_value">API %1$s</string>
+    <string name="lb_vr_not_available">N/A</string>
+    <string name="lb_vr_row_patch">Security patch</string>
+    <string name="lb_vr_row_integrity">Device integrity</string>
+    <string name="lb_vr_row_cpu">CPU model</string>
+    <string name="lb_vr_row_resolution">Screen resolution</string>
+    <string name="lb_vr_row_play">Google Play certified</string>
+    <string name="lb_vr_row_health">Health Score</string>
+    <string name="lb_vr_row_privacy">Privacy Grade</string>
+    <string name="lb_vr_row_download">Download</string>
+    <string name="lb_vr_row_upload">Upload</string>
+    <string name="lb_vr_row_latency">Latency</string>
+    <string name="lb_vr_row_jitter">Jitter</string>
+    <string name="lb_vr_row_packet_loss">Packet loss</string>
+    <string name="lb_vr_row_battery">Battery</string>
+    <string name="lb_vr_row_storage">Storage</string>
+    <string name="lb_vr_row_ram">RAM</string>
+    <string name="lb_vr_row_signed_at">Signed At</string>
+    <string name="lb_vr_verify_body">Someone sent you a code? Enter it here to see their device report and confirm it\'s real.</string>
+    <string name="lb_vr_verify_when">• Support asked you to send a code\n• You\'re buying a used phone and want to check the seller\'s report\n• Someone shared their report code with you</string>
+    <string name="lb_vr_paste_label">Paste the code they gave you</string>
+    <string name="lb_vr_code_example">e.g. %1$s</string>
+    <string name="lb_vr_verify_button">Verify</string>
+    <string name="lb_vr_verified">Verified</string>
+    <string name="lb_vr_verified_body">This report is real and wasn\'t changed. The details below are what was recorded at the time.</string>
+    <string name="lb_vr_signed">Signed: %1$s</string>
+    <string name="lb_vr_app_version">App version: %1$s</string>
+    <string name="lb_vr_full_insight" formatted="false">Full device insight (100% of what was recorded)</string>
+    <string name="lb_vr_old_report">Reports created with an older app version may show N/A for some fields. New reports include more details.</string>
+    <string name="lb_vr_speed_failed_note">Download/upload shows \"Speed Test Failed\" when the test didn\'t complete at the time the report was created (e.g. no internet or timeout).</string>
+    <string name="lb_vr_not_verified">Not verified</string>
+    <string name="lb_vr_tampered_body">This report may have been altered. Don\'t trust it.</string>
+    <string name="lb_vr_not_found">No report found</string>
+    <string name="lb_vr_not_found_body">We couldn\'t find a report for this code. Check the code and try again, or ask the person to send it again.</string>
+
+    <!-- Invite-a-friend dialog -->
+    <string name="lb_vs_title">Share &amp; Earn Rewards!</string>
+    <string name="lb_vs_subtitle">Every friend you invite earns you ad-free time</string>
+    <string name="lb_vs_share_via">Share via</string>
+    <string name="lb_vs_whatsapp">WhatsApp</string>
+    <string name="lb_vs_telegram">Telegram</string>
+    <string name="lb_vs_sms">SMS</string>
+    <string name="lb_vs_email">Email</string>
+    <string name="lb_vs_more">More Options</string>
+    <string name="lb_vs_friends_one">%1$s friend referred</string>
+    <string name="lb_vs_friends_many">%1$s friends referred</string>
+    <string name="lb_vs_adfree_days">Ad-free: %1$s days remaining</string>
+    <string name="lb_vs_adfree_hours">Ad-free: %1$sh remaining</string>
+    <string name="lb_vs_adfree_minutes">Ad-free: %1$sm remaining</string>
+    <string name="lb_vs_next">Next: %1$s %2$s — %3$s</string>
+    <string name="lb_vs_more_invites_one">%1$s more invite to unlock!</string>
+    <string name="lb_vs_more_invites_many">%1$s more invites to unlock!</string>
+    <string name="lb_vs_max_tier">You\'ve reached the highest tier! Thank you for spreading the word!</string>
+    <string name="lb_vs_milestones">Reward Milestones</string>
+    <string name="lb_vs_tier_row_one">%1$s invite — %2$s</string>
+    <string name="lb_vs_tier_row_many">%1$s invites — %2$s</string>
+    <string name="lb_vs_days_adfree">%1$s days ad-free</string>
+    <string name="lb_vs_hours_adfree">%1$sh ad-free</string>
+    <string name="lb_vs_unlocked">Unlocked</string>
+    <string name="lb_vs_code_title">Your Referral Code</string>
+    <string name="lb_vs_motivation_one">Share with %1$s more friend to unlock %2$s %3$s — %4$s</string>
+    <string name="lb_vs_motivation_many">Share with %1$s more friends to unlock %2$s %3$s — %4$s</string>
+    <string name="lb_vs_legend">You\'re a Legend! Keep sharing to help friends discover their device health.</string>
+
+    <!-- Reward steps. ReferralManager.RewardTier keeps its English text; these are shown instead. -->
+    <string name="lb_tier_none_title">Starter</string>
+    <string name="lb_tier_none_desc">Share to start earning rewards!</string>
+    <string name="lb_tier_bronze_title">First Share</string>
+    <string name="lb_tier_bronze_desc">24h ad-free unlocked!</string>
+    <string name="lb_tier_silver_title">Supporter</string>
+    <string name="lb_tier_silver_desc">3 days ad-free + Supporter badge!</string>
+    <string name="lb_tier_gold_title">Champion</string>
+    <string name="lb_tier_gold_desc">7 days ad-free + Champion badge!</string>
+    <string name="lb_tier_legend_title">Legend</string>
+    <string name="lb_tier_legend_desc">30 days ad-free + Legend badge!</string>
+
+    <!-- Messages sent to a friend from the invite dialog -->
+    <string name="lb_vs_msg_whatsapp">🔍 Check out this amazing device health checker app!\n\n📱 Get detailed insights about your phone\'s performance, battery, storage, and security.\n\nUse my referral code: %1$s\n\nDownload now: %2$s\n\n#PhoneHealth #DeviceChecker</string>
+    <string name="lb_vs_msg_telegram">🔍 Check out this amazing device health checker app!\n\n📱 Get detailed insights about your phone\'s performance, battery, storage, and security.\n\nUse my referral code: %1$s\n\nDownload now: %2$s</string>
+    <string name="lb_vs_msg_sms">Check out this device health app! Use my code: %1$s\n%2$s</string>
+    <string name="lb_vs_msg_email">Check out this amazing device health checker app!\n\nGet detailed insights about your phone\'s performance, battery, storage, and security.\n\nUse my referral code: %1$s\n\nDownload now: %2$s</string>
+    <string name="lb_vs_email_subject">Check out this amazing device health app!</string>
+    <string name="lb_vs_email_chooser">Share via Email</string>
+    <string name="lb_vs_power_title">⚡ Power Consumption Insights</string>
+    <string name="lb_vs_power_total">📊 Total Power: %1$sW</string>
+    <string name="lb_vs_power_trend">📈 Trend: %1$s</string>
+    <string name="lb_vs_power_avg">📉 Average: %1$sW</string>
+    <string name="lb_vs_power_peak">🔝 Peak: %1$sW</string>
+    <string name="lb_vs_power_top">🔝 Top Power Consumers:</string>
+    <string name="lb_vs_power_generated">📱 Generated by %1$s</string>
+    <string name="lb_vs_power_download">🔗 Download: %1$s</string>
+
+    <!-- Picture card of the score (text is drawn into the image) -->
+    <string name="lb_sc_device_score">Device Score</string>
+    <string name="lb_sc_device_line">%1$s %2$s · Android %3$s</string>
+    <string name="lb_sc_scanned">Scanned %1$s</string>
+    <string name="lb_sc_measured">Measured: battery condition · memory · storage · network</string>
+    <string name="lb_sc_weights">Weights 40/25/20/15 · This device, at scan time</string>
+</resources>

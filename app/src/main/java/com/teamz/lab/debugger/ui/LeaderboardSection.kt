@@ -77,11 +77,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.ads.nativead.NativeAd
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
@@ -95,6 +98,7 @@ import com.teamz.lab.debugger.utils.LeaderboardManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import com.teamz.lab.debugger.utils.TrustBadge
+import com.teamz.lab.debugger.utils.string
 import kotlinx.coroutines.launch
 
 /**
@@ -321,22 +325,22 @@ fun LeaderboardSection(activity: Activity) {
                 hasError = true
                 when (e.code) {
                     com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
-                        errorMessage = "Leaderboard access requires authentication. Please wait a moment..."
+                        errorMessage = context.string(R.string.lb_err_auth)
                         // Try to ensure anonymous auth
                         LeaderboardManager.initialize(context)
                         kotlinx.coroutines.delay(2000)
                         retryCount++
                     }
                     com.google.firebase.firestore.FirebaseFirestoreException.Code.UNAVAILABLE -> {
-                        errorMessage = "Leaderboard is temporarily unavailable. Please try again later."
+                        errorMessage = context.string(R.string.lb_err_unavailable)
                     }
                     else -> {
-                        errorMessage = "Unable to load leaderboard. Please check your connection."
+                        errorMessage = context.string(R.string.lb_err_connection)
                     }
                 }
             } catch (e: Exception) {
                 hasError = true
-                errorMessage = "Something went wrong. Please try again."
+                errorMessage = context.string(R.string.lb_err_generic)
                 Log.e("LeaderboardSection", "Error loading leaderboard", e)
             } finally {
                 isLoading = false
@@ -470,8 +474,8 @@ fun LeaderboardSection(activity: Activity) {
                         query = searchQuery,
                         onQueryChange = { searchQuery = it },
                         placeholder = when (selectedCategory) {
-                            LeaderboardCategory.APP_POWER_MONITORING -> "Search apps..."
-                            else -> "Search devices..."
+                            LeaderboardCategory.APP_POWER_MONITORING -> stringResource(R.string.lb_search_apps)
+                            else -> stringResource(R.string.lb_search_devices)
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -491,7 +495,15 @@ fun LeaderboardSection(activity: Activity) {
                         
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "$resultCount of $totalCount ${if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) "apps" else "devices"}",
+                            text = stringResource(
+                                if (selectedCategory == LeaderboardCategory.APP_POWER_MONITORING) {
+                                    R.string.lb_search_count_apps
+                                } else {
+                                    R.string.lb_search_count_devices
+                                },
+                                resultCount.toString(),
+                                totalCount.toString()
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 4.dp)
@@ -678,7 +690,7 @@ fun LeaderboardSection(activity: Activity) {
             } else if (hasError) {
                 item {
                     ErrorStateCard(
-                        message = errorMessage ?: "Unable to load leaderboard",
+                        message = errorMessage ?: stringResource(R.string.lb_err_load_fallback),
                         onRetry = { retryCount++ }
                     )
                 }
@@ -709,14 +721,14 @@ fun LeaderboardSection(activity: Activity) {
                                         modifier = Modifier.padding(bottom = 8.dp)
                                     )
                                     Text(
-                                        text = "No results found",
+                                        text = stringResource(R.string.lb_no_results_title),
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.padding(bottom = 4.dp)
                                     )
                                     Text(
-                                        text = "Try searching with a different term",
+                                        text = stringResource(R.string.lb_no_results_body),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -860,7 +872,7 @@ fun LeaderboardSection(activity: Activity) {
                                                         modifier = Modifier.size(20.dp)
                                                     )
                                                     Text(
-                                                        text = "#$originalRank App",
+                                                        text = stringResource(R.string.lb_gate_app_title, originalRank.toString()),
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
                                                         color = MaterialTheme.colorScheme.onSurface,
@@ -870,7 +882,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 val totalApps = filteredAppPowerEntriesWithRank.size
                                                 Text(
-                                                    text = "Which app ranks #$originalRank out of $totalApps for power usage? Unlock to find out.",
+                                                    text = stringResource(R.string.lb_gate_app_body, originalRank.toString(), totalApps.toString()),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                                 )
@@ -896,12 +908,16 @@ fun LeaderboardSection(activity: Activity) {
                                                         modifier = Modifier.padding(vertical = 4.dp)
                                                     ) {
                                                         Text(
-                                                            "Unlock Lifetime Access",
+                                                            stringResource(R.string.lb_gate_unlock),
                                                             style = MaterialTheme.typography.labelMedium,
                                                             fontWeight = FontWeight.Bold
                                                         )
                                                         Text(
-                                                            if (premiumPriceAppPower.isNotEmpty()) "$premiumPriceAppPower • See Everything Forever" else "See Everything Forever",
+                                                            if (premiumPriceAppPower.isNotEmpty()) {
+                                                                stringResource(R.string.lb_gate_price_see_everything, premiumPriceAppPower)
+                                                            } else {
+                                                                stringResource(R.string.lb_gate_see_everything)
+                                                            },
                                                             style = MaterialTheme.typography.labelSmall,
                                                             fontWeight = FontWeight.Normal
                                                         )
@@ -950,14 +966,14 @@ fun LeaderboardSection(activity: Activity) {
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
                                 Text(
-                                    text = "No results found",
+                                    text = stringResource(R.string.lb_no_results_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(bottom = 4.dp)
                                 )
                                 Text(
-                                    text = "Try searching with a different term",
+                                    text = stringResource(R.string.lb_no_results_body),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -978,7 +994,7 @@ fun LeaderboardSection(activity: Activity) {
                                         retryCount++
                                     } catch (_: Exception) {
                                         hasError = true
-                                        errorMessage = "Failed to upload data. Please try again."
+                                        errorMessage = context.string(R.string.lb_err_upload)
                                     } finally {
                                         isLoading = false
                                     }
@@ -1138,7 +1154,11 @@ fun LeaderboardSection(activity: Activity) {
                                                 // Get score to tease without revealing the device name
                                                 val score = entry.score.toInt().takeIf { it > 0 }
                                                 Text(
-                                                    text = if (score != null) "#$originalRank Device — Score: $score/100" else "#$originalRank Device",
+                                                    text = if (score != null) {
+                                                        stringResource(R.string.lb_gate_device_title_score, originalRank.toString(), score.toString())
+                                                    } else {
+                                                        stringResource(R.string.lb_gate_device_title, originalRank.toString())
+                                                    },
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.onSurface,
@@ -1149,7 +1169,7 @@ fun LeaderboardSection(activity: Activity) {
                                             // Curiosity hook: tease the score, hide the device name
                                             val totalDevices = filteredLeaderboardEntriesWithRank.size
                                             Text(
-                                                text = "Which device ranks #$originalRank out of $totalDevices? Unlock to find out.",
+                                                text = stringResource(R.string.lb_gate_device_body, originalRank.toString(), totalDevices.toString()),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                             )
@@ -1175,12 +1195,16 @@ fun LeaderboardSection(activity: Activity) {
                                                     modifier = Modifier.padding(vertical = 4.dp)
                                                 ) {
                                                     Text(
-                                                        "Unlock Lifetime Access",
+                                                        stringResource(R.string.lb_gate_unlock),
                                                         style = MaterialTheme.typography.labelMedium,
                                                         fontWeight = FontWeight.Bold
                                                     )
                                                     Text(
-                                                        if (premiumPrice.isNotEmpty()) "$premiumPrice • See Everything Forever" else "See Everything Forever",
+                                                        if (premiumPrice.isNotEmpty()) {
+                            stringResource(R.string.lb_gate_price_see_everything, premiumPrice)
+                        } else {
+                            stringResource(R.string.lb_gate_see_everything)
+                        },
                                                         style = MaterialTheme.typography.labelSmall,
                                                         fontWeight = FontWeight.Normal
                                                     )
@@ -1236,7 +1260,7 @@ fun LeaderboardSection(activity: Activity) {
             },
             title = { 
                 Text(
-                    text = "Device Insights",
+                    text = stringResource(R.string.lb_insights_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1264,7 +1288,7 @@ fun LeaderboardSection(activity: Activity) {
                     showFullScreenAdAfterAction()
                 }) {
                     Text(
-                        "Close",
+                        stringResource(R.string.close),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -1285,7 +1309,7 @@ fun LeaderboardSection(activity: Activity) {
             },
             title = { 
                 Text(
-                    text = "Best Devices",
+                    text = stringResource(R.string.lb_best_devices),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1311,7 +1335,7 @@ fun LeaderboardSection(activity: Activity) {
                     // Show full-screen ad after user action (centralized)
                     showFullScreenAdAfterAction()
                 }) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
@@ -1353,7 +1377,7 @@ fun CategoryInfoDialog(
             ) {
                 Text(category.icon, fontSize = 24.sp)
                 Text(
-                    text = "What is ${category.displayName}?",
+                    text = stringResource(R.string.lb_cat_what_is, stringResource(category.nameRes())),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -1376,13 +1400,13 @@ fun CategoryInfoDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "📱 Simple Explanation",
+                            text = stringResource(R.string.lb_cat_simple_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = category.childFriendlyExplanation,
+                            text = stringResource(category.simpleExplanationRes()),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -1400,35 +1424,23 @@ fun CategoryInfoDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "⚙️ Technical Details",
+                            text = stringResource(R.string.lb_cat_tech_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = category.description,
+                            text = stringResource(category.questionRes()),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "📊 How It's Measured:",
+                            text = stringResource(R.string.lb_cat_how_measured),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = when (category) {
-                                LeaderboardCategory.POWER_EFFICIENCY -> "Based on total power consumption (Watts) measured using Android BatteryManager API. Lower power usage = better rank."
-                                LeaderboardCategory.CPU_PERFORMANCE -> "Based on CPU benchmark scores and processing speed. Higher performance = better rank."
-                                LeaderboardCategory.CAMERA_EFFICIENCY -> "Based on power consumed per photo taken. Lower power per photo = better rank."
-                                LeaderboardCategory.DISPLAY_EFFICIENCY -> "Based on screen brightness vs power consumption ratio. Higher brightness with lower power = better rank."
-                                LeaderboardCategory.HEALTH_SCORE -> "Based on overall device health metrics including battery health, storage, and system performance."
-                                LeaderboardCategory.POWER_TREND -> "Based on power consumption trends over time. Devices showing improvement = better rank."
-                                LeaderboardCategory.COMPONENT_OPTIMIZATION -> "Based on balanced power distribution across CPU, GPU, Display, and Network components."
-                                LeaderboardCategory.THERMAL_EFFICIENCY -> "Based on device temperature during heavy usage. Cooler devices = better rank."
-                                LeaderboardCategory.PERFORMANCE_CONSISTENCY -> "Based on frame rate stability and absence of lag. Smoother performance = better rank."
-                                LeaderboardCategory.APP_POWER_MONITORING -> "Based on screen time from Android UsageStats. Android does not expose per-app battery draw to third-party apps, so this ranks usage, not battery."
-                                LeaderboardCategory.BEST_DEVICE -> "Based on composite score across all categories using market-research-based weights. Power Efficiency (22%), CPU Performance (18%), Thermal Efficiency (15%), Performance Consistency (14%), Health Score (12%), Component Optimization (8%), Power Trend (5%), Display Efficiency (4%), Camera Efficiency (2%)."
-                            },
+                            text = stringResource(category.howMeasuredRes()),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                         )
@@ -1438,7 +1450,7 @@ fun CategoryInfoDialog(
         },
         confirmButton = {
             Button(onClick = onDismiss) {
-                Text("Got it!")
+                Text(stringResource(R.string.got_it))
             }
         }
     )
@@ -1485,7 +1497,7 @@ fun CategorySelector(
                     ) {
                         Text(category.icon, fontSize = 16.sp)
                         Text(
-                            category.displayName,
+                            stringResource(category.nameRes()),
                             style = MaterialTheme.typography.labelMedium
                         )
                         if (onCategoryInfoClick != null) {
@@ -1502,7 +1514,7 @@ fun CategorySelector(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Info,
-                                    contentDescription = "What is ${category.displayName}?",
+                                    contentDescription = stringResource(R.string.lb_cat_what_is, stringResource(category.nameRes())),
                                     modifier = Modifier.fillMaxSize(),
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
@@ -1523,6 +1535,7 @@ fun LeaderboardEntryCard(
     onClick: () -> Unit = {}
 ) {
     val trustBadge = calculateTrustBadge(entry.userCount, entry.dataQuality)
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -1573,7 +1586,7 @@ fun LeaderboardEntryCard(
                                 .sortedByDescending { it.value } // Sort by score (descending)
                                 .joinToString(", ") { 
                                     val scoreInt = it.value.toInt()
-                                    "Android ${it.key} ($scoreInt/100)"
+                                    context.getString(R.string.lb_os_score, it.key, scoreInt.toString())
                                 }
                             Text(
                                 text = osScoresText,
@@ -1585,7 +1598,7 @@ fun LeaderboardEntryCard(
                             // Single version: Show "Android 13 (85/100)"
                             val score = entry.osScores[entry.androidVersion] ?: entry.avgScore
                             Text(
-                                text = "Android ${entry.androidVersion} (${score.toInt()}/100)",
+                                text = stringResource(R.string.lb_os_score, entry.androidVersion, score.toInt().toString()),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
@@ -1595,7 +1608,7 @@ fun LeaderboardEntryCard(
                             if (entry.androidVersions.isNotEmpty() && entry.androidVersions.size > 1) {
                                 val versionCounts = entry.androidVersions.entries
                                     .sortedByDescending { it.value }
-                                    .joinToString(", ") { "Android ${it.key} (${it.value})" }
+                                    .joinToString(", ") { context.getString(R.string.lb_os_count, it.key, it.value.toString()) }
                                 Text(
                                     text = versionCounts,
                                     style = MaterialTheme.typography.bodySmall,
@@ -1604,7 +1617,7 @@ fun LeaderboardEntryCard(
                                 )
                             } else {
                                 Text(
-                                    text = "Android ${entry.androidVersion}",
+                                    text = stringResource(R.string.lb_os_only, entry.androidVersion),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
@@ -1616,9 +1629,9 @@ fun LeaderboardEntryCard(
                 
                 // Score with explanation - show "No data" for zero scores
                 val scoreText = if (entry.avgScore == 0.0) {
-                    "Score: No data"
+                    stringResource(R.string.lb_score_no_data)
                 } else {
-                    "Score: ${entry.avgScore.toInt()}/100"
+                    stringResource(R.string.lb_score_value, entry.avgScore.toInt().toString())
                 }
                 Text(
                     text = scoreText,
@@ -1638,9 +1651,9 @@ fun LeaderboardEntryCard(
                     TrustBadgeIcon(badge = trustBadge)
                     Text(
                         text = if (entry.userCount == 1) 
-                            "Verified by 1 user" 
+                            stringResource(R.string.lb_verified_one)
                         else 
-                            "Verified by ${entry.userCount} users",
+                            stringResource(R.string.lb_verified_many, entry.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1676,12 +1689,12 @@ fun TrustExplanationHeader(
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Trust info",
+                    contentDescription = stringResource(R.string.lb_trust_cd),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = "Why you can trust this data",
+                    text = stringResource(R.string.lb_trust_header),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
@@ -1690,7 +1703,7 @@ fun TrustExplanationHeader(
             }
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "Collapse" else "Expand",
+                contentDescription = stringResource(if (isExpanded) R.string.lb_cd_collapse else R.string.lb_cd_expand),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
@@ -1728,14 +1741,14 @@ fun TrustExplanationCard(
                 ) {
                     TrustPointCard(
                         icon = "📱",
-                        title = "Real system measurements",
-                        description = "Uses Android BatteryManager API (P = V × I) for actual power consumption, not estimates",
+                        title = stringResource(R.string.lb_trust_real_title),
+                        description = stringResource(R.string.lb_trust_real_body),
                         modifier = Modifier.weight(1f)
                     )
                     TrustPointCard(
                         icon = "🌐",
-                        title = "Real network tests",
-                        description = "Actually downloads/uploads data to measure speed - not estimated from signal strength",
+                        title = stringResource(R.string.lb_trust_net_title),
+                        description = stringResource(R.string.lb_trust_net_body),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -1745,14 +1758,14 @@ fun TrustExplanationCard(
                 ) {
                     TrustPointCard(
                         icon = "👥",
-                        title = "From real users",
-                        description = "Data comes from actual device measurements by users like you",
+                        title = stringResource(R.string.lb_trust_users_title),
+                        description = stringResource(R.string.lb_trust_users_body),
                         modifier = Modifier.weight(1f)
                     )
                     TrustPointCard(
                         icon = "🛡️",
-                        title = "Privacy protected",
-                        description = "Your data is anonymous - we don't know who you are",
+                        title = stringResource(R.string.lb_trust_privacy_title),
+                        description = stringResource(R.string.lb_trust_privacy_body),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -1838,10 +1851,10 @@ fun TrustPoint(
 @Composable
 fun TrustBadgeIcon(badge: TrustBadge) {
     val (icon, color, text) = when(badge) {
-        TrustBadge.VERIFIED -> Triple("", DesignSystemColors.NeonGreen, "Verified")
-        TrustBadge.HIGH -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "High Trust")
-        TrustBadge.MEDIUM -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "Medium Trust")
-        TrustBadge.LOW -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, "Low Trust")
+        TrustBadge.VERIFIED -> Triple("", DesignSystemColors.NeonGreen, stringResource(R.string.lb_badge_verified))
+        TrustBadge.HIGH -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, stringResource(R.string.lb_badge_high))
+        TrustBadge.MEDIUM -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, stringResource(R.string.lb_badge_medium))
+        TrustBadge.LOW -> Triple("", MaterialTheme.colorScheme.onSurfaceVariant, stringResource(R.string.lb_badge_low))
     }
     
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1892,16 +1905,16 @@ fun UserRankCard(
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Your Rank: #$rank",
+                        text = stringResource(R.string.lb_rank_yours, rank.toString()),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (totalEntries > 0) {
                             val percentile = calculateTopPercent(rank, totalEntries)
-                            "You're in the top $percentile% for ${category.displayName}!"
+                            stringResource(R.string.lb_rank_top_percent, percentile.toString(), stringResource(category.nameRes()))
                         } else {
-                            "Ranked #$rank for ${category.displayName}!"
+                            stringResource(R.string.lb_rank_ranked_for, rank.toString(), stringResource(category.nameRes()))
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1923,7 +1936,7 @@ fun UserRankCard(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
-                        Text("View Insights", style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.lb_view_insights), style = MaterialTheme.typography.labelSmall)
                     }
                 }
                 if (onViewBestDevices != null) {
@@ -1935,7 +1948,7 @@ fun UserRankCard(
                             contentColor = DesignSystemColors.Dark
                         )
                     ) {
-                        Text("Best Devices", style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.lb_best_devices), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
@@ -1990,23 +2003,23 @@ fun UserRankCardPremiumGate(
                 Column(modifier = Modifier.weight(1f)) {
                     if (userRank > 0) {
                         Text(
-                            text = "Your device: #$userRank out of $totalEntries",
+                            text = stringResource(R.string.lb_gate_your_device, userRank.toString(), totalEntries.toString()),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Top $topPercent% for ${category.displayName}",
+                            text = stringResource(R.string.lb_gate_top_for, topPercent.toString(), stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
                         Text(
-                            text = "Your rank: ---",
+                            text = stringResource(R.string.lb_gate_rank_hidden),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "You're in the top --% for ${category.displayName}",
+                            text = stringResource(R.string.lb_gate_top_hidden, stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -2015,7 +2028,9 @@ fun UserRankCardPremiumGate(
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = if (userRank > 0) "See what the #1 device has that yours doesn't" else "Unlock to see your full ranking details",
+                text = stringResource(
+                    if (userRank > 0) R.string.lb_gate_teaser_ranked else R.string.lb_gate_teaser_unranked
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -2033,12 +2048,16 @@ fun UserRankCardPremiumGate(
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     Text(
-                        "Unlock Lifetime Access",
+                        stringResource(R.string.lb_gate_unlock),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        if (premiumPrice.isNotEmpty()) "$premiumPrice • See Everything Forever" else "See Everything Forever",
+                        if (premiumPrice.isNotEmpty()) {
+                            stringResource(R.string.lb_gate_price_see_everything, premiumPrice)
+                        } else {
+                            stringResource(R.string.lb_gate_see_everything)
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Normal
                     )
@@ -2104,12 +2123,12 @@ fun ShouldYouUpdateCard(
                     when {
                         isLoading -> {
                             Text(
-                                text = "Checking OS updates...",
+                                text = stringResource(R.string.lb_os_checking),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Analyzing your device performance",
+                                text = stringResource(R.string.lb_os_analyzing),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -2118,23 +2137,23 @@ fun ShouldYouUpdateCard(
                             val (recommendedOS, improvement) = osRecommendation!!
                             Text(
                                 text = if (isPremium) {
-                                    "Update to Android $recommendedOS"
+                                    stringResource(R.string.lb_os_update_to, recommendedOS.toString())
                                 } else {
-                                    "Should you update?"
+                                    stringResource(R.string.lb_os_should_update)
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             if (isPremium) {
                                 Text(
-                                    text = "Could improve performance by ${improvement.toInt()}%",
+                                    text = stringResource(R.string.lb_os_could_improve, improvement.toInt().toString()),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             } else {
                                 Text(
-                                    text = "See if updating OS will improve your device",
+                                    text = stringResource(R.string.lb_os_see_if),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -2144,18 +2163,18 @@ fun ShouldYouUpdateCard(
                             // No recommendation available (no data or no better version)
                             Text(
                                 text = if (isPremium) {
-                                    "OS Comparison Available"
+                                    stringResource(R.string.lb_os_compare_available)
                                 } else {
-                                    "Should you update?"
+                                    stringResource(R.string.lb_os_should_update)
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = if (isPremium) {
-                                    "Compare your device across different Android versions"
+                                    stringResource(R.string.lb_os_compare_body)
                                 } else {
-                                    "See if updating OS will improve your device"
+                                    stringResource(R.string.lb_os_see_if)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2178,7 +2197,7 @@ fun ShouldYouUpdateCard(
                     )
                 ) {
                     Text(
-                        "View OS Comparison",
+                        stringResource(R.string.lb_os_view_compare),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -2198,12 +2217,12 @@ fun ShouldYouUpdateCard(
                         modifier = Modifier.padding(vertical = 4.dp)
                     ) {
                         Text(
-                            "Unlock OS Comparison",
+                            stringResource(R.string.lb_os_unlock_compare),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "See detailed comparison [Premium]",
+                            stringResource(R.string.lb_os_premium_detail),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Normal
                         )
@@ -2261,14 +2280,14 @@ fun PremiumUserRankCard(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "Premium",
+                        text = stringResource(R.string.lb_premium),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = premiumYellow
                     )
                 }
                 Text(
-                    text = "Your Device",
+                    text = stringResource(R.string.lb_your_device),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.SemiBold
@@ -2302,7 +2321,7 @@ fun PremiumUserRankCard(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Your Ranking",
+                        text = stringResource(R.string.lb_your_ranking),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -2311,13 +2330,13 @@ fun PremiumUserRankCard(
                     if (totalEntries > 0) {
                         val percentile = calculateTopPercent(rank, totalEntries)
                         Text(
-                            text = "Top $percentile% • ${category.displayName}",
+                            text = stringResource(R.string.lb_top_percent_cat, percentile.toString(), stringResource(category.nameRes())),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
                         Text(
-                            text = category.displayName,
+                            text = stringResource(category.nameRes()),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -2345,7 +2364,7 @@ fun PremiumUserRankCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "View Device Insights",
+                        stringResource(R.string.lb_view_device_insights),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black
@@ -2393,13 +2412,13 @@ fun EmptyLeaderboardCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No data yet",
+                text = stringResource(R.string.lb_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Be the first to share your ${category.displayName} score!",
+                text = stringResource(R.string.lb_empty_body, stringResource(category.nameRes())),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -2412,11 +2431,11 @@ fun EmptyLeaderboardCard(
                     contentColor = DesignSystemColors.Dark
                 )
             ) {
-                Text("Upload My Data Now")
+                Text(stringResource(R.string.lb_empty_upload))
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "💡 Your data will be uploaded automatically in the background",
+                text = stringResource(R.string.lb_empty_auto),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
@@ -2552,7 +2571,7 @@ fun ErrorStateCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Oops! Something went wrong",
+                text = stringResource(R.string.lb_error_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -2572,7 +2591,7 @@ fun ErrorStateCard(
                     contentColor = DesignSystemColors.Dark
                 )
             ) {
-                Text("Try Again")
+                Text(stringResource(R.string.lb_try_again))
             }
         }
     }
@@ -2602,7 +2621,7 @@ fun SearchBar(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
+                contentDescription = stringResource(R.string.lb_cd_search),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
         },
@@ -2613,7 +2632,7 @@ fun SearchBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear search",
+                        contentDescription = stringResource(R.string.lb_cd_clear_search),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -2638,6 +2657,7 @@ fun AppPowerLeaderboardEntryCard(
     entry: AppPowerLeaderboardEntry
 ) {
     val trustBadge = calculateTrustBadge(entry.userCount, entry.dataQuality)
+    val context = LocalContext.current
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -2673,7 +2693,7 @@ fun AppPowerLeaderboardEntryCard(
                     modifier = Modifier.padding(top = 4.dp)
                 ) {
                     Text(
-                        text = "Power: ",
+                        text = stringResource(R.string.lb_power_label) + " ",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -2688,7 +2708,7 @@ fun AppPowerLeaderboardEntryCard(
                 // Battery impact
                 if (entry.avgBatteryImpact > 0) {
                     Text(
-                        text = "Battery drain: ${"%.1f".format(entry.avgBatteryImpact)}% per hour",
+                        text = stringResource(R.string.lb_battery_drain, "%.1f".format(entry.avgBatteryImpact)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -2713,7 +2733,7 @@ fun AppPowerLeaderboardEntryCard(
                                 .sortedByDescending { it.value } // Sort by power consumption (descending)
                                 .joinToString(", ") { 
                                     val power = "%.2f".format(it.value)
-                                    "Android ${it.key} ($power W)"
+                                    context.getString(R.string.lb_os_power, it.key, power)
                                 }
                             Text(
                                 text = osPowerText,
@@ -2725,7 +2745,7 @@ fun AppPowerLeaderboardEntryCard(
                             // Single version: Show "Android 13 (2.5W)"
                             val power = entry.osPowerConsumption[entry.androidVersion] ?: entry.avgPowerConsumption
                             Text(
-                                text = "Android ${entry.androidVersion} (${"%.2f".format(power)} W)",
+                                text = stringResource(R.string.lb_os_power, entry.androidVersion, "%.2f".format(power)),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
@@ -2735,7 +2755,7 @@ fun AppPowerLeaderboardEntryCard(
                             if (entry.androidVersions.isNotEmpty() && entry.androidVersions.size > 1) {
                                 val versionCounts = entry.androidVersions.entries
                                     .sortedByDescending { it.value }
-                                    .joinToString(", ") { "Android ${it.key} (${it.value})" }
+                                    .joinToString(", ") { context.getString(R.string.lb_os_count, it.key, it.value.toString()) }
                                 Text(
                                     text = versionCounts,
                                     style = MaterialTheme.typography.bodySmall,
@@ -2744,7 +2764,7 @@ fun AppPowerLeaderboardEntryCard(
                                 )
                             } else {
                                 Text(
-                                    text = "Android ${entry.androidVersion}",
+                                    text = stringResource(R.string.lb_os_only, entry.androidVersion),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
@@ -2763,9 +2783,9 @@ fun AppPowerLeaderboardEntryCard(
                     TrustBadgeIcon(badge = trustBadge)
                     Text(
                         text = if (entry.userCount == 1) 
-                            "Reported by 1 user" 
+                            stringResource(R.string.lb_reported_one)
                         else 
-                            "Reported by ${entry.userCount} users",
+                            stringResource(R.string.lb_reported_many, entry.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -2795,20 +2815,20 @@ fun EmptyAppPowerLeaderboardCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No app screen time data yet",
+                text = stringResource(R.string.lb_app_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Start monitoring app power consumption in the Power Consumption tab to see which apps rank highest!",
+                text = stringResource(R.string.lb_app_empty_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "💡 Enable App Screen Time to contribute data",
+                text = stringResource(R.string.lb_app_empty_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center

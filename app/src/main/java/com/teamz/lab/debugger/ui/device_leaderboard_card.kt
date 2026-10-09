@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 
 @Composable
 fun DeviceLeaderboardCard(
@@ -36,14 +38,14 @@ fun DeviceLeaderboardCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.EmojiEvents,
-                contentDescription = "Leaderboard",
+                contentDescription = stringResource(R.string.lb_dlc_cd),
                 tint = if (percentile >= 90) MaterialTheme.colorScheme.primary else Color.Gray,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    text = "Device Leaderboard",
+                    text = stringResource(R.string.lb_dlc_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -61,7 +63,7 @@ fun DeviceLeaderboardCard(
         ) {
             Column(horizontalAlignment = Alignment.Start) {
                 Text(
-                    text = "Your Score",
+                    text = stringResource(R.string.lb_dlc_your_score),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -73,7 +75,7 @@ fun DeviceLeaderboardCard(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Model Avg.",
+                    text = stringResource(R.string.lb_dlc_model_avg),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -84,7 +86,7 @@ fun DeviceLeaderboardCard(
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "Top Score",
+                    text = stringResource(R.string.lb_dlc_top_score),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
@@ -102,11 +104,11 @@ fun DeviceLeaderboardCard(
         ) {
             Text(
                 text = when {
-                    totalDevices == 1 -> "🚀 First ${deviceModel} user! Set the benchmark!"
-                    percentile >= 90 -> "🏆 Top $percentile% of ${deviceModel}s!"
-                    percentile >= 70 -> "🥉 Top $percentile% of ${deviceModel}s!"
-                    percentile >= 50 -> "📊 Above average ${deviceModel} user!"
-                    else -> "📈 Top $percentile% of ${deviceModel}s"
+                    totalDevices == 1 -> stringResource(R.string.lb_dlc_first, deviceModel)
+                    percentile >= 90 -> stringResource(R.string.lb_dlc_top_gold, percentile.toString(), deviceModel)
+                    percentile >= 70 -> stringResource(R.string.lb_dlc_top_bronze, percentile.toString(), deviceModel)
+                    percentile >= 50 -> stringResource(R.string.lb_dlc_above_avg, deviceModel)
+                    else -> stringResource(R.string.lb_dlc_top_plain, percentile.toString(), deviceModel)
                 },
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.bodyMedium,
@@ -117,7 +119,7 @@ fun DeviceLeaderboardCard(
         if (totalDevices > 1) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Based on $totalDevices ${deviceModel} devices",
+                text = stringResource(R.string.lb_dlc_based_on, totalDevices.toString(), deviceModel),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.align(Alignment.CenterHorizontally)

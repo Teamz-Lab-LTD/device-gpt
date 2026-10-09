@@ -15,13 +15,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 
 @Composable
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholderText: String = "Enter keyword (e.g. CPU, RAM, Network)"
+    placeholderText: String = stringResource(R.string.lb_sb_placeholder)
 ) {
     OutlinedTextField(
         value = query,
@@ -38,7 +40,7 @@ fun SearchBar(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search Icon",
+                contentDescription = stringResource(R.string.lb_sb_cd),
                 tint = MaterialTheme.colorScheme.primary
             )
         },

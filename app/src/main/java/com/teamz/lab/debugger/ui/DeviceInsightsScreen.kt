@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.*
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 
 /**
  * Device Insights Screen - Comprehensive device analysis
@@ -72,7 +74,7 @@ fun DeviceInsightsScreen(
                     }
                     item {
                         Text(
-                            text = "Performance Scores",
+                            text = stringResource(R.string.lb_ins_scores),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -110,7 +112,7 @@ fun DeviceInsightsScreen(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "No insights available",
+                            text = stringResource(R.string.lb_ins_none_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -120,7 +122,7 @@ fun DeviceInsightsScreen(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Device data is being collected. Check back soon!",
+                            text = stringResource(R.string.lb_ins_none_body),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -155,7 +157,7 @@ fun DeviceInsightsScreen(
                     // All category scores
                     item {
                         Text(
-                            text = "Performance Scores",
+                            text = stringResource(R.string.lb_ins_scores),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -242,7 +244,10 @@ fun DeviceInsightHeader(
             
             // Clarification text about aggregated data
             Text(
-                text = "📊 Aggregated data from ${insight.userCount} ${if (insight.userCount == 1) "user" else "users"} with this device model",
+                text = stringResource(
+                    if (insight.userCount == 1) R.string.lb_ins_aggregated_one else R.string.lb_ins_aggregated_many,
+                    insight.userCount.toString()
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 11.sp,
@@ -260,9 +265,9 @@ fun DeviceInsightHeader(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (insight.userCount == 1) 
-                        "Verified by 1 user" 
+                        stringResource(R.string.lb_verified_one)
                     else 
-                        "Verified by ${insight.userCount} users",
+                        stringResource(R.string.lb_verified_many, insight.userCount.toString()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 11.sp
@@ -275,7 +280,7 @@ fun DeviceInsightHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Data Quality:",
+                    text = stringResource(R.string.lb_ins_quality),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
@@ -353,7 +358,7 @@ fun CategoryScoreCard(
                     )
                     // Category name - smaller font, allow wrapping
                     Text(
-                        text = category.displayName,
+                        text = stringResource(category.nameRes()),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,

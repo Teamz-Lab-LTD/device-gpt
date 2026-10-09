@@ -27,6 +27,8 @@ import com.teamz.lab.debugger.utils.AdConfig
 import com.teamz.lab.debugger.utils.LeaderboardManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.utils.string
 
 /**
  * Data Retention Reminder Dialog
@@ -62,7 +64,7 @@ fun DataRetentionReminderDialog(
                         isLinking = false
                         android.widget.Toast.makeText(
                             context,
-                            "Failed to link account. Please try again.",
+                            context.string(R.string.account_link_failed),
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -73,14 +75,14 @@ fun DataRetentionReminderDialog(
                 isLinking = false
                 android.widget.Toast.makeText(
                     context,
-                    "Sign-in failed. Please try again.",
+                    context.string(R.string.account_sign_in_failed),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } catch (e: Exception) {
                 isLinking = false
                 android.widget.Toast.makeText(
                     context,
-                    "An error occurred. Please try again.",
+                    context.string(R.string.lb_error_try_again),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             }
@@ -91,7 +93,7 @@ fun DataRetentionReminderDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "🔔 Keep Your Data Safe",
+                text = stringResource(R.string.lb_dr_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -101,24 +103,24 @@ fun DataRetentionReminderDialog(
                 val daysUntilRemoval = LeaderboardManager.getDaysUntilDataRemoval(context)
                 if (daysUntilRemoval > 0) {
                     Text(
-                        text = "Your leaderboard data will be removed in $daysUntilRemoval days if you don't link your Gmail account.",
+                        text = stringResource(R.string.lb_dr_remove_in_days, daysUntilRemoval.toString()),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 } else {
                     Text(
-                        text = "Your leaderboard data is currently kept indefinitely, but linking your Gmail account ensures it's always safe.",
+                        text = stringResource(R.string.lb_dr_kept),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
                 Text(
-                    text = "Don't worry! If you link your Gmail account now, we'll keep all your data safe forever.",
+                    text = stringResource(R.string.lb_dr_dont_worry),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "Linking your account is free and takes just a few seconds!",
+                    text = stringResource(R.string.lb_dr_free),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -146,7 +148,7 @@ fun DataRetentionReminderDialog(
                         color = DesignSystemColors.Dark
                     )
                 } else {
-                    Text("Link Gmail Account")
+                    Text(stringResource(R.string.account_link_gmail))
                 }
             }
         },
@@ -155,7 +157,7 @@ fun DataRetentionReminderDialog(
                 LeaderboardManager.setDataRetentionReminderShown(context)
                 onDismiss()
             }) {
-                Text("Maybe Later")
+                Text(stringResource(R.string.lb_dr_later))
             }
         }
     )
@@ -188,7 +190,7 @@ private fun linkGmailAccount(
     } catch (e: Exception) {
         android.widget.Toast.makeText(
             activity,
-            "Failed to start sign-in. Please try again.",
+            activity.string(R.string.account_sign_in_start_failed),
             android.widget.Toast.LENGTH_SHORT
         ).show()
         onResult(false)

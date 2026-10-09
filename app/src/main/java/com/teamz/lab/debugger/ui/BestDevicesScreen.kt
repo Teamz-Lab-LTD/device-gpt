@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.*
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 
 /**
  * Best Devices Screen - Shows top 10 devices per category
@@ -80,7 +82,7 @@ fun BestDevicesScreen(
                     modifier = Modifier.padding(end = 6.dp)
                 )
                 Text(
-                    text = "Top ${category.displayName} Devices",
+                    text = stringResource(R.string.lb_best_top_title, stringResource(category.nameRes())),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -88,7 +90,7 @@ fun BestDevicesScreen(
                 )
             }
             Text(
-                text = "These are the best devices based on real measurements from users like you!",
+                text = stringResource(R.string.lb_best_intro),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 16.sp,
@@ -126,12 +128,12 @@ fun BestDevicesScreen(
                         Text("⚠️", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Failed to load data",
+                            text = stringResource(R.string.lb_best_load_failed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = errorMessage ?: "Please try again later",
+                            text = errorMessage ?: stringResource(R.string.lb_best_try_later),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -192,12 +194,12 @@ fun BestDevicesScreen(
                         Text("📊", fontSize = 48.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No data yet",
+                            text = stringResource(R.string.lb_empty_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Upload your data to see the best devices!",
+                            text = stringResource(R.string.lb_best_empty_body),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -285,7 +287,7 @@ fun BestDeviceCardFromEntry(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = "Score: ",
+                        text = stringResource(R.string.lb_score_label) + " ",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
@@ -298,7 +300,7 @@ fun BestDeviceCardFromEntry(
                         fontSize = 12.sp
                     )
                     Text(
-                        text = " (Avg)",
+                        text = " " + stringResource(R.string.lb_avg_suffix),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 10.sp,
@@ -316,9 +318,9 @@ fun BestDeviceCardFromEntry(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = if (entry.userCount == 1) 
-                            "Verified by 1 user" 
+                            stringResource(R.string.lb_verified_one)
                         else 
-                            "Verified by ${entry.userCount} users",
+                            stringResource(R.string.lb_verified_many, entry.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 10.sp,
@@ -406,7 +408,7 @@ fun BestDeviceCard(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = "Score: ",
+                        text = stringResource(R.string.lb_score_label) + " ",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
@@ -430,9 +432,9 @@ fun BestDeviceCard(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = if (device.userCount == 1) 
-                            "Verified by 1 user" 
+                            stringResource(R.string.lb_verified_one)
                         else 
-                            "Verified by ${device.userCount} users",
+                            stringResource(R.string.lb_verified_many, device.userCount.toString()),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 10.sp,

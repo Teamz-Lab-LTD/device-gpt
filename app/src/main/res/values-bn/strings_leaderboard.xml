@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bengali (বাংলা) - Easy Bangla for the leaderboard batch. Same rules as values-bn/strings.xml.
+         Reader: someone in a phone market who reads Bangla slowly and reads no English.
+         Guarded by BanglaStringsGuardTest. -->
+
+    <!-- Leaderboard tab: loading, errors, search -->
+    <string name="lb_err_auth">তালিকা খুলছি। একটু অপেক্ষা করুন…</string>
+    <string name="lb_err_unavailable">তালিকা এখন দেখানো যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।</string>
+    <string name="lb_err_connection">তালিকা আনা গেল না। নেট চালু আছে কি না দেখুন।</string>
+    <string name="lb_err_generic">কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।</string>
+    <string name="lb_err_upload">আপনার ফোনের তথ্য পাঠানো গেল না। আবার চেষ্টা করুন।</string>
+    <string name="lb_err_load_fallback">তালিকা আনা গেল না</string>
+    <string name="lb_error_title">কিছু একটা সমস্যা হয়েছে</string>
+    <string name="lb_error_try_again">সমস্যা হয়েছে। আবার চেষ্টা করুন।</string>
+    <string name="lb_try_again">আবার চেষ্টা করুন</string>
+    <string name="lb_search_apps">অ্যাপ খুঁজুন…</string>
+    <string name="lb_search_devices">ফোন খুঁজুন…</string>
+    <string name="lb_search_count_apps">%2$s টা অ্যাপের মধ্যে %1$s টা</string>
+    <string name="lb_search_count_devices">%2$s টা ফোনের মধ্যে %1$s টা</string>
+    <string name="lb_no_results_title">কিছু পাওয়া যায়নি</string>
+    <string name="lb_no_results_body">অন্য নাম লিখে খুঁজে দেখুন</string>
+    <string name="lb_cd_search">খুঁজুন</string>
+    <string name="lb_cd_clear_search">লেখা মুছুন</string>
+
+    <!-- Leaderboard tab: locked rows and the buy prompt -->
+    <string name="lb_gate_app_title">#%1$s অ্যাপ</string>
+    <string name="lb_gate_app_body">%2$s টা অ্যাপের মধ্যে %1$s নম্বরে কোন অ্যাপ? জানতে বাড়তি সুবিধা নিন।</string>
+    <string name="lb_gate_device_title_score">#%1$s ফোন — নম্বর: %2$s/100</string>
+    <string name="lb_gate_device_title">#%1$s ফোন</string>
+    <string name="lb_gate_device_body">%2$s টা ফোনের মধ্যে %1$s নম্বরে কোন ফোন? জানতে বাড়তি সুবিধা নিন।</string>
+    <string name="lb_gate_unlock">একবার কিনে সব দেখুন</string>
+    <string name="lb_gate_see_everything">সব সময়ের জন্য সব দেখুন</string>
+    <string name="lb_gate_price_see_everything">%1$s • সব সময়ের জন্য সব দেখুন</string>
+    <string name="lb_gate_your_device">আপনার ফোন: %2$s টার মধ্যে %1$s নম্বরে</string>
+    <string name="lb_gate_top_for">“%2$s” তালিকায় প্রথম %1$s%%-এর মধ্যে</string>
+    <string name="lb_gate_rank_hidden">আপনার ফোন কত নম্বরে: ---</string>
+    <string name="lb_gate_top_hidden">“%1$s” তালিকায় প্রথম --%%-এর মধ্যে</string>
+    <string name="lb_gate_teaser_ranked">1 নম্বর ফোনে কী আছে যা আপনার ফোনে নেই, দেখুন</string>
+    <string name="lb_gate_teaser_unranked">আপনার ফোন কোথায় আছে, পুরোটা দেখতে বাড়তি সুবিধা নিন</string>
+
+    <!-- Leaderboard tab: dialogs -->
+    <string name="lb_insights_title">এই ফোনের খুঁটিনাটি</string>
+    <string name="lb_best_devices">সেরা ফোনগুলো</string>
+    <string name="lb_cat_what_is">“%1$s” মানে কী?</string>
+    <string name="lb_cat_simple_title">📱 সহজ কথায়</string>
+    <string name="lb_cat_tech_title">⚙️ একটু খুলে বলি</string>
+    <string name="lb_cat_how_measured">📊 কীভাবে মাপি:</string>
+
+    <!-- Category names (chips). The ids in LeaderboardCategory are Firestore keys and stay English. -->
+    <string name="lb_cat_name_power_efficiency">চার্জ কম খায়</string>
+    <string name="lb_cat_name_cpu_performance">দ্রুত ফোন</string>
+    <string name="lb_cat_name_camera_efficiency">ছবিতে চার্জ কম</string>
+    <string name="lb_cat_name_display_efficiency">উজ্জ্বল স্ক্রিন</string>
+    <string name="lb_cat_name_health_score">ভালো অবস্থা</string>
+    <string name="lb_cat_name_power_trend">চার্জ খরচ কমছে</string>
+    <string name="lb_cat_name_component_optimization">সমান চার্জ খরচ</string>
+    <string name="lb_cat_name_thermal_efficiency">ঠান্ডা ফোন</string>
+    <string name="lb_cat_name_performance_consistency">আটকায় না</string>
+    <string name="lb_cat_name_app_power_monitoring">কোন অ্যাপ বেশি চলে</string>
+    <string name="lb_cat_name_best_device">সেরা ফোন</string>
+
+    <!-- Category question (shown under “Technical Details”) -->
+    <string name="lb_cat_q_power_efficiency">কোন ফোনে চার্জ সবচেয়ে কম যায়?</string>
+    <string name="lb_cat_q_cpu_performance">কোন ফোন সবচেয়ে দ্রুত চলে?</string>
+    <string name="lb_cat_q_camera_efficiency">কোন ফোনে ছবি তুললে চার্জ কম যায়?</string>
+    <string name="lb_cat_q_display_efficiency">কোন ফোনের স্ক্রিন উজ্জ্বল, অথচ চার্জ কম খায়?</string>
+    <string name="lb_cat_q_health_score">কোন ফোনের অবস্থা সবচেয়ে ভালো?</string>
+    <string name="lb_cat_q_power_trend">কোন ফোনে দিন দিন চার্জ খরচ কমছে?</string>
+    <string name="lb_cat_q_component_optimization">কোন ফোনের সব অংশে চার্জ সমানভাবে যায়?</string>
+    <string name="lb_cat_q_thermal_efficiency">কোন ফোন ঠান্ডা থাকে?</string>
+    <string name="lb_cat_q_performance_consistency">কোন ফোন না আটকে চলে?</string>
+    <string name="lb_cat_q_app_power_monitoring">কোন অ্যাপ স্ক্রিনে সবচেয়ে বেশি সময় খোলা থাকে?</string>
+    <string name="lb_cat_q_best_device">সব মিলিয়ে কোন ফোন সবচেয়ে ভালো?</string>
+
+    <!-- Category simple explanation -->
+    <string name="lb_cat_simple_power_efficiency">যে গাড়ি কম তেলে চলে, সেটার মতো। এই ফোনগুলোতে চার্জ কম যায়।</string>
+    <string name="lb_cat_simple_cpu_performance">দৌড়ের গাড়ির মতো। এই ফোনগুলো খুব দ্রুত চলে।</string>
+    <string name="lb_cat_simple_camera_efficiency">এই ফোনগুলোতে অনেক ছবি তুললেও চার্জ কম যায়।</string>
+    <string name="lb_cat_simple_display_efficiency">যে বাতি কম বিদ্যুতে বেশি আলো দেয়, সেটার মতো। স্ক্রিন উজ্জ্বল, কিন্তু চার্জ কম যায়।</string>
+    <string name="lb_cat_simple_health_score">ডাক্তার দেখানোর মতো। এই ফোনগুলোর অবস্থা ভালো আছে।</string>
+    <string name="lb_cat_simple_power_trend">এই ফোনগুলোতে আগের চেয়ে এখন চার্জ কম যাচ্ছে।</string>
+    <string name="lb_cat_simple_component_optimization">এই ফোনগুলোর কোনো একটা অংশ একা বেশি চার্জ খায় না।</string>
+    <string name="lb_cat_simple_thermal_efficiency">এই ফোনগুলো অনেক কাজ করলেও বেশি গরম হয় না।</string>
+    <string name="lb_cat_simple_performance_consistency">এই ফোনগুলো চলতে চলতে সহজে আটকায় না।</string>
+    <string name="lb_cat_simple_app_power_monitoring">কোন অ্যাপ আপনি সবচেয়ে বেশি চালান, দেখুন।</string>
+    <string name="lb_cat_simple_best_device">সব তালিকা মিলিয়ে এই ফোনগুলো সবচেয়ে বেশি নম্বর পেয়েছে।</string>
+
+    <!-- Category: how it is measured. Bangla says what it means for the person, not the formula. -->
+    <string name="lb_cat_how_power_efficiency">ফোন নিজে মেপে বলে, কত চার্জ যাচ্ছে। যে ফোনে চার্জ কম যায়, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_cpu_performance">ফোন কত দ্রুত কাজ করে, তা মাপি। যে ফোন বেশি দ্রুত, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_camera_efficiency">একটা ছবি তুলতে কত চার্জ যায়, তা মাপি। যে ফোনে কম যায়, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_display_efficiency">স্ক্রিন কত উজ্জ্বল আর তাতে কত চার্জ যায়, দুটো মিলিয়ে দেখি। আলো বেশি আর চার্জ কম হলে ফোন ওপরে থাকে।</string>
+    <string name="lb_cat_how_health_score">ব্যাটারি, ফাইল রাখার জায়গা আর ফোন কেমন চলছে, সব মিলিয়ে নম্বর দিই।</string>
+    <string name="lb_cat_how_power_trend">কয়েক দিন ধরে চার্জ খরচ দেখি। যে ফোনে খরচ কমছে, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_component_optimization">স্ক্রিন, নেট আর ফোনের ভেতরের অন্য অংশে চার্জ কত সমানভাবে যায়, তা দেখি।</string>
+    <string name="lb_cat_how_thermal_efficiency">ভারী কাজের সময় ফোন কত গরম হয়, তা মাপি। যে ফোন ঠান্ডা থাকে, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_performance_consistency">ফোন চলার সময় স্ক্রিনের ছবি কতটা আটকায়, তা দেখি। যে ফোন কম আটকায়, সেটা ওপরে থাকে।</string>
+    <string name="lb_cat_how_app_power_monitoring">কোন অ্যাপ কতক্ষণ স্ক্রিনে খোলা ছিল, ফোন তা জানায়। সেটা দেখেই এই তালিকা। কোন অ্যাপ কত চার্জ খায়, ফোন তা আমাদের জানায় না। তাই এটা চার্জের তালিকা না।</string>
+    <string name="lb_cat_how_best_device" formatted="false">সব তালিকার নম্বর মিলিয়ে একটা নম্বর বানাই। চার্জ খরচ, গতি আর ফোন কত গরম হয়, এগুলো বেশি গুরুত্ব পায়।</string>
+
+    <!-- Rank rows -->
+    <string name="lb_os_score">অ্যান্ড্রয়েড %1$s (%2$s/100)</string>
+    <string name="lb_os_count">অ্যান্ড্রয়েড %1$s (%2$s)</string>
+    <string name="lb_os_only">অ্যান্ড্রয়েড %1$s</string>
+    <string name="lb_os_power">অ্যান্ড্রয়েড %1$s (%2$s W)</string>
+    <string name="lb_score_no_data">নম্বর: এখনো নেই</string>
+    <string name="lb_score_value">নম্বর: %1$s/100</string>
+    <string name="lb_score_label">নম্বর:</string>
+    <string name="lb_avg_suffix">(গড়)</string>
+    <string name="lb_verified_one">1 জনের ফোন থেকে পাওয়া</string>
+    <string name="lb_verified_many">%1$s জনের ফোন থেকে পাওয়া</string>
+    <string name="lb_reported_one">1 জনের ফোন থেকে জানা</string>
+    <string name="lb_reported_many">%1$s জনের ফোন থেকে জানা</string>
+    <string name="lb_badge_verified">ভরসা খুব বেশি</string>
+    <string name="lb_badge_high">ভরসা বেশি</string>
+    <string name="lb_badge_medium">ভরসা মোটামুটি</string>
+    <string name="lb_badge_low">ভরসা কম</string>
+    <string name="lb_power_label">চার্জ খরচ:</string>
+    <string name="lb_battery_drain">ঘণ্টায় %1$s%% চার্জ যায়</string>
+
+    <!-- “Why you can trust this data” -->
+    <string name="lb_trust_cd">কেন ভরসা করবেন</string>
+    <string name="lb_trust_header">এই তথ্যে কেন ভরসা করবেন</string>
+    <string name="lb_cd_collapse">ছোট করুন</string>
+    <string name="lb_cd_expand">বড় করুন</string>
+    <string name="lb_trust_real_title">ফোনের নিজের মাপ</string>
+    <string name="lb_trust_real_body">ফোন নিজে যা মেপেছে, সেটাই দেখাই। আন্দাজ না।</string>
+    <string name="lb_trust_net_title">নেটের আসল পরীক্ষা</string>
+    <string name="lb_trust_net_body">সত্যি সত্যি ফাইল নামিয়ে আর পাঠিয়ে নেটের গতি মাপি। নেটের দাগ দেখে আন্দাজ করি না।</string>
+    <string name="lb_trust_users_title">আসল মানুষের ফোন থেকে</string>
+    <string name="lb_trust_users_body">আপনার মতো মানুষের ফোনে মাপা তথ্য।</string>
+    <string name="lb_trust_privacy_title">আপনার পরিচয় গোপন</string>
+    <string name="lb_trust_privacy_body">তথ্যের সাথে আপনার নাম থাকে না। আপনি কে, আমরা জানি না।</string>
+
+    <!-- Your rank cards -->
+    <string name="lb_rank_yours">আপনার ফোন %1$s নম্বরে</string>
+    <string name="lb_rank_top_percent">“%2$s” তালিকায় আপনার ফোন প্রথম %1$s%%-এর মধ্যে আছে!</string>
+    <string name="lb_rank_ranked_for">“%2$s” তালিকায় %1$s নম্বরে আছে!</string>
+    <string name="lb_view_insights">খুঁটিনাটি দেখুন</string>
+    <string name="lb_premium">বাড়তি সুবিধা</string>
+    <string name="lb_your_device">আপনার ফোন</string>
+    <string name="lb_your_ranking">আপনার ফোনের জায়গা</string>
+    <string name="lb_top_percent_cat">প্রথম %1$s%% • %2$s</string>
+    <string name="lb_view_device_insights">ফোনের খুঁটিনাটি দেখুন</string>
+
+    <!-- “Should you update?” card -->
+    <string name="lb_os_checking">অ্যান্ড্রয়েডের আপডেট দেখছি…</string>
+    <string name="lb_os_analyzing">আপনার ফোন কেমন চলছে, দেখছি</string>
+    <string name="lb_os_update_to">অ্যান্ড্রয়েড %1$s-এ আপডেট করুন</string>
+    <string name="lb_os_should_update">আপডেট করবেন কি?</string>
+    <string name="lb_os_could_improve">ফোন %1$s%% ভালো চলতে পারে</string>
+    <string name="lb_os_see_if">আপডেট করলে ফোন ভালো চলবে কি না, দেখুন</string>
+    <string name="lb_os_compare_available">অ্যান্ড্রয়েডের তুলনা দেখা যাবে</string>
+    <string name="lb_os_compare_body">অ্যান্ড্রয়েডের কোন ভার্সনে আপনার ফোন কেমন চলে, মিলিয়ে দেখুন</string>
+    <string name="lb_os_view_compare">তুলনা দেখুন</string>
+    <string name="lb_os_unlock_compare">তুলনা খুলুন</string>
+    <string name="lb_os_premium_detail">খুঁটিনাটি তুলনা দেখুন [বাড়তি সুবিধা]</string>
+
+    <!-- Empty states -->
+    <string name="lb_empty_title">এখনো কোনো তথ্য নেই</string>
+    <string name="lb_empty_body">“%1$s” তালিকায় এখনো কেউ নেই। আপনিই প্রথম নম্বর পাঠান!</string>
+    <string name="lb_empty_upload">এখনই পাঠান</string>
+    <string name="lb_empty_auto">💡 আপনার ফোনের তথ্য নিজে থেকেই চলে যাবে</string>
+    <string name="lb_app_empty_title">অ্যাপের সময়ের তথ্য এখনো নেই</string>
+    <string name="lb_app_empty_body">“চার্জ খরচ” পাতায় গিয়ে অ্যাপের খরচ দেখা চালু করুন। তখন এখানে তালিকা দেখা যাবে।</string>
+    <string name="lb_app_empty_tip">💡 তথ্য দিতে “কোন অ্যাপ বেশি চলে” চালু করুন</string>
+
+    <!-- Small leaderboard card (device_leaderboard_card.kt) -->
+    <string name="lb_dlc_cd">সেরাদের তালিকা</string>
+    <string name="lb_dlc_title">ফোনের সেরাদের তালিকা</string>
+    <string name="lb_dlc_your_score">আপনার নম্বর</string>
+    <string name="lb_dlc_model_avg">এই মডেলের গড়</string>
+    <string name="lb_dlc_top_score">সবচেয়ে বেশি</string>
+    <string name="lb_dlc_first">🚀 %1$s ফোনে আপনিই প্রথম! অন্যরা আপনার নম্বরের সাথে মেলাবে।</string>
+    <string name="lb_dlc_top_gold">🏆 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
+    <string name="lb_dlc_top_bronze">🥉 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
+    <string name="lb_dlc_above_avg">📊 %1$s ফোনগুলোর গড়ের চেয়ে ভালো!</string>
+    <string name="lb_dlc_top_plain">📈 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ</string>
+    <string name="lb_dlc_based_on">%1$s টা %2$s ফোন দেখে বলা</string>
+
+    <!-- Best devices screen -->
+    <string name="lb_best_top_title">“%1$s” তালিকার ওপরের ফোন</string>
+    <string name="lb_best_intro">আপনার মতো মানুষের ফোনে মাপা তথ্য দেখে এই তালিকা বানানো।</string>
+    <string name="lb_best_load_failed">তথ্য আনা গেল না</string>
+    <string name="lb_best_try_later">একটু পরে আবার চেষ্টা করুন</string>
+    <string name="lb_best_empty_body">সেরা ফোনগুলো দেখতে আপনার ফোনের তথ্য পাঠান!</string>
+
+    <!-- Device insights screen -->
+    <string name="lb_ins_scores">কোন তালিকায় কত নম্বর</string>
+    <string name="lb_ins_none_title">এখনো দেখানোর মতো তথ্য নেই</string>
+    <string name="lb_ins_none_body">এই ফোনের তথ্য জমা হচ্ছে। কিছুদিন পরে আবার দেখুন।</string>
+    <string name="lb_ins_aggregated_one">📊 এই মডেলের %1$s জনের ফোনের তথ্য</string>
+    <string name="lb_ins_aggregated_many">📊 এই মডেলের %1$s জনের ফোনের তথ্য মিলিয়ে</string>
+    <string name="lb_ins_quality">তথ্য কতটা ভরসার:</string>
+
+    <!-- Reminder to link Gmail -->
+    <string name="lb_dr_title">🔔 আপনার তথ্য নিরাপদ রাখুন</string>
+    <string name="lb_dr_remove_in_days">জিমেইল যুক্ত না করলে %1$s দিন পর সেরাদের তালিকা থেকে আপনার তথ্য মুছে যাবে।</string>
+    <string name="lb_dr_kept">সেরাদের তালিকায় আপনার তথ্য এখন রাখা আছে। জিমেইল যুক্ত করলে তা সব সময় নিরাপদ থাকবে।</string>
+    <string name="lb_dr_dont_worry">চিন্তা নেই! এখন জিমেইল যুক্ত করলে আপনার সব তথ্য সব সময় রাখা থাকবে।</string>
+    <string name="lb_dr_free">জিমেইল যুক্ত করতে টাকা লাগে না। কয়েক সেকেন্ডেই হয়ে যায়।</string>
+    <string name="lb_dr_later">পরে</string>
+
+    <!-- Search box above the phone-info rows (search_bar.kt) -->
+    <string name="lb_sb_placeholder">কী খুঁজছেন লিখুন (যেমন: ব্যাটারি, মেমোরি, নেট)</string>
+    <string name="lb_sb_cd">খোঁজার চিহ্ন</string>
+
+    <!-- Verified report: the report a seller makes and a buyer checks -->
+    <string name="lb_vr_upload_failed">রিপোর্ট বানানো হয়েছে, কিন্তু জমা দেওয়া যায়নি। তবু কোডটা পাঠাতে পারেন।</string>
+    <string name="lb_vr_generate_failed">রিপোর্ট বানানো গেল না: %1$s</string>
+    <string name="lb_vr_generating_title">যাচাই করা রিপোর্ট বানাচ্ছি</string>
+    <string name="lb_vr_generating_body">আপনার ফোন এখন কেমন আছে, তার একটা রিপোর্ট বানাচ্ছি। এটা অন্যকে পাঠাতে পারবেন।</string>
+    <string name="lb_vr_collecting">ফোনের তথ্য নিচ্ছি আর সিল দিচ্ছি…</string>
+    <string name="lb_vr_uploading">মিলিয়ে দেখার জন্য জমা দিচ্ছি…</string>
+    <string name="lb_vr_ready_title">রিপোর্ট তৈরি</string>
+    <string name="lb_vr_ready_body">আপনার ফোনের রিপোর্ট তৈরি হয়েছে। নিচের কোডটা পাঠান। যিনি কোড পাবেন, তিনি রিপোর্ট মিলিয়ে দেখতে পারবেন। টিকিটের নম্বরের মতো।</string>
+    <string name="lb_vr_when_title">কখন কাজে লাগে:</string>
+    <string name="lb_vr_ready_when">• সারাইয়ের লোককে ফোনের অবস্থা জানাতে\n• ফোন বেচার সময় ক্রেতাকে ফোনের অবস্থা দেখাতে\n• অফিস বা স্কুলে ফোনের অবস্থা দেখাতে</string>
+    <string name="lb_vr_code_label">পাঠানোর কোড</string>
+    <string name="lb_code_copied">কোড কপি হয়েছে!</string>
+    <string name="lb_vr_copy_code">কোড কপি করুন</string>
+    <string name="lb_vr_recorded_title" formatted="false">রিপোর্টে যা যা লেখা হয়েছে</string>
+    <string name="lb_vr_recorded_body">নিচের সব তথ্য আপনার ফোন থেকে নেওয়া: ফোনের নাম, নেটের গতি, ব্যাটারি, মেমোরি। ফোন বেচার সময় বা সারাইয়ের কাজে লাগে।</string>
+    <string name="lb_vr_cannot_change">এই রিপোর্ট কেউ বদলাতে পারে না। যার ফোনে এই অ্যাপ আছে, তিনি আপনার কোড লিখে একই তথ্য দেখতে পাবেন।</string>
+    <string name="lb_vr_done">ঠিক আছে</string>
+    <string name="lb_vr_row_device">ফোন</string>
+    <string name="lb_vr_row_android">অ্যান্ড্রয়েড</string>
+    <string name="lb_vr_row_api">অ্যান্ড্রয়েডের ধাপ</string>
+    <string name="lb_vr_api_value">ধাপ %1$s</string>
+    <string name="lb_vr_not_available">জানা নেই</string>
+    <string name="lb_vr_row_patch">নিরাপত্তার আপডেট</string>
+    <string name="lb_vr_row_integrity">ভেতরের নিরাপত্তা</string>
+    <string name="lb_vr_row_cpu">প্রসেসর</string>
+    <string name="lb_vr_row_resolution">স্ক্রিনের মাপ</string>
+    <string name="lb_vr_row_play">গুগলের ছাড়পত্র</string>
+    <string name="lb_vr_row_health">ফোনের অবস্থার নম্বর</string>
+    <string name="lb_vr_row_privacy">গোপন তথ্যের নিরাপত্তা</string>
+    <string name="lb_vr_row_download">নামানোর গতি</string>
+    <string name="lb_vr_row_upload">পাঠানোর গতি</string>
+    <string name="lb_vr_row_latency">সাড়া দিতে সময়</string>
+    <string name="lb_vr_row_jitter">নেটের ওঠানামা</string>
+    <string name="lb_vr_row_packet_loss">পথে হারানো তথ্য</string>
+    <string name="lb_vr_row_battery">ব্যাটারি</string>
+    <string name="lb_vr_row_storage">ফাইল রাখার জায়গা</string>
+    <string name="lb_vr_row_ram">মেমোরি</string>
+    <string name="lb_vr_row_signed_at">রিপোর্টের সময়</string>
+    <string name="lb_vr_verify_body">কেউ কোড পাঠিয়েছে? এখানে লিখুন। তার ফোনের রিপোর্ট দেখতে পাবেন। রিপোর্টটা আসল কি না, তাও জানবেন।</string>
+    <string name="lb_vr_verify_when">• সারাইয়ের লোক কোড পাঠাতে বলেছে\n• পুরোনো ফোন কিনছেন, বিক্রেতার রিপোর্ট মিলিয়ে দেখতে চান\n• কেউ আপনাকে তার রিপোর্টের কোড পাঠিয়েছে</string>
+    <string name="lb_vr_paste_label">যে কোড পেয়েছেন, এখানে লিখুন</string>
+    <string name="lb_vr_code_example">যেমন: %1$s</string>
+    <string name="lb_vr_verify_button">মিলিয়ে দেখুন</string>
+    <string name="lb_vr_verified">রিপোর্ট আসল</string>
+    <string name="lb_vr_verified_body">এই রিপোর্ট আসল। কেউ বদলায়নি। নিচের তথ্য রিপোর্ট বানানোর সময়কার।</string>
+    <string name="lb_vr_signed">রিপোর্টের সময়: %1$s</string>
+    <string name="lb_vr_app_version">অ্যাপের ভার্সন: %1$s</string>
+    <string name="lb_vr_full_insight" formatted="false">রিপোর্টে লেখা সব তথ্য</string>
+    <string name="lb_vr_old_report">পুরোনো অ্যাপে বানানো রিপোর্টে কিছু তথ্য না-ও থাকতে পারে। নতুন রিপোর্টে বেশি তথ্য থাকে।</string>
+    <string name="lb_vr_speed_failed_note">রিপোর্ট বানানোর সময় নেটের গতি মাপা যায়নি। হয়তো তখন নেট ছিল না। তাই গতির ঘরে ইংরেজিতে সেটাই লেখা আছে।</string>
+    <string name="lb_vr_not_verified">রিপোর্ট মেলেনি</string>
+    <string name="lb_vr_tampered_body">এই রিপোর্ট হয়তো কেউ বদলেছে। এটায় ভরসা করবেন না।</string>
+    <string name="lb_vr_not_found">রিপোর্ট পাওয়া যায়নি</string>
+    <string name="lb_vr_not_found_body">এই কোডে কোনো রিপোর্ট পাইনি। কোডটা ঠিক লিখেছেন কি না দেখুন। না হলে তাকে আবার পাঠাতে বলুন।</string>
+
+    <!-- Invite-a-friend dialog -->
+    <string name="lb_vs_title">বন্ধুকে ডাকুন, পুরস্কার নিন!</string>
+    <string name="lb_vs_subtitle">যত বন্ধু ডাকবেন, তত বেশি সময় বিজ্ঞাপন ছাড়া চলবে</string>
+    <string name="lb_vs_share_via">কীভাবে পাঠাবেন</string>
+    <string name="lb_vs_whatsapp">হোয়াটসঅ্যাপ</string>
+    <string name="lb_vs_telegram">টেলিগ্রাম</string>
+    <string name="lb_vs_sms">মেসেজ</string>
+    <string name="lb_vs_email">ইমেইল</string>
+    <string name="lb_vs_more">অন্যভাবে পাঠান</string>
+    <string name="lb_vs_friends_one">%1$s জন বন্ধু এসেছেন</string>
+    <string name="lb_vs_friends_many">%1$s জন বন্ধু এসেছেন</string>
+    <string name="lb_vs_adfree_days">বিজ্ঞাপন ছাড়া চলবে আরও %1$s দিন</string>
+    <string name="lb_vs_adfree_hours">বিজ্ঞাপন ছাড়া চলবে আরও %1$s ঘণ্টা</string>
+    <string name="lb_vs_adfree_minutes">বিজ্ঞাপন ছাড়া চলবে আরও %1$s মিনিট</string>
+    <string name="lb_vs_next">এরপর: %1$s %2$s — %3$s</string>
+    <string name="lb_vs_more_invites_one">আর %1$s জন বন্ধু এলেই পাবেন!</string>
+    <string name="lb_vs_more_invites_many">আর %1$s জন বন্ধু এলেই পাবেন!</string>
+    <string name="lb_vs_max_tier">আপনি সবচেয়ে ওপরের ধাপে পৌঁছেছেন! বন্ধুদের জানানোর জন্য ধন্যবাদ!</string>
+    <string name="lb_vs_milestones">কত বন্ধুতে কী পাবেন</string>
+    <string name="lb_vs_tier_row_one">%1$s জন বন্ধু — %2$s</string>
+    <string name="lb_vs_tier_row_many">%1$s জন বন্ধু — %2$s</string>
+    <string name="lb_vs_days_adfree">%1$s দিন বিজ্ঞাপন ছাড়া</string>
+    <string name="lb_vs_hours_adfree">%1$s ঘণ্টা বিজ্ঞাপন ছাড়া</string>
+    <string name="lb_vs_unlocked">পেয়েছেন</string>
+    <string name="lb_vs_code_title">আপনার ডাকার কোড</string>
+    <string name="lb_vs_motivation_one">আর %1$s জন বন্ধুকে পাঠালে পাবেন %2$s %3$s — %4$s</string>
+    <string name="lb_vs_motivation_many">আর %1$s জন বন্ধুকে পাঠালে পাবেন %2$s %3$s — %4$s</string>
+    <string name="lb_vs_legend">আপনি সবার ওপরে! বন্ধুদের পাঠাতে থাকুন। তারাও নিজের ফোনের অবস্থা জানুক।</string>
+
+    <!-- Reward steps. ReferralManager.RewardTier keeps its English text; these are shown instead. -->
+    <string name="lb_tier_none_title">শুরু</string>
+    <string name="lb_tier_none_desc">পুরস্কার পেতে বন্ধুকে পাঠান!</string>
+    <string name="lb_tier_bronze_title">প্রথম বন্ধু</string>
+    <string name="lb_tier_bronze_desc">24 ঘণ্টা বিজ্ঞাপন ছাড়া!</string>
+    <string name="lb_tier_silver_title">পাশে আছেন</string>
+    <string name="lb_tier_silver_desc">3 দিন বিজ্ঞাপন ছাড়া, সাথে একটা পদক!</string>
+    <string name="lb_tier_gold_title">সেরা বন্ধু</string>
+    <string name="lb_tier_gold_desc">7 দিন বিজ্ঞাপন ছাড়া, সাথে একটা পদক!</string>
+    <string name="lb_tier_legend_title">সবার ওপরে</string>
+    <string name="lb_tier_legend_desc">30 দিন বিজ্ঞাপন ছাড়া, সাথে একটা পদক!</string>
+
+    <!-- Messages sent to a friend from the invite dialog -->
+    <string name="lb_vs_msg_whatsapp">🔍 এই অ্যাপ দিয়ে ফোনের অবস্থা দেখে নিন!\n\n📱 ফোন কেমন চলছে, ব্যাটারি, ফাইল রাখার জায়গা আর নিরাপত্তা কেমন, সব জানা যায়।\n\nআমার কোড: %1$s\n\nএখান থেকে নামান: %2$s</string>
+    <string name="lb_vs_msg_telegram">🔍 এই অ্যাপ দিয়ে ফোনের অবস্থা দেখে নিন!\n\n📱 ফোন কেমন চলছে, ব্যাটারি, ফাইল রাখার জায়গা আর নিরাপত্তা কেমন, সব জানা যায়।\n\nআমার কোড: %1$s\n\nএখান থেকে নামান: %2$s</string>
+    <string name="lb_vs_msg_sms">এই অ্যাপ দিয়ে ফোনের অবস্থা দেখে নিন! আমার কোড: %1$s\n%2$s</string>
+    <string name="lb_vs_msg_email">এই অ্যাপ দিয়ে ফোনের অবস্থা দেখে নিন!\n\nফোন কেমন চলছে, ব্যাটারি, ফাইল রাখার জায়গা আর নিরাপত্তা কেমন, সব জানা যায়।\n\nআমার কোড: %1$s\n\nএখান থেকে নামান: %2$s</string>
+    <string name="lb_vs_email_subject">এই অ্যাপ দিয়ে ফোনের অবস্থা দেখে নিন!</string>
+    <string name="lb_vs_email_chooser">ইমেইলে পাঠান</string>
+    <string name="lb_vs_power_title">⚡ আমার ফোনের চার্জ খরচ</string>
+    <string name="lb_vs_power_total">📊 মোট খরচ: %1$sW</string>
+    <string name="lb_vs_power_trend">📈 কোন দিকে যাচ্ছে: %1$s</string>
+    <string name="lb_vs_power_avg">📉 গড়: %1$sW</string>
+    <string name="lb_vs_power_peak">🔝 সবচেয়ে বেশি: %1$sW</string>
+    <string name="lb_vs_power_top">🔝 যেগুলো বেশি চার্জ খায়:</string>
+    <string name="lb_vs_power_generated">📱 %1$s অ্যাপ থেকে নেওয়া</string>
+    <string name="lb_vs_power_download">🔗 এখান থেকে নামান: %1$s</string>
+
+    <!-- Picture card of the score (text is drawn into the image) -->
+    <string name="lb_sc_device_score">ফোনের অবস্থার নম্বর</string>
+    <string name="lb_sc_device_line">%1$s %2$s · অ্যান্ড্রয়েড %3$s</string>
+    <string name="lb_sc_scanned">দেখা হয়েছে: %1$s</string>
+    <string name="lb_sc_measured">যা মাপা হয়েছে: ব্যাটারি · মেমোরি · ফাইল রাখার জায়গা · নেট</string>
+    <string name="lb_sc_weights">গুরুত্ব 40/25/20/15 · এই ফোনের, দেখার সময়কার</string>
+</resources>
