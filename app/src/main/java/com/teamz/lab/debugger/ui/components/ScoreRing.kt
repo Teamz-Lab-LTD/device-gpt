@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -55,6 +56,53 @@ internal fun shownScore(score: Int, maxScore: Int, progress: Float): Int =
 internal fun sweepDegrees(score: Int, maxScore: Int, progress: Float): Float {
     if (maxScore <= 0) return 0f
     return 360f * (score.coerceIn(0, maxScore).toFloat() / maxScore) * progress.coerceIn(0f, 1f)
+}
+
+/** A score of this many out of 100, or more, is good. Below [SCORE_FAIR_FROM] it is poor. */
+const val SCORE_GOOD_FROM = 75
+
+/** A score of this many out of 100, or more, is at least fair. */
+const val SCORE_FAIR_FROM = 40
+
+/** What a score means, for its colour. */
+enum class ScoreTone { Good, Fair, Poor }
+
+/**
+ * The meaning of [score] out of [maxScore]. The cut-offs are the ones the score screen uses for its verdict
+ * word: "Excellent" and "Great" (75 and up) are good, "Good" and "Fair" (40 to 74) are fair, the rest is poor.
+ */
+fun scoreTone(score: Int, maxScore: Int = 100): ScoreTone {
+    val outOfHundred = if (maxScore <= 0) 0 else score.coerceIn(0, maxScore) * 100 / maxScore
+    return when {
+        outOfHundred >= SCORE_GOOD_FROM -> ScoreTone.Good
+        outOfHundred >= SCORE_FAIR_FROM -> ScoreTone.Fair
+        else -> ScoreTone.Poor
+    }
+}
+
+/** The colour for a [ScoreTone] on the app's surfaces: good, warn, or the theme's error colour. */
+@Composable
+@ReadOnlyComposable
+fun scoreToneColor(tone: ScoreTone): Color = when (tone) {
+    ScoreTone.Good -> dgSemanticColors().good
+    ScoreTone.Fair -> dgSemanticColors().warn
+    ScoreTone.Poor -> MaterialTheme.colorScheme.error
+}
+
+/**
+ * Remembers, for as long as the app process lives, which score rings have already played their reveal, so a
+ * card that is scrolled away and back (or a tab that is reopened) shows its score at rest.
+ */
+object ScoreRingSession {
+    private val played = HashSet<String>()
+
+    /** True the first time it is asked about [key] in this session, false after that. */
+    @Synchronized
+    fun firstTime(key: String): Boolean = played.add(key)
+
+    /** Forget everything. For tests. */
+    @Synchronized
+    fun reset() = played.clear()
 }
 
 /**

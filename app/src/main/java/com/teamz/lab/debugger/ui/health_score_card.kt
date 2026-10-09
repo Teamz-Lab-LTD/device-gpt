@@ -150,12 +150,37 @@ fun HealthScoreCard(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    DgText(
-                        text = "$healthScore/10",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = DesignSystemColors.Dark
-                    )
+                    // The same ring as the score screen, in the ink of the lime panel. It plays once per
+                    // session (and again when a new scan changes the score).
+                    val scoreMessage = context.string(healthScoreMessageRes(healthScore))
+                    val playReveal = remember { com.teamz.lab.debugger.ui.components.ScoreRingSession.firstTime("health_score") }
+                    CompositionLocalProvider(LocalContentColor provides DesignSystemColors.Dark) {
+                        com.teamz.lab.debugger.ui.components.ScoreRing(
+                            score = healthScore,
+                            maxScore = 10,
+                            size = 88.dp,
+                            strokeWidth = 8.dp,
+                            trackColor = DesignSystemColors.Dark.copy(alpha = 0.14f),
+                            color = DesignSystemColors.Dark,
+                            animate = playReveal,
+                            contentDescription = "$healthScore/10, $scoreMessage",
+                        ) { shown ->
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                com.teamz.lab.debugger.ui.components.ScoreRingNumber(
+                                    value = shown,
+                                    finalValue = healthScore,
+                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                )
+                                Text(
+                                    text = "/10",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(bottom = 3.dp),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     DgText(
                         text = context.string(healthScoreMessageRes(healthScore)),
                         style = MaterialTheme.typography.bodyMedium,

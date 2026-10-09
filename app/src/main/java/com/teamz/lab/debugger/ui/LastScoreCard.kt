@@ -31,14 +31,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.R
-import com.teamz.lab.debugger.ui.theme.DesignSystemColors
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import com.teamz.lab.debugger.ui.components.ScoreRing
+import com.teamz.lab.debugger.ui.components.ScoreRingNumber
+import com.teamz.lab.debugger.ui.components.ScoreRingSession
+import com.teamz.lab.debugger.ui.components.scoreTone
+import com.teamz.lab.debugger.ui.components.scoreToneColor
+import com.teamz.lab.debugger.ui.theme.DgSemanticColorsDark
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.ui.icons.DgText
@@ -94,7 +100,10 @@ fun LastScoreCard(
     }
 
     val verdict = stringResource(verdictRes(score))
-    val verdictColor = verdictColor(score)
+    val verdictColor = scoreToneColor(scoreTone(score))
+    // The reveal plays once per session; after that the card shows its score at rest.
+    val playReveal = remember { ScoreRingSession.firstTime("last_score") }
+    val title = stringResource(R.string.first_scan_title)
     val (agoRes, agoCount) = timeAgoParts(timestamp)
     val agoLabel = stringResource(agoRes, agoCount)
 
@@ -115,19 +124,29 @@ fun LastScoreCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(R.string.first_scan_title),
+                text = title,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                DgText(
-                    text = score.toString(),
-                    fontSize = 56.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = verdictColor
-                )
-                Spacer(Modifier.width(8.dp))
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                    ScoreRing(
+                        score = score,
+                        size = 88.dp,
+                        strokeWidth = 8.dp,
+                        color = verdictColor,
+                        animate = playReveal,
+                        contentDescription = "$title: $score, $verdict",
+                    ) { shown ->
+                        ScoreRingNumber(
+                            value = shown,
+                            finalValue = score,
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        )
+                    }
+                }
+                Spacer(Modifier.width(16.dp))
                 Column {
                     DgText(
                         text = verdict,
@@ -138,7 +157,7 @@ fun LastScoreCard(
                     DgText(
                         text = agoLabel,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -165,8 +184,8 @@ fun LastScoreCard(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DesignSystemColors.NeonGreen,
-                        contentColor = Color.Black
+                        containerColor = DgSemanticColorsDark.accent,
+                        contentColor = DgSemanticColorsDark.onAccent
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
@@ -209,14 +228,6 @@ internal fun verdictFor(score: Int): String = when (verdictRes(score)) {
     R.string.last_score_fair -> "Fair"
     R.string.last_score_poor -> "Poor"
     else -> "Critical"
-}
-
-internal fun verdictColor(score: Int): Color = when {
-    score >= 90 -> Color(0xFF2E7D32)
-    score >= 75 -> Color(0xFF66BB6A)
-    score >= 60 -> Color(0xFFF9A825)
-    score >= 40 -> Color(0xFFEF6C00)
-    else -> Color(0xFFC62828)
 }
 
 /**

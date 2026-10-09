@@ -2,7 +2,6 @@ package com.teamz.lab.debugger.ui
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +42,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.ui.theme.LocalReduceMotion
+import com.teamz.lab.debugger.ui.components.scoreToneColor
+import com.teamz.lab.debugger.ui.components.scoreTone
+import com.teamz.lab.debugger.ui.components.riseIn
+import com.teamz.lab.debugger.ui.components.popIn
+import com.teamz.lab.debugger.ui.components.fadeInWhen
+import com.teamz.lab.debugger.ui.components.ScoreRingNumber
+import com.teamz.lab.debugger.ui.components.ScoreRing
+import com.teamz.lab.debugger.ui.components.SCORE_GOOD_FROM
+import com.teamz.lab.debugger.ui.components.SCORE_FAIR_FROM
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import kotlinx.coroutines.async
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.theme.DgMotion
@@ -228,56 +241,88 @@ private fun ScoredUi(
     showChooser: Boolean = false,
     onChoose: (String) -> Unit = {},
 ) {
+    val tone = scoreTone(score)
+    val toneColor = scoreToneColor(tone)
     val grade = when {
-        score >= 90 -> Grade(stringResource(R.string.first_scan_grade_excellent), Color(0xFF2E7D32))
-        score >= 75 -> Grade(stringResource(R.string.first_scan_grade_great), Color(0xFF388E3C))
-        score >= 60 -> Grade(stringResource(R.string.first_scan_grade_good), Color(0xFFF9A825))
-        score >= 40 -> Grade(stringResource(R.string.first_scan_grade_fair), Color(0xFFEF6C00))
-        else -> Grade(stringResource(R.string.first_scan_grade_needs_attention), Color(0xFFC62828))
+        score >= 90 -> Grade(stringResource(R.string.first_scan_grade_excellent), toneColor)
+        score >= SCORE_GOOD_FROM -> Grade(stringResource(R.string.first_scan_grade_great), toneColor)
+        score >= 60 -> Grade(stringResource(R.string.first_scan_grade_good), toneColor)
+        score >= SCORE_FAIR_FROM -> Grade(stringResource(R.string.first_scan_grade_fair), toneColor)
+        else -> Grade(stringResource(R.string.first_scan_grade_needs_attention), toneColor)
     }
 
-    // Score reveal micro-interaction: count up from 0 + one haptic tick on settle.
+    // The signature moment: the ring fills while the number counts up, then the verdict pops, the four
+    // sub-scores rise one after another, and the actions fade in. One haptic tick when the ring stops.
+    // Everything is laid out from the first frame (only transform and opacity change), so the actions can
+    // be tapped at any time. With animations turned off, or after a rotation, the final state shows at once.
     val haptic = LocalHapticFeedback.current
-    var target by remember { mutableIntStateOf(0) }
-    val animatedScore by animateIntAsState(
-        targetValue = target,
-        animationSpec = motionTween(DgMotion.reveal, easing = DgMotion.Enter),
-        label = "score-count-up",
-        finishedListener = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        },
-    )
-    LaunchedEffect(score) { target = score }
+    val reduceMotion = LocalReduceMotion.current
+    var revealed by rememberSaveable { mutableStateOf(false) }
+    val playReveal = remember { !revealed }
+    val settled = revealed || reduceMotion
+    val title = stringResource(R.string.first_scan_title)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
     ) {
         Text(
-            text = stringResource(R.string.first_scan_title),
+            text = title,
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         )
         Spacer(Modifier.height(12.dp))
-        DgText(
-            text = "$animatedScore",
-            fontSize = 96.sp,
-            fontWeight = FontWeight.Bold,
-            color = grade.color,
-        )
-        Spacer(Modifier.height(4.dp))
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+            ScoreRing(
+                score = score,
+                size = 168.dp,
+                strokeWidth = 12.dp,
+                color = grade.color,
+                animate = playReveal,
+                contentDescription = "$title: $score, ${grade.label}",
+                onRevealFinished = {
+                    if (playReveal && !revealed) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    revealed = true
+                },
+            ) { shown ->
+                ScoreRingNumber(
+                    value = shown,
+                    finalValue = score,
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 56.sp,
+                        lineHeight = 64.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
         DgText(
             text = grade.label,
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
             color = grade.color,
+            modifier = Modifier.popIn(settled),
         )
         Spacer(Modifier.height(16.dp))
-        SubScoreRow(stringResource(R.string.first_scan_battery), subBattery)
-        SubScoreRow(stringResource(R.string.first_scan_memory), subMemory)
-        SubScoreRow(stringResource(R.string.first_scan_storage), subStorage)
-        SubScoreRow(stringResource(R.string.first_scan_network), subNetwork)
+        val subScores = listOf(
+            R.string.first_scan_battery to subBattery,
+            R.string.first_scan_memory to subMemory,
+            R.string.first_scan_storage to subStorage,
+            R.string.first_scan_network to subNetwork,
+        )
+        subScores.forEachIndexed { index, (labelRes, value) ->
+            SubScoreRow(
+                label = stringResource(labelRes),
+                value = value,
+                modifier = Modifier.riseIn(settled, delayMillis = REVEAL_ROWS_DELAY + index * DgMotion.stagger),
+            )
+        }
         Spacer(Modifier.height(12.dp))
         DgText(
             text = stringResource(
@@ -289,9 +334,16 @@ private fun ScoredUi(
             ),
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            modifier = Modifier.riseIn(settled, delayMillis = REVEAL_ROWS_DELAY + subScores.size * DgMotion.stagger),
         )
         Spacer(Modifier.height(24.dp))
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fadeInWhen(settled, delayMillis = REVEAL_ACTIONS_DELAY),
+        ) {
         if (showChooser) {
             Text(
                 text = stringResource(R.string.first_scan_chooser_title),
@@ -357,13 +409,20 @@ private fun ScoredUi(
                 Text(stringResource(R.string.first_scan_see_details), fontSize = 16.sp)
             }
         }
+        }
     }
 }
 
+/** After the ring stops: the sub-score rows start this much later, so the verdict word lands first. */
+private const val REVEAL_ROWS_DELAY = DgMotion.stagger * 2
+
+/** After the ring stops: the actions start to fade in once the last row is on its way. */
+private const val REVEAL_ACTIONS_DELAY = DgMotion.stagger * 8
+
 @Composable
-private fun SubScoreRow(label: String, value: Int) {
+private fun SubScoreRow(label: String, value: Int, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -378,7 +437,7 @@ private fun SubScoreRow(label: String, value: Int) {
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = if (value >= 0) MaterialTheme.colorScheme.onBackground
-            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
         )
     }
 }
