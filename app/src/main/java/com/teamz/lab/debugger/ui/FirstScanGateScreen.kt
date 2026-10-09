@@ -38,10 +38,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.R
 import kotlinx.coroutines.async
 
 /**
@@ -66,7 +68,7 @@ fun FirstScanGateScreen(
     val context = LocalContext.current
     var phase by rememberSaveable { mutableStateOf(Phase.SCANNING.name) }
     var progress by remember { mutableFloatStateOf(0f) }
-    var checkLabel by remember { mutableStateOf("Starting…") }
+    var checksDone by remember { mutableIntStateOf(0) }
     var finalScore by rememberSaveable { mutableIntStateOf(-1) }
     var subBattery by rememberSaveable { mutableIntStateOf(-1) }
     var subMemory by rememberSaveable { mutableIntStateOf(-1) }
@@ -90,9 +92,10 @@ fun FirstScanGateScreen(
             // would join this child even after a timeout, and cancelling blocking IO does not stop
             // it — the bound would be fiction. Here a slow record just lands after the score shows.
             val daily = async(kotlinx.coroutines.Dispatchers.IO) { FirstScanGate.recordDailyScan(context) }
-            val result = FirstScanGate.runQuickScan(context) { completed, label ->
+            // The label FirstScanGate passes is English; the screen names the check itself.
+            val result = FirstScanGate.runQuickScan(context) { completed, _ ->
                 progress = completed / 4f
-                checkLabel = label
+                checksDone = completed
             }
             // Bounded: wait at most 2 s for the daily record before showing the score.
             kotlinx.coroutines.withTimeoutOrNull(2_000L) { daily.await() }
@@ -127,7 +130,15 @@ fun FirstScanGateScreen(
         when (Phase.valueOf(phase)) {
             Phase.SCANNING -> ScanningUi(
                 progress = animatedProgress,
-                checkLabel = checkLabel,
+                checkLabel = stringResource(
+                    when (checksDone) {
+                        1 -> R.string.first_scan_battery
+                        2 -> R.string.first_scan_memory
+                        3 -> R.string.first_scan_storage
+                        4 -> R.string.first_scan_network
+                        else -> R.string.first_scan_starting
+                    }
+                ),
             )
             Phase.SCORED -> ScoredUi(
                 score = finalScore,
@@ -173,7 +184,7 @@ private fun ScanningUi(progress: Float, checkLabel: String) {
         )
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "Checking your device…",
+            text = stringResource(R.string.first_scan_checking),
             fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -195,7 +206,7 @@ private fun ScanningUi(progress: Float, checkLabel: String) {
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "${(progress * 4).toInt()} of 4 checks done",
+            text = stringResource(R.string.first_scan_checks_done, (progress * 4).toInt(), 4),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
@@ -216,11 +227,11 @@ private fun ScoredUi(
     onChoose: (String) -> Unit = {},
 ) {
     val grade = when {
-        score >= 90 -> Grade("Excellent", Color(0xFF2E7D32))
-        score >= 75 -> Grade("Great", Color(0xFF388E3C))
-        score >= 60 -> Grade("Good", Color(0xFFF9A825))
-        score >= 40 -> Grade("Fair", Color(0xFFEF6C00))
-        else -> Grade("Needs attention", Color(0xFFC62828))
+        score >= 90 -> Grade(stringResource(R.string.first_scan_grade_excellent), Color(0xFF2E7D32))
+        score >= 75 -> Grade(stringResource(R.string.first_scan_grade_great), Color(0xFF388E3C))
+        score >= 60 -> Grade(stringResource(R.string.first_scan_grade_good), Color(0xFFF9A825))
+        score >= 40 -> Grade(stringResource(R.string.first_scan_grade_fair), Color(0xFFEF6C00))
+        else -> Grade(stringResource(R.string.first_scan_grade_needs_attention), Color(0xFFC62828))
     }
 
     // Score reveal micro-interaction: count up from 0 + one haptic tick on settle.
@@ -242,7 +253,7 @@ private fun ScoredUi(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
-            text = "Your Device Score",
+            text = stringResource(R.string.first_scan_title),
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         )
@@ -261,13 +272,19 @@ private fun ScoredUi(
             color = grade.color,
         )
         Spacer(Modifier.height(16.dp))
-        SubScoreRow("Battery", subBattery)
-        SubScoreRow("Memory", subMemory)
-        SubScoreRow("Storage", subStorage)
-        SubScoreRow("Network", subNetwork)
+        SubScoreRow(stringResource(R.string.first_scan_battery), subBattery)
+        SubScoreRow(stringResource(R.string.first_scan_memory), subMemory)
+        SubScoreRow(stringResource(R.string.first_scan_storage), subStorage)
+        SubScoreRow(stringResource(R.string.first_scan_network), subNetwork)
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "Score = battery ${FirstScanGate.WEIGHT_BATTERY} · memory ${FirstScanGate.WEIGHT_MEMORY} · storage ${FirstScanGate.WEIGHT_STORAGE} · network ${FirstScanGate.WEIGHT_NETWORK}",
+            text = stringResource(
+                R.string.first_scan_weights,
+                FirstScanGate.WEIGHT_BATTERY,
+                FirstScanGate.WEIGHT_MEMORY,
+                FirstScanGate.WEIGHT_STORAGE,
+                FirstScanGate.WEIGHT_NETWORK,
+            ),
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
@@ -275,7 +292,7 @@ private fun ScoredUi(
         Spacer(Modifier.height(24.dp))
         if (showChooser) {
             Text(
-                text = "What do you want to test?",
+                text = stringResource(R.string.first_scan_chooser_title),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -285,7 +302,12 @@ private fun ScoredUi(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                for ((label, key) in listOf("Camera" to "camera", "Mic" to "mic", "Screen" to "screen")) {
+                val choices = listOf(
+                    R.string.tab_camera to "camera",
+                    R.string.first_scan_choice_mic to "mic",
+                    R.string.first_scan_choice_screen to "screen",
+                )
+                for ((labelRes, key) in choices) {
                     Button(
                         onClick = { onChoose(key) },
                         modifier = Modifier.weight(1f),
@@ -293,15 +315,22 @@ private fun ScoredUi(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
-                    ) { Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+                    ) {
+                        Text(
+                            stringResource(labelRes),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(16.dp))
             OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth()) {
-                Text("Share my score", fontSize = 16.sp)
+                Text(stringResource(R.string.first_scan_share_score), fontSize = 16.sp)
             }
             TextButton(onClick = { onChoose("report") }, modifier = Modifier.fillMaxWidth()) {
-                Text("See full health report", fontSize = 14.sp)
+                Text(stringResource(R.string.first_scan_full_report), fontSize = 14.sp)
             }
         } else {
             Button(
@@ -312,14 +341,18 @@ private fun ScoredUi(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
-                Text("Share my score", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(R.string.first_scan_share_score),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
                 onClick = onDetails,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("See details", fontSize = 16.sp)
+                Text(stringResource(R.string.first_scan_see_details), fontSize = 16.sp)
             }
         }
     }
@@ -339,7 +372,7 @@ private fun SubScoreRow(label: String, value: Int) {
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
         )
         Text(
-            text = if (value >= 0) "$value" else "not readable",
+            text = if (value >= 0) "$value" else stringResource(R.string.first_scan_not_readable),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = if (value >= 0) MaterialTheme.colorScheme.onBackground
@@ -356,14 +389,14 @@ private fun FailedUi(onContinue: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
-            text = "Couldn't read device state",
+            text = stringResource(R.string.first_scan_failed_title),
             fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "None of the four checks could be completed on this device. You can still use every tool in the app.",
+            text = stringResource(R.string.first_scan_failed_body),
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
@@ -373,7 +406,7 @@ private fun FailedUi(onContinue: () -> Unit) {
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Continue to app", fontSize = 16.sp)
+            Text(stringResource(R.string.first_scan_continue_to_app), fontSize = 16.sp)
         }
     }
 }

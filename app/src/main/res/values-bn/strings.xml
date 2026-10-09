@@ -297,4 +297,41 @@
     <string name="mic_test_open_settings">অ্যাপের সেটিংস খুলুন</string>
     <string name="mic_test_unavailable">মাইক চালু করা গেল না। হয়তো অন্য অ্যাপ বা ফোন কল মাইক চালাচ্ছে। বাকি অ্যাপ বন্ধ করে আবার চেষ্টা করুন।</string>
     <string name="mic_test_retry">আবার চেষ্টা করুন</string>
+
+    <!-- First screen: scan, score, chooser (task 3, 2026-10-09) -->
+    <string name="first_scan_checking">আপনার ফোন দেখছি…</string>
+    <string name="first_scan_starting">শুরু হচ্ছে…</string>
+    <string name="first_scan_checks_done">%2$dটার মধ্যে %1$dটা দেখা হয়েছে</string>
+    <string name="first_scan_title">আপনার ফোনের নম্বর</string>
+    <string name="first_scan_grade_excellent">খুব ভালো</string>
+    <string name="first_scan_grade_great">বেশ ভালো</string>
+    <string name="first_scan_grade_good">ভালো</string>
+    <string name="first_scan_grade_fair">মোটামুটি</string>
+    <string name="first_scan_grade_needs_attention">একটু দেখা দরকার</string>
+    <string name="first_scan_battery">ব্যাটারি</string>
+    <string name="first_scan_memory">মেমোরি</string>
+    <string name="first_scan_storage">ফাইল রাখার জায়গা</string>
+    <string name="first_scan_network">নেট</string>
+    <string name="first_scan_not_readable">দেখা যায়নি</string>
+    <string name="first_scan_weights">নম্বরের হিসাব: ব্যাটারি %1$d · মেমোরি %2$d · ফাইল রাখার জায়গা %3$d · নেট %4$d</string>
+    <string name="first_scan_chooser_title">কী পরীক্ষা করবেন?</string>
+    <string name="first_scan_choice_mic">মাইক</string>
+    <string name="first_scan_choice_screen">স্ক্রিন</string>
+    <string name="first_scan_share_score">নম্বর পাঠান</string>
+    <string name="first_scan_full_report">পুরো রিপোর্ট দেখুন</string>
+    <string name="first_scan_see_details">আরও দেখুন</string>
+    <string name="first_scan_failed_title">ফোনের অবস্থা দেখা গেল না</string>
+    <string name="first_scan_failed_body">এই ফোনে চারটা জিনিসের একটাও দেখা গেল না। তবু অ্যাপের বাকি সব পরীক্ষা করতে পারবেন।</string>
+    <string name="first_scan_continue_to_app">এগিয়ে যান</string>
+
+    <!-- Card after the first finished test (task 3, 2026-10-09) -->
+    <string name="done_title">হয়ে গেছে ✓</string>
+    <string name="done_body">ফোনের অবস্থায় নজর রাখতে চান?</string>
+    <string name="done_add_widget">প্রথম পাতায় রাখুন</string>
+    <string name="done_weekly_checkup">সপ্তাহে একবার খবর</string>
+    <string name="not_now">পরে</string>
+    <string name="done_weekly_on">প্রতি সপ্তাহে ফোনের খবর পাবেন</string>
+    <string name="done_weekly_turn_on_notifications">সপ্তাহের খবর পেতে নোটিস চালু করুন</string>
+    <string name="done_weekly_needs_notifications">নোটিস চালু না থাকলে সপ্তাহের খবর আসবে না। সেটিংস থেকে চালু করতে পারবেন।</string>
+    <string name="done_widget_how_to">ফোনের প্রথম পাতার ফাঁকা জায়গায় আঙুল চেপে ধরুন। উইজেট লেখায় চাপ দিন। তারপর DeviceGPT বেছে নিন।</string>
 </resources>

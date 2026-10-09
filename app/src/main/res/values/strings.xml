@@ -300,4 +300,41 @@
     <string name="mic_test_open_settings">Open app settings</string>
     <string name="mic_test_unavailable">The mic could not be opened. Another app or a phone call may be using it. Close other apps and try again.</string>
     <string name="mic_test_retry">Try again</string>
+
+    <!-- First screen: scan, score, chooser (task 3, 2026-10-09) -->
+    <string name="first_scan_checking">Checking your device…</string>
+    <string name="first_scan_starting">Starting…</string>
+    <string name="first_scan_checks_done">%1$d of %2$d checks done</string>
+    <string name="first_scan_title">Your Device Score</string>
+    <string name="first_scan_grade_excellent">Excellent</string>
+    <string name="first_scan_grade_great">Great</string>
+    <string name="first_scan_grade_good">Good</string>
+    <string name="first_scan_grade_fair">Fair</string>
+    <string name="first_scan_grade_needs_attention">Needs attention</string>
+    <string name="first_scan_battery">Battery</string>
+    <string name="first_scan_memory">Memory</string>
+    <string name="first_scan_storage">Storage</string>
+    <string name="first_scan_network">Network</string>
+    <string name="first_scan_not_readable">not readable</string>
+    <string name="first_scan_weights">Score = battery %1$d · memory %2$d · storage %3$d · network %4$d</string>
+    <string name="first_scan_chooser_title">What do you want to test?</string>
+    <string name="first_scan_choice_mic">Mic</string>
+    <string name="first_scan_choice_screen">Screen</string>
+    <string name="first_scan_share_score">Share my score</string>
+    <string name="first_scan_full_report">See full health report</string>
+    <string name="first_scan_see_details">See details</string>
+    <string name="first_scan_failed_title">Couldn\'t read device state</string>
+    <string name="first_scan_failed_body">None of the four checks could be completed on this device. You can still use every tool in the app.</string>
+    <string name="first_scan_continue_to_app">Continue to app</string>
+
+    <!-- Card after the first finished test (task 3, 2026-10-09) -->
+    <string name="done_title">Done ✓</string>
+    <string name="done_body">Want to keep an eye on your phone\'s health?</string>
+    <string name="done_add_widget">Add widget</string>
+    <string name="done_weekly_checkup">Weekly check-up</string>
+    <string name="not_now">Not now</string>
+    <string name="done_weekly_on">Weekly check-up is on</string>
+    <string name="done_weekly_turn_on_notifications">Turn on notifications to get the weekly check-up</string>
+    <string name="done_weekly_needs_notifications">The weekly check-up needs notifications. You can turn them on in Settings.</string>
+    <string name="done_widget_how_to">Long-press your home screen, tap Widgets, then pick DeviceGPT</string>
 </resources>

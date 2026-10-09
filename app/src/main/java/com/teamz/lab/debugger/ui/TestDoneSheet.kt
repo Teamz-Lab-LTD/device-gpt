@@ -15,11 +15,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.TestDoneCard
 import com.teamz.lab.debugger.utils.WidgetPinPrompt
+import com.teamz.lab.debugger.utils.string
 
 /**
  * One-time card after the first completed test (arm B). Spec 2026-10-09.
@@ -44,9 +47,11 @@ fun TestDoneSheet() {
     // permission prompt, and the user may have switched the app's notifications off (review I4).
     fun confirmWeekly() {
         if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-            Toast.makeText(context, "Weekly check-up is on", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.string(R.string.done_weekly_on), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(context, "Turn on notifications to get the weekly check-up", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context, context.string(R.string.done_weekly_turn_on_notifications), Toast.LENGTH_LONG
+            ).show()
             try {
                 context.startActivity(
                     Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -61,24 +66,26 @@ fun TestDoneSheet() {
         // Denied (or blocked after two denials, when Android answers at once): say why nothing
         // happened instead of closing silently (re-review minor 4).
         if (granted) confirmWeekly()
-        else Toast.makeText(context, "The weekly check-up needs notifications. You can turn them on in Settings.", Toast.LENGTH_LONG).show()
+        else Toast.makeText(
+            context, context.string(R.string.done_weekly_needs_notifications), Toast.LENGTH_LONG
+        ).show()
         TestDoneCard.dismiss()
     }
     AlertDialog(
         onDismissRequest = { action("dismiss"); TestDoneCard.dismiss() },
-        title = { Text("Done ✓") },
-        text = { Text("Want to keep an eye on your phone's health?") },
+        title = { Text(stringResource(R.string.done_title)) },
+        text = { Text(stringResource(R.string.done_body)) },
         confirmButton = {
             TextButton(onClick = {
                 // Some launchers cannot pin from inside an app; say how instead of doing nothing (M3).
                 val asked = WidgetPinPrompt.requestNow(context)
                 action("widget", mapOf("pin_supported" to asked))
                 if (!asked) Toast.makeText(
-                    context, "Long-press your home screen, tap Widgets, then pick DeviceGPT",
+                    context, context.string(R.string.done_widget_how_to),
                     Toast.LENGTH_LONG
                 ).show()
                 TestDoneCard.dismiss()
-            }) { Text("Add widget") }
+            }) { Text(stringResource(R.string.done_add_widget)) }
         },
         dismissButton = {
             TextButton(onClick = {
@@ -89,8 +96,10 @@ fun TestDoneSheet() {
                     confirmWeekly()
                     TestDoneCard.dismiss()
                 }
-            }) { Text("Weekly check-up") }
-            TextButton(onClick = { action("dismiss"); TestDoneCard.dismiss() }) { Text("Not now") }
+            }) { Text(stringResource(R.string.done_weekly_checkup)) }
+            TextButton(onClick = { action("dismiss"); TestDoneCard.dismiss() }) {
+                Text(stringResource(R.string.not_now))
+            }
         },
     )
 }

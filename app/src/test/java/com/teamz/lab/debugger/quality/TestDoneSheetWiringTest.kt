@@ -16,8 +16,20 @@ class TestDoneSheetWiringTest {
             "app/src/main/java/com/teamz/lab/debugger/ui/TestDoneSheet.kt")
         assertTrue("TestDoneSheet.kt must exist", f.exists())
         val s = f.readText()
-        for (c in listOf("Done ✓", "Want to keep an eye on your phone's health?", "Add widget", "Weekly check-up", "Not now"))
-            assertTrue(c, s.contains(c))
+        // The copy moved to string resources (Bangla + English, 2026-10-09). The sheet must use
+        // these keys, and their English values are still the approved copy.
+        val strings = File(f.path.substringBefore("/java/com/teamz/"), "res/values/strings.xml").readText()
+        val approved = mapOf(
+            "done_title" to "Done ✓",
+            "done_body" to "Want to keep an eye on your phone\\'s health?",
+            "done_add_widget" to "Add widget",
+            "done_weekly_checkup" to "Weekly check-up",
+            "not_now" to "Not now",
+        )
+        for ((key, copy) in approved) {
+            assertTrue("sheet must use R.string.$key", s.contains("R.string.$key"))
+            assertTrue("$key must read \"$copy\"", strings.contains("<string name=\"$key\">$copy</string>"))
+        }
         assertTrue(s.contains("WidgetPinPrompt.requestNow("))
         assertTrue(s.contains("Manifest.permission.POST_NOTIFICATIONS"))
         assertTrue(s.contains("AnalyticsEvent.FsNotifPermissionResult"))
