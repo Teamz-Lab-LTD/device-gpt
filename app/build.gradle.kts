@@ -128,6 +128,12 @@ android {
         compose = true
         buildConfig = true
     }
+    testOptions {
+        unitTests {
+            // Robolectric needs the merged resources to check which language a context resolves.
+            isIncludeAndroidResources = true
+        }
+    }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }

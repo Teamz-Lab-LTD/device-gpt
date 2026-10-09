@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.content.pm.ServiceInfo
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -23,6 +24,7 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.BridgePinGenerator
 import com.teamz.lab.debugger.utils.ErrorHandler
 import com.teamz.lab.debugger.utils.LanIpResolver
+import com.teamz.lab.debugger.utils.LocaleManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -109,6 +111,17 @@ class BridgeService : Service() {
             "uptime_ms" to (System.currentTimeMillis() - startedAtMs),
         ))
         stopSelf()
+    }
+
+    /** Shows this service's notification text in the app language. */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.wrapContext(newBase))
+    }
+
+    /** Follows a language switch made while the service is running. */
+    override fun getResources(): Resources {
+        val base = baseContext ?: return super.getResources()
+        return LocaleManager.localizedResources(base)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

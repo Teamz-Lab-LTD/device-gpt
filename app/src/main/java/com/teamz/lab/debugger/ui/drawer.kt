@@ -1122,21 +1122,14 @@ fun DrawerContent(
             color = MaterialTheme.colorScheme.outline
         )
 
-        // Language Selection - COMMENTED OUT (Default to English)
-        /*
-        Text(
-            text = context.string(R.string.language),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-        )
-        
+        // Language: বাংলা or English. Saved, then applied at once by recreating the activity.
         LanguageSelector(
             currentLanguage = LocaleManager.getSelectedLanguage(context),
             onLanguageSelected = { language ->
-                LocaleManager.setLanguage(context, language)
-                // Restart activity to apply language change
-                activity.recreate()
+                if (language != LocaleManager.getSelectedLanguage(context)) {
+                    LocaleManager.setLanguage(context, language)
+                    (context as? Activity)?.recreate()
+                }
             }
         )
 
@@ -1144,7 +1137,6 @@ fun DrawerContent(
             modifier = Modifier.padding(vertical = 16.dp),
             color = MaterialTheme.colorScheme.outline
         )
-        */
 
         // Premium section removed - consolidated into top widget for better UX
         
@@ -1801,7 +1793,7 @@ fun LanguageSelector(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    LocaleManager.AppLanguage.values().forEach { language ->
+                    LocaleManager.selectableLanguages.forEach { language ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

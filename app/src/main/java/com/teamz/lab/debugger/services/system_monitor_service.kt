@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -67,6 +68,17 @@ class SystemMonitorService : Service() {
     private var lastDownload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
     private var lastUpload = com.teamz.lab.debugger.utils.SpeedTestPolicy.NOT_MEASURED
     private var lastSpeedNetwork: String? = null
+
+    /** Shows this service's notification text in the app language. */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.wrapContext(newBase))
+    }
+
+    /** Follows a language switch made while the service is running. */
+    override fun getResources(): Resources {
+        val base = baseContext ?: return super.getResources()
+        return LocaleManager.localizedResources(base)
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 

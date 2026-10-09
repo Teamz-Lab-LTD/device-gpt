@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(LocaleManager.createContextWithLocale(newBase))
+        super.attachBaseContext(LocaleManager.wrapContext(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
         AppLog.d("MainActivity", "onCreate() - isFirstLaunch: $isFirstLaunch")
 
         try {
-            LocaleManager.setLocale(this)
+            LocaleManager.pinFormattingLocale()
 
             try {
                 WindowCompat.setDecorFitsSystemWindows(window, false)

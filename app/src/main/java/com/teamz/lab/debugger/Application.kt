@@ -2,6 +2,9 @@ package com.teamz.lab.debugger
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -12,6 +15,7 @@ import com.teamz.lab.debugger.utils.CohortLabeler
 import com.onesignal.OneSignal
 import com.onesignal.debug.LogLevel
 import com.teamz.lab.debugger.utils.InterstitialAdManager
+import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.ReferralManager
 import com.teamz.lab.debugger.utils.RetentionNotificationManager
@@ -32,6 +36,32 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
     
     // Store the default uncaught exception handler
     private val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+    /**
+     * Puts the whole process in the app language. Broadcast receivers and the widget provider
+     * are handed this base context directly, so it has to be wrapped here, not only overridden
+     * in [getResources].
+     */
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleManager.wrapContext(base))
+        LocaleManager.pinFormattingLocale()
+    }
+
+    /**
+     * Follows a language switch made while the process is alive: the base context above keeps
+     * the language it was wrapped with, so strings are looked up through the current one.
+     */
+    override fun getResources(): Resources {
+        val base = baseContext ?: return super.getResources()
+        return LocaleManager.localizedResources(base)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super<Application>.onConfigurationChanged(newConfig)
+        // The framework has just reset the default locale from this context's resources, which
+        // carry the app language. Seen on API 35: default became bn and "%d" printed Bangla digits.
+        LocaleManager.pinFormattingLocale()
+    }
 
     override fun onCreate() {
         super<Application>.onCreate()

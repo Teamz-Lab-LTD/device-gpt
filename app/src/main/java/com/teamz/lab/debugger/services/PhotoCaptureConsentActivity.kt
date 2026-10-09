@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.services
 
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.teamz.lab.debugger.utils.LocaleManager
 
 /**
  * Transparent consent Activity for [PhotoCaptureBridge]. Launched from the AI Bridge
@@ -48,6 +50,10 @@ import androidx.compose.ui.unit.dp
  * not use setResult / Activity Result API (the caller isn't another Activity).
  */
 class PhotoCaptureConsentActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleManager.wrapContext(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
