@@ -36,6 +36,9 @@ import kotlinx.coroutines.delay
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.ui.theme.useThemeManager
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.utils.string
 
 /**
  * Dialog for generating a verified device report.
@@ -80,13 +83,13 @@ fun GenerateReportDialog(
                 )
                 onReportReady(generated)
             } else {
-                error = "Report generated but upload failed. You can still share the code."
+                error = context.string(R.string.lb_vr_upload_failed)
                 onReportReady(generated)
             }
         } catch (e: Exception) {
             isGenerating = false
             isUploading = false
-            error = "Failed to generate report: ${e.message}"
+            error = context.string(R.string.lb_vr_generate_failed, e.message.toString())
         }
     }
 
@@ -118,14 +121,14 @@ fun GenerateReportDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Generating Verified Report",
+                    text = stringResource(R.string.lb_vr_generating_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "We're creating a snapshot of your phone's health and safety that you can share with others.",
+                    text = stringResource(R.string.lb_vr_generating_body),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -136,7 +139,7 @@ fun GenerateReportDialog(
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Collecting device data and signing...",
+                        stringResource(R.string.lb_vr_collecting),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )
@@ -144,7 +147,7 @@ fun GenerateReportDialog(
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Uploading for verification...",
+                        stringResource(R.string.lb_vr_uploading),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )
@@ -159,7 +162,7 @@ fun GenerateReportDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(onClick = onDismiss) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         }
@@ -206,26 +209,26 @@ fun ReportReadyDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Report Ready",
+                    stringResource(R.string.lb_vr_ready_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    "Your device report was created. Share the code below so someone else can check it — like a ticket number.",
+                    stringResource(R.string.lb_vr_ready_body),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "When to use this:",
+                    stringResource(R.string.lb_vr_when_title),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "• Sending to support so they can see your phone's status\n• Selling your phone — show the buyer it's healthy\n• Proving to work or school that your device is safe",
+                    stringResource(R.string.lb_vr_ready_when),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Start,
@@ -245,7 +248,7 @@ fun ReportReadyDialog(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Your shareable code", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.lb_vr_code_label), style = MaterialTheme.typography.labelMedium)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = report.verificationCode,
@@ -263,7 +266,7 @@ fun ReportReadyDialog(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("Verification Code", report.verificationCode))
-                        Toast.makeText(context, "Code copied!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.string(R.string.lb_code_copied), Toast.LENGTH_SHORT).show()
                         AnalyticsUtils.logEvent(
                             AnalyticsEvent.VerifiedReportShared,
                             mapOf("method" to "copy")
@@ -278,7 +281,7 @@ fun ReportReadyDialog(
                 ) {
                     Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Copy Code")
+                    Text(stringResource(R.string.lb_vr_copy_code))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -290,9 +293,13 @@ fun ReportReadyDialog(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("What was recorded (100% full device insight)", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                         Text(
-                            "All fields below were saved from your phone — device, OS, speeds, network, battery, storage, RAM. Good for resale proof, tech support, or showing your device is in good shape.",
+                            stringResource(R.string.lb_vr_recorded_title),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            stringResource(R.string.lb_vr_recorded_body),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -304,7 +311,7 @@ fun ReportReadyDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Nobody can change this report. Anyone with this app can enter your code and see the same details.",
+                    stringResource(R.string.lb_vr_cannot_change),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -312,7 +319,7 @@ fun ReportReadyDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                    Text("Done")
+                    Text(stringResource(R.string.lb_vr_done))
                 }
             }
         }
@@ -322,33 +329,40 @@ fun ReportReadyDialog(
 @Composable
 private fun ReportSummaryWithDividers(reportData: ReportData, signedAt: String) {
     // Device & identity
-    SummaryRow("Device", reportData.deviceModel)
-    SummaryRow("Android", reportData.androidVersion)
-    SummaryRow("API level", if (reportData.apiLevel > 0) "API ${reportData.apiLevel}" else "N/A")
-    SummaryRow("Security patch", reportData.securityPatchLevel)
-    SummaryRow("Device integrity", reportData.rootStatus)
-    SummaryRow("CPU model", reportData.cpuModel)
-    SummaryRow("Screen resolution", reportData.screenResolution)
-    SummaryRow("Google Play certified", reportData.playCertified)
+    SummaryRow(stringResource(R.string.lb_vr_row_device), reportData.deviceModel)
+    SummaryRow(stringResource(R.string.lb_vr_row_android), reportData.androidVersion)
+    SummaryRow(
+        stringResource(R.string.lb_vr_row_api),
+        if (reportData.apiLevel > 0) {
+            stringResource(R.string.lb_vr_api_value, reportData.apiLevel.toString())
+        } else {
+            stringResource(R.string.lb_vr_not_available)
+        }
+    )
+    SummaryRow(stringResource(R.string.lb_vr_row_patch), reportData.securityPatchLevel)
+    SummaryRow(stringResource(R.string.lb_vr_row_integrity), reportData.rootStatus)
+    SummaryRow(stringResource(R.string.lb_vr_row_cpu), reportData.cpuModel)
+    SummaryRow(stringResource(R.string.lb_vr_row_resolution), reportData.screenResolution)
+    SummaryRow(stringResource(R.string.lb_vr_row_play), reportData.playCertified)
     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     // Health & privacy
-    SummaryRow("Health Score", "${reportData.healthScore}/10")
-    SummaryRow("Privacy Grade", reportData.privacyGrade)
+    SummaryRow(stringResource(R.string.lb_vr_row_health), "${reportData.healthScore}/10")
+    SummaryRow(stringResource(R.string.lb_vr_row_privacy), reportData.privacyGrade)
     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     // Network
-    SummaryRow("Download", reportData.downloadSpeed)
-    SummaryRow("Upload", reportData.uploadSpeed)
-    SummaryRow("Latency", reportData.latency)
-    SummaryRow("Jitter", reportData.jitter)
-    SummaryRow("Packet loss", reportData.packetLoss)
+    SummaryRow(stringResource(R.string.lb_vr_row_download), reportData.downloadSpeed)
+    SummaryRow(stringResource(R.string.lb_vr_row_upload), reportData.uploadSpeed)
+    SummaryRow(stringResource(R.string.lb_vr_row_latency), reportData.latency)
+    SummaryRow(stringResource(R.string.lb_vr_row_jitter), reportData.jitter)
+    SummaryRow(stringResource(R.string.lb_vr_row_packet_loss), reportData.packetLoss)
     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     // Hardware
-    SummaryRow("Battery", reportData.batteryHealth)
-    SummaryRow("Storage", reportData.storageInfo)
-    SummaryRow("RAM", reportData.ramInfo)
+    SummaryRow(stringResource(R.string.lb_vr_row_battery), reportData.batteryHealth)
+    SummaryRow(stringResource(R.string.lb_vr_row_storage), reportData.storageInfo)
+    SummaryRow(stringResource(R.string.lb_vr_row_ram), reportData.ramInfo)
     HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     // Meta
-    SummaryRow("Signed At", signedAt)
+    SummaryRow(stringResource(R.string.lb_vr_row_signed_at), signedAt)
 }
 
 @Composable
@@ -418,26 +432,26 @@ fun VerifyReportDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Verify a Report",
+                    stringResource(R.string.drawer_verified_verify),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    "Someone sent you a code? Enter it here to see their device report and confirm it's real.",
+                    stringResource(R.string.lb_vr_verify_body),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "When to use this:",
+                    stringResource(R.string.lb_vr_when_title),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "• Support asked you to send a code\n• You're buying a used phone and want to check the seller's report\n• Someone shared their report code with you",
+                    stringResource(R.string.lb_vr_verify_when),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Start,
@@ -448,8 +462,8 @@ fun VerifyReportDialog(
                 OutlinedTextField(
                     value = code,
                     onValueChange = { code = it.uppercase() },
-                    label = { Text("Paste the code they gave you") },
-                    placeholder = { Text("e.g. DG-A1B2C3D4") },
+                    label = { Text(stringResource(R.string.lb_vr_paste_label)) },
+                    placeholder = { Text(stringResource(R.string.lb_vr_code_example, "DG-A1B2C3D4")) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp)
@@ -490,7 +504,7 @@ fun VerifyReportDialog(
                     if (isVerifying) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                     } else {
-                        Text("Verify")
+                        Text(stringResource(R.string.lb_vr_verify_button))
                     }
                 }
 
@@ -510,23 +524,29 @@ fun VerifyReportDialog(
                                 ) {
                                     Icon(Icons.Default.Verified, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("Verified", fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
+                                    Text(stringResource(R.string.lb_vr_verified), fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
                                     Text(
-                                        "This report is real and wasn't changed. The details below are what was recorded at the time.",
+                                        stringResource(R.string.lb_vr_verified_body),
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
                                     reportInfo?.let { info ->
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        Text("Signed: ${info["signedAt"]}", style = MaterialTheme.typography.labelSmall)
-                                        Text("App version: ${info["appVersion"]}", style = MaterialTheme.typography.labelSmall)
+                                        Text(
+                                            stringResource(R.string.lb_vr_signed, info["signedAt"].toString()),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                        Text(
+                                            stringResource(R.string.lb_vr_app_version, info["appVersion"].toString()),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
                                         val json = info["reportDataJson"] as? String
                                         if (json != null) {
                                             val data = VerifiedReportManager.parseReportData(json)
                                             if (data != null) {
                                                 Spacer(modifier = Modifier.height(8.dp))
                                                 Text(
-                                                    "Full device insight (100% of what was recorded)",
+                                                    stringResource(R.string.lb_vr_full_insight),
                                                     style = MaterialTheme.typography.labelMedium,
                                                     fontWeight = FontWeight.SemiBold,
                                                     color = MaterialTheme.colorScheme.onSurface
@@ -535,7 +555,7 @@ fun VerifyReportDialog(
                                                 if (isOldReport) {
                                                     Spacer(modifier = Modifier.height(4.dp))
                                                     Text(
-                                                        "Reports created with an older app version may show N/A for some fields. New reports include more details.",
+                                                        stringResource(R.string.lb_vr_old_report),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         textAlign = TextAlign.Center
@@ -545,7 +565,7 @@ fun VerifyReportDialog(
                                                 if (speedFailed) {
                                                     Spacer(modifier = Modifier.height(4.dp))
                                                     Text(
-                                                        "Download/upload shows \"Speed Test Failed\" when the test didn't complete at the time the report was created (e.g. no internet or timeout).",
+                                                        stringResource(R.string.lb_vr_speed_failed_note),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         textAlign = TextAlign.Center
@@ -571,9 +591,9 @@ fun VerifyReportDialog(
                                 ) {
                                     Icon(Icons.Default.GppBad, null, tint = Color(0xFFF44336), modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("Not verified", fontWeight = FontWeight.Bold, color = Color(0xFFF44336))
+                                    Text(stringResource(R.string.lb_vr_not_verified), fontWeight = FontWeight.Bold, color = Color(0xFFF44336))
                                     Text(
-                                        "This report may have been altered. Don't trust it.",
+                                        stringResource(R.string.lb_vr_tampered_body),
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
@@ -592,9 +612,9 @@ fun VerifyReportDialog(
                                 ) {
                                     Icon(Icons.Default.SearchOff, null, modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("No report found", fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.lb_vr_not_found), fontWeight = FontWeight.Bold)
                                     Text(
-                                        "We couldn't find a report for this code. Check the code and try again, or ask the person to send it again.",
+                                        stringResource(R.string.lb_vr_not_found_body),
                                         style = MaterialTheme.typography.bodySmall,
                                         textAlign = TextAlign.Center
                                     )
@@ -602,14 +622,14 @@ fun VerifyReportDialog(
                             }
                         }
                         else -> {
-                            Text("An error occurred. Please try again.", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.lb_error_try_again), color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         }
