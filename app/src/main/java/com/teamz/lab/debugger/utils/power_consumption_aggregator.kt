@@ -3,6 +3,7 @@ package com.teamz.lab.debugger.utils
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.teamz.lab.debugger.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -592,9 +593,9 @@ object PowerConsumptionAggregator {
                 if (percentPerHour > 0 && percentPerHour < 100) {
                     // Use more precision for very small values
                     when {
-                        percentPerHour >= 0.1 -> "%.1f%% per hour".format(percentPerHour)
-                        percentPerHour >= 0.01 -> "%.2f%% per hour".format(percentPerHour)
-                        else -> "%.3f%% per hour".format(percentPerHour)
+                        percentPerHour >= 0.1 -> context.getString(R.string.pw_per_hour, "%.1f".format(percentPerHour))
+                        percentPerHour >= 0.01 -> context.getString(R.string.pw_per_hour, "%.2f".format(percentPerHour))
+                        else -> context.getString(R.string.pw_per_hour, "%.3f".format(percentPerHour))
                     }
                 } else null
             } else null
@@ -661,7 +662,7 @@ object PowerConsumptionAggregator {
         val percentPerHour = calculateBatteryPercentPerHour(powerWatts, context)
         return percentPerHour?.let {
             when {
-                componentName.lowercase().contains("camera") -> "~$it per photo"
+                componentName.lowercase().contains("camera") -> context.getString(R.string.pw_per_photo, it)
                 componentName.lowercase().contains("display") || componentName.lowercase().contains("screen") -> "~$it"
                 componentName.lowercase().contains("cpu") -> "~$it"
                 else -> "~$it"

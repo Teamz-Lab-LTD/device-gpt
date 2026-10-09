@@ -77,6 +77,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import com.teamz.lab.debugger.utils.PermissionManager
 import com.teamz.lab.debugger.utils.string
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.utils.PowerStrings
 import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
@@ -343,7 +345,7 @@ Total Power: ${"%.2f".format(data.totalPower)} W
                         ) {
                             Icon(
                                 imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                                contentDescription = "Get AI insights about component breakdown",
+                                contentDescription = stringResource(R.string.pw_cd_ai_breakdown),
                                 tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -473,7 +475,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Last updated: ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(lastUpdateTime))}",
+                        text = stringResource(R.string.last_updated, SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(lastUpdateTime))),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 11.sp
@@ -497,7 +499,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Loading power consumption data...",
+                            text = stringResource(R.string.loading_power_data),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -512,7 +514,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No data available",
+                            text = stringResource(R.string.pw_no_data),
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -563,7 +565,7 @@ private fun TotalPowerSummary(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Your Phone's Battery Usage Right Now",
+                    text = stringResource(R.string.pw_now_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
                     color = textColor,
@@ -577,7 +579,7 @@ private fun TotalPowerSummary(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_power),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -588,7 +590,7 @@ private fun TotalPowerSummary(
             Spacer(modifier = Modifier.height(4.dp))
             
             Text(
-                text = "How much battery your phone is using at this moment",
+                text = stringResource(R.string.pw_now_sub),
                 style = MaterialTheme.typography.bodySmall,
                 color = secondaryTextColor,
                 textAlign = TextAlign.Center,
@@ -610,7 +612,7 @@ private fun TotalPowerSummary(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "W",
+                    text = stringResource(R.string.watts),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Medium,
                     color = textColor,
@@ -628,7 +630,7 @@ private fun TotalPowerSummary(
             
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Watts (W) - the unit for measuring battery power",
+                    text = stringResource(R.string.pw_watts_explain),
                     style = MaterialTheme.typography.bodySmall,
                     color = tertiaryTextColor,
                     textAlign = TextAlign.Center,
@@ -640,7 +642,7 @@ private fun TotalPowerSummary(
                 practicalInfo?.let {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Drains $it",
+                        text = stringResource(R.string.pw_drains, it),
                         style = MaterialTheme.typography.bodySmall,
                         color = secondaryTextColor,
                         textAlign = TextAlign.Center,
@@ -661,10 +663,10 @@ private fun TotalPowerSummary(
 @Composable
 private fun PowerLevelIndicator(power: Double) {
     val powerLevel = when {
-        power < 2.0 -> "Low Usage - Great!" to Color(0xFF4CAF50) // Green
-        power < 5.0 -> "Medium Usage - Normal" to Color(0xFFFF9800) // Orange
-        power < 8.0 -> "High Usage - Battery Draining Fast" to Color(0xFFFF5722) // Red
-        else -> "Very High Usage - Battery Draining Very Fast" to Color(0xFFD32F2F) // Dark Red
+        power < 2.0 -> stringResource(R.string.pw_level_low) to Color(0xFF4CAF50) // Green
+        power < 5.0 -> stringResource(R.string.pw_level_medium) to Color(0xFFFF9800) // Orange
+        power < 8.0 -> stringResource(R.string.pw_level_high) to Color(0xFFFF5722) // Red
+        else -> stringResource(R.string.pw_level_very_high) to Color(0xFFD32F2F) // Dark Red
     }
     
     Row(
@@ -745,12 +747,12 @@ private fun ComponentPowerItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = component.component,
+                    text = PowerStrings.component(context, component.component),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = component.status,
+                    text = PowerStrings.status(context, component.status),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -771,7 +773,7 @@ private fun ComponentPowerItem(
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(
-                        text = "W",
+                        text = stringResource(R.string.watts),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -802,7 +804,7 @@ private fun ComponentPowerItem(
                 ) {
                     Icon(
                         imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                        contentDescription = "Get AI insights about ${component.component}",
+                        contentDescription = stringResource(R.string.pw_cd_ai_component, PowerStrings.component(context, component.component)),
                         tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                         modifier = Modifier.size(18.dp)
                     )
@@ -810,7 +812,7 @@ private fun ComponentPowerItem(
             }
             Icon(
                 Icons.Default.Info,
-                contentDescription = "Tap for more info",
+                contentDescription = stringResource(R.string.tap_for_more_info),
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
             )
@@ -932,7 +934,7 @@ private fun TestResultsFooter(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "$count $countLabel",
+                    text = PowerStrings.countLabel(context, count, countLabel),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
@@ -1106,11 +1108,11 @@ private fun ComponentInfoDialog(
             if (hasPermissionNow) {
                 // Show component-specific success message
                 val successMessage = when (componentName) {
-                    "camera" -> "Camera permission granted! Data will update shortly."
-                    "audio" -> "Audio permission granted! Data will update shortly."
-                    "gps", "location" -> "Location permission granted! Data will update shortly."
-                    "bluetooth" -> "Bluetooth permission granted! Data will update shortly."
-                    else -> "Permission granted! Data will update shortly."
+                    "camera" -> context.string(R.string.pw_perm_camera_granted)
+                    "audio" -> context.string(R.string.pw_perm_audio_granted)
+                    "gps", "location" -> context.string(R.string.pw_perm_location_granted)
+                    "bluetooth" -> context.string(R.string.pw_perm_bluetooth_granted)
+                    else -> context.string(R.string.pw_perm_granted)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1120,11 +1122,11 @@ private fun ComponentInfoDialog(
             } else {
                 // Show component-specific denial message
                 val denialMessage = when (componentName) {
-                    "camera" -> "Camera permission denied. Camera power data will not be available."
-                    "audio" -> "Audio permission denied. Audio power data will not be available."
-                    "gps", "location" -> "Location permission denied. GPS power data will not be available."
-                    "bluetooth" -> "Bluetooth permission denied. Bluetooth power data will not be available."
-                    else -> "Permission denied. Some features may not work."
+                    "camera" -> context.string(R.string.pw_perm_camera_denied)
+                    "audio" -> context.string(R.string.pw_perm_audio_denied)
+                    "gps", "location" -> context.string(R.string.pw_perm_location_denied)
+                    "bluetooth" -> context.string(R.string.pw_perm_bluetooth_denied)
+                    else -> context.string(R.string.pw_perm_denied)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1157,9 +1159,9 @@ private fun ComponentInfoDialog(
             if (hasAllRequiredPermissions) {
                 // Show component-specific success message
                 val successMessage = when (componentName) {
-                    "gps", "location" -> "Location permission granted! Data will update shortly."
-                    "bluetooth" -> "Bluetooth permissions granted! Data will update shortly."
-                    else -> "All permissions granted! Data will update shortly."
+                    "gps", "location" -> context.string(R.string.pw_perm_location_granted)
+                    "bluetooth" -> context.string(R.string.pw_perms_bluetooth_granted)
+                    else -> context.string(R.string.pw_perms_all_granted)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1169,8 +1171,8 @@ private fun ComponentInfoDialog(
             } else if (grantedCount > 0) {
                 // Partial permissions granted
                 val partialMessage = when (componentName) {
-                    "bluetooth" -> "Some Bluetooth permissions granted. Full functionality may be limited."
-                    else -> "Some permissions granted. Some features may not work."
+                    "bluetooth" -> context.string(R.string.pw_perms_bluetooth_some)
+                    else -> context.string(R.string.pw_perms_some)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1180,9 +1182,9 @@ private fun ComponentInfoDialog(
             } else {
                 // All permissions denied
                 val denialMessage = when (componentName) {
-                    "gps", "location" -> "Location permission denied. GPS power data will not be available."
-                    "bluetooth" -> "Bluetooth permissions denied. Bluetooth power data will not be available."
-                    else -> "Permissions denied. Some features may not work."
+                    "gps", "location" -> context.string(R.string.pw_perm_location_denied)
+                    "bluetooth" -> context.string(R.string.pw_perms_bluetooth_denied)
+                    else -> context.string(R.string.pw_perms_denied)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1213,11 +1215,11 @@ private fun ComponentInfoDialog(
         
         if (alreadyGranted) {
             val message = when (componentName) {
-                "camera" -> "Camera permission already granted!"
-                "audio" -> "Audio permission already granted!"
-                "gps", "location" -> "Location permission already granted!"
-                "bluetooth" -> "Bluetooth permissions already granted!"
-                else -> "Permission already granted!"
+                "camera" -> context.string(R.string.pw_perm_camera_already)
+                "audio" -> context.string(R.string.pw_perm_audio_already)
+                "gps", "location" -> context.string(R.string.pw_perm_location_already)
+                "bluetooth" -> context.string(R.string.pw_perms_bluetooth_already)
+                else -> context.string(R.string.pw_perm_already)
             }
             android.widget.Toast.makeText(
                 context,
@@ -1238,7 +1240,7 @@ private fun ComponentInfoDialog(
                 // Already has fine location, that's sufficient
                 android.widget.Toast.makeText(
                     context,
-                    "Location permission already granted!",
+                    context.string(R.string.pw_perm_location_already),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1252,7 +1254,7 @@ private fun ComponentInfoDialog(
             if (ungrantedPermissions.isEmpty()) {
                 android.widget.Toast.makeText(
                     context,
-                    "All permissions already granted!",
+                    context.string(R.string.pw_perms_all_already),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -1263,9 +1265,9 @@ private fun ComponentInfoDialog(
             val permission = requiredPermissions.first()
             if (PermissionManager.hasPermission(context, permission)) {
                 val message = when (componentName) {
-                    "camera" -> "Camera permission already granted!"
-                    "audio" -> "Audio permission already granted!"
-                    else -> "Permission already granted!"
+                    "camera" -> context.string(R.string.pw_perm_camera_already)
+                    "audio" -> context.string(R.string.pw_perm_audio_already)
+                    else -> context.string(R.string.pw_perm_already)
                 }
                 android.widget.Toast.makeText(
                     context,
@@ -1281,61 +1283,61 @@ private fun ComponentInfoDialog(
     // Convert technical details to user-friendly language
     val userFriendlyInfo = remember(component) {
         buildString {
-            appendLine("${component.icon} ${component.component}")
+            appendLine("${component.icon} ${PowerStrings.component(context, component.component)}")
             appendLine()
             
             // Power consumption in simple terms
             val powerW = component.powerConsumption / 1000.0
             when {
-                powerW < 0.5 -> appendLine("💚 Low Power Usage")
-                powerW < 1.5 -> appendLine("💛 Moderate Power Usage")
-                powerW < 3.0 -> appendLine("🧡 High Power Usage")
-                else -> appendLine("❤️ Very High Power Usage")
+                powerW < 0.5 -> appendLine(context.string(R.string.pw_info_low))
+                powerW < 1.5 -> appendLine(context.string(R.string.pw_info_moderate))
+                powerW < 3.0 -> appendLine(context.string(R.string.pw_info_high))
+                else -> appendLine(context.string(R.string.pw_info_very_high))
             }
-            appendLine("Currently using: ${String.format("%.1f", powerW)}W")
+            appendLine(context.string(R.string.pw_info_currently, String.format("%.1f", powerW)))
             appendLine()
             
             // Status in simple terms
-            appendLine("Status: ${component.status}")
+            appendLine(context.string(R.string.pw_info_status, PowerStrings.status(context, component.status)))
             appendLine()
             
             // Simple explanation based on component type
             when (component.component.lowercase()) {
                 "display", "screen" -> {
-                    appendLine("💡 What this means:")
-                    appendLine("Your screen brightness affects battery life. Brighter screens use more power. Lower brightness saves battery.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_display))
                 }
                 "cpu", "processor" -> {
-                    appendLine("💡 What this means:")
-                    appendLine("Your phone's brain (CPU) uses power when running apps. More apps = more power. Closing unused apps helps save battery.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_cpu))
                 }
                 "network", "wifi", "cellular" -> {
-                    appendLine("💡 What this means:")
-                    appendLine("Internet connection uses power. Wi-Fi usually uses less power than mobile data. Better signal = less power used.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_network))
                 }
                 "camera" -> {
-                    appendLine("💡 What this means:")
-                    appendLine("Camera uses a lot of power when active. Close camera apps when not taking photos to save battery.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_camera))
                 }
                 "battery" -> {
-                    appendLine("💡 What this means:")
-                    appendLine("This shows your overall battery power usage. Lower is better for longer battery life.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_battery))
                 }
                 else -> {
-                    appendLine("💡 What this means:")
-                    appendLine("This component is using power. The lower the number, the better for your battery life.")
+                    appendLine(context.string(R.string.pw_info_means))
+                    appendLine(context.string(R.string.pw_info_other))
                 }
             }
             
             // Add education content if available
             education?.let {
                 appendLine()
-                appendLine("📚 Quick Tips:")
+                appendLine(context.string(R.string.pw_info_quick_tips))
                 val tips = it.content.lines()
                     .filter { line -> line.trim().startsWith("•") || line.trim().startsWith("-") }
                     .take(3)
                 if (tips.isEmpty()) {
-                    appendLine(PowerEducation.getQuickTip(component.component) ?: "Keep this component usage low to save battery.")
+                    appendLine(PowerEducation.getQuickTip(component.component) ?: context.string(R.string.pw_info_default_tip))
                 } else {
                     tips.forEach { tip -> appendLine(tip.trim()) }
                 }
@@ -1353,7 +1355,7 @@ private fun ComponentInfoDialog(
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = component.component,
+                    text = PowerStrings.component(context, component.component),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -1389,7 +1391,7 @@ private fun ComponentInfoDialog(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Permission Required",
+                                    text = stringResource(R.string.permission_required),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.error
@@ -1397,7 +1399,7 @@ private fun ComponentInfoDialog(
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Grant permission to see accurate power consumption data for this component.",
+                                text = stringResource(R.string.grant_permission_description),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1469,7 +1471,7 @@ private fun AggregatedStatsSection(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Power Statistics",
+                    text = stringResource(R.string.power_statistics),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1482,7 +1484,7 @@ private fun AggregatedStatsSection(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about power statistics",
+                            contentDescription = stringResource(R.string.pw_cd_ai_stats),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -1510,7 +1512,7 @@ private fun AggregatedStatsSection(
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
                                 icon = "📊",
-                                label = "Average Usage",
+                                label = stringResource(R.string.pw_stat_average),
                                 value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                                 valueColor = MaterialTheme.colorScheme.primary,
                                 powerWatts = stats.averagePower,
@@ -1520,7 +1522,7 @@ private fun AggregatedStatsSection(
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
                                 icon = "⚡",
-                                label = "Highest Usage",
+                                label = stringResource(R.string.pw_stat_highest),
                                 value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                                 valueColor = Color(0xFFFF5722),
                                 powerWatts = stats.peakPower,
@@ -1530,7 +1532,7 @@ private fun AggregatedStatsSection(
                         Box(modifier = Modifier.weight(1f)) {
                             CompactStatCard(
                                 icon = "📈",
-                                label = "Data Points",
+                                label = stringResource(R.string.pw_stat_points),
                                 value = stats.totalSamples.toString(),
                                 valueColor = MaterialTheme.colorScheme.tertiary
                             )
@@ -1549,7 +1551,7 @@ private fun AggregatedStatsSection(
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "📊",
-                                    label = "Average Usage",
+                                    label = stringResource(R.string.pw_stat_average),
                                     value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                                     valueColor = MaterialTheme.colorScheme.primary,
                                     powerWatts = stats.averagePower,
@@ -1559,7 +1561,7 @@ private fun AggregatedStatsSection(
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "⚡",
-                                    label = "Highest Usage",
+                                    label = stringResource(R.string.pw_stat_highest),
                                     value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                                     valueColor = Color(0xFFFF5722),
                                     powerWatts = stats.peakPower,
@@ -1575,7 +1577,7 @@ private fun AggregatedStatsSection(
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "📈",
-                                    label = "Data Points",
+                                    label = stringResource(R.string.pw_stat_points),
                                     value = stats.totalSamples.toString(),
                                     valueColor = MaterialTheme.colorScheme.tertiary
                                 )
@@ -1591,7 +1593,7 @@ private fun AggregatedStatsSection(
                     ) {
                         CompactStatCard(
                             icon = "📊",
-                            label = "Average Usage",
+                            label = stringResource(R.string.pw_stat_average),
                             value = PowerConsumptionAggregator.formatPower(stats.averagePower),
                             valueColor = MaterialTheme.colorScheme.primary,
                             powerWatts = stats.averagePower,
@@ -1599,7 +1601,7 @@ private fun AggregatedStatsSection(
                         )
                         CompactStatCard(
                             icon = "⚡",
-                            label = "Highest Usage",
+                            label = stringResource(R.string.pw_stat_highest),
                             value = PowerConsumptionAggregator.formatPower(stats.peakPower),
                             valueColor = Color(0xFFFF5722),
                             powerWatts = stats.peakPower,
@@ -1607,7 +1609,7 @@ private fun AggregatedStatsSection(
                         )
                         CompactStatCard(
                             icon = "📈",
-                            label = "Data Points",
+                            label = stringResource(R.string.pw_stat_points),
                             value = stats.totalSamples.toString(),
                             valueColor = MaterialTheme.colorScheme.tertiary
                         )
@@ -1635,17 +1637,17 @@ private fun AggregatedStatsSection(
                 ) {
                     val trendData = when (stats.powerTrend) {
                         PowerConsumptionAggregator.PowerTrend.INCREASING -> 
-                            Triple("📈", "Trend: Usage is increasing", Color(0xFFFF5722)) to 
-                            "Your phone is using more battery over time - check what's running"
+                            Triple("📈", stringResource(R.string.pw_trend_up), Color(0xFFFF5722)) to 
+                            stringResource(R.string.pw_trend_up_why)
                         PowerConsumptionAggregator.PowerTrend.DECREASING -> 
-                            Triple("📉", "Trend: Usage is decreasing", Color(0xFF4CAF50)) to 
-                            "Your phone is using less battery over time - this is good!"
+                            Triple("📉", stringResource(R.string.pw_trend_down), Color(0xFF4CAF50)) to 
+                            stringResource(R.string.pw_trend_down_why)
                         PowerConsumptionAggregator.PowerTrend.STABLE -> 
-                            Triple("📊", "Trend: Usage is stable", MaterialTheme.colorScheme.primary) to 
-                            "Your phone's battery usage is staying consistent"
+                            Triple("📊", stringResource(R.string.pw_trend_stable), MaterialTheme.colorScheme.primary) to 
+                            stringResource(R.string.pw_trend_stable_why)
                         PowerConsumptionAggregator.PowerTrend.UNKNOWN -> 
-                            Triple("❓", "Trend: Not enough data", MaterialTheme.colorScheme.onSurfaceVariant) to 
-                            "Need more data points to show trend"
+                            Triple("❓", stringResource(R.string.pw_trend_unknown), MaterialTheme.colorScheme.onSurfaceVariant) to 
+                            stringResource(R.string.pw_trend_unknown_why)
                     }
                     val (trendIcon, trendText, trendColor) = trendData.first
                     val trendExplanation = trendData.second
@@ -1693,20 +1695,20 @@ private fun AggregatedStatsSection(
                 ) {
                     val ratingData = when {
                         stats.averagePower < 2.0 -> 
-                            Triple("Current Level: Excellent ⭐⭐⭐⭐⭐", Color(0xFF4CAF50), 
-                            "Your phone uses very little battery right now")
+                            Triple(stringResource(R.string.pw_rating_excellent), Color(0xFF4CAF50), 
+                            stringResource(R.string.pw_rating_excellent_why))
                         stats.averagePower < 4.0 -> 
-                            Triple("Current Level: Good ⭐⭐⭐⭐", Color(0xFF8BC34A),
-                            "Your phone uses a reasonable amount of battery")
+                            Triple(stringResource(R.string.pw_rating_good), Color(0xFF8BC34A),
+                            stringResource(R.string.pw_rating_good_why))
                         stats.averagePower < 6.0 -> 
-                            Triple("Current Level: Fair ⭐⭐⭐", Color(0xFFFF9800),
-                            "Your phone uses moderate battery - room for improvement")
+                            Triple(stringResource(R.string.pw_rating_fair), Color(0xFFFF9800),
+                            stringResource(R.string.pw_rating_fair_why))
                         stats.averagePower < 8.0 -> 
-                            Triple("Current Level: High ⭐⭐", Color(0xFFFF5722),
-                            "Your phone uses a lot of battery - check running apps")
+                            Triple(stringResource(R.string.pw_rating_high), Color(0xFFFF5722),
+                            stringResource(R.string.pw_rating_high_why))
                         else -> 
-                            Triple("Current Level: Very High ⭐", Color(0xFFD32F2F),
-                            "Your phone uses too much battery - close apps and restart")
+                            Triple(stringResource(R.string.pw_rating_very_high), Color(0xFFD32F2F),
+                            stringResource(R.string.pw_rating_very_high_why))
                     }
                     val (ratingText, ratingColor, ratingExplanation) = ratingData
                     
@@ -1986,13 +1988,13 @@ private fun CameraPowerTestSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Camera Power Test",
+                    contentDescription = stringResource(R.string.camera_power_test),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "How Much Battery Does Your Camera Use?",
+                    text = stringResource(R.string.pw_cam_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = headerTextColor,
@@ -2021,7 +2023,7 @@ Total Tests: ${allResults.size}
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about camera power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_camera),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2032,7 +2034,7 @@ Total Tests: ${allResults.size}
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "Taking photos uses battery, but how much? This test opens your camera and takes a real photo to measure exactly how much battery each photo costs. You'll see a live preview while we measure.",
+                text = stringResource(R.string.pw_cam_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
@@ -2042,7 +2044,7 @@ Total Tests: ${allResults.size}
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "💡 Tip: Results may vary slightly based on your phone's temperature and current battery level.",
+                text = stringResource(R.string.pw_cam_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 fontSize = 10.sp
@@ -2150,7 +2152,7 @@ Total Tests: ${allResults.size}
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Camera Preview\n(Will show live feed during test)",
+                                text = stringResource(R.string.camera_preview),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(alpha = 0.7f),
                                 textAlign = TextAlign.Center
@@ -2190,9 +2192,9 @@ Total Tests: ${allResults.size}
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (totalTests > 1) {
-                                    "📷 Test $currentTestNumber/$totalTests - Camera active, capturing photo..."
+                                    stringResource(R.string.pw_cam_progress_n, currentTestNumber, totalTests)
                                 } else {
-                                    "📷 Camera is active - Capturing photo and measuring power..."
+                                    stringResource(R.string.pw_cam_progress)
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
@@ -2202,7 +2204,7 @@ Total Tests: ${allResults.size}
                         if (totalTests > 1) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Preview shows live camera feed during each test",
+                                text = stringResource(R.string.preview_live_feed),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp
@@ -2474,7 +2476,7 @@ Total Tests: ${allResults.size}
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "All Test Results (${allTestResults.size} total):",
+                                    text = stringResource(R.string.pw_cam_all_results, allTestResults.size),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -2509,29 +2511,29 @@ Total Tests: ${allResults.size}
                             val valueText = buildString {
                                 append(powerText)
                                 batteryPercent?.let {
-                                    append(" • Takes $it of your charge")
+                                    append(" • " + context.string(R.string.pw_cam_takes, it))
                                 }
                             }
                             
                             // Create meaningful subtitle
                             val subtitleText = buildString {
-                                append("Capture time: $durationText")
+                                append(context.string(R.string.pw_cam_capture_time, durationText))
                                 batteryPercent?.let { percent ->
                                     val percentValue = percent.replace("%", "").toDoubleOrNull() ?: 0.0
                                     when {
-                                        percentValue < 0.001 -> append(" • Very efficient photo")
-                                        percentValue < 0.01 -> append(" • Efficient photo")
-                                        percentValue < 0.1 -> append(" • Normal photo cost")
-                                        else -> append(" • Higher photo cost")
+                                        percentValue < 0.001 -> append(" • " + context.string(R.string.pw_cam_very_efficient))
+                                        percentValue < 0.01 -> append(" • " + context.string(R.string.pw_cam_efficient))
+                                        percentValue < 0.1 -> append(" • " + context.string(R.string.pw_cam_normal))
+                                        else -> append(" • " + context.string(R.string.pw_cam_higher))
                                     }
                                 } ?: run {
-                                    append(" • Minimal battery impact")
+                                    append(" • " + context.string(R.string.pw_cam_minimal))
                                 }
                             }
                             
                             SampleDataCard(
                                 icon = "📷",
-                                title = "Test $testNumber",
+                                title = stringResource(R.string.pw_test_n, testNumber),
                                 value = valueText,
                                 subtitle = subtitleText,
                                 valueColor = powerColor
@@ -2558,7 +2560,7 @@ Total Tests: ${allResults.size}
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "... and ${allTestResults.size - 5} more tests (view CSV for all)",
+                                        text = stringResource(R.string.pw_cam_more, allTestResults.size - 5),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 11.sp
@@ -2589,16 +2591,16 @@ Total Tests: ${allResults.size}
         val allResults = allTestResults
         
         CsvPreviewDialog(
-            title = "Camera Power Test Data",
-            headers = listOf("Timestamp", "Baseline (W)", "Preview (W)", "Capture (W)", "Power Δ (W)", "Duration (ms)", "Energy (J)"),
+            title = stringResource(R.string.camera_power_test_data),
+            headers = listOf(stringResource(R.string.pw_csv_timestamp), stringResource(R.string.pw_csv_cam_baseline), stringResource(R.string.pw_csv_cam_preview), stringResource(R.string.pw_csv_cam_capture), stringResource(R.string.pw_csv_cam_delta), stringResource(R.string.pw_csv_cam_duration), stringResource(R.string.pw_csv_cam_energy)),
             headerDescriptions = mapOf(
-                "Timestamp" to "Exact date and time when this photo was taken during the test.",
-                "Baseline (W)" to "Your phone's normal battery usage when the camera app is completely closed. This is the baseline we compare everything else to.",
-                "Preview (W)" to "Battery power used ONLY while showing the live camera preview (the viewfinder). This measures just the preview screen, before taking any photo.",
-                "Capture (W)" to "Battery power used DURING the moment of taking the photo. This includes capturing the image, processing it, and saving it to storage.",
-                "Power Δ (W)" to "The EXTRA battery cost of taking this photo. Calculated as: Capture power minus Baseline power. This shows you the true cost of each photo.",
-                "Duration (ms)" to "How many milliseconds (thousandths of a second) it took to complete the photo capture process, from pressing the button to saving the image.",
-                "Energy (J)" to "Total energy consumed for this entire photo, calculated by multiplying power by duration. Measured in Joules - this is the complete energy cost."
+                stringResource(R.string.pw_csv_timestamp) to stringResource(R.string.pw_csv_cam_timestamp_d),
+                stringResource(R.string.pw_csv_cam_baseline) to stringResource(R.string.pw_csv_cam_baseline_d),
+                stringResource(R.string.pw_csv_cam_preview) to stringResource(R.string.pw_csv_cam_preview_d),
+                stringResource(R.string.pw_csv_cam_capture) to stringResource(R.string.pw_csv_cam_capture_d),
+                stringResource(R.string.pw_csv_cam_delta) to stringResource(R.string.pw_csv_cam_delta_d),
+                stringResource(R.string.pw_csv_cam_duration) to stringResource(R.string.pw_csv_cam_duration_d),
+                stringResource(R.string.pw_csv_cam_energy) to stringResource(R.string.pw_csv_cam_energy_d)
             ),
             rows = allResults.map { result ->
                 listOf(
@@ -2653,7 +2655,7 @@ Total Tests: ${allResults.size}
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share Camera Power Data"))
+                            context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_camera_data)))
                         }
                     }
                 } else {
@@ -2692,7 +2694,7 @@ Total Tests: ${allResults.size}
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Camera Power Data"))
+                        context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_camera_data)))
                     }
                 }
             }
@@ -2705,7 +2707,7 @@ Total Tests: ${allResults.size}
             onDismissRequest = { showResultDialog = false },
             title = {
                 Text(
-                    text = "📸 Single Photo Power Test",
+                    text = stringResource(R.string.single_photo_power_test),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -2737,7 +2739,7 @@ Total Tests: ${allResults.size}
             onDismissRequest = { showMultipleTestDialog = false },
             title = {
                 Text(
-                    text = "📊 Multiple Photo Power Tests",
+                    text = stringResource(R.string.multiple_photo_power_tests),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -2745,7 +2747,7 @@ Total Tests: ${allResults.size}
             text = {
                 Column {
                     Text(
-                        text = "Test Results:",
+                        text = stringResource(R.string.test_results),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -2758,7 +2760,7 @@ Total Tests: ${allResults.size}
                         items(results.size) { index ->
                             val result = results[index]
                     Text(
-                                text = "Test ${index + 1}: ${PowerConsumptionAggregator.formatPower(result.powerDifference)} (${result.captureDuration}ms)",
+                                text = stringResource(R.string.pw_cam_result_line, index + 1, PowerConsumptionAggregator.formatPower(result.powerDifference), result.captureDuration),
                         style = MaterialTheme.typography.bodyMedium
                     )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -2787,7 +2789,7 @@ Total Tests: ${allResults.size}
             onDismissRequest = { showPermissionDialog = false },
             title = {
                     Text(
-                    text = if (currentPermission) "✅ Camera Permission Granted" else "❌ Camera Permission Required",
+                    text = if (currentPermission) stringResource(R.string.pw_cam_perm_granted_title) else stringResource(R.string.pw_cam_perm_required_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                     )
@@ -2795,9 +2797,9 @@ Total Tests: ${allResults.size}
             text = {
                     Text(
                     text = if (currentPermission) {
-                        "Camera permission has been granted! You can now run camera power tests."
+                        stringResource(R.string.pw_cam_perm_granted_body)
                     } else {
-                        "Camera permission is required to measure photo capture power consumption. Please grant camera permission in your device settings to use this feature."
+                        stringResource(R.string.pw_cam_perm_required_body)
                     },
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -2901,48 +2903,48 @@ private fun generatePowerShareText(
     stats: PowerConsumptionAggregator.PowerStats?
 ): String {
     return buildString {
-        appendLine("⚡ POWER CONSUMPTION REPORT")
+        appendLine(context.string(R.string.pw_share_title))
         appendLine("===========================")
         appendLine()
         
         if (powerData != null) {
-            appendLine("📊 Current Power Usage:")
-            appendLine("  • Total Power: ${PowerConsumptionAggregator.formatPower(powerData.totalPower)}")
+            appendLine(context.string(R.string.pw_share_current))
+            appendLine("  " + context.string(R.string.pw_share_total, PowerConsumptionAggregator.formatPower(powerData.totalPower)))
             appendLine()
             
-            appendLine("🔋 Component Breakdown:")
+            appendLine(context.string(R.string.pw_share_breakdown))
             powerData.components.sortedByDescending { it.powerConsumption }.forEach { component ->
                 val percentage = if (powerData.totalPower > 0) {
                     (component.powerConsumption / powerData.totalPower * 100).toInt()
                 } else 0
-                appendLine("  • ${component.icon} ${component.component}: ${PowerConsumptionAggregator.formatPower(component.powerConsumption)} ($percentage%)")
+                appendLine("  • ${component.icon} ${PowerStrings.component(context, component.component)}: ${PowerConsumptionAggregator.formatPower(component.powerConsumption)} ($percentage%)")
             }
             appendLine()
         }
         
         if (stats != null) {
-            appendLine("📈 Power Statistics:")
-            appendLine("  • Average Power: ${PowerConsumptionAggregator.formatPower(stats.averagePower)}")
-            appendLine("  • Peak Power: ${PowerConsumptionAggregator.formatPower(stats.peakPower)}")
-            appendLine("  • Min Power: ${PowerConsumptionAggregator.formatPower(stats.minPower)}")
-            appendLine("  • Total Samples: ${stats.totalSamples}")
-            appendLine("  • Power Trend: ${stats.powerTrend.name}")
+            appendLine(context.string(R.string.pw_share_stats))
+            appendLine("  " + context.string(R.string.pw_share_avg, PowerConsumptionAggregator.formatPower(stats.averagePower)))
+            appendLine("  " + context.string(R.string.pw_share_peak, PowerConsumptionAggregator.formatPower(stats.peakPower)))
+            appendLine("  " + context.string(R.string.pw_share_min, PowerConsumptionAggregator.formatPower(stats.minPower)))
+            appendLine("  " + context.string(R.string.pw_share_samples, stats.totalSamples))
+            appendLine("  " + context.string(R.string.pw_share_trend, PowerStrings.trend(context, stats.powerTrend)))
             appendLine()
             
             if (stats.topConsumers.isNotEmpty()) {
-                appendLine("🔥 Top Power Consumers:")
+                appendLine(context.string(R.string.pw_share_top))
                 stats.topConsumers.take(5).forEach { consumer ->
-                    appendLine("  • ${consumer.component}: ${PowerConsumptionAggregator.formatPower(consumer.averagePower)} avg (${consumer.usagePercentage.toInt()}%)")
+                    appendLine("  " + context.string(R.string.pw_share_consumer, PowerStrings.component(context, consumer.component), PowerConsumptionAggregator.formatPower(consumer.averagePower), consumer.usagePercentage.toInt()))
                 }
                 appendLine()
             }
         }
         
         if (powerData == null && stats == null) {
-            appendLine("No power data available yet. Please wait for measurements to complete.")
+            appendLine(context.string(R.string.pw_share_no_data))
         }
         
-        appendLine("Last Updated: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}")
+        appendLine(context.string(R.string.pw_share_last_updated, SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())))
     }
 }
 
@@ -3016,13 +3018,13 @@ private fun DisplayPowerSweepSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.BrightnessHigh,
-                    contentDescription = "How Brightness Affects Battery",
+                    contentDescription = stringResource(R.string.pw_disp_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Find Your Perfect Brightness Level",
+                    text = stringResource(R.string.pw_disp_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = headerTextColor,
@@ -3051,7 +3053,7 @@ This shows how different brightness levels affect battery consumption.
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about display brightness power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_display),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -3062,7 +3064,7 @@ This shows how different brightness levels affect battery consumption.
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "Lower brightness saves battery, but how much? This test automatically changes your screen brightness and measures the battery cost of each level. See exactly how much battery you save by turning down the brightness.",
+                text = stringResource(R.string.pw_disp_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
@@ -3072,7 +3074,7 @@ This shows how different brightness levels affect battery consumption.
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "• Fast Sweep: Tests 5 brightness levels (20%, 40%, 60%, 80%, 100%) - takes about 30 seconds",
+                text = stringResource(R.string.pw_disp_fast),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp
@@ -3081,7 +3083,7 @@ This shows how different brightness levels affect battery consumption.
             Spacer(modifier = Modifier.height(2.dp))
             
             Text(
-                text = "• Full Sweep: Tests 6 brightness levels with different screen content - takes about 1 minute",
+                text = stringResource(R.string.pw_disp_full),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp
@@ -3110,7 +3112,7 @@ This shows how different brightness levels affect battery consumption.
                         )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Permission Required",
+                                text = stringResource(R.string.permission_required),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -3118,7 +3120,7 @@ This shows how different brightness levels affect battery consumption.
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "To change brightness automatically, grant 'Modify system settings' permission. Without it, only current brightness will be measured.",
+                            text = stringResource(R.string.pw_disp_perm_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             fontSize = 11.sp
@@ -3150,7 +3152,7 @@ This shows how different brightness levels affect battery consumption.
                                         // Show toast with instructions
                                         android.widget.Toast.makeText(
                                             context,
-                                            "Go to 'Modify system settings' and enable it for this app",
+                                            context.string(R.string.pw_disp_perm_toast),
                                             android.widget.Toast.LENGTH_LONG
                                         ).show()
                                     }
@@ -3165,7 +3167,7 @@ This shows how different brightness levels affect battery consumption.
                                     } catch (e2: Exception) {
                                         android.widget.Toast.makeText(
                                             context,
-                                            "Unable to open settings. Please enable 'Modify system settings' manually in Settings > Apps > ${context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(context.packageName, 0))} > Modify system settings",
+                                            context.string(R.string.pw_disp_perm_fail_app, context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(context.packageName, 0))),
                                             android.widget.Toast.LENGTH_LONG
                                         ).show()
                                     }
@@ -3173,7 +3175,7 @@ This shows how different brightness levels affect battery consumption.
                             }
                         ) {
                             Text(
-                                text = "Open Settings",
+                                text = stringResource(R.string.open_settings),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
@@ -3443,7 +3445,7 @@ This shows how different brightness levels affect battery consumption.
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Last Test Results",
+                                text = stringResource(R.string.pw_last_results),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -3474,7 +3476,7 @@ This shows how different brightness levels affect battery consumption.
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Summary",
+                                text = stringResource(R.string.pw_summary),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -3485,34 +3487,34 @@ This shows how different brightness levels affect battery consumption.
                     // Beautiful summary cards with proper spacing and non-tech friendly data
                     SummaryStatCard(
                         icon = "🔋",
-                        title = "Best Battery",
+                        title = stringResource(R.string.pw_disp_best),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(minPower))
-                            minBatteryPercent?.let { append(" • Drains $it") }
+                            minBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                         },
-                        description = "This brightness level uses the least battery - best for saving power",
+                        description = stringResource(R.string.pw_disp_best_d),
                         valueColor = Color(0xFF4CAF50) // Green for best
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     SummaryStatCard(
                         icon = "⚡",
-                        title = "Worst Battery",
+                        title = stringResource(R.string.pw_disp_worst),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(maxPower))
-                            maxBatteryPercent?.let { append(" • Drains $it") }
+                            maxBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                         },
-                        description = "This brightness level uses the most battery - highest power consumption",
+                        description = stringResource(R.string.pw_disp_worst_d),
                         valueColor = Color(0xFFFF5722) // Red/Orange for worst
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     SummaryStatCard(
                         icon = "📊",
-                        title = "Average Battery",
+                        title = stringResource(R.string.pw_disp_avg),
                         value = buildString {
                             append(PowerConsumptionAggregator.formatPower(avgPower))
-                            avgBatteryPercent?.let { append(" • Drains $it") }
+                            avgBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                         },
-                        description = "Typical battery usage across all brightness levels - your average drain rate",
+                        description = stringResource(R.string.pw_disp_avg_d),
                         valueColor = MaterialTheme.colorScheme.primary
                         )
                         
@@ -3524,8 +3526,8 @@ This shows how different brightness levels affect battery consumption.
                         if (hasVariation && chartData.isNotEmpty()) {
                             SimpleLineChart(
                                 data = chartData,
-                                xLabel = "Screen Brightness",
-                                yLabel = "Battery Used",
+                                xLabel = stringResource(R.string.pw_axis_brightness),
+                                yLabel = stringResource(R.string.pw_axis_battery_used),
                                 modifier = Modifier.height(180.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -3544,7 +3546,7 @@ This shows how different brightness levels affect battery consumption.
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Sample Data",
+                                text = stringResource(R.string.pw_sample_data),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -3553,11 +3555,11 @@ This shows how different brightness levels affect battery consumption.
                         Spacer(modifier = Modifier.height(12.dp))
                         results.take(5).forEach { point ->
                             val brightnessDesc = when {
-                                point.brightnessLevel <= 20 -> "very dark"
-                                point.brightnessLevel <= 40 -> "dark"
-                                point.brightnessLevel <= 60 -> "medium"
-                                point.brightnessLevel <= 80 -> "bright"
-                                else -> "very bright"
+                                point.brightnessLevel <= 20 -> stringResource(R.string.pw_disp_very_dark)
+                                point.brightnessLevel <= 40 -> stringResource(R.string.pw_disp_dark)
+                                point.brightnessLevel <= 60 -> stringResource(R.string.pw_disp_medium)
+                                point.brightnessLevel <= 80 -> stringResource(R.string.pw_disp_bright)
+                                else -> stringResource(R.string.pw_disp_very_bright)
                             }
                             val powerValue = PowerConsumptionAggregator.formatPower(point.powerW)
                             
@@ -3568,7 +3570,7 @@ This shows how different brightness levels affect battery consumption.
                             val valueText = buildString {
                                 append(powerValue)
                                 batteryPercentPerHour?.let {
-                                    append(" • Drains $it")
+                                    append(" • " + context.string(R.string.pw_drains, it))
                                 }
                             }
                             
@@ -3576,20 +3578,20 @@ This shows how different brightness levels affect battery consumption.
                             val subtitleText = buildString {
                                 batteryPercentPerHour?.let {
                                     when {
-                                        point.brightnessLevel <= 20 -> append("Lowest battery usage - best for saving power")
-                                        point.brightnessLevel <= 40 -> append("Good balance - saves battery while still visible")
-                                        point.brightnessLevel <= 60 -> append("Medium usage - comfortable for most situations")
-                                        point.brightnessLevel <= 80 -> append("Higher usage - brighter but uses more battery")
-                                        else -> append("Maximum brightness - uses the most battery")
+                                        point.brightnessLevel <= 20 -> append(context.string(R.string.pw_disp_sub_20))
+                                        point.brightnessLevel <= 40 -> append(context.string(R.string.pw_disp_sub_40))
+                                        point.brightnessLevel <= 60 -> append(context.string(R.string.pw_disp_sub_60))
+                                        point.brightnessLevel <= 80 -> append(context.string(R.string.pw_disp_sub_80))
+                                        else -> append(context.string(R.string.pw_disp_sub_100))
                                     }
                                 } ?: run {
-                                    append("Battery used at this brightness level")
+                                    append(context.string(R.string.pw_disp_sub_none))
                                 }
                             }
                             
                             SampleDataCard(
                                 icon = "🔆",
-                                title = "${point.brightnessLevel}% brightness ($brightnessDesc)",
+                                title = stringResource(R.string.pw_disp_point_title, point.brightnessLevel, brightnessDesc),
                                 value = valueText,
                                 subtitle = subtitleText,
                                 valueColor = MaterialTheme.colorScheme.primary
@@ -3603,7 +3605,7 @@ This shows how different brightness levels affect battery consumption.
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                             Text(
-                                    text = "  ... and ${results.size - 5} more measurements",
+                                    text = "  " + stringResource(R.string.pw_more_measurements, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp,
@@ -3634,7 +3636,7 @@ This shows how different brightness levels affect battery consumption.
             onDismissRequest = { showResultDialog = false },
             title = {
                 Text(
-                    text = "🔆 Display Power Sweep Results",
+                    text = stringResource(R.string.pw_disp_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -3647,14 +3649,14 @@ This shows how different brightness levels affect battery consumption.
                 
                 Text(
                     text = buildString {
-                        appendLine("Test completed with ${results.size} measurements")
+                        appendLine(stringResource(R.string.pw_disp_done, results.size))
                         appendLine()
-                        appendLine("📊 Power Range:")
-                        appendLine("• Minimum: ${PowerConsumptionAggregator.formatPower(minPower)}")
-                        appendLine("• Maximum: ${PowerConsumptionAggregator.formatPower(maxPower)}")
-                        appendLine("• Average: ${PowerConsumptionAggregator.formatPower(avgPower)}")
+                        appendLine(stringResource(R.string.pw_power_range))
+                        appendLine(stringResource(R.string.pw_minimum, PowerConsumptionAggregator.formatPower(minPower)))
+                        appendLine(stringResource(R.string.pw_maximum, PowerConsumptionAggregator.formatPower(maxPower)))
+                        appendLine(stringResource(R.string.pw_average_line, PowerConsumptionAggregator.formatPower(avgPower)))
                         appendLine()
-                        appendLine("💡 Higher brightness typically increases power consumption.")
+                        appendLine(stringResource(R.string.pw_disp_result_note))
                     },
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -3672,13 +3674,13 @@ This shows how different brightness levels affect battery consumption.
     // CSV Dialog
     if (showCsvDialog && testResults != null) {
         CsvPreviewDialog(
-            title = "Display Power Sweep Data",
-            headers = listOf("Timestamp", "Brightness %", "APL", "Power (W)"),
+            title = stringResource(R.string.pw_disp_csv_title),
+            headers = listOf(stringResource(R.string.pw_csv_timestamp), stringResource(R.string.pw_csv_brightness), stringResource(R.string.pw_csv_apl), stringResource(R.string.pw_csv_power)),
             headerDescriptions = mapOf(
-                "Timestamp" to "Exact date and time when this brightness level was measured during the test.",
-                "Brightness %" to "Your screen's brightness setting from 0% (completely dark) to 100% (maximum brightness). Each percentage point represents how bright your screen is set.",
-                "APL" to "Average Picture Level - measures how bright your screen CONTENT is on average. 0.0 = completely black screen, 1.0 = completely white screen. This is different from brightness - it's about what's displayed, not the setting.",
-                "Power (W)" to "Actual battery power consumption at this exact brightness level, measured in Watts. This is the real-time battery drain you'll experience at this brightness."
+                stringResource(R.string.pw_csv_timestamp) to stringResource(R.string.pw_csv_disp_timestamp_d),
+                stringResource(R.string.pw_csv_brightness) to stringResource(R.string.pw_csv_brightness_d),
+                stringResource(R.string.pw_csv_apl) to stringResource(R.string.pw_csv_apl_d),
+                stringResource(R.string.pw_csv_power) to stringResource(R.string.pw_csv_disp_power_d)
             ),
             rows = testResults!!.map { point ->
                 listOf(
@@ -3724,7 +3726,7 @@ This shows how different brightness levels affect battery consumption.
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share Display Power Data"))
+                            context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_display_data)))
                         }
                     }
                 } else {
@@ -3757,7 +3759,7 @@ This shows how different brightness levels affect battery consumption.
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Display Power Data"))
+                        context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_display_data)))
                     }
                 }
             }
@@ -3770,7 +3772,7 @@ This shows how different brightness levels affect battery consumption.
             onDismissRequest = { showPermissionDialog = false },
             title = {
                 Text(
-                    text = "⚠️ Permission Required",
+                    text = stringResource(R.string.pw_perm_required_warn),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -3778,63 +3780,63 @@ This shows how different brightness levels affect battery consumption.
             text = {
                 Column {
                     Text(
-                        text = "To change brightness automatically, enable 'Modify system settings' permission.",
+                        text = stringResource(R.string.pw_disp_perm_dialog),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Steps to enable:",
+                        text = stringResource(R.string.pw_disp_steps),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "1. Tap 'Open Settings' below",
+                        text = stringResource(R.string.pw_disp_step1),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "2. Find 'Modify system settings' or 'Additional permissions'",
+                        text = stringResource(R.string.pw_disp_step2),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "3. Enable the toggle for this app",
+                        text = stringResource(R.string.pw_disp_step3),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "4. Return to this app and try again",
+                        text = stringResource(R.string.pw_disp_step4),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "⚠️ If the toggle is grayed out/disabled:",
+                        text = stringResource(R.string.pw_disp_gray),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• Some devices (Samsung, Xiaomi, etc.) restrict this permission",
+                        text = stringResource(R.string.pw_disp_gray1),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "• Try: Settings → Apps → DeviceGPT → Additional permissions",
+                        text = stringResource(R.string.pw_disp_gray2),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "• Or: Settings → Special app access → Modify system settings",
+                        text = stringResource(R.string.pw_disp_gray3),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 10.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "💡 If you can't enable it, the test will still work but only measure at your current brightness level.",
+                        text = stringResource(R.string.pw_disp_gray_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 10.sp
@@ -3864,7 +3866,7 @@ This shows how different brightness levels affect battery consumption.
                                     context.startActivity(appSettingsIntent)
                                     android.widget.Toast.makeText(
                                         context,
-                                        "Go to 'Modify system settings' and enable it for this app",
+                                        context.string(R.string.pw_disp_perm_toast),
                                         android.widget.Toast.LENGTH_LONG
                                     ).show()
                                 }
@@ -3878,7 +3880,7 @@ This shows how different brightness levels affect battery consumption.
                                 } catch (e2: Exception) {
                                     android.widget.Toast.makeText(
                                         context,
-                                        "Unable to open settings. Please enable 'Modify system settings' manually in Settings > Apps",
+                                        context.string(R.string.pw_disp_perm_fail),
                                         android.widget.Toast.LENGTH_LONG
                                     ).show()
                                 }
@@ -3950,13 +3952,13 @@ private fun CpuMicrobenchSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Speed,
-                    contentDescription = "CPU Energy Test",
+                    contentDescription = stringResource(R.string.pw_cpu_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "How Fast Processing Drains Your Battery",
+                    text = stringResource(R.string.pw_cpu_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = headerTextColor,
@@ -3985,7 +3987,7 @@ This shows how CPU processing speed affects battery consumption.
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about CPU power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_cpu),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -3996,7 +3998,7 @@ This shows how CPU processing speed affects battery consumption.
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "When your phone works harder (like playing games or editing videos), it uses more battery. This test makes your phone work at different speeds and shows you exactly how much extra battery each speed level uses. The faster your phone works, the more battery it drains.",
+                text = stringResource(R.string.pw_cpu_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
@@ -4106,7 +4108,7 @@ This shows how CPU processing speed affects battery consumption.
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Last Test Results",
+                                text = stringResource(R.string.pw_last_results),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4133,7 +4135,7 @@ This shows how CPU processing speed affects battery consumption.
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Summary",
+                                text = stringResource(R.string.pw_summary),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4150,40 +4152,40 @@ This shows how CPU processing speed affects battery consumption.
                             // Beautiful summary cards with proper spacing
                             SummaryStatCard(
                                 icon = "🔋",
-                                title = "Lowest Extra Battery",
+                                title = stringResource(R.string.pw_cpu_lowest),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(minDelta))
                                     minBatteryPercent?.let { 
-                                        append(" • Drains $it")
+                                        append(" • " + context.string(R.string.pw_drains, it))
                                     }
                                 },
-                                description = "Minimum battery increase detected",
+                                description = stringResource(R.string.pw_cpu_lowest_d),
                                 valueColor = Color(0xFF4CAF50) // Green for best
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             SummaryStatCard(
                                 icon = "⚡",
-                                title = "Highest Extra Battery",
+                                title = stringResource(R.string.pw_cpu_highest),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(maxDelta))
                                     maxBatteryPercent?.let { 
-                                        append(" • Drains $it")
+                                        append(" • " + context.string(R.string.pw_drains, it))
                                     }
                                 },
-                                description = "Maximum battery increase detected",
+                                description = stringResource(R.string.pw_cpu_highest_d),
                                 valueColor = Color(0xFFFF5722) // Red/Orange for worst
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             SummaryStatCard(
                                 icon = "📊",
-                                title = "Average Extra Battery",
+                                title = stringResource(R.string.pw_cpu_avg),
                                 value = buildString {
                                     append(PowerConsumptionAggregator.formatPower(avgDelta))
                                     avgBatteryPercent?.let { 
-                                        append(" • Drains $it")
+                                        append(" • " + context.string(R.string.pw_drains, it))
                                     }
                                 },
-                                description = "Typical battery increase across all speeds",
+                                description = stringResource(R.string.pw_cpu_avg_d),
                                 valueColor = MaterialTheme.colorScheme.primary
                             )
                         } else {
@@ -4204,7 +4206,7 @@ This shows how CPU processing speed affects battery consumption.
                                         modifier = Modifier.padding(end = 12.dp)
                         )
                         Text(
-                                        text = "No significant battery increase detected",
+                                        text = stringResource(R.string.pw_cpu_no_increase),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -4221,8 +4223,8 @@ This shows how CPU processing speed affects battery consumption.
                         if (hasVariation && chartData.isNotEmpty()) {
                             SimpleLineChart(
                                 data = chartData,
-                                xLabel = "Processor Speed",
-                                yLabel = "Extra Battery Used",
+                                xLabel = stringResource(R.string.pw_axis_cpu),
+                                yLabel = stringResource(R.string.pw_extra_battery_used),
                                 modifier = Modifier.height(180.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -4242,7 +4244,7 @@ This shows how CPU processing speed affects battery consumption.
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Test Results",
+                                text = stringResource(R.string.pw_test_results),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4257,7 +4259,7 @@ This shows how CPU processing speed affects battery consumption.
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "💡 We tried to make your phone work at different speeds (20%, 40%, 60%, 80%, 100%) and measured how much extra battery each speed used.",
+                                text = stringResource(R.string.pw_cpu_explain),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                 fontSize = 10.sp,
@@ -4279,34 +4281,34 @@ This shows how CPU processing speed affects battery consumption.
                             val powerText = if (hasPowerChange) {
                                 val powerValue = PowerConsumptionAggregator.formatPower(point.deltaPowerW)
                                 buildString {
-                                    append(powerValue)
-                                    append(" extra battery")
+                                    append(context.string(R.string.pw_cpu_extra, powerValue))
+                                    // "extra battery" is part of pw_cpu_extra
                                     batteryPercentPerHour?.let {
-                                        append(" • Drains $it")
+                                        append(" • " + context.string(R.string.pw_drains, it))
                                     }
                                 }
                             } else {
-                                "No battery change"
+                                context.string(R.string.pw_cpu_no_change)
                             }
                             
                             // Create meaningful subtitle based on workload level
                             val subtitle = if (!hasPowerChange) {
-                                "Your phone may have been already working at this level"
+                                context.string(R.string.pw_cpu_already)
                             } else {
                                 buildString {
                                     when {
-                                        point.targetUtilPercent <= 20 -> append("Light work - minimal battery impact")
-                                        point.targetUtilPercent <= 40 -> append("Moderate work - reasonable battery use")
-                                        point.targetUtilPercent <= 60 -> append("Heavy work - noticeable battery drain")
-                                        point.targetUtilPercent <= 80 -> append("Very heavy work - high battery usage")
-                                        else -> append("Maximum work - highest battery drain")
+                                        point.targetUtilPercent <= 20 -> append(context.string(R.string.pw_cpu_sub_20))
+                                        point.targetUtilPercent <= 40 -> append(context.string(R.string.pw_cpu_sub_40))
+                                        point.targetUtilPercent <= 60 -> append(context.string(R.string.pw_cpu_sub_60))
+                                        point.targetUtilPercent <= 80 -> append(context.string(R.string.pw_cpu_sub_80))
+                                        else -> append(context.string(R.string.pw_cpu_sub_100))
                                     }
                                 }
                             }
                             
                             SampleDataCard(
                                 icon = "⚙️",
-                                title = "${point.targetUtilPercent}% workload",
+                                title = stringResource(R.string.pw_cpu_point_title, point.targetUtilPercent),
                                 value = powerText,
                                 subtitle = subtitle,
                                 valueColor = if (hasPowerChange) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -4320,7 +4322,7 @@ This shows how CPU processing speed affects battery consumption.
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                             Text(
-                                    text = "  ... and ${results.size - 5} more levels",
+                                    text = "  " + stringResource(R.string.pw_more_levels, results.size - 5),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp,
@@ -4351,7 +4353,7 @@ This shows how CPU processing speed affects battery consumption.
             onDismissRequest = { showResultDialog = false },
             title = {
                 Text(
-                    text = "⚡ CPU Energy Test Results",
+                    text = stringResource(R.string.pw_cpu_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -4364,20 +4366,20 @@ This shows how CPU processing speed affects battery consumption.
                 Column {
                 Text(
                     text = buildString {
-                            appendLine("Test completed with ${results.size} workload levels")
+                            appendLine(stringResource(R.string.pw_cpu_done, results.size))
                         appendLine()
-                            appendLine("📊 Battery Impact:")
-                            appendLine("• Highest extra battery: ${PowerConsumptionAggregator.formatPower(maxDelta)}")
-                            appendLine("• Average extra battery: ${PowerConsumptionAggregator.formatPower(avgDelta)}")
+                            appendLine(stringResource(R.string.pw_cpu_impact))
+                            appendLine(stringResource(R.string.pw_cpu_highest_line, PowerConsumptionAggregator.formatPower(maxDelta)))
+                            appendLine(stringResource(R.string.pw_cpu_avg_line, PowerConsumptionAggregator.formatPower(avgDelta)))
                         appendLine()
-                            appendLine("What this means:")
-                            appendLine("We tried to make your phone work harder at different levels (20%, 40%, 60%, 80%, 100%) and measured how much extra battery each level used. The higher the workload, the more battery it typically uses.")
+                            appendLine(stringResource(R.string.pw_what_means))
+                            appendLine(stringResource(R.string.pw_cpu_means))
                     },
                     style = MaterialTheme.typography.bodyMedium
                 )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "💡 Note: Some levels may show no battery change. This can happen if your phone was already working at that level, or if measurement timing was affected by other apps running.",
+                        text = stringResource(R.string.pw_cpu_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 10.sp
@@ -4397,13 +4399,13 @@ This shows how CPU processing speed affects battery consumption.
     // CSV Dialog
     if (showCsvDialog && testResults != null) {
         CsvPreviewDialog(
-            title = "CPU Speed Test Data",
-            headers = listOf("Time", "Workload Tried", "Extra Battery Used", "Processor Status"),
+            title = stringResource(R.string.pw_cpu_csv_title),
+            headers = listOf(stringResource(R.string.pw_time), stringResource(R.string.pw_csv_cpu_workload), stringResource(R.string.pw_extra_battery_used), stringResource(R.string.pw_csv_cpu_status)),
             headerDescriptions = mapOf(
-                "Time" to "Exact date and time when this processor speed test was performed.",
-                "Workload Tried" to "The target workload percentage we attempted to run (20%, 40%, 60%, 80%, or 100%). This is how hard we TRIED to make your phone work, not necessarily what it actually did.",
-                "Extra Battery Used" to "The ADDITIONAL battery power consumed above your phone's idle/baseline power. Measured in Watts. This shows the true extra cost of running at each speed level.",
-                "Processor Status" to "Your phone's actual processor state during the test. Shows which CPU cores were active and their operating frequency (speed) in GHz. This is what your phone ACTUALLY did, not what we tried."
+                stringResource(R.string.pw_time) to stringResource(R.string.pw_csv_cpu_time_d),
+                stringResource(R.string.pw_csv_cpu_workload) to stringResource(R.string.pw_csv_cpu_workload_d),
+                stringResource(R.string.pw_extra_battery_used) to stringResource(R.string.pw_csv_cpu_extra_d),
+                stringResource(R.string.pw_csv_cpu_status) to stringResource(R.string.pw_csv_cpu_status_d)
             ),
             rows = testResults!!.map { point ->
                 // Show only what matters - the workload we tried and the battery impact
@@ -4411,7 +4413,7 @@ This shows how CPU processing speed affects battery consumption.
                 listOf(
                     PowerConsumptionAggregator.formatTimestamp(point.timestamp),
                     "${point.targetUtilPercent}%",
-                    if (point.deltaPowerW > 0.000001) PowerConsumptionAggregator.formatPower(point.deltaPowerW) else "No change detected",
+                    if (point.deltaPowerW > 0.000001) PowerConsumptionAggregator.formatPower(point.deltaPowerW) else stringResource(R.string.pw_cpu_no_change_detected),
                     point.freqSummary.replace("cores @", "cores at")
                 )
             },
@@ -4459,7 +4461,7 @@ This shows how CPU processing speed affects battery consumption.
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share CPU Microbench Data"))
+                            context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_cpu_data)))
                         }
                     }
                 } else {
@@ -4498,7 +4500,7 @@ This shows how CPU processing speed affects battery consumption.
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share CPU Microbench Data"))
+                        context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_cpu_data)))
                     }
                 }
             }
@@ -4558,13 +4560,13 @@ private fun NetworkRssiSamplingSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.SignalWifi4Bar,
-                    contentDescription = "Signal vs Power",
+                    contentDescription = stringResource(R.string.pw_net_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "How Weak Signals Drain Your Battery",
+                    text = stringResource(R.string.pw_net_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = headerTextColor,
@@ -4624,7 +4626,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about network signal power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_net),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -4635,7 +4637,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
-                text = "Weak WiFi or cellular signals make your phone work harder to stay connected, which uses more battery. This test monitors your signal strength and battery use for 60 seconds to show you how much battery weak signals cost. You'll see the difference between strong and weak connections.",
+                text = stringResource(R.string.pw_net_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
@@ -4766,7 +4768,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Last Sampling Results",
+                                text = stringResource(R.string.pw_net_last),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4794,7 +4796,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Summary",
+                                text = stringResource(R.string.pw_summary),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4821,9 +4823,9 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             }
                             SummaryStatCard(
                                 icon = "📶",
-                                title = "WiFi Signal",
-                                value = signalStrength,
-                                description = "Network signal strength during test",
+                                title = stringResource(R.string.pw_net_wifi_signal),
+                                value = PowerStrings.signal(context, signalStrength),
+                                description = stringResource(R.string.pw_net_wifi_signal_d),
                                 valueColor = signalColor
                             )
                             Spacer(modifier = Modifier.height(12.dp))
@@ -4836,34 +4838,34 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         
                         SummaryStatCard(
                             icon = "🔋",
-                            title = "Lowest Battery Use",
+                            title = stringResource(R.string.pw_net_lowest),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(minPower))
-                                minBatteryPercent?.let { append(" • Drains $it") }
+                                minBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                             },
-                            description = "Best battery performance during test - your phone used the least power here",
+                            description = stringResource(R.string.pw_net_lowest_d),
                             valueColor = Color(0xFF4CAF50) // Green for best
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         SummaryStatCard(
                             icon = "⚡",
-                            title = "Highest Battery Use",
+                            title = stringResource(R.string.pw_net_highest),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(maxPower))
-                                maxBatteryPercent?.let { append(" • Drains $it") }
+                                maxBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                             },
-                            description = "Peak battery consumption - your phone used the most power here",
+                            description = stringResource(R.string.pw_net_highest_d),
                             valueColor = Color(0xFFFF5722) // Red/Orange for worst
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         SummaryStatCard(
                             icon = "📊",
-                            title = "Average Battery Use",
+                            title = stringResource(R.string.pw_net_avg),
                             value = buildString {
                                 append(PowerConsumptionAggregator.formatPower(avgPower))
-                                avgBatteryPercent?.let { append(" • Drains $it") }
+                                avgBatteryPercent?.let { append(" • " + context.string(R.string.pw_drains, it)) }
                             },
-                            description = "Typical battery usage over 60 seconds - this is your average drain rate",
+                            description = stringResource(R.string.pw_net_avg_d),
                             valueColor = MaterialTheme.colorScheme.primary
                         )
                         
@@ -4875,8 +4877,8 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                         if (hasVariation && chartData.isNotEmpty()) {
                             SimpleLineChart(
                                 data = chartData,
-                                xLabel = "Time",
-                                yLabel = "Battery Used",
+                                xLabel = stringResource(R.string.pw_time),
+                                yLabel = stringResource(R.string.pw_axis_battery_used),
                                 modifier = Modifier.height(180.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -4895,7 +4897,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Sample Data",
+                                text = stringResource(R.string.pw_sample_data),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -4914,10 +4916,10 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 strength
                             } ?: "No WiFi"
                             val timeDesc = when {
-                                point.timeSeconds < 10 -> "Start"
-                                point.timeSeconds < 30 -> "Early"
-                                point.timeSeconds < 50 -> "Mid"
-                                else -> "End"
+                                point.timeSeconds < 10 -> stringResource(R.string.pw_net_start)
+                                point.timeSeconds < 30 -> stringResource(R.string.pw_net_early)
+                                point.timeSeconds < 50 -> stringResource(R.string.pw_net_mid)
+                                else -> stringResource(R.string.pw_net_end)
                             }
                             
                             // Calculate battery percentage per hour
@@ -4927,19 +4929,19 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             val powerValue = buildString {
                                 append(PowerConsumptionAggregator.formatPower(point.powerW))
                                 batteryPercentPerHour?.let {
-                                    append(" • Drains $it")
+                                    append(" • " + context.string(R.string.pw_drains, it))
                                 }
                             }
                             
                             // Create meaningful subtitle based on signal strength
                             val subtitle = buildString {
-                                append("WiFi: $signalInfo signal")
+                                append(context.string(R.string.pw_net_sub, PowerStrings.signal(context, signalInfo)))
                                 when {
-                                    signalInfo == "Excellent" || signalInfo == "Very good" -> append(" • Strong signal saves battery")
-                                    signalInfo == "Good" -> append(" • Good signal, normal battery use")
-                                    signalInfo == "Fair" -> append(" • Fair signal, slightly higher battery use")
-                                    signalInfo == "Weak" -> append(" • Weak signal drains more battery")
-                                    else -> append(" • No WiFi connection")
+                                    signalInfo == "Excellent" || signalInfo == "Very good" -> append(" • " + context.string(R.string.pw_net_sub_strong))
+                                    signalInfo == "Good" -> append(" • " + context.string(R.string.pw_net_sub_good))
+                                    signalInfo == "Fair" -> append(" • " + context.string(R.string.pw_net_sub_fair))
+                                    signalInfo == "Weak" -> append(" • " + context.string(R.string.pw_net_sub_weak))
+                                    else -> append(" • " + context.string(R.string.pw_net_sub_none))
                                 }
                             }
                             
@@ -4955,7 +4957,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             
                             SampleDataCard(
                                 icon = "📶",
-                                title = "${point.timeSeconds}s ($timeDesc)",
+                                title = stringResource(R.string.pw_net_point_title, point.timeSeconds, timeDesc),
                                 value = powerValue,
                                 subtitle = subtitle,
                                 valueColor = MaterialTheme.colorScheme.primary
@@ -4969,7 +4971,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = "  ... and ${results.size - 5} more samples",
+                                    text = "  " + stringResource(R.string.pw_more_samples, results.size - 5),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp,
@@ -5000,7 +5002,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
             onDismissRequest = { showResultDialog = false },
             title = {
                 Text(
-                    text = "📶 Signal vs Power Test Results",
+                    text = stringResource(R.string.pw_net_result_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -5012,7 +5014,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                 
                 Text(
                     text = buildString {
-                        appendLine("Network sampling completed with ${results.size} data points")
+                        appendLine(stringResource(R.string.pw_net_done, results.size))
                         appendLine()
                         if (wifiRssiValues.isNotEmpty()) {
                             val minRssi = wifiRssiValues.minOrNull()!!
@@ -5032,16 +5034,16 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 maxRssi >= -80 -> "Fair"
                                 else -> "Weak"
                             }
-                            appendLine("📶 WiFi Signal Strength:")
-                            appendLine("• Weakest: $minStrength (${minRssi} dBm)")
-                            appendLine("• Strongest: $maxStrength (${maxRssi} dBm)")
-                            appendLine("• Average: ${medianRssi} dBm")
+                            appendLine(stringResource(R.string.pw_net_strength))
+                            appendLine(stringResource(R.string.pw_net_weakest, PowerStrings.signal(context, minStrength), "$minRssi dBm"))
+                            appendLine(stringResource(R.string.pw_net_strongest, PowerStrings.signal(context, maxStrength), "$maxRssi dBm"))
+                            appendLine(stringResource(R.string.pw_average_line, "$medianRssi dBm"))
                             appendLine()
                         }
-                        appendLine("🔋 Power Range:")
-                        appendLine("• Min: ${PowerConsumptionAggregator.formatPower(powerValues.minOrNull() ?: 0.0)}")
-                        appendLine("• Max: ${PowerConsumptionAggregator.formatPower(powerValues.maxOrNull() ?: 0.0)}")
-                        appendLine("• Median: ${PowerConsumptionAggregator.formatPower(powerValues.sorted()[powerValues.size/2])}")
+                        appendLine(stringResource(R.string.pw_power_range_battery))
+                        appendLine(stringResource(R.string.pw_min_line, PowerConsumptionAggregator.formatPower(powerValues.minOrNull() ?: 0.0)))
+                        appendLine(stringResource(R.string.pw_max_line, PowerConsumptionAggregator.formatPower(powerValues.maxOrNull() ?: 0.0)))
+                        appendLine(stringResource(R.string.pw_median_line, PowerConsumptionAggregator.formatPower(powerValues.sorted()[powerValues.size/2])))
                     },
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -5059,21 +5061,21 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
     // CSV Dialog
     if (showCsvDialog && testResults != null) {
         CsvPreviewDialog(
-            title = "Network RSSI Sampling Data",
-            headers = listOf("Timestamp", "Time (s)", "WiFi RSSI (dBm)", "Cell (dBm)", "Power (W)"),
+            title = stringResource(R.string.pw_net_csv_title),
+            headers = listOf(stringResource(R.string.pw_csv_timestamp), stringResource(R.string.pw_csv_net_time), stringResource(R.string.pw_csv_net_wifi), stringResource(R.string.pw_csv_net_cell), stringResource(R.string.pw_csv_power)),
             headerDescriptions = mapOf(
-                "Timestamp" to "Exact date and time when this network signal measurement was recorded.",
-                "Time (s)" to "Elapsed time in seconds since the 60-second test started. Use this to track how battery usage changes throughout the test duration (0s = start, 60s = end).",
-                "WiFi RSSI (dBm)" to "Your WiFi connection's signal strength measured in decibels. Closer to 0 = stronger signal. Examples: -50dBm = excellent, -70dBm = good, -90dBm = weak. Stronger WiFi = less battery drain.",
-                "Cell (dBm)" to "Your cellular/mobile data connection's signal strength in decibels. Closer to 0 = stronger signal. Stronger cellular signal = your phone works less hard = saves battery.",
-                "Power (W)" to "Real-time battery power consumption at this exact moment during the test, measured in Watts. This shows the actual battery drain while monitoring your network signals."
+                stringResource(R.string.pw_csv_timestamp) to stringResource(R.string.pw_csv_net_timestamp_d),
+                stringResource(R.string.pw_csv_net_time) to stringResource(R.string.pw_csv_net_time_d),
+                stringResource(R.string.pw_csv_net_wifi) to stringResource(R.string.pw_csv_net_wifi_d),
+                stringResource(R.string.pw_csv_net_cell) to stringResource(R.string.pw_csv_net_cell_d),
+                stringResource(R.string.pw_csv_power) to stringResource(R.string.pw_csv_net_power_d)
             ),
             rows = testResults!!.map { point ->
                 listOf(
                     PowerConsumptionAggregator.formatTimestamp(point.timestamp),
                     point.timeSeconds.toString(),
-                    point.wifiRssiDbm?.toString() ?: "N/A",
-                    point.cellDbm?.toString() ?: "N/A",
+                    point.wifiRssiDbm?.toString() ?: stringResource(R.string.pw_na),
+                    point.cellDbm?.toString() ?: stringResource(R.string.pw_na),
                     PowerConsumptionAggregator.formatPower(point.powerW)
                 )
             },
@@ -5120,7 +5122,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share Network RSSI Data"))
+                            context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_net_data)))
                         }
                     }
                 } else {
@@ -5159,7 +5161,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Network RSSI Data"))
+                        context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_net_data)))
                     }
                 }
             }
@@ -5213,12 +5215,12 @@ private fun SimpleLineChart(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "No data to display",
+                        text = stringResource(R.string.pw_chart_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
-                        text = "Run a test to see the graph",
+                        text = stringResource(R.string.pw_chart_empty_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
@@ -5275,7 +5277,7 @@ private fun SimpleLineChart(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Constant values detected",
+                        text = stringResource(R.string.pw_chart_constant),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
@@ -5405,14 +5407,14 @@ private fun SimpleLineChart(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Text(
-                            text = "Max: ${String.format("%.2f", maxY)}",
+                            text = stringResource(R.string.pw_chart_max, String.format("%.2f", maxY)),
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             maxLines = 1
                         )
                         Text(
-                            text = "Min: ${String.format("%.2f", minY)}",
+                            text = stringResource(R.string.pw_chart_min, String.format("%.2f", minY)),
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
@@ -5442,7 +5444,7 @@ private fun SimpleLineChart(
                 if (hasVariation) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Range: ${String.format("%.0f", minX)} - ${String.format("%.0f", maxX)}",
+                        text = stringResource(R.string.pw_chart_range, String.format("%.0f", minX), String.format("%.0f", maxX)),
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
@@ -5515,7 +5517,7 @@ private fun CsvPreviewDialog(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "This data can be exported and analyzed in spreadsheet apps like Excel or Google Sheets.",
+                            text = stringResource(R.string.pw_csv_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
                             fontSize = 11.sp
@@ -5527,9 +5529,9 @@ private fun CsvPreviewDialog(
                 
                 Text(
                     text = if (rows.size <= 20) {
-                        "Data Preview (${rows.size} rows):"
+                        stringResource(R.string.pw_csv_preview, rows.size)
                     } else {
-                        "Data Preview (${rows.size} rows - scrollable):"
+                        stringResource(R.string.pw_csv_preview_scroll, rows.size)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
@@ -5616,7 +5618,7 @@ private fun CsvPreviewDialog(
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Default.Info,
-                                                        contentDescription = "Info about $headerText",
+                                                        contentDescription = stringResource(R.string.pw_csv_cd_info, headerText),
                                                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                                         modifier = Modifier.size(16.dp)
                                                     )
@@ -5669,7 +5671,7 @@ private fun CsvPreviewDialog(
                                         TextButton(
                                             onClick = { selectedHeaderInfo = null }
                                         ) {
-                                            Text("Got it")
+                                            Text(stringResource(R.string.pw_got_it))
                                         }
                                     }
                                 )
@@ -5729,9 +5731,9 @@ private fun CsvPreviewDialog(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = if (rows.size <= 20) {
-                                    "📄 All ${rows.size} row${if (rows.size == 1) "" else "s"} shown"
+                                    stringResource(if (rows.size == 1) R.string.pw_csv_all_row else R.string.pw_csv_all_rows, rows.size)
                                 } else {
-                                    "📄 All ${rows.size} rows shown (scroll to view all)"
+                                    stringResource(R.string.pw_csv_all_rows_scroll, rows.size)
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -5751,13 +5753,13 @@ private fun CsvPreviewDialog(
                 ) {
                     Column {
                         Text(
-                            text = "📊 Total Rows: ${rows.size}",
+                            text = stringResource(R.string.pw_csv_total_rows, rows.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "📋 Columns: ${headers.size}",
+                            text = stringResource(R.string.pw_csv_columns, headers.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp
@@ -5807,9 +5809,9 @@ private fun CsvPreviewDialog(
  * Format seconds into human-readable duration (e.g., "1h 21m", "2m 50s", "45s")
  * Shows hours and minutes for longer durations, minutes and seconds for shorter ones
  */
-private fun formatDurationSeconds(seconds: Long): String {
+private fun formatDurationSeconds(seconds: Long, context: android.content.Context): String {
     if (seconds < 60) {
-        return "${seconds}s"
+        return context.string(R.string.pw_dur_s, seconds)
     }
     
     val hours = seconds / 3600
@@ -5820,21 +5822,21 @@ private fun formatDurationSeconds(seconds: Long): String {
         hours > 0 -> {
             // For hours: show hours and minutes (e.g., "1h 21m")
             if (minutes > 0) {
-                "${hours}h ${minutes}m"
+                context.string(R.string.pw_dur_h_m, hours, minutes)
             } else {
-                "${hours}h"
+                context.string(R.string.pw_dur_h, hours)
             }
         }
         minutes > 0 -> {
             // For minutes: show minutes and seconds (e.g., "2m 50s")
             if (secs > 0) {
-                "${minutes}m ${secs}s"
+                context.string(R.string.pw_dur_m_s, minutes, secs)
             } else {
-                "${minutes}m"
+                context.string(R.string.pw_dur_m, minutes)
             }
         }
         else -> {
-            "${secs}s"
+            context.string(R.string.pw_dur_s, secs)
         }
     }
 }
@@ -5895,7 +5897,7 @@ private fun DeviceSleepTrackerSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Device Sleep Tracker",
+                        text = stringResource(R.string.device_sleep_tracker),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
@@ -5914,8 +5916,8 @@ Device Sleep Tracker Data:
 - Sleep Efficiency: ${stats.sleepEfficiency}%
 - Sleep Sessions: ${stats.sleepSessions}
 - Wake Sessions: ${stats.wakeSessions}
-- Average Sleep Duration: ${formatDurationSeconds(stats.averageSleepDuration / 1000)}
-- Average Wake Duration: ${formatDurationSeconds(stats.averageWakeDuration / 1000)}
+- Average Sleep Duration: ${formatDurationSeconds(stats.averageSleepDuration / 1000, context)}
+- Average Wake Duration: ${formatDurationSeconds(stats.averageWakeDuration / 1000, context)}
                                     """.trimIndent()
                                 } else {
                                     """
@@ -5930,7 +5932,7 @@ Device Sleep Tracker:
                         ) {
                             Icon(
                                 imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                                contentDescription = "Get AI insights about device sleep patterns",
+                                contentDescription = stringResource(R.string.pw_cd_ai_sleep),
                                 tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                                 modifier = Modifier.size(18.dp)
                             )
@@ -5948,7 +5950,7 @@ Device Sleep Tracker:
                     modifier = Modifier.align(Alignment.Start)
                 ) {
                     Text(
-                        text = if (isDeviceAwake) "🟢 Awake" else "🌙 Sleeping",
+                        text = if (isDeviceAwake) stringResource(R.string.pw_sleep_awake) else stringResource(R.string.pw_sleep_sleeping),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = if (isDeviceAwake) 
@@ -5964,7 +5966,7 @@ Device Sleep Tracker:
             
             // Description
             Text(
-                text = "Automatically tracks when your device goes to sleep (screen locks) and wakes up. This helps understand device sleep patterns and efficiency.",
+                text = stringResource(R.string.pw_sleep_intro),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
@@ -5990,7 +5992,7 @@ Device Sleep Tracker:
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "🌙",
-                                    label = "Total Sleep",
+                                    label = stringResource(R.string.pw_sleep_total),
                                     value = stats.formatSleepTime(),
                                     valueColor = MaterialTheme.colorScheme.primary
                                 )
@@ -5998,7 +6000,7 @@ Device Sleep Tracker:
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "🟢",
-                                    label = "Total Wake",
+                                    label = stringResource(R.string.pw_sleep_total_wake),
                                     value = stats.formatWakeTime(),
                                     valueColor = MaterialTheme.colorScheme.primary
                                 )
@@ -6011,13 +6013,13 @@ Device Sleep Tracker:
                         ) {
                             CompactStatCard(
                                 icon = "🌙",
-                                label = "Total Sleep",
+                                label = stringResource(R.string.pw_sleep_total),
                                 value = stats.formatSleepTime(),
                                 valueColor = MaterialTheme.colorScheme.primary
                             )
                             CompactStatCard(
                                 icon = "🟢",
-                                label = "Total Wake",
+                                label = stringResource(R.string.pw_sleep_total_wake),
                                 value = stats.formatWakeTime(),
                                 valueColor = MaterialTheme.colorScheme.onSurface
                             )
@@ -6045,7 +6047,7 @@ Device Sleep Tracker:
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "⚡",
-                                    label = "Efficiency",
+                                    label = stringResource(R.string.pw_sleep_efficiency),
                                     value = "${stats.sleepEfficiency}%",
                                     valueColor = MaterialTheme.colorScheme.primary
                                 )
@@ -6053,7 +6055,7 @@ Device Sleep Tracker:
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "🌙",
-                                    label = "Sleep Sessions",
+                                    label = stringResource(R.string.pw_sleep_sessions),
                                     value = "${stats.sleepSessions}",
                                     valueColor = MaterialTheme.colorScheme.primary
                                 )
@@ -6061,7 +6063,7 @@ Device Sleep Tracker:
                             Box(modifier = Modifier.weight(1f)) {
                                 CompactStatCard(
                                     icon = "🟢",
-                                    label = "Wake Sessions",
+                                    label = stringResource(R.string.pw_sleep_wake_sessions),
                                     value = "${stats.wakeSessions}",
                                     valueColor = MaterialTheme.colorScheme.primary
                                 )
@@ -6080,7 +6082,7 @@ Device Sleep Tracker:
                                 Box(modifier = Modifier.weight(1f)) {
                                     CompactStatCard(
                                         icon = "⚡",
-                                        label = "Efficiency",
+                                        label = stringResource(R.string.pw_sleep_efficiency),
                                         value = "${stats.sleepEfficiency}%",
                                         valueColor = MaterialTheme.colorScheme.primary
                                     )
@@ -6088,7 +6090,7 @@ Device Sleep Tracker:
                                 Box(modifier = Modifier.weight(1f)) {
                                     CompactStatCard(
                                         icon = "🌙",
-                                        label = "Sleep Sessions",
+                                        label = stringResource(R.string.pw_sleep_sessions),
                                         value = "${stats.sleepSessions}",
                                         valueColor = MaterialTheme.colorScheme.primary
                                     )
@@ -6097,7 +6099,7 @@ Device Sleep Tracker:
                             // Second row: Wake Sessions (full width for better visual balance)
                             CompactStatCard(
                                 icon = "🟢",
-                                label = "Wake Sessions",
+                                label = stringResource(R.string.pw_sleep_wake_sessions),
                                 value = "${stats.wakeSessions}",
                                 valueColor = MaterialTheme.colorScheme.primary
                             )
@@ -6130,8 +6132,8 @@ Device Sleep Tracker:
                                     Box(modifier = Modifier.weight(1f)) {
                                         CompactStatCard(
                                             icon = "⏱️",
-                                            label = "Avg Sleep",
-                                            value = formatDurationSeconds(stats.averageSleepDuration / 1000),
+                                            label = stringResource(R.string.pw_sleep_avg),
+                                            value = formatDurationSeconds(stats.averageSleepDuration / 1000, context),
                                             valueColor = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -6140,8 +6142,8 @@ Device Sleep Tracker:
                                     Box(modifier = Modifier.weight(1f)) {
                                         CompactStatCard(
                                             icon = "⏱️",
-                                            label = "Avg Wake",
-                                            value = formatDurationSeconds(stats.averageWakeDuration / 1000),
+                                            label = stringResource(R.string.pw_sleep_avg_wake),
+                                            value = formatDurationSeconds(stats.averageWakeDuration / 1000, context),
                                             valueColor = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface
                                         )
                                     }
@@ -6155,16 +6157,16 @@ Device Sleep Tracker:
                                 if (hasSleep) {
                                     CompactStatCard(
                                         icon = "⏱️",
-                                        label = "Avg Sleep",
-                                        value = formatDurationSeconds(stats.averageSleepDuration / 1000),
+                                        label = stringResource(R.string.pw_sleep_avg),
+                                        value = formatDurationSeconds(stats.averageSleepDuration / 1000, context),
                                         valueColor = MaterialTheme.colorScheme.primary
                                     )
                                 }
                                 if (hasWake) {
                                     CompactStatCard(
                                         icon = "⏱️",
-                                        label = "Avg Wake",
-                                        value = formatDurationSeconds(stats.averageWakeDuration / 1000),
+                                        label = stringResource(R.string.pw_sleep_avg_wake),
+                                        value = formatDurationSeconds(stats.averageWakeDuration / 1000, context),
                                         valueColor = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface
                                     )
                                 }
@@ -6189,7 +6191,7 @@ Device Sleep Tracker:
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tracking device sleep patterns...",
+                            text = stringResource(R.string.pw_sleep_tracking),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp
@@ -6299,7 +6301,7 @@ screen time only — not each app's battery consumption.
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about overall app power consumption",
+                            contentDescription = stringResource(R.string.pw_cd_ai_apps),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -6312,7 +6314,7 @@ screen time only — not each app's battery consumption.
             // Description with benefits
             Column {
                 Text(
-                    text = "See which apps you use most. Android does not report exact battery use per app, so this ranks apps by screen time.",
+                    text = stringResource(R.string.pw_apps_intro),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 12.sp
@@ -6434,7 +6436,7 @@ screen time only — not each app's battery consumption.
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Monitoring apps...",
+                                        text = stringResource(R.string.pw_apps_monitoring),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
@@ -6544,7 +6546,7 @@ Please answer about usage habits, not battery attribution.
                                                 ) {
                                                     Icon(
                                                         imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                                                        contentDescription = "Get AI optimization tips",
+                                                        contentDescription = stringResource(R.string.pw_cd_ai_app_tips),
                                                         tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                                                         modifier = Modifier.size(18.dp)
                                                     )
@@ -6567,9 +6569,9 @@ Please answer about usage habits, not battery attribution.
                                             (appActiveMs.toDouble() / app.totalUsageTime) * 100.0
                                         } else 0.0
                                         val usageSeverity = when {
-                                            usageShare > 20.0 -> "Heavy use"
-                                            usageShare > 5.0 -> "Moderate use"
-                                            else -> "Light use"
+                                            usageShare > 20.0 -> stringResource(R.string.pw_apps_heavy)
+                                            usageShare > 5.0 -> stringResource(R.string.pw_apps_moderate)
+                                            else -> stringResource(R.string.pw_apps_light)
                                         }
                                         val usageColor = when {
                                             usageShare > 20.0 -> MaterialTheme.colorScheme.error
@@ -6578,9 +6580,9 @@ Please answer about usage habits, not battery attribution.
                                         }
                                         val fgMinutes = app.foregroundTime / (1000.0 * 60.0)
                                         val screenTimeLabel = if (fgMinutes >= 60) {
-                                            "${"%.1f".format(fgMinutes / 60.0)} h on screen"
+                                            stringResource(R.string.pw_apps_h_on_screen, "%.1f".format(fgMinutes / 60.0))
                                         } else {
-                                            "${fgMinutes.toInt()} min on screen"
+                                            stringResource(R.string.pw_apps_min_on_screen, fgMinutes.toInt())
                                         }
 
                                         Row(
@@ -6596,7 +6598,7 @@ Please answer about usage habits, not battery attribution.
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    text = "$screenTimeLabel · ${"%.1f".format(usageShare)}% of app usage",
+                                                    text = stringResource(R.string.pw_apps_share, screenTimeLabel, "%.1f".format(usageShare)),
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     color = headerTextColor,
                                                     fontWeight = FontWeight.Medium
@@ -6625,9 +6627,9 @@ Please answer about usage habits, not battery attribution.
                                             
                                             if (efficiencyScore > 0) {
                                                 val efficiencyLabel = when {
-                                                    efficiencyScore >= 70 -> "Very efficient"
-                                                    efficiencyScore >= 40 -> "Average efficiency"
-                                                    else -> "Uses a lot of power"
+                                                    efficiencyScore >= 70 -> stringResource(R.string.pw_apps_eff_high)
+                                                    efficiencyScore >= 40 -> stringResource(R.string.pw_apps_eff_mid)
+                                                    else -> stringResource(R.string.pw_apps_eff_low)
                                                 }
                                                 val efficiencyColor = when {
                                                     efficiencyScore >= 70 -> DesignSystemColors.Dark
@@ -6662,9 +6664,9 @@ Please answer about usage habits, not battery attribution.
                                             if (hoursToDrain < 1000 && hoursToDrain > 0) {
                                                 val daysToDrain = hoursToDrain / 24.0
                                                 val timeText = if (daysToDrain >= 1) {
-                                                    "${"%.1f".format(daysToDrain)} days"
+                                                    stringResource(R.string.pw_n_days, "%.1f".format(daysToDrain))
                                                 } else {
-                                                    "${"%.1f".format(hoursToDrain)} hours"
+                                                    stringResource(R.string.pw_n_hours, "%.1f".format(hoursToDrain))
                                                 }
                                                 
                                                 Row(
@@ -6678,7 +6680,7 @@ Please answer about usage habits, not battery attribution.
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
-                                                        text = "Would drain full battery in $timeText",
+                                                        text = stringResource(R.string.pw_apps_would_drain, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                                         fontSize = 11.sp
@@ -6694,12 +6696,12 @@ Please answer about usage habits, not battery attribution.
                                                 val daysAgo = hoursAgo / 24
                                                 
                                                 val lastUsedText = when {
-                                                    hoursAgo < 1 -> "Just now"
-                                                    hoursAgo < 24 -> "$hoursAgo hour${if (hoursAgo > 1) "s" else ""} ago"
-                                                    daysAgo < 7 -> "$daysAgo day${if (daysAgo > 1) "s" else ""} ago"
+                                                    hoursAgo < 1 -> stringResource(R.string.pw_apps_just_now)
+                                                    hoursAgo < 24 -> stringResource(if (hoursAgo > 1) R.string.pw_hours_ago else R.string.pw_hour_ago, hoursAgo)
+                                                    daysAgo < 7 -> stringResource(if (daysAgo > 1) R.string.pw_days_ago else R.string.pw_day_ago, daysAgo)
                                                     else -> {
                                                         val dateFormat = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
-                                                        "Last used: ${dateFormat.format(java.util.Date(app.lastTimeUsed))}"
+                                                        stringResource(R.string.pw_apps_last_used, dateFormat.format(java.util.Date(app.lastTimeUsed)))
                                                     }
                                                 }
                                                 
@@ -6726,8 +6728,8 @@ Please answer about usage habits, not battery attribution.
                                             if (app.foregroundServiceTime > 0) {
                                                 val serviceHours = app.foregroundServiceTime / (1000.0 * 60.0 * 60.0)
                                                 val serviceText = when {
-                                                    serviceHours >= 1 -> "${"%.1f".format(serviceHours)} hours"
-                                                    else -> "${(app.foregroundServiceTime / (1000.0 * 60.0)).toInt()} minutes"
+                                                    serviceHours >= 1 -> stringResource(R.string.pw_n_hours, "%.1f".format(serviceHours))
+                                                    else -> stringResource(R.string.pw_n_minutes, (app.foregroundServiceTime / (1000.0 * 60.0)).toInt())
                                                 }
                                                 
                                                 Row(
@@ -6741,7 +6743,7 @@ Please answer about usage habits, not battery attribution.
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
-                                                        text = "Runs in background ($serviceText)",
+                                                        text = stringResource(R.string.pw_apps_background, serviceText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                                         fontSize = 11.sp
@@ -6762,13 +6764,13 @@ Please answer about usage habits, not battery attribution.
                                                         val hours = totalHours.toInt()
                                                         val minutes = ((totalHours - hours) * 60).toInt()
                                                         when {
-                                                            minutes > 0 -> "$hours hour${if (hours > 1) "s" else ""} $minutes minute${if (minutes > 1) "s" else ""}"
-                                                            else -> "$hours hour${if (hours > 1) "s" else ""}"
+                                                            minutes > 0 -> PowerStrings.hoursMinutes(context, hours, minutes)
+                                                            else -> PowerStrings.hours(context, hours)
                                                         }
                                                     }
                                                     else -> {
                                                         val minutes = (totalHours * 60).toInt()
-                                                        "$minutes minute${if (minutes > 1) "s" else ""}"
+                                                        PowerStrings.minutes(context, minutes)
                                                     }
                                                 }
                                                 
@@ -6783,7 +6785,7 @@ Please answer about usage habits, not battery attribution.
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
-                                                        text = "Active for $timeText",
+                                                        text = stringResource(R.string.pw_apps_active_for, timeText),
                                                         style = MaterialTheme.typography.bodySmall,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                                         fontSize = 11.sp
@@ -6791,7 +6793,7 @@ Please answer about usage habits, not battery attribution.
                                                     if (bgRatio > 20) {
                                                         Spacer(modifier = Modifier.width(6.dp))
                                                         Text(
-                                                            text = "(${"%.0f".format(bgRatio)}% running in background)",
+                                                            text = stringResource(R.string.pw_apps_bg_ratio, "%.0f".format(bgRatio)),
                                                             style = MaterialTheme.typography.bodySmall,
                                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                             fontSize = 10.sp,
@@ -6815,10 +6817,10 @@ Please answer about usage habits, not battery attribution.
                                                     } else 0.0
                                                     
                                                     val frequencyText = when {
-                                                        sessionsPerDay >= 5 -> "Very frequently used"
-                                                        sessionsPerDay >= 2 -> "Regularly used"
-                                                        sessionsPerDay >= 0.5 -> "Occasionally used"
-                                                        else -> "Rarely used"
+                                                        sessionsPerDay >= 5 -> stringResource(R.string.pw_apps_freq_very)
+                                                        sessionsPerDay >= 2 -> stringResource(R.string.pw_apps_freq_regular)
+                                                        sessionsPerDay >= 0.5 -> stringResource(R.string.pw_apps_freq_sometimes)
+                                                        else -> stringResource(R.string.pw_apps_freq_rare)
                                                     }
                                                     
                                                     Row(
@@ -6868,7 +6870,7 @@ Please answer about usage habits, not battery attribution.
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "${apps.size} ${if (apps.size > 1) "apps" else "app"}",
+                                    text = stringResource(if (apps.size > 1) R.string.pw_n_apps else R.string.pw_n_app, apps.size),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -6891,7 +6893,7 @@ Please answer about usage habits, not battery attribution.
             },
             text = {
                 Text(
-                    text = "Usage Stats permission is required to monitor app power consumption. Please grant permission in Settings.",
+                    text = stringResource(R.string.pw_apps_perm_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -6936,16 +6938,16 @@ Please answer about usage habits, not battery attribution.
             .toList()
         
         CsvPreviewDialog(
-            title = "App Screen Time Data",
-            headers = listOf("Timestamp", "Package Name", "App Name", "Usage Share (%)", "Foreground Time (ms)", "Background Time (ms)", "Total Usage (ms)"),
+            title = stringResource(R.string.pw_apps_csv_title),
+            headers = listOf(stringResource(R.string.pw_csv_timestamp), stringResource(R.string.pw_csv_app_package), stringResource(R.string.pw_csv_app_name), stringResource(R.string.pw_csv_app_share), stringResource(R.string.pw_csv_app_fg), stringResource(R.string.pw_csv_app_bg), stringResource(R.string.pw_csv_app_total)),
             headerDescriptions = mapOf(
-                "Timestamp" to "Exact date and time when this usage snapshot was recorded.",
-                "Package Name" to "Android package name of the app (e.g., com.example.app).",
-                "App Name" to "Display name of the app as shown to users.",
-                "Usage Share (%)" to "This app's active time as a share of all app usage on the device. Android does not expose real per-app battery draw to third-party apps, so this is screen time, not battery use.",
-                "Foreground Time (ms)" to "Time the app was in foreground (visible to user) in milliseconds.",
-                "Background Time (ms)" to "Time the app was visible in the background in milliseconds.",
-                "Total Usage (ms)" to "Total app usage across the device over the sampled window, in milliseconds."
+                stringResource(R.string.pw_csv_timestamp) to stringResource(R.string.pw_csv_app_timestamp_d),
+                stringResource(R.string.pw_csv_app_package) to stringResource(R.string.pw_csv_app_package_d),
+                stringResource(R.string.pw_csv_app_name) to stringResource(R.string.pw_csv_app_name_d),
+                stringResource(R.string.pw_csv_app_share) to stringResource(R.string.pw_csv_app_share_d),
+                stringResource(R.string.pw_csv_app_fg) to stringResource(R.string.pw_csv_app_fg_d),
+                stringResource(R.string.pw_csv_app_bg) to stringResource(R.string.pw_csv_app_bg_d),
+                stringResource(R.string.pw_csv_app_total) to stringResource(R.string.pw_csv_app_total_d)
             ),
             rows = allApps.map { app ->
                 val share = if (app.totalUsageTime > 0) {
@@ -7000,7 +7002,7 @@ Please answer about usage habits, not battery attribution.
                                 putExtra(Intent.EXTRA_STREAM, it)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share App Screen Time"))
+                            context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_apps_data)))
                         }
                     }
                 } else {
@@ -7036,7 +7038,7 @@ Please answer about usage habits, not battery attribution.
                             putExtra(Intent.EXTRA_STREAM, it)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share App Screen Time"))
+                        context.startActivity(Intent.createChooser(shareIntent, context.string(R.string.pw_share_apps_data)))
                     }
                 }
             }
