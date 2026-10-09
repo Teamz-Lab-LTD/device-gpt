@@ -1,0 +1,109 @@
+# DeviceGPT — custom store listing for Bangladesh (Play Console, about 5 minutes)
+
+Why: Google shows the Bangla listing only to phones set to Bangla. In Aug–Oct 2026 that was 0 installs.
+A custom store listing targeted at the country Bangladesh is shown to everyone there, whatever their
+phone language, and Play search indexes it. Data: `automation_data/bd-20261009/REPORT.md`.
+
+## Steps (English labels as shown in Play Console)
+
+1. Open https://play.google.com/console and choose **DeviceGPT** (`com.teamz.lab.debugger`).
+2. Left menu: **Grow users → Store presence → Custom store listings**.
+3. **Create listing** → **Create new listing** (or "Copy from main store listing" if offered, then
+   replace the three texts below; copying keeps the icon, screenshots and feature graphic).
+4. **Listing name** (only you see it): `Bangladesh`
+5. **Target audience** → **By country / region** → select **Bangladesh** only.
+6. **Default language**: English (United States) – en-US. Do not add other languages.
+7. Paste the three texts below into **App name**, **Short description**, **Full description**.
+8. Graphics: if they were not copied, upload the same icon, feature graphic and phone screenshots as
+   the main listing.
+9. **Save**, then **Publish** / send for review.
+
+## App name (29 of 30)
+
+```
+Mic & Display Test: DeviceGPT
+```
+
+## Short description (78 of 80)
+
+```
+Mic test, display test, camera test, dead pixel test — ফোন কেনা-বেচার আগে চেক।
+```
+
+## Full description (3956 of 4,000)
+
+```
+🔍 Mic test, display test, dead pixel test, camera test, touch screen test — Android এ এক ট্যাপে। DeviceGPT আপনার ফোন scan করে আর ফলাফলটা সহজ ভাষায় বুঝিয়ে দেয়। Root লাগে না।
+
+🤝 ফোন কেনা বা বেচার আগে একবার চেক
+পুরাতন বা নতুন, ফোন হাতে নিয়ে কয়েকটা চেক করে নিন:
+• Display check — display test দিয়ে দাগ, dead pixel আর touch ঠিক আছে কিনা দেখুন
+• Mic test আর camera test — কথা ঠিকমতো যায় কিনা, ছবি পরিষ্কার আসে কিনা
+• Battery health আর ফোনের অবস্থার নম্বর
+• বেচার সময় ক্রেতাকে ফোনের অবস্থার report দেখান, যেটা সে code দিয়ে মিলিয়ে নিতে পারে
+
+🎤 Mic test, camera test, display test
+• Mic test / microphone test — ঘরের noise floor আর আপনার গলার level মাপে, তারপর record টা সাথে সাথে বাজিয়ে শোনায়, যাতে বোঝেন ওপাশের মানুষ আপনাকে কেমন শোনে। Record ফোনের বাইরে যায় না
+• Camera test — camera কাজ করছে না? সামনের ও পিছনের camera, focus, রঙের গোলমাল
+• Screen test / display test — dead pixel test আর stuck pixel test, ৯টা full-screen রঙ আর আঁচড় দেখার grid। ফোন নিজের dead pixel নিজে ধরতে পারে না, তাই আপনি দেখেন আর DeviceGPT আপনার উত্তর লিখে রাখে — অনুমান করে score দেয় না
+• Phone hardware test: touch screen test, সাথে GPS status আর পুরা sensor list
+
+প্রতিটা scan এর পরে Ask AI চাপলেই ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com বা Replika দিয়ে সমাধান পাবেন। নয়টা AI platform। আপনি নিজে share না করলে scan এর ফলাফল আপনার ফোনেই থাকে; score আর ফোনের model global leaderboard এ যায়।
+
+🩺 App Doctor — "WiFi আছে কিন্তু ইন্টারনেট চলে না"
+Wi-Fi লাগানো অথচ কিছুই খুলছে না? App Doctor কারণটা বের করে:
+• যেকোনো website লিখে দিন, DeviceGPT ওইটা ৪ বার test করে — যে site মাঝে মাঝে fail করে, সে এক বারের ভাগ্যের পিছনে লুকাতে পারে না
+• সাধারণ connection আর app এর ভিতরের browser, দুইটা দিয়েই test করে — তাই বোঝা যায় আসল সমস্যা Android System WebView এ কিনা আর Chrome ঠিক আছে কিনা
+• আপনার DNS server দেখায়, Private DNS বা VPN চালু কিনা, আর network আপনাকে sign-in পাতায় আটকে রেখেছে কিনা (captive portal)
+• কয়বার pass করল আর গড় latency কত — শুধু একটা সবুজ টিক না
+
+🚀 WiFi speed test আর network speed test
+• WiFi speed test — download, upload, ping, jitter
+• Cellular আর Wi-Fi দুইটার জন্যই network speed test
+
+🔋 AI Battery Health — Android যা দেখায় না
+• Battery health (Android যা দেখায়) আর temperature
+• এখনকার power draw watt এ (আসল হিসাব: P = V × I)
+• কোন অংশ কত খায় তার আনুমানিক হিসাব (research-based model): display, cellular, RAM, Wi-Fi
+• App screen time — Android per-app battery use জানায় না, তাই এইটা screen time এর হিসাব, battery র না
+• Charging এর ধরন আর cycle tracking
+• Battery data CSV তে export করুন বা Ask AI দিয়ে বুঝে নিন
+
+🛡️ Zero Trust Dashboard — ফোনের security audit
+তিন ভাগের audit, ০–১০০ স্কোর:
+• App Privacy Risk (৩৫%): screen-recording app, লুকানো app, ad tracker
+• Network Trust (৩৫%): DNS কারসাজি, SSL hijack (MITM), transparent proxy, private DNS
+• Device Integrity (৩০%): root, sideloading, developer mode, overlay permission, notification listener
+
+🔌 AI Bridge — Claude বা Cursor কে ফোন পড়তে দিন
+নিজের local network এ PIN বা QR code দিয়ে desktop এর AI client জোড়া লাগান। MCP দিয়ে ওইটা live device data পড়ে — cloud লাগে না, account লাগে না।
+
+📱 Phone health check — এক scan এ
+• Battery, storage, RAM, temperature, security মিলিয়ে health score, সাথে পুরা device info
+
+📊 ফোনের অবস্থা ও resale report
+বিক্রির জন্য, support ticket এর জন্য বা অবস্থার প্রমাণ হিসাবে certified report বানান। Cryptographically signed (ECDSA P-256, Android KeyStore), সাথে tamper detection আর share করার verification code।
+
+🏆 Leaderboard ও achievements
+• ১০টা global category, যেমন Battery Saver, Speed, Display, Camera
+
+🚀 আরও আছে
+• Home screen widget: health score, battery, temperature
+• ১৫+ ভাষা
+• বেশিরভাগ scan offline চলে (Ask AI এ network লাগে)
+• Signup লাগে না। Root লাগে না।
+
+💎 DeviceGPT Premium (in-app purchase): ad সরায় আর কাজটা চালিয়ে যেতে সাহায্য করে।
+
+📥 DeviceGPT নামান — Android এর AI phone diagnostics, WiFi speed test, camera test আর battery health app। Install দিয়ে ৩০ সেকেন্ডে প্রথম scan চালান।
+```
+
+## Do not
+
+- Do not change the **Main store listing**. That is what the USA and every other country sees.
+- Do not target any country other than Bangladesh.
+
+## Afterwards
+
+Tell Claude it is published; the weekly numbers will then show Bangladesh visitors and installs
+separately, and the title can be judged on real data.
