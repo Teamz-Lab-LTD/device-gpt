@@ -40,3 +40,63 @@ With a score-reveal moment and reduce-motion handling it moves design and animat
 
 The lowest axes are craft axes, so there is buildable work. Plan:
 `docs/superpowers/plans/2026-10-09-design-pass.md`.
+
+## 2026-10-09 — second run, after the design pass
+
+Same nine checks, Kotlin/Compose equivalents, on `main` at `86d9707` (not pushed). The first run above was
+at `c314950`. Between the two: translation, the emoji-to-icon pass, and the motion and UX pass
+(`9595bc5`, `2044124`, `7a86b6a`, `2ba10d4`, `86d9707`).
+
+### Mechanical scan (commands run, numbers as printed)
+
+| # | Check | First run | Now | Verdict |
+|---|---|---|---|---|
+| 1 | Icon families (`grep -rhoE "Icons\.<Family>\."`) | Default 228, Filled 26, AutoMirrored 1 | Default 229, Filled 26, Outlined 75, Rounded 40, AutoMirrored 10; plus 176 uses of the app's own `DgIcons` / `DgStock` | **Worse on paper.** The icon pass brought in Outlined and Rounded beside Filled. Needs one family chosen |
+| 2 | Fonts fetched at runtime | none | none; `res/font/` still 34 files | Pass |
+| 3 | Requested weights bundled | pass | unchanged | Pass. Bangla still falls back to the system font |
+| 4 | Emoji standing in for icons | 1,229 source lines drawn as icons | 0 drawn: `NoEmojiIconsGuardTest` passes (no emoji in a text literal under `ui/`, none in a displayed string resource, none through the row display path). Emoji remain in `utils/` builders as data, on purpose | **Pass. The cap is lifted** |
+| 5 | Stock framework colours | 45 uses | 0 under `ui/` outside the allow-list; 21 on the allow-list (`screen_test_card.kt`: the dead-pixel, grid and touch tests paint pure colours on purpose; `icons/DgIcons.kt`: vector paths). `StockColorGuardTest` holds it. Raw `Color(0x…)` outside the theme: 108 → 86 | Pass for stock colours. Raw hex still open |
+| 6 | Raster art mixed with painted UI | 0 `painterResource` | 0 | Pass |
+| 7 | Signature moment, named in five words | could not be named; 47 hand-written specs | **"Ring fills, number counts up."** `ScoreRing` in 3 places (score screen, last-score card, health score card). 0 hand-written `tween`/`spring`/`keyframes`/`infiniteRepeatable` under `ui/` outside `ui/theme/Motion.kt`; 50 call sites of the helpers. `MotionGuardTest` holds it | **Present** |
+| 8 | Reduced motion handled in one place | 0 matches | `LocalReduceMotion`, provided at 2 of 2 Compose roots; every helper returns a snap, every loop rests. Checked on the emulator with animator scale 0: scanning goes to the finished score screen in one frame and nothing moves after it | **Handled** |
+| 9 | Screenshot / golden tests | none | none (0 for `Paparazzi`, `Roborazzi`, `captureToImage`) | Still no automated layout evidence |
+
+Also counted this run: text under 12sp under `ui/` 79 → 3 (two lines on the premium card, left alone as
+paywall surface, and one icon glyph in a badge); icon buttons under 48dp with no touch area 29 → 1 (the
+paywall close button, left alone).
+
+Narrow-phone evidence now exists, by hand: emulator at 720x1560, density 360 (320dp wide), Bangla, every
+tab, the score screen, the three tests, the done card and the drawer were walked and fixed. Screenshots are
+outside the repo (session scratchpad, `devicegpt/final/`).
+
+### Score
+
+| Axis | First | Now | Evidence |
+|---|---|---|---|
+| Innovative idea | 1 | 1 | Unchanged. Nothing in this pass changes what the app is |
+| Beautiful design | 0 | 1 | The emoji cap is gone, colours are semantic and paired, one accent, the score looks the same in three places. Held at 1 by check 1 (three icon families side by side), 86 raw hex colours, and Bangla set in a fallback font next to Poppins |
+| Animation | 0 | 2 | One named moment, 1.5 s, on the first screen a new user sees; one token file; pop for a pass, shake for a problem; sheet enters slow and leaves fast; all of it off with one system switch |
+| Craft made visible | 1 | 1 | 885 unit tests, three source guards (emoji, motion, stock colour), 48dp targets, 12sp floor, 320dp walk. Held at 1 because nothing checks layout automatically (check 9) |
+| Screenshots | not scored | not scored | store screenshots not re-pulled |
+| Video | not scored | not scored | store video not re-pulled |
+
+### What moved and why
+
+- Design 0 → 1: check 4 was an instant cap and is now a pass with a test behind it.
+- Animation 0 → 2: checks 7 and 8 both flipped. The reveal is measured from a recording: 1.53 s from the
+  first ring frame to the last action fully shown.
+- Check 1 went the wrong way. Before the icon pass there was one stock family; now Filled, Outlined and
+  Rounded are all used. This pass did not touch it.
+
+### Still open
+
+1. **One icon family** (check 1): pick Rounded or Outlined for stock icons and move the 255 Default/Filled
+   uses, or the reverse. Lowest axis is no longer capped, so this is now the cheapest point on Beautiful design.
+2. **Screenshot tests** (check 9): Roborazzi over the score screen, the three test cards and the floating row
+   at 320dp in Bangla would turn today's hand walk into a guard. Moves Craft to 2.
+3. Raw hex colours: 86 outside the theme (AI-link purple, leaderboard gold, power chart colours).
+4. Bengali-capable brand font: owner decision (in "Not in this plan").
+5. Camera result title when focus fails on every camera reads "One camera did not respond fully": it is the
+   closest existing wording; a line for "more than one" needs the owner.
+6. Light theme: secondary text at 50–60 % alpha is under 4.5:1 on white in places. Dark is the default and passes.
+7. Paywall surfaces were not touched: the 32dp close button, and two lines at 10–11sp on the drawer premium card.
