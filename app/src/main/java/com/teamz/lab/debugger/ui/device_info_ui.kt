@@ -20,6 +20,7 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.getFPS
 import com.teamz.lab.debugger.utils.getFrameDropRate
 import com.teamz.lab.debugger.utils.HealthScoreUtils
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.handleError
 import com.teamz.lab.debugger.utils.FpsDataCache
 import kotlinx.coroutines.Dispatchers
@@ -256,60 +257,70 @@ fun DeviceInfoSection(
         val showLoading = !state.isFullyLoaded
         // android.util.Log.d("DeviceInfoSection", "🔄 Recomputing deviceInfo - isFullyLoaded: ${state.isFullyLoaded}, items with data: ${listOf(state.deviceDetails, state.cpuDetails, state.gpuDetails).count { it.isNotEmpty() }}") // Disabled: Too verbose
         listOf(
-            "Device Specifications" to (if (showLoading && state.deviceDetails.isEmpty()) loadingText else state.deviceDetails),
-            "Privacy Exposure Check" to (if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText
+            Triple("Device Specifications", R.string.info_sec_device_specs, if (showLoading && state.deviceDetails.isEmpty()) loadingText else state.deviceDetails),
+            Triple("Privacy Exposure Check", R.string.info_sec_privacy_exposure, if (showLoading && state.isDeviceBeingMonitored.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.isDeviceBeingMonitored, "full privacy exposure details & what to do")
                 else state.isDeviceBeingMonitored),
-            "Processor & Performance" to (if (showLoading && state.cpuDetails.isEmpty()) loadingText else state.cpuDetails),
-            "Graphics & GPU Information" to (if (showLoading && state.gpuDetails.isEmpty()) loadingText else state.gpuDetails),
-            "Battery & Charging Info" to (if (showLoading && state.batteryInfo.isEmpty()) loadingText else state.batteryInfo),
-            "GPS, Location & Navigation" to (if (showLoading && state.gpsInfo.isEmpty()) loadingText else state.gpsInfo),
-            "SIM & Mobile Network Info" to (if (showLoading && state.telephonyInfo.isEmpty()) loadingText else state.telephonyInfo),
-            "Screen & Display Settings" to (if (showLoading && state.displayInfo.isEmpty()) loadingText else state.displayInfo),
-            "Text & Font Settings" to (if (showLoading && state.fontInfo.isEmpty()) loadingText else state.fontInfo),
-            "Sensors Available on Device" to (if (showLoading && state.sensorList.isEmpty()) loadingText else state.sensorList),
-            "Recent System Logs (Last 10 Entries)" to (if (showLoading && state.recentLogs.isEmpty()) loadingText else state.recentLogs),
-            "Date, Time & Auto Sync" to (if (showLoading && state.dateTimeInfo.isEmpty()) loadingText else state.dateTimeInfo),
-            "Camera, Mic, Speaker & Flashlight Status" to (if (showLoading && state.cameraInfo.isEmpty()) loadingText else state.cameraInfo),
-            "Supported Media Formats" to (if (showLoading && state.fileFormat.isEmpty()) loadingText else state.fileFormat),
-            "Temperature & Cooling Status" to (if (showLoading && state.thermalStatus.isEmpty()) loadingText else state.thermalStatus),
-            "Memory & Storage Details" to (if (showLoading && state.memoryStorage.isEmpty()) loadingText else state.memoryStorage),
-            "Security & Privacy Features" to (if (showLoading && state.securityInfo.isEmpty()) loadingText else state.securityInfo),
+            Triple("Processor & Performance", R.string.info_sec_cpu, if (showLoading && state.cpuDetails.isEmpty()) loadingText else state.cpuDetails),
+            Triple("Graphics & GPU Information", R.string.info_sec_gpu, if (showLoading && state.gpuDetails.isEmpty()) loadingText else state.gpuDetails),
+            Triple("Battery & Charging Info", R.string.info_sec_battery, if (showLoading && state.batteryInfo.isEmpty()) loadingText else state.batteryInfo),
+            Triple("GPS, Location & Navigation", R.string.info_sec_gps, if (showLoading && state.gpsInfo.isEmpty()) loadingText else state.gpsInfo),
+            Triple("SIM & Mobile Network Info", R.string.info_sec_sim, if (showLoading && state.telephonyInfo.isEmpty()) loadingText else state.telephonyInfo),
+            Triple("Screen & Display Settings", R.string.info_sec_display, if (showLoading && state.displayInfo.isEmpty()) loadingText else state.displayInfo),
+            Triple("Text & Font Settings", R.string.info_sec_font, if (showLoading && state.fontInfo.isEmpty()) loadingText else state.fontInfo),
+            Triple("Sensors Available on Device", R.string.info_sec_sensors, if (showLoading && state.sensorList.isEmpty()) loadingText else state.sensorList),
+            Triple("Recent System Logs (Last 10 Entries)", R.string.info_sec_logs, if (showLoading && state.recentLogs.isEmpty()) loadingText else state.recentLogs),
+            Triple("Date, Time & Auto Sync", R.string.info_sec_datetime, if (showLoading && state.dateTimeInfo.isEmpty()) loadingText else state.dateTimeInfo),
+            Triple("Camera, Mic, Speaker & Flashlight Status", R.string.info_sec_camera_audio, if (showLoading && state.cameraInfo.isEmpty()) loadingText else state.cameraInfo),
+            Triple("Supported Media Formats", R.string.info_sec_media, if (showLoading && state.fileFormat.isEmpty()) loadingText else state.fileFormat),
+            Triple("Temperature & Cooling Status", R.string.info_sec_temp, if (showLoading && state.thermalStatus.isEmpty()) loadingText else state.thermalStatus),
+            Triple("Memory & Storage Details", R.string.info_sec_memory, if (showLoading && state.memoryStorage.isEmpty()) loadingText else state.memoryStorage),
+            Triple("Security & Privacy Features", R.string.info_sec_security, if (showLoading && state.securityInfo.isEmpty()) loadingText else state.securityInfo),
             // FPS and Frame Drop update in real-time - show them immediately when available
-            "Real-time FPS (Frame Rate)" to (if (state.frameRate.isEmpty()) loadingText else state.frameRate),
-            "Graphics & Frame Drop Analysis" to (if (state.frameDropData.isEmpty()) loadingText else state.frameDropData),
-            "Device Root & Superuser Status" to (if (showLoading && state.rootStatus.isEmpty()) loadingText else state.rootStatus),
-            "Developer Options & USB Debugging" to (if (showLoading && state.usbDebugging.isEmpty()) loadingText else state.usbDebugging),
-            "AI Inference & Neural Acceleration Support" to (if (showLoading && state.aiInferenceSupport.isEmpty()) loadingText else state.aiInferenceSupport),
-            "Heat Check: CPU, Battery, GPU Temps" to (if (showLoading && state.thermalZoneInfo.isEmpty()) loadingText else state.thermalZoneInfo),
+            Triple("Real-time FPS (Frame Rate)", R.string.info_sec_fps, if (state.frameRate.isEmpty()) loadingText else state.frameRate),
+            Triple("Graphics & Frame Drop Analysis", R.string.info_sec_frame_drop, if (state.frameDropData.isEmpty()) loadingText else state.frameDropData),
+            Triple("Device Root & Superuser Status", R.string.info_sec_root, if (showLoading && state.rootStatus.isEmpty()) loadingText else state.rootStatus),
+            Triple("Developer Options & USB Debugging", R.string.info_sec_usb_debug, if (showLoading && state.usbDebugging.isEmpty()) loadingText else state.usbDebugging),
+            Triple("AI Inference & Neural Acceleration Support", R.string.info_sec_ai, if (showLoading && state.aiInferenceSupport.isEmpty()) loadingText else state.aiInferenceSupport),
+            Triple("Heat Check: CPU, Battery, GPU Temps", R.string.info_sec_heat, if (showLoading && state.thermalZoneInfo.isEmpty()) loadingText else state.thermalZoneInfo),
             // Premium security sections: show first 3 lines free (real value), gate the rest
-            "Sensor Spoofing Detection" to (if (showLoading && state.spoofingStatus.isEmpty()) loadingText
+            Triple("Sensor Spoofing Detection", R.string.info_sec_spoof, if (showLoading && state.spoofingStatus.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.spoofingStatus, "full spoofing detection details & how to fix")
                 else state.spoofingStatus),
-            "Hidden Apps & Services Check" to (if (showLoading && state.hiddenAppsStatus.isEmpty()) loadingText
+            Triple("Hidden Apps & Services Check", R.string.info_sec_hidden, if (showLoading && state.hiddenAppsStatus.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.hiddenAppsStatus, "full hidden apps list & removal guide")
                 else state.hiddenAppsStatus),
             // Was "AI Voice Clone Risk Check", with premium selling a "full voice clone
             // vulnerability analysis". The check read DeviceGPT's own mic permission; what is left
             // is one honest sentence, so there is nothing to put behind the paywall.
-            "Microphone Privacy" to (if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
+            Triple("Microphone Privacy", R.string.info_sec_mic_privacy, if (showLoading && state.voiceCloneRisk.isEmpty()) loadingText
                 else state.voiceCloneRisk),
-            "How Hackable Is My Phone?" to (if (showLoading && state.hackability.isEmpty()) loadingText
+            Triple("How Hackable Is My Phone?", R.string.info_sec_hack, if (showLoading && state.hackability.isEmpty()) loadingText
                 else state.hackability),
-            "Face Unlock Security Trust Level" to (if (showLoading && state.faceUnlockTrust.isEmpty()) loadingText
+            Triple("Face Unlock Security Trust Level", R.string.info_sec_face, if (showLoading && state.faceUnlockTrust.isEmpty()) loadingText
                 else state.faceUnlockTrust),
-            "Ad Tracking SDK Exposure" to (if (showLoading && state.adTracking.isEmpty()) loadingText
+            Triple("Ad Tracking SDK Exposure", R.string.info_sec_adtrack, if (showLoading && state.adTracking.isEmpty()) loadingText
                 else if (!com.teamz.lab.debugger.utils.RevenueCatManager.isPremium()) truncateWithTeaser(state.adTracking, "full list of SDKs tracking you & how to stop them")
                 else state.adTracking),
-        )
+        ).map { (id, titleRes, english) ->
+            // The English title and text stay as they are for share, AI and analytics. Only what is
+            // drawn goes through the app language. System log lines are the phone's own words.
+            InfoRow(
+                id = id,
+                title = context.string(titleRes),
+                content = InfoTextLocalizer.localize(context, english, exactOnly = titleRes == R.string.info_sec_logs),
+                englishContent = english,
+            )
+        }
     }
 
     // Generate share content only when ALL data is fully loaded
     // FABs will be enabled only after isFullyLoaded is true
     val shareContent = if (state.isFullyLoaded) {
         // All data is loaded, generate share content with all items
-        deviceInfo.joinToString("\n\n") { (title, content) ->
-            "$title\n$content"
+        // English on purpose: this text is shared to other apps and handed to an AI.
+        deviceInfo.joinToString("\n\n") { row ->
+            "${row.id}\n${row.englishContent}"
         }
     } else {
         // Still loading - return loading text so FABs stay disabled
