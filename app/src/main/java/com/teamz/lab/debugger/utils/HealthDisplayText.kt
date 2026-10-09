@@ -33,6 +33,14 @@ object HealthDisplayText {
     fun englishContext(context: Context): Context =
         context.createConfigurationContext(Configuration().apply { setLocale(Locale.ENGLISH) })
 
+    /**
+     * Returns [english] when the app language is English, and the string [fallback] otherwise.
+     * For messages built far from the screen (a sign-in error, an exception text) that a Bangla
+     * reader cannot read: English keeps the exact message, Bangla gets a plain sentence.
+     */
+    fun englishOr(context: Context, english: String, @StringRes fallback: Int): String =
+        if (isEnglish(context)) english else context.string(fallback)
+
     /** The battery card's rows, as returned by `getBatteryChargingInfo`. */
     fun batteryInfo(context: Context, raw: String): String {
         if (isEnglish(context)) return raw
@@ -234,5 +242,9 @@ object HealthDisplayText {
         "Network Signal Strength Test" to R.string.mx_ai_item_network_signal_test,
         "Device Sleep Tracker" to R.string.mx_ai_item_sleep_tracker,
         "App Screen Time" to R.string.mx_ai_item_app_screen_time,
+        "Device scan" to R.string.mx_ai_item_device_scan,
+        "DeviceGPT scan" to R.string.mx_ai_item_devicegpt_scan,
+        "Resale Report" to R.string.mx_ai_item_resale_report,
+        "Item" to R.string.mx_ai_item_generic,
     )
 }

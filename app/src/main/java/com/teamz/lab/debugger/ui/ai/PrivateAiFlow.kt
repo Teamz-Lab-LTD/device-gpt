@@ -1,5 +1,8 @@
 package com.teamz.lab.debugger.ui.ai
 
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.utils.HealthDisplayText
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -125,7 +128,7 @@ fun rememberPrivateAiFlow(
                     )
                 }
                 .onFailure {
-                    errorMsg = it.message ?: "On-device AI is not ready yet."
+                    errorMsg = it.message ?: context.getString(R.string.mx_private_ai_not_ready)
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.PrivateAiFailed,
                         mapOf(
@@ -191,7 +194,14 @@ private fun PrivateAiResultDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.padding(horizontal = 4.dp))
-                Text("Private AI · $subject", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    // `subject` stays English for analytics and the clipboard label.
+                    stringResource(
+                        R.string.mx_private_ai_title,
+                        HealthDisplayText.aiItemTitle(LocalContext.current, subject),
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                )
             }
         },
         text = {
@@ -205,14 +215,14 @@ private fun PrivateAiResultDialog(
                             CircularProgressIndicator(modifier = Modifier.size(18.dp))
                             Spacer(Modifier.padding(horizontal = 8.dp))
                             Text(
-                                "Running on-device AI… your scan never leaves this phone.",
+                                stringResource(R.string.mx_private_ai_running),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
                     }
                     errorMsg != null -> {
                         Text(
-                            "On-device AI could not run right now. You can still ask a cloud AI from the list.",
+                            stringResource(R.string.mx_private_ai_failed),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(Modifier.height(8.dp))
@@ -226,14 +236,14 @@ private fun PrivateAiResultDialog(
                         Text(result, style = MaterialTheme.typography.bodyMedium)
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Powered by Gemini Nano · on-device · offline",
+                            stringResource(R.string.mx_private_ai_powered),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     else -> {
                         Text(
-                            "Preparing…",
+                            stringResource(R.string.mx_private_ai_preparing),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
@@ -242,13 +252,13 @@ private fun PrivateAiResultDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss, enabled = !loading) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         },
         dismissButton = {
             if (result != null) {
                 TextButton(onClick = onCopy) {
-                    Text("Copy")
+                    Text(stringResource(R.string.mx_private_ai_copy))
                 }
             }
         },

@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.ui
 
+import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -77,8 +78,8 @@ fun AIAssistantDialog(
     onDismiss: () -> Unit,
     onShareWithApp: (AIApp, PromptMode) -> Unit,
     context: Context,
-    title: String = "AI, Is My Phone OK?",
-    subtitle: String = "Get simple, friendly answers about your phone’s health—no tech skills needed.",
+    title: String = stringResource(R.string.mx_ai_dialog_title),
+    subtitle: String = stringResource(R.string.mx_ai_dialog_subtitle),
     showExplanationModeToggle: Boolean = true,
     // Optional: if non-null, tapping the "Private AI (on-device)" row invokes this
     // instead of onShareWithApp. Callers typically launch a coroutine that calls
@@ -179,7 +180,7 @@ fun AIAssistantDialog(
                 if (installedApps != null && hasAnyTarget && showExplanationModeToggle) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "AI Explanation Mode:",
+                        stringResource(R.string.mx_ai_mode_label),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
@@ -218,14 +219,14 @@ fun AIAssistantDialog(
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.size(12.dp))
                         Text(
-                            "Finding installed AI apps…",
+                            stringResource(R.string.mx_ai_finding_apps),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 } else if (resolved.isEmpty() && !onDeviceAvailable) {
                     Text(
-                        "No AI apps found. Please install one of these apps:",
+                        stringResource(R.string.mx_ai_no_apps),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier
@@ -244,14 +245,15 @@ fun AIAssistantDialog(
                                     playStoreUrl = "",
                                 )
                                 val onDeviceSubtitle = when (onDeviceStatus) {
-                                    OnDeviceAiAvailability.Status.READY -> PrivateAiExplainer.TAGLINE
-                                    OnDeviceAiAvailability.Status.DOWNLOADABLE -> "One-time ~300MB download · then fully offline"
-                                    else -> PrivateAiExplainer.TAGLINE
+                                    OnDeviceAiAvailability.Status.DOWNLOADABLE ->
+                                        stringResource(R.string.mx_ai_private_download, "300MB")
+                                    else -> stringResource(R.string.mx_ai_private_tagline)
                                 }
                                 ListItem(
                                     headlineContent = {
                                         Text(
-                                            onDeviceAiApp.name,
+                                            // The AIApp keeps the English name: it is logged.
+                                            stringResource(R.string.mx_ai_private_name),
                                             style = MaterialTheme.typography.titleMedium,
                                         )
                                     },
@@ -285,7 +287,7 @@ fun AIAssistantDialog(
                                 supportingContent = if (isMcpCapable) {
                                     {
                                         Text(
-                                            "Live-ready — this AI can read live phone data via MCP",
+                                            stringResource(R.string.mx_ai_live_ready),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary,
                                         )
@@ -297,7 +299,7 @@ fun AIAssistantDialog(
                                 trailingContent = if (isMcpCapable) {
                                     {
                                         Text(
-                                            "LIVE",
+                                            stringResource(R.string.mx_ai_live_badge),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                                             fontWeight = FontWeight.SemiBold,
@@ -328,7 +330,7 @@ fun AIAssistantDialog(
                                     trailingContent = {
                                         Icon(
                                             Icons.Default.InstallMobile,
-                                            contentDescription = "Install",
+                                            contentDescription = stringResource(R.string.mx_ai_install_cd),
                                             tint = MaterialTheme.colorScheme.primary,
                                         )
                                     },
@@ -393,7 +395,7 @@ private fun AiInstallList(apps: List<AIApp>, context: Context) {
                 trailingContent = {
                     Icon(
                         Icons.Default.InstallMobile,
-                        contentDescription = "Install",
+                        contentDescription = stringResource(R.string.mx_ai_install_cd),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 },
@@ -438,7 +440,10 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                         )
                         Spacer(Modifier.size(8.dp))
                         Text(
-                            "AI Bridge is ON · ${state.requestCount} live request${if (state.requestCount == 1) "" else "s"} served",
+                            stringResource(
+                                if (state.requestCount == 1) R.string.mx_ai_bridge_on_one else R.string.mx_ai_bridge_on_many,
+                                state.requestCount.toString(),
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -446,7 +451,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                     }
                     Spacer(Modifier.size(4.dp))
                     Text(
-                        "MCP-capable AI clients (e.g. Claude Desktop) can read live phone data. Snapshot text is a fallback for the rest.",
+                        stringResource(R.string.mx_ai_bridge_on_body),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
@@ -456,7 +461,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
         is BridgeService.BridgeState.Starting -> {
             SubtlePill(
                 icon = { CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp) },
-                text = "AI Bridge is starting…",
+                text = stringResource(R.string.mx_ai_bridge_starting),
             )
         }
         is BridgeService.BridgeState.Error -> {
@@ -476,7 +481,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                     )
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        "AI Bridge error: ${state.reason.take(80)}",
+                        stringResource(R.string.mx_ai_bridge_error, state.reason.take(80)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                     )
@@ -493,7 +498,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                         modifier = Modifier.size(16.dp),
                     )
                 },
-                text = "Tip: turn on AI Bridge (AI Bridge tab) to let Claude/Cursor read live phone data via MCP.",
+                text = stringResource(R.string.mx_ai_bridge_tip),
             )
         }
     }
