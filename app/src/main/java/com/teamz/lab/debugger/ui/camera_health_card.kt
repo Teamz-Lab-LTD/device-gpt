@@ -51,6 +51,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AIIcon
 import com.teamz.lab.debugger.utils.AnalyticsEvent
@@ -175,7 +177,7 @@ fun CameraHealthSection(
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
-                    "Is Your Camera Working?",
+                    stringResource(R.string.camera_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -189,15 +191,14 @@ fun CameraHealthSection(
                             onItemAIClick("Camera Health Test", content)
                         },
                     ) {
-                        Icon(AIIcon.icon, contentDescription = "Ask AI", tint = AIIcon.color())
+                        Icon(AIIcon.icon, contentDescription = stringResource(R.string.ask_ai), tint = AIIcon.color())
                     }
                 }
             }
 
             Spacer(Modifier.size(8.dp))
             Text(
-                "We check each camera on your phone and tell you what your device reports — " +
-                    "in plain words, not a score.",
+                stringResource(R.string.camera_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -234,9 +235,14 @@ fun CameraHealthSection(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                     Spacer(Modifier.size(8.dp))
-                    Text("Checking your camera…")
+                    Text(stringResource(R.string.camera_checking))
                 } else {
-                    Text(if (latestResult == null) "Check My Camera" else "Check Again")
+                    Text(
+                        stringResource(
+                            if (latestResult == null) R.string.camera_check_button
+                            else R.string.camera_check_again
+                        )
+                    )
                 }
             }
 
@@ -251,7 +257,9 @@ fun CameraHealthSection(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            if (showDetail) "Hide technical detail" else "Show technical detail",
+                            stringResource(
+                                if (showDetail) R.string.camera_hide_detail else R.string.camera_show_detail
+                            ),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -309,18 +317,20 @@ private fun CameraProblemReportCard(
     colorCastResult: CameraHealthUtils.ColorCastCheckResult?,
     onItemAIClick: ((String, String) -> Unit)?,
 ) {
+    // The English text is the symptom's identity: it goes to analytics and into the report the
+    // AI reads, so it stays English. Only the chip label is shown in the app language.
     val symptomOptions = remember {
         listOf(
-            "Black screen",
-            "Won't open",
-            "Blurry / won't focus",
-            "Flash not working",
-            "Colours look wrong",
-            "Crashes or freezes",
-            "Says another app is using it",
-            "Slow / laggy",
-            "Lines or spots in photos",
-            "Overheating warning",
+            "Black screen" to R.string.camera_symptom_black_screen,
+            "Won't open" to R.string.camera_symptom_wont_open,
+            "Blurry / won't focus" to R.string.camera_symptom_blurry,
+            "Flash not working" to R.string.camera_symptom_flash,
+            "Colours look wrong" to R.string.camera_symptom_colours,
+            "Crashes or freezes" to R.string.camera_symptom_crashes,
+            "Says another app is using it" to R.string.camera_symptom_in_use,
+            "Slow / laggy" to R.string.camera_symptom_slow,
+            "Lines or spots in photos" to R.string.camera_symptom_lines,
+            "Overheating warning" to R.string.camera_symptom_overheating,
         )
     }
     var selected by remember { mutableStateOf(setOf<String>()) }
@@ -334,7 +344,7 @@ private fun CameraProblemReportCard(
         )
         Spacer(Modifier.size(8.dp))
         Text(
-            "Not Sure What's Wrong? Get AI Help",
+            stringResource(R.string.camera_help_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -342,9 +352,7 @@ private fun CameraProblemReportCard(
     }
     Spacer(Modifier.size(8.dp))
     Text(
-        "Pick what you're seeing (choose any that apply), and we'll bundle it with your " +
-            "camera's real specs and send it to an AI app of your choice to help figure out " +
-            "what's going on.",
+        stringResource(R.string.camera_help_intro),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -355,7 +363,7 @@ private fun CameraProblemReportCard(
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        symptomOptions.forEach { symptom ->
+        symptomOptions.forEach { (symptom, symptomLabel) ->
             androidx.compose.material3.FilterChip(
                 selected = symptom in selected,
                 onClick = {
@@ -366,7 +374,7 @@ private fun CameraProblemReportCard(
                         mapOf("symptom" to symptom, "selected" to nowSelected),
                     )
                 },
-                label = { Text(symptom, style = MaterialTheme.typography.bodySmall) },
+                label = { Text(stringResource(symptomLabel), style = MaterialTheme.typography.bodySmall) },
             )
         }
     }
@@ -375,15 +383,14 @@ private fun CameraProblemReportCard(
     androidx.compose.material3.OutlinedTextField(
         value = otherText,
         onValueChange = { otherText = it },
-        label = { Text("Something else? Describe it here") },
+        label = { Text(stringResource(R.string.camera_help_other)) },
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
     )
 
     Spacer(Modifier.size(12.dp))
     Text(
-        "This shares your camera and device details with whichever AI app you pick next — " +
-            "nothing is sent until you choose one.",
+        stringResource(R.string.camera_help_privacy),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -423,7 +430,7 @@ private fun CameraProblemReportCard(
         enabled = canSend && factSheet != null,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Text("Get AI Help With This")
+        Text(stringResource(R.string.camera_help_button))
     }
 
     // Go Pro upsell removed 2026-07-25 after the button appeared to do nothing on tap.
@@ -463,7 +470,7 @@ private fun ColorCastCheckCard(
         Icon(Icons.Default.InvertColors, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.size(8.dp))
         Text(
-            "My Photos Look Black & White?",
+            stringResource(R.string.camera_bw_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -479,15 +486,14 @@ private fun ColorCastCheckCard(
                     )
                 },
             ) {
-                Icon(AIIcon.icon, contentDescription = "Ask AI", tint = AIIcon.color())
+                Icon(AIIcon.icon, contentDescription = stringResource(R.string.ask_ai), tint = AIIcon.color())
             }
         }
     }
 
     Spacer(Modifier.size(8.dp))
     Text(
-        "We'll take one quick photo and check two common settings. Not every phone brand's " +
-            "own grayscale feature can be detected this way.",
+        stringResource(R.string.camera_bw_intro),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
@@ -526,9 +532,13 @@ private fun ColorCastCheckCard(
                 color = MaterialTheme.colorScheme.onPrimary,
             )
             Spacer(Modifier.size(8.dp))
-            Text("Checking…")
+            Text(stringResource(R.string.checking))
         } else {
-            Text(if (result == null) "Check My Photo" else "Check Again")
+            Text(
+                stringResource(
+                    if (result == null) R.string.camera_bw_check_button else R.string.camera_check_again
+                )
+            )
         }
     }
 }
@@ -544,39 +554,32 @@ private fun ColorCastResultCard(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
             Icons.Default.Warning,
-            "Found it: Grayscale display mode is on",
-            "Your phone's Accessibility settings have colour correction set to grayscale. " +
-                "That makes everything look black and white, including the camera — turn it " +
-                "off and colour should come back.",
-            Settings.ACTION_ACCESSIBILITY_SETTINGS to "Open Accessibility Settings",
+            stringResource(R.string.camera_bw_grayscale_title),
+            stringResource(R.string.camera_bw_grayscale_body),
+            Settings.ACTION_ACCESSIBILITY_SETTINGS to stringResource(R.string.camera_bw_open_accessibility),
         )
         result.batterySaverOn -> ColorCastVerdict(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
             Icons.Default.Warning,
-            "Likely cause: Battery Saver is on",
-            "Many phones turn the whole screen grayscale while Battery Saver is active to " +
-                "save power. Turn it off (or wait until it charges) and check again.",
-            Settings.ACTION_BATTERY_SAVER_SETTINGS to "Open Battery Settings",
+            stringResource(R.string.camera_bw_saver_title),
+            stringResource(R.string.camera_bw_saver_body),
+            Settings.ACTION_BATTERY_SAVER_SETTINGS to stringResource(R.string.camera_bw_open_battery),
         )
         result.capturedLooksMonochrome == true -> ColorCastVerdict(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
             Icons.Default.Warning,
-            "Your last photo showed almost no colour",
-            "We checked the two most common settings and neither is on. This app can't see " +
-                "every phone brand's own grayscale feature (for example, some Samsung and " +
-                "Xiaomi phones have their own). Try restarting your phone in Safe Mode — if " +
-                "colour comes back there, a recently installed app is the cause. If it " +
-                "doesn't, this may need a service check.",
+            stringResource(R.string.camera_bw_mono_title),
+            stringResource(R.string.camera_bw_mono_body),
             null,
         )
         result.capturedLooksMonochrome == false -> ColorCastVerdict(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
             Icons.Default.CheckCircle,
-            "Your last photo has normal colour",
-            "We didn't find a grayscale cause, and the photo itself looks fine.",
+            stringResource(R.string.camera_bw_ok_title),
+            stringResource(R.string.camera_bw_ok_body),
             null,
         )
         else -> return
@@ -594,7 +597,7 @@ private fun ColorCastResultCard(
             if (preview != null) {
                 androidx.compose.foundation.Image(
                     bitmap = preview.asImageBitmap(),
-                    contentDescription = "The photo we just took to check for colour",
+                    contentDescription = stringResource(R.string.camera_bw_photo_cd),
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 220.dp)
@@ -648,19 +651,19 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
             Icons.Default.CheckCircle,
-            "Your camera looks OK",
+            stringResource(R.string.camera_verdict_ok),
         )
         someOpened -> Quad(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
             Icons.Default.Warning,
-            "One camera did not respond fully",
+            stringResource(R.string.camera_verdict_partial),
         )
         else -> Quad(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
             Icons.Default.Warning,
-            "We could not turn on your camera",
+            stringResource(R.string.camera_verdict_failed),
         )
     }
 
@@ -682,13 +685,12 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
             }
             Spacer(Modifier.size(6.dp))
             result.liveness.forEach { lens ->
+                val name = cameraName(lens.facing)
                 val line = when {
-                    !lens.opened -> "${lens.facing} camera: did not turn on"
-                    !lens.frameReceived -> "${lens.facing} camera: turned on but no photo came back"
-                    lens.autofocusConverged == false ->
-                        "${lens.facing} camera: took a photo, but focus did not lock. This can mean " +
-                            "the lens needs cleaning, or the room was too dark to focus."
-                    else -> "${lens.facing} camera: working normally"
+                    !lens.opened -> stringResource(R.string.camera_line_not_opened, name)
+                    !lens.frameReceived -> stringResource(R.string.camera_line_no_frame, name)
+                    lens.autofocusConverged == false -> stringResource(R.string.camera_line_focus, name)
+                    else -> stringResource(R.string.camera_line_ok, name)
                 }
                 Text(line, style = MaterialTheme.typography.bodySmall, color = contentColor)
             }
@@ -697,6 +699,19 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
 }
 
 private data class Quad(val a: Color, val b: Color, val c: androidx.compose.ui.graphics.vector.ImageVector, val d: String)
+
+/**
+ * The name a person reads for a camera. [facing] is the English word camera_health_utils reports
+ * ("Back" / "Front" / "External" / "Unknown"); it also goes into the AI report, so it stays
+ * English there and is only turned into the app language here.
+ */
+@Composable
+private fun cameraName(facing: String): String = when (facing) {
+    "Back" -> stringResource(R.string.camera_name_back)
+    "Front" -> stringResource(R.string.camera_name_front)
+    "External" -> stringResource(R.string.camera_name_external)
+    else -> stringResource(R.string.camera_name_unknown)
+}
 
 /**
  * Shows the actual photo each camera captured during the last check — the user's own eyes judge
@@ -710,7 +725,7 @@ private fun CapturedPhotosRow(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            "What your camera saw just now:",
+            stringResource(R.string.camera_saw_title),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -721,7 +736,7 @@ private fun CapturedPhotosRow(
                 Column(modifier = Modifier.padding(end = 10.dp)) {
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Photo from the ${lens.facing} camera",
+                        contentDescription = stringResource(R.string.camera_photo_cd, cameraName(lens.facing)),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .width(140.dp)
@@ -729,7 +744,7 @@ private fun CapturedPhotosRow(
                             .clip(RoundedCornerShape(8.dp)),
                     )
                     Text(
-                        "${lens.facing} camera",
+                        cameraName(lens.facing),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -750,65 +765,85 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
-                "${lens.facing} camera reports:",
+                stringResource(R.string.camera_lens_reports, cameraName(lens.facing)),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            val zoom = lens.maxDigitalZoom?.let { "${it}x digital zoom" } ?: "zoom not reported"
+            val notReported = stringResource(R.string.camera_not_reported)
+            val reported = stringResource(R.string.camera_reported)
+            val zoom = lens.maxDigitalZoom?.let { stringResource(R.string.camera_lens_zoom, it.toString()) }
+                ?: stringResource(R.string.camera_lens_zoom_none)
             val focal = if (lens.focalLengthsMm.isNotEmpty()) {
-                "focal length ${lens.focalLengthsMm.joinToString(", ")}mm"
+                stringResource(R.string.camera_lens_focal, lens.focalLengthsMm.joinToString(", "))
             } else {
-                "focal length not reported"
+                stringResource(R.string.camera_lens_focal_none)
             }
             val aperture = if (lens.aperturesF.isNotEmpty()) {
-                "aperture f/${lens.aperturesF.joinToString(", f/")}"
+                stringResource(R.string.camera_lens_aperture, lens.aperturesF.joinToString(", f/"))
             } else {
-                "aperture not reported"
+                stringResource(R.string.camera_lens_aperture_none)
             }
             Text(
-                "Hardware level: ${lens.hardwareLevel} · $focal · $aperture · $zoom",
+                stringResource(R.string.camera_lens_line_hardware, lens.hardwareLevel, focal, aperture, zoom),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "Sensor size: ${lens.sensorSizeMm ?: "not reported"}mm · " +
-                    "ISO range: ${lens.isoRange ?: "not reported"}",
+                stringResource(
+                    R.string.camera_lens_line_sensor,
+                    lens.sensorSizeMm?.toString() ?: notReported,
+                    lens.isoRange?.toString() ?: notReported,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "Stabilization (photo): ${if (lens.hasOpticalStabilization) "reported" else "not reported"} · " +
-                    "Stabilization (video): ${if (lens.hasVideoStabilization) "reported" else "not reported"} · " +
-                    "Autofocus: ${if (lens.supportsAutofocus) "reported" else "not reported"}",
+                stringResource(
+                    R.string.camera_lens_line_stabilization,
+                    if (lens.hasOpticalStabilization) reported else notReported,
+                    if (lens.hasVideoStabilization) reported else notReported,
+                    if (lens.supportsAutofocus) reported else notReported,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "RAW available to this app: ${if (lens.rawAvailableToThisApp) "yes" else "no"}",
+                stringResource(
+                    R.string.camera_lens_line_raw,
+                    stringResource(if (lens.rawAvailableToThisApp) R.string.camera_yes else R.string.camera_no),
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                "Shutter speed range: ${lens.exposureTimeRangeSec ?: "not reported"} · " +
-                    "Auto-exposure modes: ${lens.aeModes.joinToString(", ").ifEmpty { "not reported" }}",
+                stringResource(
+                    R.string.camera_lens_line_shutter,
+                    lens.exposureTimeRangeSec?.toString() ?: notReported,
+                    lens.aeModes.joinToString(", ").ifEmpty { notReported },
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (lens.jpegResolutions.isNotEmpty()) {
                 Text(
-                    "Photo resolutions (${lens.jpegResolutions.size}): " +
-                        "${lens.jpegResolutions.first()} down to ${lens.jpegResolutions.last()}",
+                    stringResource(
+                        R.string.camera_lens_line_resolutions,
+                        lens.jpegResolutions.size,
+                        lens.jpegResolutions.first().toString(),
+                        lens.jpegResolutions.last().toString(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text(
-                "Video recording: " +
-                    if (lens.videoRecordingSupported) {
-                        "supported" + (lens.maxVideoResolution?.let { ", up to $it" } ?: "")
-                    } else {
-                        "not reported"
-                    },
+                if (lens.videoRecordingSupported) {
+                    lens.maxVideoResolution
+                        ?.let { stringResource(R.string.camera_lens_video_supported_up_to, it.toString()) }
+                        ?: stringResource(R.string.camera_lens_video_supported)
+                } else {
+                    stringResource(R.string.camera_lens_video_none)
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -819,25 +854,30 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
             if (lens.physicalLenses.isNotEmpty()) {
                 Spacer(Modifier.size(4.dp))
                 Text(
-                    "This camera has ${lens.physicalLenses.size} lenses behind it:",
+                    stringResource(R.string.camera_lens_physical_count, lens.physicalLenses.size),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 lens.physicalLenses.forEach { phys ->
                     val isActive = phys.physicalId == activePhysicalCameraId
-                    val physFocal = phys.focalLengthsMm.joinToString(", ").ifEmpty { "not reported" }
-                    val physAperture = phys.aperturesF.joinToString(", f/").ifEmpty { "not reported" }
+                    val physFocal = phys.focalLengthsMm.joinToString(", ").ifEmpty { notReported }
+                    val physAperture = phys.aperturesF.joinToString(", f/").ifEmpty { notReported }
                     Text(
-                        "  • lens ${phys.physicalId}: ${physFocal}mm, f/$physAperture" +
-                            if (isActive) "  ← used at last check's zoom" else "",
+                        "  • " + stringResource(
+                            if (isActive) R.string.camera_lens_physical_row_active
+                            else R.string.camera_lens_physical_row,
+                            phys.physicalId,
+                            physFocal,
+                            physAperture,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 Text(
-                    "Which exact lens is active at each zoom level: not reported by this device.",
+                    stringResource(R.string.camera_lens_active_unknown),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

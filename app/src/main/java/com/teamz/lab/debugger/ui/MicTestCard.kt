@@ -240,7 +240,7 @@ fun MicTestCard(
                             modifier = Modifier.size(40.dp),
                             onClick = { onItemAIClick("Mic Test", buildReport(r, heard)) }
                         ) {
-                            Icon(AIIcon.icon, contentDescription = "Ask AI", tint = AIIcon.color())
+                            Icon(AIIcon.icon, contentDescription = stringResource(R.string.ask_ai), tint = AIIcon.color())
                         }
                     }
                 }
