@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.utils
 
+import com.teamz.lab.debugger.R
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -175,7 +176,7 @@ fun copyToClipboardRobust(context: Context, text: String, label: String = "Devic
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.mx_share_copied), Toast.LENGTH_SHORT).show()
         Log.d("RobustAIShare", "Content copied to clipboard (${text.length} chars)")
         true
     } catch (e: Exception) {
@@ -318,7 +319,7 @@ fun shareWithAIAppRobust(
             if (clipboardSuccess) {
                 Toast.makeText(
                     context,
-                    "$aiAppName is not installed. Content copied to clipboard. Please paste manually.",
+                    context.getString(R.string.mx_share_app_not_installed, aiAppName),
                     Toast.LENGTH_LONG
                 ).show()
                 return ShareResult.PartialSuccess("Shared via clipboard", diagnostics)
@@ -327,7 +328,7 @@ fun shareWithAIAppRobust(
         
         // Last resort: Try chooser
         try {
-            val chooserIntent = Intent.createChooser(shareIntent, "Share with $aiAppName")
+            val chooserIntent = Intent.createChooser(shareIntent, context.getString(R.string.mx_share_chooser, aiAppName))
             context.startActivity(chooserIntent)
             ShareResult.PartialSuccess("Opened share chooser", diagnostics)
         } catch (e2: android.content.ActivityNotFoundException) {
@@ -349,7 +350,7 @@ fun shareWithAIAppRobust(
             if (clipboardSuccess) {
                 Toast.makeText(
                     context,
-                    "Sharing failed. Content copied to clipboard. Please paste manually.",
+                    context.getString(R.string.mx_share_failed_copied),
                     Toast.LENGTH_LONG
                 ).show()
                 return ShareResult.PartialSuccess("Shared via clipboard", diagnostics)
@@ -358,7 +359,7 @@ fun shareWithAIAppRobust(
         
         // Last resort: Try chooser
         try {
-            val chooserIntent = Intent.createChooser(shareIntent, "Share with $aiAppName")
+            val chooserIntent = Intent.createChooser(shareIntent, context.getString(R.string.mx_share_chooser, aiAppName))
             context.startActivity(chooserIntent)
             ShareResult.PartialSuccess("Opened share chooser", diagnostics)
         } catch (e2: android.content.ActivityNotFoundException) {

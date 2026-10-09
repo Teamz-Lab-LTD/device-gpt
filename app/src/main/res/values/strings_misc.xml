@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Health tab: 'what would make it better' tips (utils/health_score_utils.kt) -->
+    <string name="mx_tip_hot_cool_down">🔥 Your phone is too hot! Take off the case and let it cool down for 10 minutes</string>
+    <string name="mx_tip_hot_no_charge">⚡ Don\'t charge while it\'s hot - this can damage your battery permanently</string>
+    <string name="mx_tip_hot_cool_place">🌬️ Close all apps and put your phone in a cool place</string>
+    <string name="mx_tip_dead_replace">💀 Your battery is dying! Time to replace it or get a new phone</string>
+    <string name="mx_tip_dead_saver">🔋 Turn on battery saver mode to make it last longer</string>
+    <string name="mx_tip_dead_brightness">📱 Lower your screen brightness to save battery life</string>
+    <string name="mx_tip_full_unplug">🔌 Unplug your phone! Keeping it at 100% all the time kills the battery faster</string>
+    <string name="mx_tip_full_range">💡 Try charging only between 20% and 80% for longer battery life</string>
+    <string name="mx_tip_cold_warm_up">❄️ Your phone is too cold! Warm it up before charging</string>
+    <string name="mx_tip_cold_car">🌡️ Don\'t leave your phone in the car during winter</string>
+    <string name="mx_tip_storage_almost_full">💾 Your phone is almost full! Delete old photos and videos you don\'t need</string>
+    <string name="mx_tip_storage_google_photos">📱 Move your pictures to Google Photos to free up space</string>
+    <string name="mx_tip_storage_delete_apps">🗑️ Go to Settings &gt; Apps and delete apps you never use</string>
+    <string name="mx_tip_storage_clear_cache">🧹 Clear cache: Settings &gt; Storage &gt; Free up space</string>
+    <string name="mx_tip_storage_getting_full">⚠️ Your phone is getting full (%1$s left). Time to clean up!</string>
+    <string name="mx_tip_storage_cloud">📸 Move your photos to the cloud to save space</string>
+    <string name="mx_tip_storage_music">🎵 Delete music you don\'t listen to anymore</string>
+    <string name="mx_tip_storage_emergency">🚨 Emergency! Your phone is almost completely full (%1$s left)!</string>
+    <string name="mx_tip_storage_delete_games">📱 Delete apps immediately - start with games you don\'t play</string>
+    <string name="mx_tip_storage_move_all">📸 Move ALL photos to Google Photos or your computer</string>
+    <string name="mx_tip_storage_clear_all_cache">🧹 Clear all cache: Settings &gt; Storage &gt; Free up space</string>
+    <string name="mx_tip_ram_struggling">🧠 Your phone is struggling! Close all apps and restart it</string>
+    <string name="mx_tip_ram_too_many">📱 Don\'t keep 20 apps open - close the ones you\'re not using</string>
+    <string name="mx_tip_ram_restart_daily">🔄 Restart your phone daily to keep it running smoothly</string>
+    <string name="mx_tip_ram_getting_slow">⚠️ Your phone is getting slow (%1$s%% memory used). Close some apps!</string>
+    <string name="mx_tip_ram_swipe">📱 Swipe up and close apps you\'re not using right now</string>
+    <string name="mx_tip_temp_burning">🌡️ Your phone is burning up (%1$s°C)! Stop using it immediately</string>
+    <string name="mx_tip_temp_fan">❄️ Take off the case and put it in front of a fan</string>
+    <string name="mx_tip_temp_sun">☀️ Don\'t leave it in the sun or hot car</string>
+    <string name="mx_tip_temp_cool_15">📱 Close all apps and let it cool down for 15 minutes</string>
+    <string name="mx_tip_temp_warm">🌡️ Your phone is getting warm (%1$s°C). Close some apps</string>
+    <string name="mx_tip_temp_no_use_charging">🌬️ Don\'t use it while charging to keep it cooler</string>
+    <string name="mx_tip_sec_shield_off">🛡️ Your phone\'s security system is turned off - this is unusual and risky</string>
+    <string name="mx_tip_sec_shield_support">📞 Contact your phone\'s customer support - this should be on by default</string>
+    <string name="mx_tip_sec_shield_careful">⚠️ Be extra careful about which apps you install until this is fixed</string>
+    <string name="mx_tip_sec_unencrypted">🔐 Your photos and messages aren\'t protected if someone steals your phone</string>
+    <string name="mx_tip_sec_encrypt">📱 Go to Settings &gt; Security &gt; Encrypt phone to lock your data</string>
+    <string name="mx_tip_sec_encrypt_why">💡 This keeps your private stuff safe even if your phone is lost</string>
+    <string name="mx_tip_sec_clipboard">📎 Your copied text can be read by other apps on Android 9 and older</string>
+    <string name="mx_tip_sec_clipboard_passwords">🔒 Don\'t copy passwords or credit card numbers on older phones</string>
+    <string name="mx_tip_sec_clipboard_newer">📱 Android 10 and newer block background apps from reading the clipboard</string>
+    <string name="mx_tip_sec_modified">🚨 Your phone\'s system has been changed - this could be dangerous</string>
+    <string name="mx_tip_sec_play_protect">🛡️ Go to Settings &gt; Security &gt; Google Play Protect &gt; Scan device</string>
+    <string name="mx_tip_sec_modified_support">📞 If you didn\'t modify your phone, contact customer support</string>
+    <string name="mx_tip_sec_permissions">🔐 Some apps have access to your camera, microphone, and location</string>
+    <string name="mx_tip_sec_permissions_review">📱 Go to Settings &gt; Apps &gt; [app name] &gt; Permissions to review</string>
+    <string name="mx_tip_sec_permissions_off">❌ Turn off permissions that apps don\'t really need</string>
+    <string name="mx_tip_sec_update">🛡️ Update your phone: Settings &gt; System &gt; System update for security fixes</string>
+    <string name="mx_tip_sec_lock">🔒 Set a strong lock screen: Settings &gt; Security &gt; Screen lock</string>
+    <string name="mx_tip_sec_lock_type">📱 Choose Pattern, PIN, or Password - not just swipe</string>
+    <string name="mx_tip_score_serious">🚨 Your phone needs serious help! Follow all the tips above</string>
+    <string name="mx_tip_score_reset">📱 Consider backing up your data and doing a factory reset</string>
+    <string name="mx_tip_score_upgrade">💡 Your phone might be too old - time for an upgrade?</string>
+    <string name="mx_tip_score_several">⚠️ Your phone has several issues. Focus on battery and storage first</string>
+    <string name="mx_tip_score_restart">🔄 Restart your phone every day to keep it running better</string>
+    <string name="mx_tip_score_few_apps">📱 Don\'t install too many apps - keep it simple</string>
+    <string name="mx_tip_score_okay">👍 Your phone is doing okay! These tips will make it even better</string>
+    <string name="mx_tip_score_overnight">🔋 Don\'t charge overnight - unplug when it reaches 80%</string>
+    <string name="mx_tip_score_update_apps">📱 Keep your apps updated for better performance</string>
+    <string name="mx_tip_score_great">🌟 Great job! Your phone is in excellent shape</string>
+    <string name="mx_tip_score_keep_going">💡 Keep doing what you\'re doing - you\'re taking good care of it!</string>
+    <string name="mx_tip_score_check_daily">📱 Check back daily to maintain this great health score</string>
+    <string name="mx_tip_score_perfect">🏆 Perfect! Your phone is in amazing condition</string>
+    <string name="mx_tip_score_expert">💎 You\'re a phone care expert! Keep up the great work</string>
+    <string name="mx_tip_score_share">📱 Share these tips with friends who need help with their phones</string>
+    <string name="mx_tip_general_charge_often">💡 Pro tip: Charge your phone like you eat - little and often, not all at once!</string>
+    <string name="mx_tip_general_cache">🧹 Think of cache like dust - clean it weekly to keep your phone fresh</string>
+    <string name="mx_tip_general_restart_weekly">🔄 Restart your phone weekly - it\'s like giving it a good night\'s sleep</string>
+    <string name="mx_tip_general_update">📱 Update your apps regularly - it\'s like getting new features for free!</string>
+    <string name="mx_tip_general_no_zero">🔋 Don\'t let your phone die completely - charge it before it hits 20%</string>
+    <string name="mx_tip_general_cool">🌡️ Keep your phone cool - hot phones are unhappy phones!</string>
+    <string name="mx_tip_general_backup">📸 Back up your photos regularly - memories are priceless!</string>
+    <string name="mx_tip_general_no_games_charging">🎮 Don\'t play games while charging - it\'s like running while eating!</string>
+
+    <!-- Health tab: 'what to do today' tasks (utils/health_score_utils.kt) -->
+    <string name="mx_task_close_apps_title">Close %1$s background apps</string>
+    <string name="mx_task_close_apps_body">Your phone is using %1$s%% RAM. Close unused apps to improve performance.</string>
+    <string name="mx_task_temp_title">Check temperature (currently %1$s°C)</string>
+    <string name="mx_task_temp_body_warm">Your phone is getting warm. Let it cool down.</string>
+    <string name="mx_task_temp_body_watch">Monitor your phone\'s temperature to prevent overheating.</string>
+    <string name="mx_task_privacy_title">Review app permissions</string>
+    <string name="mx_task_privacy_body">Some apps may have unnecessary permissions. Review and revoke unused ones.</string>
+    <string name="mx_task_storage_title">Free up storage space</string>
+    <string name="mx_task_storage_body">You have %1$s left. Clear cache and delete unused files.</string>
+    <string name="mx_task_battery_title">Optimize battery charging</string>
+    <string name="mx_task_battery_body_full">Unplug your phone. Keeping it at 100% damages the battery.</string>
+    <string name="mx_task_battery_body_hot">Your battery is overheating. Remove case and let it cool.</string>
+    <string name="mx_task_restart_title">Restart your phone</string>
+    <string name="mx_task_restart_body">Weekly restart helps clear memory and improve performance.</string>
+
+    <!-- Health tab: temperature trend, shown under the temperature history -->
+    <string name="mx_trend_increasing">📈 Increasing</string>
+    <string name="mx_trend_decreasing">📉 Decreasing</string>
+    <string name="mx_trend_stable">📊 Stable</string>
+
+    <!-- Health tab: the insight line under the last score (utils/InsightEngine.kt) -->
+    <string name="mx_insight_score_up">Score up %1$s since your last scan (%2$s → %3$s).</string>
+    <string name="mx_insight_score_down">Score down %1$s since your last scan (%2$s → %3$s). Tap Run again to see today\'s picture.</string>
+    <string name="mx_insight_score_flat">Score steady at %1$s across your last two scans.</string>
+    <string name="mx_insight_charge_more">%1$s charge sessions this week — up from %2$s last week.</string>
+    <string name="mx_insight_charge_less">%1$s charge sessions this week — down from %2$s last week.</string>
+    <string name="mx_insight_charge_count_one">%1$s charge session recorded this week.</string>
+    <string name="mx_insight_charge_count_many">%1$s charge sessions recorded this week.</string>
+    <string name="mx_insight_new_apps_one">%1$s new app installed this week — review their permissions any time.</string>
+    <string name="mx_insight_new_apps_many">%1$s new apps installed this week — review their permissions any time.</string>
+    <string name="mx_insight_history_size">%1$s events in this device\'s timeline so far.</string>
+    <string name="mx_insight_worst_sub">%1$s scored %2$s on your last scan — the lowest of the four checks.</string>
+
+    <!-- Health tab: result lines after the memory, storage and battery buttons (ui/health_section.kt) -->
+    <string name="mx_result_error">Error: %1$s</string>
+    <string name="mx_result_error_plain">Something went wrong. Please try again.</string>
+    <string name="mx_result_memory_pressure">Memory pressure detected: %1$s used of %2$s (%3$s%%). Android will auto-close background apps as needed.</string>
+    <string name="mx_result_memory_current">Current memory: %1$s used of %2$s (%3$s%%). Android manages RAM automatically.</string>
+    <string name="mx_result_memory_unreadable">Unable to read memory info.</string>
+    <string name="mx_result_storage_freed_apps">Freed %1$s from %2$s apps. Open storage settings to clear more.</string>
+    <string name="mx_result_storage_freed">Freed %1$s. Open storage settings to clear more.</string>
+    <string name="mx_result_storage_open_settings">Open storage settings to clear app caches manually.</string>
+    <string name="mx_result_storage_failed">Unable to clear storage. Opening settings…</string>
+    <string name="mx_result_battery_tips_one">Found %1$s tip. Opening battery settings…</string>
+    <string name="mx_result_battery_tips_many">Found %1$s tips. Opening battery settings…</string>
+    <string name="mx_result_battery_no_tips">No battery tips right now. Android manages battery automatically.</string>
+    <string name="mx_result_battery_unreadable">Unable to read battery info. Opening settings…</string>
+
+    <!-- Health tab: battery card rows (text comes from utils/device_utils.kt in English and is put into Bangla at display) -->
+    <string name="mx_battery_row_status">🔋 Battery Status: %1$s</string>
+    <string name="mx_battery_row_charge_type">🔌 Charge Type: %1$s</string>
+    <string name="mx_battery_row_temp">🔥 Battery Temp: %1$s</string>
+    <string name="mx_battery_row_health">📊 Battery Health: %1$s</string>
+    <string name="mx_battery_row_tech">🔬 Battery Tech: %1$s</string>
+    <string name="mx_battery_row_full_in">⏳ Estimated Full Charge: %1$s</string>
+    <string name="mx_battery_row_life">📅 Predicted Battery Life Remaining: %1$s</string>
+    <string name="mx_battery_status_charging">Charging at %1$s</string>
+    <string name="mx_battery_status_charging_plain">Charging</string>
+    <string name="mx_battery_status_discharging">Discharging at %1$s</string>
+    <string name="mx_battery_status_discharging_plain">Discharging</string>
+    <string name="mx_battery_status_full">Battery Full 🎉</string>
+    <string name="mx_battery_status_not_charging">Not Charging</string>
+    <string name="mx_battery_status_unknown">Unknown Status</string>
+    <string name="mx_battery_plug_usb">USB ⚡</string>
+    <string name="mx_battery_plug_ac">Fast Charging 🔋</string>
+    <string name="mx_battery_plug_wireless">Wireless ⚡</string>
+    <string name="mx_battery_plug_none">Not Charging</string>
+    <string name="mx_battery_health_good">Good ✅</string>
+    <string name="mx_battery_health_overheat">Overheat 🔥</string>
+    <string name="mx_battery_health_dead">Dead ☠️</string>
+    <string name="mx_battery_health_overvoltage">Overvoltage ⚡</string>
+    <string name="mx_battery_health_failure">Failure ❌</string>
+    <string name="mx_battery_health_cold">Cold ❄️</string>
+    <string name="mx_battery_value_unknown">Unknown</string>
+    <string name="mx_battery_value_not_available">N/A</string>
+    <string name="mx_battery_row_cycles">🔋 Estimated Cycles (Approximation): ~%1$s cycles</string>
+    <string name="mx_battery_minutes_left">%1$s min left</string>
+    <string name="mx_battery_life_long">~1+ year (Estimated based on capacity)</string>
+    <string name="mx_battery_life_short">~6–12 months (Estimated based on capacity)</string>
+    <string name="mx_battery_info_unavailable">Battery Info Unavailable</string>
+
+    <!-- Health tab: privacy risks (names come from utils/device_utils.kt in English and are put into Bangla at display) -->
+    <string name="mx_threat_screen_capture">An installed app can capture or read your screen</string>
+    <string name="mx_threat_usb_debugging">USB debugging enabled (security risk)</string>
+    <string name="mx_threat_rooted">Device is rooted (security risk)</string>
+    <string name="mx_threat_ssl">SSL certificate issues detected</string>
+    <string name="mx_threat_gps_spoofing">A GPS spoofing app is installed</string>
+
+    <!-- Health tab: timeline rows (ui/DeviceTimelineSection.kt). Stored labels stay English; these are shown instead. -->
+    <string name="mx_timeline_score_scan">Device Score %1$s</string>
+    <string name="mx_timeline_daily_snapshot">Daily snapshot %1$s/10</string>
+    <string name="mx_timeline_charged_minutes">Charged %1$s%% → %2$s%% in %3$sm</string>
+    <string name="mx_timeline_charged_hours">Charged %1$s%% → %2$s%% in %3$sh %4$sm</string>
+    <string name="mx_timeline_app_installed">New app installed: %1$s</string>
+    <string name="mx_timeline_type_score_scan">score_scan</string>
+    <string name="mx_timeline_type_charge">charge_session</string>
+    <string name="mx_timeline_type_app">app_installed</string>
+    <string name="mx_timeline_type_snapshot">baseline_snapshot</string>
+
+    <!-- AI dialog: display titles for the item the person asked about. The English identifier still builds the file name. -->
+    <string name="mx_ai_item_camera_health_test">Camera Health Test</string>
+    <string name="mx_ai_item_camera_problem_report">Camera Problem Report</string>
+    <string name="mx_ai_item_screen_test">Screen Test</string>
+    <string name="mx_ai_item_mic_test">Mic Test</string>
+    <string name="mx_ai_item_health_history">7-Day Health History</string>
+    <string name="mx_ai_item_memory_usage">Memory Usage</string>
+    <string name="mx_ai_item_storage_cleanup">Storage Cleanup</string>
+    <string name="mx_ai_item_battery_health">Battery Health</string>
+    <string name="mx_ai_item_privacy_dashboard">Privacy Dashboard</string>
+    <string name="mx_ai_item_todays_tasks">Today\'s Tasks</string>
+    <string name="mx_ai_item_temperature_history">Temperature History</string>
+    <string name="mx_ai_item_recommendations">Smart Recommendations</string>
+    <string name="mx_ai_item_security_dashboard">Security Dashboard</string>
+    <string name="mx_ai_item_network_privacy_report">Network Privacy Report</string>
+    <string name="mx_ai_item_network_reachability">Network Reachability</string>
+    <string name="mx_ai_item_camera_colour_cast">Camera Colour Cast Check</string>
+    <string name="mx_ai_item_website_check">Website Check</string>
+    <string name="mx_ai_item_component_breakdown">Component Breakdown</string>
+    <string name="mx_ai_item_camera_power_test">Camera Power Test</string>
+    <string name="mx_ai_item_display_power_test">Display Brightness Power Test</string>
+    <string name="mx_ai_item_cpu_power_test">CPU Performance Power Test</string>
+    <string name="mx_ai_item_network_signal_test">Network Signal Strength Test</string>
+    <string name="mx_ai_item_sleep_tracker">Device Sleep Tracker</string>
+    <string name="mx_ai_item_app_screen_time">App Screen Time</string>
+
+    <!-- Camera tab details: plain names for values the phone reports (shown in ui/camera_health_card.kt) -->
+    <string name="mx_camera_level_legacy">LEGACY</string>
+    <string name="mx_camera_level_limited">LIMITED</string>
+    <string name="mx_camera_level_full">FULL</string>
+    <string name="mx_camera_level_3">LEVEL_3</string>
+    <string name="mx_camera_level_external">EXTERNAL</string>
+    <string name="mx_camera_level_unknown">Unknown</string>
+    <string name="mx_camera_ae_off">OFF</string>
+    <string name="mx_camera_ae_on">ON</string>
+    <string name="mx_camera_ae_auto_flash">ON_AUTO_FLASH</string>
+    <string name="mx_camera_ae_always_flash">ON_ALWAYS_FLASH</string>
+    <string name="mx_camera_ae_redeye">ON_AUTO_FLASH_REDEYE</string>
+
+    <!-- Notifications: reminders (utils/RetentionNotificationManager.kt). Read on a lock screen in two seconds. -->
+    <string name="mx_notif_low_score_title">📉 Health score %1$s/10</string>
+    <string name="mx_notif_low_score_body">Lower than usual — open the app to see what changed.</string>
+    <string name="mx_notif_channel_daily">Daily Health Reminders</string>
+    <string name="mx_notif_channel_daily_desc">Daily reminders to check your device health</string>
+    <string name="mx_notif_channel_engagement">Engagement Notifications</string>
+    <string name="mx_notif_channel_engagement_desc">Notifications about streaks, improvements, and new features</string>
+    <string name="mx_notif_channel_retention">Retention Notifications</string>
+    <string name="mx_notif_channel_retention_desc">Reminders to come back and check your device health</string>
+    <string name="mx_notif_channel_general">General Notifications</string>
+    <string name="mx_notif_temp_critical_title">🔥 Critical: Phone Overheating!</string>
+    <string name="mx_notif_temp_hot_title">🌡️ Phone Getting Hot</string>
+    <string name="mx_notif_temp_critical_body">Your phone is %1$s°C! Stop using it and let it cool down immediately.</string>
+    <string name="mx_notif_temp_hot_body">Your phone is %1$s°C. Close apps and let it cool down.</string>
+    <string name="mx_notif_privacy_mic_title">🎤 Microphone Used Unexpectedly</string>
+    <string name="mx_notif_privacy_camera_title">📷 Camera Used Unexpectedly</string>
+    <string name="mx_notif_privacy_other_title">🔐 Privacy Alert</string>
+    <string name="mx_notif_privacy_mic_body">An app used your microphone. Review permissions in settings.</string>
+    <string name="mx_notif_privacy_camera_body">An app accessed your camera. Check which app and why.</string>
+    <string name="mx_notif_tasks_title">📋 Daily Tasks</string>
+    <string name="mx_notif_tasks_body_one">You have %1$s task remaining today.</string>
+    <string name="mx_notif_tasks_body_many">You have %1$s tasks remaining today.</string>
+    <string name="mx_notif_score_drop_title">⚠️ Health Score Dropped</string>
+    <string name="mx_notif_score_drop_body">Your device health dropped from %1$s/10 to %2$s/10. Check what needs attention!</string>
+    <string name="mx_notif_drain_title">⚡ High Battery Drain Detected</string>
+    <string name="mx_notif_drain_body">Your phone is using %1$sW. Close apps to save battery!</string>
+    <string name="mx_notif_weekly_title">📊 Your weekly device health report</string>
+    <string name="mx_notif_weekly_body_one">%1$s scan so far. Best score: %2$s/10.</string>
+    <string name="mx_notif_weekly_body_many">%1$s scans so far. Best score: %2$s/10.</string>
+    <string name="mx_notif_achievement_title">🎉 Achievement Unlocked: %1$s %2$s!</string>
+    <string name="mx_notif_streak_legendary_title">🏆 LEGENDARY %1$s-Day Streak!</string>
+    <string name="mx_notif_streak_incredible_title">🔥 INCREDIBLE %1$s-Day Streak!</string>
+    <string name="mx_notif_streak_amazing_title">⭐ AMAZING %1$s-Day Streak!</string>
+    <string name="mx_notif_streak_impressive_title">⚡ IMPRESSIVE %1$s-Day Streak!</string>
+    <string name="mx_notif_streak_great_title">🎯 Great %1$s-Day Streak!</string>
+    <string name="mx_notif_streak_legendary_body">You\'re a true champion! Keep it going!</string>
+    <string name="mx_notif_streak_incredible_body">Outstanding dedication! You\'re unstoppable!</string>
+    <string name="mx_notif_streak_amazing_body">Incredible consistency! Keep it up!</string>
+    <string name="mx_notif_streak_impressive_body">Double digits! You\'re on fire!</string>
+    <string name="mx_notif_streak_great_body">Nice milestone! Keep building your streak!</string>
+    <string name="mx_notif_scans_title">📊 %1$s Scans Milestone!</string>
+    <string name="mx_notif_scans_body">You\'ve completed %1$s health scans! Your dedication is impressive!</string>
+    <string name="mx_notif_tip_alert_title">🚨 Device Health Alert</string>
+    <string name="mx_notif_tip_alert_body">Your device health score is %1$s/10. Check what needs attention!</string>
+    <string name="mx_notif_tip_excellent_title">✨ Excellent Health</string>
+    <string name="mx_notif_tip_excellent_body">Your device is in great shape (%1$s/10)! Keep up the good maintenance.</string>
+    <string name="mx_notif_tip_halfway_title">📊 Halfway to 100</string>
+    <string name="mx_notif_tip_halfway_body">You\'ve completed %1$s scans! You\'re halfway to 100!</string>
+    <string name="mx_notif_tip_power_user_title">🎯 Power User</string>
+    <string name="mx_notif_tip_power_user_body">Wow! %1$s scans completed! You\'re a true power user!</string>
+
+    <!-- Notifications: the one-time battery notice the day after install (utils/D1OvernightDrainWorker.kt) -->
+    <string name="mx_notif_d1_drain">Your battery used %1$s%% in the last 20 hours — tap to see what drained it.</string>
+    <string name="mx_notif_d1_steady">Your battery is steady overnight — tap to see today\'s device health score.</string>
+    <string name="mx_notif_d1_channel">Battery Overnight Drain</string>
+    <string name="mx_notif_d1_channel_desc">One-time notification ~20 hours after install showing your overnight battery drain.</string>
+
+    <!-- Notifications: after a charge (utils/ChargeCycleTracker.kt) -->
+    <string name="mx_notif_charge_channel">Charge cycle summary</string>
+    <string name="mx_notif_charge_channel_desc">Plain-English summary after every charge cycle.</string>
+    <string name="mx_notif_charge_title">DeviceGPT charge summary</string>
+    <string name="mx_notif_charge_body_minutes">Charge complete: %1$s%% → %2$s%% in %3$sm. Tap to scan for overnight anomalies.</string>
+    <string name="mx_notif_charge_body_hours">Charge complete: %1$s%% → %2$s%% in %3$sh %4$sm. Tap to scan for overnight anomalies.</string>
+
+    <!-- Notifications: a new app was installed (utils/NewAppWatchdog.kt) -->
+    <string name="mx_notif_new_app_channel">New app review</string>
+    <string name="mx_notif_new_app_channel_desc">Facts about newly installed apps — permissions, installer source.</string>
+    <string name="mx_notif_new_app_title">📦 New app on this device</string>
+    <string name="mx_notif_new_app_body_one">%1$s installed since your last check. Review what it can access.</string>
+    <string name="mx_notif_new_app_body_many">%1$s and %2$s more installed since your last check. Review what they can access.</string>
+
+    <!-- The always-on notification (services/system_monitor_service.kt) -->
+    <string name="mx_monitor_title">📊 Live Device &amp; Network Status</string>
+    <string name="mx_monitor_starting">Initializing system monitor...</string>
+    <string name="mx_monitor_fps_starting">Initializing...</string>
+    <string name="mx_monitor_channel">System Monitor</string>
+    <string name="mx_monitor_channel_desc">Live device and network metrics</string>
+    <string name="mx_monitor_row_ram">🧠 RAM: %1$s</string>
+    <string name="mx_monitor_row_cpu">⚙️ CPU: %1$s%% (%2$s)</string>
+    <string name="mx_monitor_net_none">📶 Internet: ⚠️ No connection</string>
+    <string name="mx_monitor_net_no_speed">📶 Internet: ✅ Connected (speed test unavailable)</string>
+    <string name="mx_monitor_net_connected_latency">📶 Internet: ✅ Connected • Latency: %1$s</string>
+    <string name="mx_monitor_net_connected">📶 Internet: ✅ Connected</string>
+    <string name="mx_monitor_net_speed_latency">📶 Internet: %1$s ↓ • %2$s ↑ • Latency: %3$s</string>
+    <string name="mx_monitor_net_speed">📶 Internet: %1$s ↓ • %2$s ↑</string>
+    <string name="mx_monitor_drain">⚡ Battery Drain: %1$sW</string>
+    <string name="mx_monitor_drain_none">⚡ Battery Drain: --</string>
+    <string name="mx_monitor_thermal">💡 Thermal: %1$s</string>
+    <string name="mx_monitor_thermal_normal">Normal</string>
+    <string name="mx_monitor_thermal_warm">Warm</string>
+    <string name="mx_monitor_thermal_hot">Hot</string>
+    <string name="mx_monitor_thermal_critical">Critical</string>
+    <string name="mx_monitor_thermal_overheat">Overheat</string>
+    <string name="mx_monitor_saver_on">⚡Saver On</string>
+    <string name="mx_monitor_saver_off">⚡Saver Off</string>
+    <string name="mx_monitor_dozing">😴Dozing</string>
+    <string name="mx_monitor_doze_inactive">⏱️Doze inactive</string>
+    <string name="mx_monitor_battery_full">Full</string>
+    <string name="mx_monitor_battery_minutes_left">⏳ %1$s min left</string>
+    <string name="mx_monitor_fps_value">FPS: %1$s • Drop Rate: %2$s%%</string>
+
+    <!-- Home-screen and lock-screen widget: one-line alerts written by the monitor service -->
+    <string name="mx_widget_alert_temp_high">🌡️ Temp %1$s°C — higher than normal</string>
+    <string name="mx_widget_alert_memory_high">📊 Memory %1$s%% used — see what\'s using it</string>
+    <string name="mx_widget_alert_score_changed">📉 Health score %1$s/10 — see what changed</string>
+    <string name="mx_widget_alert_temp_warm">🌡️ Temp %1$s°C — warmer than usual</string>
+    <string name="mx_widget_alert_memory">📊 Memory %1$s%% used</string>
+    <string name="mx_widget_alert_score_details">📉 Health score %1$s/10 — see details</string>
+    <string name="mx_widget_alert_all_normal">✅ All normal — health %1$s/10</string>
+    <string name="mx_widget_alert_score">📱 Health score %1$s/10</string>
+    <string name="mx_widget_cta_open">Open health check →</string>
+    <string name="mx_widget_cta_hot">See what\'s hot →</string>
+    <string name="mx_widget_cta_memory">See memory details →</string>
+    <string name="mx_widget_cta_changed">See what changed →</string>
+    <string name="mx_widget_cta_temperature">Check temperature →</string>
+    <string name="mx_widget_cta_details">See details →</string>
+    <string name="mx_widget_cta_all_normal">All normal — details →</string>
+
+    <!-- Home-screen and lock-screen widget (widgets/LockScreenMonitorWidget.kt and res/layout/widget_lock_screen_monitor.xml). Cells are narrow: keep these short. -->
+    <string name="mx_widget_health">Health: %1$s/10%2$s</string>
+    <string name="mx_widget_health_none">Health: --/10</string>
+    <string name="mx_widget_delta_up">Health +%1$s vs yesterday</string>
+    <string name="mx_widget_delta_down">Health %1$s vs yesterday — see what changed</string>
+    <string name="mx_widget_delta_same">Nothing changed — all steady</string>
+    <string name="mx_widget_streak_placeholder">🔥 -- days</string>
+    <string name="mx_widget_battery">Battery: %1$s%%</string>
+    <string name="mx_widget_battery_charging">Battery: %1$s%% (Charging)</string>
+    <string name="mx_widget_battery_charging_via">Battery: %1$s%% (Charging via %2$s)</string>
+    <string name="mx_widget_charger_ac">AC</string>
+    <string name="mx_widget_charger_usb">USB</string>
+    <string name="mx_widget_charger_wireless">Wireless</string>
+    <string name="mx_widget_battery_none">Battery: ---</string>
+    <string name="mx_widget_battery_placeholder">Battery: --</string>
+    <string name="mx_widget_temp">Temp: %1$s°C</string>
+    <string name="mx_widget_temp_hot">Temp: %1$s°C (Hot!)</string>
+    <string name="mx_widget_temp_warm">Temp: %1$s°C (Warm)</string>
+    <string name="mx_widget_temp_none">Temp: ---</string>
+    <string name="mx_widget_temp_placeholder">Temp: --</string>
+    <string name="mx_widget_ram">RAM: %1$s%%</string>
+    <string name="mx_widget_ram_none">RAM: ---</string>
+    <string name="mx_widget_ram_placeholder">RAM: --</string>
+    <string name="mx_widget_disk">Disk: %1$s</string>
+    <string name="mx_widget_disk_placeholder">Disk: --</string>
+    <string name="mx_widget_net_none">Internet: ---</string>
+    <string name="mx_widget_net_both">Internet: %1$s ↓ • %2$s ↑</string>
+    <string name="mx_widget_net_down">Internet: %1$s ↓</string>
+    <string name="mx_widget_net_up">Internet: %1$s ↑</string>
+    <string name="mx_widget_net_placeholder">Internet: --</string>
+    <string name="mx_widget_drain">Drain: %1$sW</string>
+    <string name="mx_widget_drain_none">Drain: ---</string>
+    <string name="mx_widget_drain_placeholder">Drain: --</string>
+    <string name="mx_widget_cpu">CPU: %1$s%%</string>
+    <string name="mx_widget_cpu_none">CPU: ---</string>
+    <string name="mx_widget_cpu_placeholder">CPU: --</string>
+    <string name="mx_widget_fps">FPS: %1$s</string>
+    <string name="mx_widget_fps_placeholder">FPS: --</string>
+    <string name="mx_widget_status_placeholder">Status: --</string>
+    <string name="mx_widget_status_low_space">💾 Low Space</string>
+    <string name="mx_widget_status_storage_full">💾 Storage Full</string>
+    <string name="mx_widget_status_high_drain">⚡ High Drain</string>
+    <string name="mx_widget_status_high_power">⚡ High Power</string>
+    <string name="mx_widget_status_no_net">📶 No Net</string>
+    <string name="mx_widget_status_slow_net">📶 Slow Net</string>
+    <string name="mx_widget_status_open_app">📊 Open app to scan</string>
+    <string name="mx_widget_status_good_check">✅ Good</string>
+    <string name="mx_widget_status_ok">📊 OK</string>
+    <string name="mx_widget_status_watching">📊 Monitoring</string>
+    <string name="mx_widget_status_hot">🌡️ Hot</string>
+    <string name="mx_widget_status_high_memory">📊 High Memory</string>
+    <string name="mx_widget_status_low_score">⚠️ Low Score</string>
+    <string name="mx_widget_status_warm">🌡️ Warm</string>
+    <string name="mx_widget_status_high_usage">📊 High Usage</string>
+    <string name="mx_widget_status_below_normal">📉 Below Normal</string>
+    <string name="mx_widget_status_healthy">✅ Healthy</string>
+    <string name="mx_widget_status_good">📊 Good</string>
+    <string name="mx_widget_time_just_now">Just now</string>
+    <string name="mx_widget_time_seconds">%1$ss ago</string>
+    <string name="mx_widget_time_one_minute">1 min ago</string>
+    <string name="mx_widget_time_minutes">%1$s mins ago</string>
+    <string name="mx_widget_time_one_hour">1 hr ago</string>
+    <string name="mx_widget_time_hours">%1$s hrs ago</string>
+    <string name="mx_widget_time_starting">Initializing</string>
+
+    <!-- Premium card and premium-active dialog in the drawer (ui/drawer.kt). Prices come from the store as %1$s. -->
+    <string name="mx_premium_name">DeviceGPT Premium</string>
+    <string name="mx_premium_lifetime">Lifetime Access</string>
+    <string name="mx_premium_price_lifetime">%1$s • Lifetime Access</string>
+    <string name="mx_premium_benefits_short">✓ No ads • Faster DeviceGPT • Support development</string>
+    <string name="mx_premium_activated">Premium activated! Ads removed.</string>
+    <string name="mx_premium_get">Get DeviceGPT Premium</string>
+    <string name="mx_premium_active">Premium Active</string>
+    <string name="mx_premium_active_headline">You\'re enjoying an ad-free experience!</string>
+    <string name="mx_premium_active_list">✓ All ads removed\n✓ Lifetime access\n✓ Full app features\n✓ Support development</string>
+    <string name="mx_premium_thanks">Thank you for supporting DeviceGPT!</string>
+
+    <!-- Ad labels (AdBadge in ui/drawer.kt, res/layout/native_ad_view.xml) -->
+    <string name="mx_ad_badge">Ad</string>
+    <string name="mx_ad_sponsored">Sponsored</string>
+
+    <!-- Premium button at the bottom and the verified-report gate (ui/adaptive/DeviceGptNavExperience.kt) -->
+    <string name="mx_premium_fab_tooltip_price">⭐ Remove Ads - %1$s Lifetime</string>
+    <string name="mx_premium_fab_tooltip">⭐ Remove Ads - Lifetime</string>
+    <string name="mx_premium_fab_cd_price">Remove Ads - Premium %1$s Lifetime</string>
+    <string name="mx_premium_fab_cd">Remove Ads - Premium Lifetime</string>
+    <string name="mx_premium_fab_label">PRO</string>
+    <string name="mx_report_gate_title">Generate 1 Verified Report</string>
+    <string name="mx_report_gate_body">Watch a short ad to generate 1 report — or go Premium for unlimited reports.</string>
+    <string name="mx_report_gate_watch_ad">Watch ad</string>
+    <string name="mx_report_gate_go_premium">Go Premium</string>
+
+    <!-- After the paywall is closed: one-tap question and the invite screen (ui/PaywallWithReferralFallback.kt) -->
+    <string name="mx_paywall_why_title">Quick — why did you close?</string>
+    <string name="mx_paywall_why_subtitle">One tap. Helps us make it better.</string>
+    <string name="mx_paywall_why_expensive">Too expensive</string>
+    <string name="mx_paywall_why_not_now">Not right now</string>
+    <string name="mx_paywall_why_no_value">Don\'t see the value</string>
+    <string name="mx_paywall_why_mistake">Closed by mistake</string>
+    <string name="mx_paywall_why_other">Other</string>
+    <string name="mx_referral_reward_30_days">30 days ad-free</string>
+    <string name="mx_referral_reward_7_days">7 days ad-free</string>
+    <string name="mx_referral_reward_3_days">3 days ad-free</string>
+    <string name="mx_referral_reward_24_hours">24 hours ad-free</string>
+    <string name="mx_referral_headline_all">You\'ve unlocked every reward — share again to keep it rolling.</string>
+    <string name="mx_referral_headline_one">1 more friend → unlock %1$s %2$s</string>
+    <string name="mx_referral_headline_many">%1$s friends → unlock %2$s %3$s</string>
+    <string name="mx_referral_title">Not ready to pay?</string>
+    <string name="mx_referral_subtitle">Invite friends and unlock premium for free.</string>
+    <string name="mx_referral_count">%1$s referred</string>
+    <string name="mx_referral_goal">Goal: %1$s</string>
+    <string name="mx_referral_maxed">Maxed out</string>
+    <string name="mx_referral_how">Send your link via WhatsApp, Telegram, SMS or email. Rewards unlock automatically when friends install.</string>
+    <string name="mx_referral_share">Share with friends</string>
+    <string name="mx_referral_later">Maybe later</string>
+
+    <!-- Premium purchase dialog (ui/PremiumPurchaseDialog.kt) -->
+    <string name="mx_purchase_benefit_no_ads">✅ No ads - ever</string>
+    <string name="mx_purchase_benefit_faster">✅ Faster app performance</string>
+    <string name="mx_purchase_benefit_support">✅ Support development</string>
+    <string name="mx_purchase_benefit_one_time">✅ One-time payment - no subscriptions</string>
+    <string name="mx_purchase_subtitle_price">Remove Ads Forever - %1$s • Lifetime Access</string>
+    <string name="mx_purchase_subtitle">Remove Ads Forever • Lifetime Access</string>
+    <string name="mx_purchase_welcome">Welcome to DeviceGPT Premium!</string>
+    <string name="mx_purchase_welcome_body">All ads have been removed. Enjoy your ad-free DeviceGPT experience!</string>
+    <string name="mx_purchase_got_it">Got it!</string>
+    <string name="mx_purchase_title_star">⭐ DeviceGPT Premium</string>
+    <string name="mx_purchase_later">Maybe Later</string>
+    <string name="mx_purchase_get_price">Get Premium - %1$s</string>
+    <string name="mx_purchase_get">Get Premium</string>
+    <string name="mx_purchase_none_found">No previous purchases found</string>
+    <string name="mx_purchase_restore">Restore Purchases</string>
+    <string name="mx_purchase_badge">Premium</string>
+    <string name="mx_purchase_remove_ads">Remove Ads</string>
+
+    <!-- AI dialog leftovers (ui/ai_assistant_dialog.kt) -->
+    <string name="mx_ai_dialog_title">AI, Is My Phone OK?</string>
+    <string name="mx_ai_dialog_subtitle">Get simple, friendly answers about your phone’s health—no tech skills needed.</string>
+    <string name="mx_ai_mode_label">AI Explanation Mode:</string>
+    <string name="mx_ai_finding_apps">Finding installed AI apps…</string>
+    <string name="mx_ai_no_apps">No AI apps found. Please install one of these apps:</string>
+    <string name="mx_ai_private_name">Private AI (on-device)</string>
+    <string name="mx_ai_private_tagline">Your phone only · offline · powered by Gemini Nano</string>
+    <string name="mx_ai_private_download">One-time ~%1$s download · then fully offline</string>
+    <string name="mx_ai_live_ready">Live-ready — this AI can read live phone data via MCP</string>
+    <string name="mx_ai_live_badge">LIVE</string>
+    <string name="mx_ai_install_cd">Install</string>
+    <string name="mx_ai_bridge_on_one">AI Bridge is ON · %1$s live request served</string>
+    <string name="mx_ai_bridge_on_many">AI Bridge is ON · %1$s live requests served</string>
+    <string name="mx_ai_bridge_on_body">MCP-capable AI clients (e.g. Claude Desktop) can read live phone data. Snapshot text is a fallback for the rest.</string>
+    <string name="mx_ai_bridge_starting">AI Bridge is starting…</string>
+    <string name="mx_ai_bridge_error">AI Bridge error: %1$s</string>
+    <string name="mx_ai_bridge_tip">Tip: turn on AI Bridge (AI Bridge tab) to let Claude/Cursor read live phone data via MCP.</string>
+
+    <!-- On-device AI result dialog (ui/ai/PrivateAiFlow.kt) -->
+    <string name="mx_private_ai_title">Private AI · %1$s</string>
+    <string name="mx_private_ai_running">Running on-device AI… your scan never leaves this phone.</string>
+    <string name="mx_private_ai_failed">On-device AI could not run right now. You can still ask a cloud AI from the list.</string>
+    <string name="mx_private_ai_not_ready">On-device AI is not ready yet.</string>
+    <string name="mx_private_ai_powered">Powered by Gemini Nano · on-device · offline</string>
+    <string name="mx_private_ai_preparing">Preparing…</string>
+    <string name="mx_private_ai_copy">Copy</string>
+    <string name="mx_ai_item_device_scan">Device scan</string>
+    <string name="mx_ai_item_devicegpt_scan">DeviceGPT scan</string>
+    <string name="mx_ai_item_resale_report">Resale Report</string>
+    <string name="mx_ai_item_generic">Item</string>
+
+    <!-- AI Bridge tab leftovers (ui/ai_bridge_card.kt) -->
+    <string name="mx_bridge_turning_on">Turning bridge on…</string>
+    <string name="mx_bridge_qr_cd">Pairing QR code</string>
+    <string name="mx_bridge_auto_off">Turns off in %1$s if no activity</string>
+    <string name="mx_bridge_tab_other">Other</string>
+    <string name="mx_bridge_config_path">Config file path</string>
+    <string name="mx_bridge_paste_block">Paste this block</string>
+    <string name="mx_bridge_open_on_pc">Or skip copying: open this on your PC\'s browser</string>
+    <string name="mx_bridge_copy_setup_url">Copy setup URL</string>
+
+    <!-- Sharing with an AI app: toasts and the chooser title (utils/robust_ai_sharing.kt). The shared text itself stays English. -->
+    <string name="mx_share_copied">Copied to clipboard</string>
+    <string name="mx_share_app_not_installed">%1$s is not installed. Content copied to clipboard. Please paste manually.</string>
+    <string name="mx_share_failed_copied">Sharing failed. Content copied to clipboard. Please paste manually.</string>
+    <string name="mx_share_chooser">Share with %1$s</string>
+
+    <!-- AI Bridge service: errors and notification status (services/BridgeService.kt) -->
+    <string name="mx_bridge_error_start">Could not start the Bridge. Try opening the app first.</string>
+    <string name="mx_bridge_error_open_app">Please open the app first, then turn the Bridge on.</string>
+    <string name="mx_bridge_error_notification">Could not show the Bridge notification.</string>
+    <string name="mx_bridge_error_no_wifi">No WiFi. Connect to WiFi and try again.</string>
+    <string name="mx_bridge_error_port_busy">Port %1$s is busy. Turn the Bridge off, then on again.</string>
+    <string name="mx_bridge_status_starting">Starting…</string>
+    <string name="mx_bridge_status_ready">Ready — anyone with the PIN on this WiFi can connect.</string>
+
+    <!-- AI Bridge: the question shown before a laptop AI may take a photo (services/PhotoCaptureConsentActivity.kt) -->
+    <string name="mx_photo_consent_title">Take a photo?</string>
+    <string name="mx_photo_consent_body">The AI on your laptop wants to take one photo with your back camera through the AI Bridge.</string>
+    <string name="mx_photo_consent_privacy">The photo goes only to your laptop AI. It is not saved to your phone. Nothing is uploaded by DeviceGPT.</string>
+    <string name="mx_photo_consent_allow">Allow once</string>
+    <string name="mx_photo_consent_taking">Taking…</string>
+    <string name="mx_photo_consent_deny">Deny</string>
+
+    <!-- Invite a friend: the chooser title (utils/referral_manager.kt) -->
+    <string name="mx_referral_share_via">Share via</string>
+</resources>

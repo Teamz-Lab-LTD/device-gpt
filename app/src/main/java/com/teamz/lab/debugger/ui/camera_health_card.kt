@@ -754,6 +754,32 @@ private fun CapturedPhotosRow(
     }
 }
 
+/**
+ * Plain name for the level the phone reports for a camera. The value in [CameraHealthUtils]
+ * stays as Android names it, because the AI report and analytics read it.
+ */
+@Composable
+private fun hardwareLevelName(level: String): String = when (level) {
+    "LEGACY" -> stringResource(R.string.mx_camera_level_legacy)
+    "LIMITED" -> stringResource(R.string.mx_camera_level_limited)
+    "FULL" -> stringResource(R.string.mx_camera_level_full)
+    "LEVEL_3" -> stringResource(R.string.mx_camera_level_3)
+    "EXTERNAL" -> stringResource(R.string.mx_camera_level_external)
+    "Unknown" -> stringResource(R.string.mx_camera_level_unknown)
+    else -> level
+}
+
+/** Plain name for one auto-exposure mode. A mode Android adds later is shown as reported. */
+@Composable
+private fun exposureModeName(mode: String): String = when (mode) {
+    "OFF" -> stringResource(R.string.mx_camera_ae_off)
+    "ON" -> stringResource(R.string.mx_camera_ae_on)
+    "ON_AUTO_FLASH" -> stringResource(R.string.mx_camera_ae_auto_flash)
+    "ON_ALWAYS_FLASH" -> stringResource(R.string.mx_camera_ae_always_flash)
+    "ON_AUTO_FLASH_REDEYE" -> stringResource(R.string.mx_camera_ae_redeye)
+    else -> mode
+}
+
 @Composable
 private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCameraId: String?) {
     Surface(
@@ -784,7 +810,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 stringResource(R.string.camera_lens_aperture_none)
             }
             Text(
-                stringResource(R.string.camera_lens_line_hardware, lens.hardwareLevel, focal, aperture, zoom),
+                stringResource(R.string.camera_lens_line_hardware, hardwareLevelName(lens.hardwareLevel), focal, aperture, zoom),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -819,7 +845,7 @@ private fun LensDetailRow(lens: CameraHealthUtils.LensReport, activePhysicalCame
                 stringResource(
                     R.string.camera_lens_line_shutter,
                     lens.exposureTimeRangeSec?.toString() ?: notReported,
-                    lens.aeModes.joinToString(", ").ifEmpty { notReported },
+                    lens.aeModes.map { exposureModeName(it) }.joinToString(", ").ifEmpty { notReported },
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

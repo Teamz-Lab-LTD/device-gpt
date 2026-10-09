@@ -97,7 +97,19 @@ class NativeAdViewabilityTest {
         assertTrue(
             "native_ad_view.xml must show an 'Ad' attribution label. Google Play Deceptive Ads " +
                 "policy requires every native ad to be clearly labeled as an ad.",
-            xmlSrc.contains("@+id/native_ad_attribution") && xmlSrc.contains("\"Ad\"")
+            xmlSrc.contains("@+id/native_ad_attribution") && xmlSrc.contains("\"@string/mx_ad_badge\"")
+        )
+        // The label moved to a string resource so it follows the app language. English must
+        // still read exactly "Ad", and the Bangla value must not be missing or empty.
+        val english = locate("src/main/res/values/strings_misc.xml").readText()
+        val bangla = locate("src/main/res/values-bn/strings_misc.xml").readText()
+        assertTrue(
+            "values/strings_misc.xml must define mx_ad_badge as \"Ad\"",
+            english.contains("<string name=\"mx_ad_badge\">Ad</string>")
+        )
+        assertTrue(
+            "values-bn/strings_misc.xml must give mx_ad_badge a Bangla value",
+            Regex("<string name=\"mx_ad_badge\">[^<]*[\\u0980-\\u09FF][^<]*</string>").containsMatchIn(bangla)
         )
     }
 

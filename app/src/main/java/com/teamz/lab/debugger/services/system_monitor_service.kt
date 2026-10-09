@@ -86,7 +86,7 @@ class SystemMonitorService : Service() {
         super.onCreate()
         try {
             createNotificationChannel()
-            startForeground(notificationId, buildNotification("Initializing system monitor..."))
+            startForeground(notificationId, buildNotification(getString(R.string.mx_monitor_starting)))
             startMonitoring()
             setMonitorServiceRunning(true)
             // Habit-loop instrumentation: persistent monitor running is the strongest
@@ -329,10 +329,14 @@ class SystemMonitorService : Service() {
                     
                     // Format with nice icons and clear labels
                     // Note: Battery already includes temperature (🔥 40.9°C), so no separate temp line needed
-                    val batteryLabel = "🔋 $battery"
-                    val ramLabel = "🧠 RAM: $ramInfo"
+                    // The rows below are shown only; the English values are stored for the widget
+                    // further down, which reads numbers back out of them. `text` is this service,
+                    // whose resources follow the language chosen in the app.
+                    val text: Context = this@SystemMonitorService
+                    val batteryLabel = "🔋 ${MonitorDisplayText.battery(text, battery)}"
+                    val ramLabel = text.getString(R.string.mx_monitor_row_ram, ramInfo)
                     // CPU shown once, separately (not appended to RAM)
-                    val cpuLabel = if (cpuInfo.isNotBlank()) "⚙️ $cpuInfo" else ""
+                    val cpuLabel = if (cpuInfo.isNotBlank()) MonitorDisplayText.cpu(text, cpuInfo) else ""
                     
                     // Check actual network connectivity, not just speed test results
                     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -343,13 +347,17 @@ class SystemMonitorService : Service() {
                     
                     // Beautify network label - check actual connectivity first
                     val networkLabel = if (!hasInternet) {
-                        "📶 Internet: ⚠️ No connection"
+                        text.getString(R.string.mx_monitor_net_none)
                     } else if (download.contains("Failed", ignoreCase = true)) {
                         // Has connection but speed test failed (might be slow/unstable)
-                        "📶 Internet: ✅ Connected (speed test unavailable)"
+                        text.getString(R.string.mx_monitor_net_no_speed)
                     } else if (!download.contains("Mbps")) {
                         // Not measured on this network yet (Wi-Fi only, every 30 min) — say only what is known.
-                        if (latency.isNotBlank()) "📶 Internet: ✅ Connected • Latency: ${latency.trim()}" else "📶 Internet: ✅ Connected"
+                        if (latency.isNotBlank()) {
+                            text.getString(R.string.mx_monitor_net_connected_latency, latency.trim())
+                        } else {
+                            text.getString(R.string.mx_monitor_net_connected)
+                        }
                     } else {
                         // Extract clean values to avoid duplication
                         val downloadValue = download.replace("↓", "").trim()
@@ -357,22 +365,22 @@ class SystemMonitorService : Service() {
                         // Latency is now just the value (e.g., "123ms"), no need to remove "Delay:" or "Latency:"
                         val latencyValue = latency.trim()
                         if (latencyValue.isNotEmpty()) {
-                            "📶 Internet: $downloadValue ↓ • $uploadValue ↑ • Latency: $latencyValue"
+                            text.getString(R.string.mx_monitor_net_speed_latency, downloadValue, uploadValue, latencyValue)
                         } else {
-                            "📶 Internet: $downloadValue ↓ • $uploadValue ↑"
+                            text.getString(R.string.mx_monitor_net_speed, downloadValue, uploadValue)
                         }
                     }
                     
-                    val fpsLabel = "🎮 ${fpsDataFlow.value}"
+                    val fpsLabel = "🎮 ${MonitorDisplayText.fps(text, fpsDataFlow.value)}"
                     
                     // Power consumption (battery drain rate) - clear label
                     val powerLabel = if (powerInfo.isNotEmpty()) {
                         val powerMatch = Regex("(\\d+\\.?\\d*)\\s*W").find(powerInfo)
                         powerMatch?.groupValues?.get(1)?.let { 
-                            "⚡ Battery Drain: ${it}W"
-                        } ?: "⚡ Battery Drain: --"
+                            text.getString(R.string.mx_monitor_drain, it)
+                        } ?: text.getString(R.string.mx_monitor_drain_none)
                     } else {
-                        "⚡ Battery Drain: --"
+                        text.getString(R.string.mx_monitor_drain_none)
                     }
                     
                     // Power state info - make it clearer by separating thermal from power saver/doze
@@ -383,12 +391,16 @@ class SystemMonitorService : Service() {
                     
                     // Build clearer labels
                     val powerStateLabel = buildString {
-                        append("💡 Thermal: $thermalStatus")
+                        append(
+                            text.getString(
+                                R.string.mx_monitor_thermal, MonitorDisplayText.powerState(text, thermalStatus),
+                            )
+                        )
                         if (saverStatus.isNotEmpty()) {
-                            append(" • $saverStatus")
+                            append(" • ${MonitorDisplayText.powerState(text, saverStatus)}")
                         }
                         if (dozeStatus.isNotEmpty()) {
-                            append(" • $dozeStatus")
+                            append(" • ${MonitorDisplayText.powerState(text, dozeStatus)}")
                         }
                     }
                     
@@ -474,7 +486,7 @@ class SystemMonitorService : Service() {
             )
 
             NotificationCompat.Builder(this, channelId)
-                .setContentTitle("📊 Live Device & Network Status")
+                .setContentTitle(getString(R.string.mx_monitor_title))
                 .setContentText(getString(R.string.notification_watching_over))
                 .setStyle(NotificationCompat.BigTextStyle().bigText(content))
                 .setSmallIcon(android.R.drawable.stat_notify_sync)
@@ -485,8 +497,8 @@ class SystemMonitorService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "System Monitor"
-            val description = "Live device and network metrics"
+            val name = getString(R.string.mx_monitor_channel)
+            val description = getString(R.string.mx_monitor_channel_desc)
             val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(channelId, name, importance).apply {
                 this.description = description
@@ -675,37 +687,39 @@ class SystemMonitorService : Service() {
         streak: Int
     ): String {
         return try {
+            // Stored for the widget and shown there as it is, so it is written in the app language.
+            val text = LocaleManager.localizedContext(context)
             val temp = tempValue.toFloatOrNull() ?: 0f
             if (temp > 45f) {
-                return "🌡️ Temp ${temp.toInt()}°C — higher than normal"
+                return text.getString(R.string.mx_widget_alert_temp_high, temp.toInt().toString())
             }
 
             val ram = ramPercent.toIntOrNull() ?: 0
             if (ram > 85) {
-                return "📊 Memory ${ram}% used — see what's using it"
+                return text.getString(R.string.mx_widget_alert_memory_high, ram.toString())
             }
 
             if (healthScore < 5) {
-                return "📉 Health score ${healthScore}/10 — see what changed"
+                return text.getString(R.string.mx_widget_alert_score_changed, healthScore.toString())
             }
 
             if (temp > 40f) {
-                return "🌡️ Temp ${temp.toInt()}°C — warmer than usual"
+                return text.getString(R.string.mx_widget_alert_temp_warm, temp.toInt().toString())
             }
 
             if (ram > 70) {
-                return "📊 Memory ${ram}% used"
+                return text.getString(R.string.mx_widget_alert_memory, ram.toString())
             }
 
             if (healthScore < 7) {
-                return "📉 Health score ${healthScore}/10 — see details"
+                return text.getString(R.string.mx_widget_alert_score_details, healthScore.toString())
             }
 
             if (healthScore >= 8) {
-                return "✅ All normal — health ${healthScore}/10"
+                return text.getString(R.string.mx_widget_alert_all_normal, healthScore.toString())
             }
 
-            "📱 Health score ${healthScore}/10"
+            text.getString(R.string.mx_widget_alert_score, healthScore.toString())
         } catch (e: Exception) {
             ""
         }
@@ -723,21 +737,24 @@ class SystemMonitorService : Service() {
         streak: Int
     ): String {
         return try {
+            val text = LocaleManager.localizedContext(context)
             val temp = tempValue.toFloatOrNull() ?: 0f
             val ram = ramPercent.toIntOrNull() ?: 0
 
-            when {
-                temp > 45f -> "See what's hot →"
-                ram > 85 -> "See memory details →"
-                healthScore < 5 -> "See what changed →"
-                temp > 40f -> "Check temperature →"
-                ram > 70 -> "See memory details →"
-                healthScore < 7 -> "See details →"
-                healthScore >= 8 -> "All normal — details →"
-                else -> "Open health check →"
-            }
+            text.getString(
+                when {
+                    temp > 45f -> R.string.mx_widget_cta_hot
+                    ram > 85 -> R.string.mx_widget_cta_memory
+                    healthScore < 5 -> R.string.mx_widget_cta_changed
+                    temp > 40f -> R.string.mx_widget_cta_temperature
+                    ram > 70 -> R.string.mx_widget_cta_memory
+                    healthScore < 7 -> R.string.mx_widget_cta_details
+                    healthScore >= 8 -> R.string.mx_widget_cta_all_normal
+                    else -> R.string.mx_widget_cta_open
+                }
+            )
         } catch (e: Exception) {
-            "Open health check →"
+            LocaleManager.localizedContext(context).getString(R.string.mx_widget_cta_open)
         }
     }
 

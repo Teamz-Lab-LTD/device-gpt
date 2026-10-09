@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.utils
 
+import com.teamz.lab.debugger.R
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -492,7 +493,7 @@ object ReferralManager {
             putExtra(Intent.EXTRA_SUBJECT, "Check out this amazing device health app!")
         }
 
-        context.startActivity(Intent.createChooser(shareIntent, "Share via"))
+        context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.mx_referral_share_via)))
 
         AnalyticsUtils.logEvent(
             AnalyticsEvent.ReferralShared,

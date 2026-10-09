@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.ui.rememberAdLoader
+import com.teamz.lab.debugger.utils.HealthDisplayText
 import com.teamz.lab.debugger.utils.HealthScoreUtils
 import com.teamz.lab.debugger.utils.handleError
 import com.teamz.lab.debugger.utils.InterstitialAdManager
@@ -753,7 +754,7 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
                                     )
                                 } catch (e: Exception) {
                                     withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                        lastClearResult = "Error: ${e.message}"
+                                        lastClearResult = HealthDisplayText.errorLine(context, e.message)
                                         isClearing = false
                                     }
                                     com.teamz.lab.debugger.utils.handleError(e)
@@ -811,7 +812,7 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
                                 )
                             } catch (e: Exception) {
                                 withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                    lastClearResult = "Error: ${e.message}"
+                                    lastClearResult = HealthDisplayText.errorLine(context, e.message)
                                     isClearing = false
                                 }
                                 com.teamz.lab.debugger.utils.handleError(e)
@@ -1055,7 +1056,7 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                                                         lastClearResult = retryMessage
                                                     }
                                                 } catch (e: Exception) {
-                                                    lastClearResult = "Error: ${e.message}"
+                                                    lastClearResult = HealthDisplayText.errorLine(context, e.message)
                                                     isClearing = false
                                                     com.teamz.lab.debugger.utils.handleError(e)
                                                 }
@@ -1082,7 +1083,7 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                                         lastClearResult = message
                                     }
                                 } catch (e: Exception) {
-                                    lastClearResult = "Error: ${e.message}"
+                                    lastClearResult = HealthDisplayText.errorLine(context, e.message)
                                     isClearing = false
                                     com.teamz.lab.debugger.utils.handleError(e)
                                     AnalyticsUtils.logEvent(
@@ -1120,7 +1121,7 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                                     lastClearResult = message
                                 }
                             } catch (e: Exception) {
-                                lastClearResult = "Error: ${e.message}"
+                                lastClearResult = HealthDisplayText.errorLine(context, e.message)
                                 isClearing = false
                                 com.teamz.lab.debugger.utils.handleError(e)
                             }
@@ -1379,7 +1380,7 @@ Storage cleanup clears app caches and temporary files to free up space.
                                                         lastOptimizeResult = retryMessage
                                                     }
                                                 } catch (e: Exception) {
-                                                    lastOptimizeResult = "Error: ${e.message}"
+                                                    lastOptimizeResult = HealthDisplayText.errorLine(context, e.message)
                                                     isOptimizing = false
                                                     com.teamz.lab.debugger.utils.handleError(e)
                                                 }
@@ -1405,7 +1406,7 @@ Storage cleanup clears app caches and temporary files to free up space.
                                         lastOptimizeResult = message
                                     }
                                 } catch (e: Exception) {
-                                    lastOptimizeResult = "Error: ${e.message}"
+                                    lastOptimizeResult = HealthDisplayText.errorLine(context, e.message)
                                     isOptimizing = false
                                     com.teamz.lab.debugger.utils.handleError(e)
                                     AnalyticsUtils.logEvent(
@@ -1439,7 +1440,7 @@ Storage cleanup clears app caches and temporary files to free up space.
                                     lastOptimizeResult = message
                                 }
                             } catch (e: Exception) {
-                                lastOptimizeResult = "Error: ${e.message}"
+                                lastOptimizeResult = HealthDisplayText.errorLine(context, e.message)
                                 isOptimizing = false
                                 com.teamz.lab.debugger.utils.handleError(e)
                             }
@@ -2178,7 +2179,7 @@ private fun TemperatureHistoryCard(
                 // Trend indicator
                 if (trend.isNotEmpty() && trend != "Not enough data") {
                     Text(
-                        text = trend,
+                        text = HealthDisplayText.temperatureTrend(context, trend),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
@@ -2358,7 +2359,10 @@ private fun generateHealthShareText(context: android.content.Context, healthScor
     val bestScore = HealthScoreUtils.getBestScore(context)
     val totalScans = HealthScoreUtils.getTotalScans(context)
     val history = HealthScoreUtils.getHealthScoreHistory(context, 7)
-    val suggestions = HealthScoreUtils.getImprovementSuggestions(context, healthScore)
+    // This report is handed to an AI app, so it stays English whatever language the screen is in.
+    val suggestions = HealthScoreUtils.getImprovementSuggestions(
+        HealthDisplayText.englishContext(context), healthScore,
+    )
     
     return buildString {
         appendLine("📊 DEVICE HEALTH REPORT")
@@ -2591,7 +2595,7 @@ private fun PrivacyDashboardCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = threat,
+                            text = HealthDisplayText.privacyThreat(context, threat),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 12.sp,
@@ -2822,7 +2826,7 @@ private fun RamOptimizationCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = lastClearResult,
+                        text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(12.dp)
@@ -3008,7 +3012,7 @@ private fun StorageCleanupCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = lastClearResult,
+                        text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(12.dp)
@@ -3090,7 +3094,7 @@ private fun BatteryOptimizationCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = batteryInfo,
+                                text = HealthDisplayText.batteryInfo(context, batteryInfo),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 maxLines = 1
@@ -3098,7 +3102,7 @@ private fun BatteryOptimizationCard(
                         }
                     } else {
                     Text(
-                        text = batteryInfo,
+                        text = HealthDisplayText.batteryInfo(context, batteryInfo),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         maxLines = 3,
@@ -3216,7 +3220,7 @@ private fun BatteryOptimizationCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = lastOptimizeResult,
+                        text = HealthDisplayText.actionResult(context, lastOptimizeResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(12.dp)
@@ -3375,7 +3379,7 @@ private fun AppCacheCleanerCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = lastClearResult,
+                        text = HealthDisplayText.actionResult(context, lastClearResult),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(12.dp)

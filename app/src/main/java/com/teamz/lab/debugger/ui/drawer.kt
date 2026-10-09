@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.ui
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.selection.toggleable
 import android.Manifest
 import android.app.Activity
@@ -459,7 +460,7 @@ fun DrawerContent(
                             )
                             Column {
                                 Text(
-                                    text = "DeviceGPT Premium",
+                                    text = context.string(R.string.mx_premium_name),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary,
@@ -467,9 +468,9 @@ fun DrawerContent(
                                 )
                                 Text(
                                     text = if (productPrice != null) {
-                                        "$productPrice • Lifetime Access"
+                                        context.string(R.string.mx_premium_price_lifetime, productPrice.toString())
                                     } else {
-                                        "Lifetime Access"
+                                        context.string(R.string.mx_premium_lifetime)
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
@@ -481,7 +482,7 @@ fun DrawerContent(
                     
                     // Benefits row - DeviceGPT focused
                     Text(
-                        text = "✓ No ads • Faster DeviceGPT • Support development",
+                        text = context.string(R.string.mx_premium_benefits_short),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         fontSize = 10.sp,
@@ -499,7 +500,7 @@ fun DrawerContent(
                             RevenueCatManager.showPaywall(
                                 activity = activity,
                                 onSuccess = {
-                                    Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.string(R.string.mx_premium_activated), Toast.LENGTH_SHORT).show()
                                 },
                                 onError = { error ->
                                     Toast.makeText(context, error, Toast.LENGTH_LONG).show()
@@ -518,7 +519,7 @@ fun DrawerContent(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            "Get DeviceGPT Premium",
+                            context.string(R.string.mx_premium_get),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
@@ -565,7 +566,7 @@ fun DrawerContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Premium Active",
+                        text = context.string(R.string.mx_premium_active),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -596,7 +597,7 @@ fun DrawerContent(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "DeviceGPT Premium",
+                                text = context.string(R.string.mx_premium_name),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -607,17 +608,17 @@ fun DrawerContent(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "You're enjoying an ad-free experience!",
+                                text = context.string(R.string.mx_premium_active_headline),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "✓ All ads removed\n✓ Lifetime access\n✓ Full app features\n✓ Support development",
+                                text = context.string(R.string.mx_premium_active_list),
                                 style = MaterialTheme.typography.bodyMedium,
                                 lineHeight = 24.sp
                             )
                             Text(
-                                text = "Thank you for supporting DeviceGPT!",
+                                text = context.string(R.string.mx_premium_thanks),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -2494,7 +2495,9 @@ fun LeaderboardAccountStatus() {
                                 is PasskeyAuthManager.AuthOutcome.Error -> {
                                     android.widget.Toast.makeText(
                                         context,
-                                        outcome.message,
+                                        com.teamz.lab.debugger.utils.HealthDisplayText.englishOr(
+                                            context, outcome.message, R.string.account_sign_in_failed,
+                                        ),
                                         android.widget.Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -2618,7 +2621,7 @@ private fun AdBadge() {
             .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Text(
-            text = "Ad",
+            text = stringResource(R.string.mx_ad_badge),
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onError,

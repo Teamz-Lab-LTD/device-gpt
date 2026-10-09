@@ -36,7 +36,7 @@
                 android:id="@+id/native_ad_attribution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ad"
+                android:text="@string/mx_ad_badge"
                 android:textColor="#FFFFFFFF"
                 android:background="@drawable/native_ad_attribution_bg"
                 android:paddingStart="8dp"
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:text="Sponsored"
+                android:text="@string/mx_ad_sponsored"
                 android:textColor="#B312151A"
                 android:textSize="10sp" />
         </RelativeLayout>

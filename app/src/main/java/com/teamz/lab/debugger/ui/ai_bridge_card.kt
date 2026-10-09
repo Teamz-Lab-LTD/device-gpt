@@ -157,7 +157,7 @@ fun AiBridgeTabSection(
                     val current = BridgeService.state.value
                     if (current !is BridgeService.BridgeState.On) {
                         BridgeService.start(context)
-                        Toast.makeText(context, "Turning bridge on…", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.mx_bridge_turning_on), Toast.LENGTH_SHORT).show()
                         withTimeoutOrNull(5000) {
                             BridgeService.state.first { it is BridgeService.BridgeState.On }
                         }
@@ -376,7 +376,7 @@ private fun OnCard(
                 ) {
                     Image(
                         bitmap = qrBitmap.asImageBitmap(),
-                        contentDescription = "Pairing QR code",
+                        contentDescription = stringResource(R.string.mx_bridge_qr_cd),
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -393,7 +393,7 @@ private fun OnCard(
                 onCopy = { onCopy("bridge_pin", state.pin) },
             )
             Text(
-                text = "${stringResource(R.string.ai_bridge_auto_off_prefix)} $remainingLabel ${stringResource(R.string.ai_bridge_auto_off_suffix)}".trim(),
+                text = stringResource(R.string.mx_bridge_auto_off, remainingLabel),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -765,7 +765,11 @@ private fun McpSetupSheet(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = client.tab.label,
+                                text = if (client == McpClient.Other) {
+                                    stringResource(R.string.mx_bridge_tab_other)
+                                } else {
+                                    client.tab.label
+                                },
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center,
                                 maxLines = 1,
@@ -778,7 +782,7 @@ private fun McpSetupSheet(
 
             // Config path
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Config file path", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.mx_bridge_config_path), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -795,7 +799,7 @@ private fun McpSetupSheet(
 
             // JSON block
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Paste this block", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.mx_bridge_paste_block), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -825,7 +829,7 @@ private fun McpSetupSheet(
             // does the same JSON-building locally (with a PIN box), no phone->PC transfer step.
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    "Or skip copying: open this on your PC's browser",
+                    stringResource(R.string.mx_bridge_open_on_pc),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -847,7 +851,7 @@ private fun McpSetupSheet(
                 ) {
                     Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Copy setup URL")
+                    Text(stringResource(R.string.mx_bridge_copy_setup_url))
                 }
             }
 

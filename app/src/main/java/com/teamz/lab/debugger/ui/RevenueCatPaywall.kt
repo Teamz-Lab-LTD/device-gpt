@@ -213,7 +213,7 @@ fun RevenueCatPaywall(
                                 mapOf("product_id" to productId, "source" to analyticsSource)
                             )
                             onDismiss()
-                            Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.mx_premium_activated), Toast.LENGTH_SHORT).show()
                         }
                         
                         override fun onPurchaseError(error: com.revenuecat.purchases.PurchasesError) {
@@ -257,7 +257,7 @@ fun RevenueCatPaywall(
                                     )
                                 )
                                 onDismiss()
-                                Toast.makeText(context, "Premium activated! Ads removed.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.mx_premium_activated), Toast.LENGTH_SHORT).show()
                             } else {
                                 // Track restore completed but no premium found
                                 AnalyticsUtils.logEvent(

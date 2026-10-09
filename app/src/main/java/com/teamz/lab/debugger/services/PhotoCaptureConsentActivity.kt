@@ -1,5 +1,7 @@
 package com.teamz.lab.debugger.services
 
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -118,16 +120,16 @@ private fun ConsentDialog(onAllow: () -> Unit, onDeny: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDeny,
         icon = { Icon(Icons.Default.CameraAlt, contentDescription = null) },
-        title = { Text("Take a photo?") },
+        title = { Text(stringResource(R.string.mx_photo_consent_title)) },
         text = {
             Column {
                 Text(
-                    "The AI on your laptop wants to take one photo with your back camera through the AI Bridge.",
+                    stringResource(R.string.mx_photo_consent_body),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "The photo goes only to your laptop AI. It is not saved to your phone. Nothing is uploaded by DeviceGPT.",
+                    stringResource(R.string.mx_photo_consent_privacy),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -139,12 +141,14 @@ private fun ConsentDialog(onAllow: () -> Unit, onDeny: () -> Unit) {
                 enabled = !busy,
                 colors = ButtonDefaults.buttonColors(),
             ) {
-                Text(if (busy) "Taking…" else "Allow once")
+                Text(
+                    stringResource(if (busy) R.string.mx_photo_consent_taking else R.string.mx_photo_consent_allow),
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDeny, enabled = !busy) {
-                Text("Deny")
+                Text(stringResource(R.string.mx_photo_consent_deny))
             }
         },
     )

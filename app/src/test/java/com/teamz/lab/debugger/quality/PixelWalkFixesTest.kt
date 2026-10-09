@@ -75,11 +75,11 @@ class PixelWalkFixesTest {
 
     @Test
     fun `no score yet renders as unknown, not zero`() {
-        assertEquals("Health: --/10", LockScreenMonitorWidget.healthScoreLabel(false, 0, ""))
-        assertEquals("Health: 9/10 ↑", LockScreenMonitorWidget.healthScoreLabel(true, 9, " ↑"))
-        assertEquals("📊 Open app to scan", LockScreenMonitorWidget.primaryStatus(false, "--", "--", 0))
-        assertEquals("⚠️ Low Score", LockScreenMonitorWidget.primaryStatus(true, "--", "--", 3))
-        assertEquals("✅ Healthy", LockScreenMonitorWidget.primaryStatus(true, "30.0", "40", 9))
+        assertEquals("Health: --/10", LockScreenMonitorWidget.healthScoreLabel(context, false, 0, ""))
+        assertEquals("Health: 9/10 ↑", LockScreenMonitorWidget.healthScoreLabel(context, true, 9, " ↑"))
+        assertEquals("📊 Open app to scan", LockScreenMonitorWidget.primaryStatus(context, false, "--", "--", 0))
+        assertEquals("⚠️ Low Score", LockScreenMonitorWidget.primaryStatus(context, true, "--", "--", 3))
+        assertEquals("✅ Healthy", LockScreenMonitorWidget.primaryStatus(context, true, "30.0", "40", 9))
     }
 
     @Test

@@ -74,7 +74,9 @@ class BridgeService : Service() {
                 }
             } catch (e: Exception) {
                 ErrorHandler.handleError(e, context = "BridgeService.start")
-                _state.value = BridgeState.Error(reason = "Could not start the Bridge. Try opening the app first.")
+                _state.value = BridgeState.Error(
+                    reason = LocaleManager.localizedContext(context).getString(R.string.mx_bridge_error_start),
+                )
             }
         }
 
@@ -145,23 +147,23 @@ class BridgeService : Service() {
             ServiceCompat.startForeground(
                 this,
                 NOTIFICATION_ID,
-                buildNotification("Starting…", showStop = false),
+                buildNotification(getString(R.string.mx_bridge_status_starting), showStop = false),
                 serviceType,
             )
         } catch (e: android.app.ForegroundServiceStartNotAllowedException) {
-            _state.value = BridgeState.Error(reason = "Please open the app first, then turn the Bridge on.")
+            _state.value = BridgeState.Error(reason = getString(R.string.mx_bridge_error_open_app))
             stopSelf()
             return
         } catch (e: Exception) {
             ErrorHandler.handleError(e, context = "BridgeService.startForeground")
-            _state.value = BridgeState.Error(reason = "Could not show the Bridge notification.")
+            _state.value = BridgeState.Error(reason = getString(R.string.mx_bridge_error_notification))
             stopSelf()
             return
         }
 
         val lanIp = LanIpResolver.getLanIpv4()
         if (lanIp == null) {
-            _state.value = BridgeState.Error(reason = "No WiFi. Connect to WiFi and try again.")
+            _state.value = BridgeState.Error(reason = getString(R.string.mx_bridge_error_no_wifi))
             stopSelf()
             return
         }
@@ -180,7 +182,9 @@ class BridgeService : Service() {
             httpServer = server
         } catch (e: Exception) {
             ErrorHandler.handleError(e, context = "BridgeService.startHttp")
-            _state.value = BridgeState.Error(reason = "Port $BRIDGE_PORT is busy. Turn the Bridge off, then on again.")
+            _state.value = BridgeState.Error(
+                reason = getString(R.string.mx_bridge_error_port_busy, BRIDGE_PORT.toString()),
+            )
             stopSelf()
             return
         }
@@ -194,7 +198,7 @@ class BridgeService : Service() {
         lastRequestAtMs = null
         _state.value = BridgeState.On(urlDisplay, pin, startedAtMs, 0, null)
 
-        updateNotification("Ready — anyone with the PIN on this WiFi can connect.")
+        updateNotification(getString(R.string.mx_bridge_status_ready))
         resetIdleTimer()
 
         AnalyticsUtils.logEvent(AnalyticsEvent.AiBridgeToggled, mapOf(
