@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Test Zużycia Kamery</string>
     <string name="camera_test_description">Twój telefon zużywa podczas robienia zdjęć ile energii baterii</string>
-    <string name="camera_test_info">📷 Podczas pomiaru zobaczysz podgląd kamery na żywo. Kamera faktycznie się otwiera i robi prawdziwe zdjęcie.</string>
-    <string name="camera_test_accuracy">📊 Wykonujemy wiele pomiarów i uśredniamy je dla dokładności. Małe różnice między testami są normalne—temperatura i poziom baterii telefonu mogą wpływać na wyniki.</string>
+    <string name="camera_test_info">Podczas pomiaru zobaczysz podgląd kamery na żywo. Kamera faktycznie się otwiera i robi prawdziwe zdjęcie.</string>
+    <string name="camera_test_accuracy">Wykonujemy wiele pomiarów i uśredniamy je dla dokładności. Małe różnice między testami są normalne—temperatura i poziom baterii telefonu mogą wpływać na wyniki.</string>
     <string name="camera_preview">Podgląd Kamery\n(Pokaże transmisję na żywo podczas testu)</string>
     <string name="preview_live_feed">Podgląd pokazuje transmisję kamery na żywo podczas każdego testu</string>
     <string name="testing">Testowanie…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s test%2$s łącznie</string>
     <string name="view_csv">Zobacz CSV</string>
     <string name="camera_power_test_data">Dane Testu Zużycia Kamery</string>
-    <string name="single_photo_power_test">📸 Test Zużycia Pojedynczego Zdjęcia</string>
-    <string name="multiple_photo_power_tests">📊 Testy Zużycia Wiele Zdjęć</string>
+    <string name="single_photo_power_test">Test Zużycia Pojedynczego Zdjęcia</string>
+    <string name="multiple_photo_power_tests">Testy Zużycia Wiele Zdjęć</string>
     <string name="test_results">Wyniki Testów:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Skanuj Zdrowie Urządzenia</string>
     <string name="scanning_device">Skanowanie urządzenia…</string>
     <string name="scanning">Skanowanie</string>
-    <string name="amazing_streak">🔥 Niesamowita seria! Jesteś mistrzem zdrowia!</string>
-    <string name="great_consistency">💪 Świetna konsekwencja! Utrzymuj impet!</string>
-    <string name="good_start">✅ Dobry początek! Zbuduj swój codzienny nawyk!</string>
-    <string name="ready_to_start">🚀 Gotowy, aby rozpocząć swoją podróż zdrowia?</string>
+    <string name="amazing_streak">Niesamowita seria! Jesteś mistrzem zdrowia!</string>
+    <string name="great_consistency">Świetna konsekwencja! Utrzymuj impet!</string>
+    <string name="good_start">Dobry początek! Zbuduj swój codzienny nawyk!</string>
+    <string name="ready_to_start">Gotowy, aby rozpocząć swoją podróż zdrowia?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Dostęp do Lokalizacji</string>
-    <string name="phone_info_access">📱 Dostęp do Informacji o Telefonie</string>
-    <string name="network_usage_stats">📊 Statystyki Użycia Sieci</string>
+    <string name="location_access">Dostęp do Lokalizacji</string>
+    <string name="phone_info_access">Dostęp do Informacji o Telefonie</string>
+    <string name="network_usage_stats">Statystyki Użycia Sieci</string>
     <string name="notification_permission_denied">Zezwolenie na powiadomienia odrzucone</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Błąd podczas otwierania ustawienia: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Monitorowanie baterii, prędkości i więcej ⚙</string>
+    <string name="notification_watching_over">Monitorowanie baterii, prędkości i więcej</string>
 </resources>
 

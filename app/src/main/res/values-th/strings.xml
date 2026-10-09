@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">ทดสอบพลังงานกล้อง</string>
     <string name="camera_test_description">วัดปริมาณพลังงานแบตเตอรี่ที่โทรศัพท์ของคุณใช้เมื่อถ่ายภาพ</string>
-    <string name="camera_test_info">📷 คุณจะเห็นตัวอย่างกล้องแบบสดขณะที่เราวัด กล้องจะเปิดจริงและถ่ายภาพจริง</string>
-    <string name="camera_test_accuracy">📊 เราทำการวัดหลายครั้งและหาค่าเฉลี่ยเพื่อความแม่นยำ ความแตกต่างเล็กน้อยระหว่างการทดสอบเป็นเรื่องปกติ—อุณหภูมิและระดับแบตเตอรี่ของโทรศัพท์อาจส่งผลต่อผลลัพธ์</string>
+    <string name="camera_test_info">คุณจะเห็นตัวอย่างกล้องแบบสดขณะที่เราวัด กล้องจะเปิดจริงและถ่ายภาพจริง</string>
+    <string name="camera_test_accuracy">เราทำการวัดหลายครั้งและหาค่าเฉลี่ยเพื่อความแม่นยำ ความแตกต่างเล็กน้อยระหว่างการทดสอบเป็นเรื่องปกติ—อุณหภูมิและระดับแบตเตอรี่ของโทรศัพท์อาจส่งผลต่อผลลัพธ์</string>
     <string name="camera_preview">ตัวอย่างกล้อง\n(จะแสดงฟีดสดระหว่างการทดสอบ)</string>
     <string name="preview_live_feed">ตัวอย่างแสดงฟีดกล้องสดระหว่างการทดสอบแต่ละครั้ง</string>
     <string name="testing">กำลังทดสอบ…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">รวม %1$s การทดสอบ%2$s</string>
     <string name="view_csv">ดู CSV</string>
     <string name="camera_power_test_data">ข้อมูลทดสอบพลังงานกล้อง</string>
-    <string name="single_photo_power_test">📸 ทดสอบพลังงานภาพเดียว</string>
-    <string name="multiple_photo_power_tests">📊 ทดสอบพลังงานหลายภาพ</string>
+    <string name="single_photo_power_test">ทดสอบพลังงานภาพเดียว</string>
+    <string name="multiple_photo_power_tests">ทดสอบพลังงานหลายภาพ</string>
     <string name="test_results">ผลการทดสอบ:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">สแกนสุขภาพอุปกรณ์</string>
     <string name="scanning_device">กำลังสแกนอุปกรณ์…</string>
     <string name="scanning">กำลังสแกน</string>
-    <string name="amazing_streak">🔥 สถิติที่น่าทึ่ง! คุณคือแชมป์สุขภาพ!</string>
-    <string name="great_consistency">💪 ความสม่ำเสมอยอดเยี่ยม! รักษาโมเมนตัมไว้!</string>
-    <string name="good_start">✅ เริ่มต้นที่ดี! สร้างนิสัยรายวันของคุณ!</string>
-    <string name="ready_to_start">🚀 พร้อมเริ่มต้นการเดินทางด้านสุขภาพของคุณแล้วหรือยัง?</string>
+    <string name="amazing_streak">สถิติที่น่าทึ่ง! คุณคือแชมป์สุขภาพ!</string>
+    <string name="great_consistency">ความสม่ำเสมอยอดเยี่ยม! รักษาโมเมนตัมไว้!</string>
+    <string name="good_start">เริ่มต้นที่ดี! สร้างนิสัยรายวันของคุณ!</string>
+    <string name="ready_to_start">พร้อมเริ่มต้นการเดินทางด้านสุขภาพของคุณแล้วหรือยัง?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 การเข้าถึงตำแหน่ง</string>
-    <string name="phone_info_access">📱 การเข้าถึงข้อมูลโทรศัพท์</string>
-    <string name="network_usage_stats">📊 สถิติการใช้เครือข่าย</string>
+    <string name="location_access">การเข้าถึงตำแหน่ง</string>
+    <string name="phone_info_access">การเข้าถึงข้อมูลโทรศัพท์</string>
+    <string name="network_usage_stats">สถิติการใช้เครือข่าย</string>
     <string name="notification_permission_denied">ปฏิเสธสิทธิ์การแจ้งเตือน</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">เกิดข้อผิดพลาดในการเปิดการตั้งค่า: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">กำลังตรวจสอบแบตเตอรี่ ความเร็ว และอื่นๆ ⚙</string>
+    <string name="notification_watching_over">กำลังตรวจสอบแบตเตอรี่ ความเร็ว และอื่นๆ</string>
 </resources>
 

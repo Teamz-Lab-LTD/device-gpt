@@ -119,8 +119,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">ছবি তুললে কত চার্জ যায়</string>
     <string name="camera_test_description">ছবি তোলার সময় আপনার ফোনের কত চার্জ খরচ হয়, তা মাপে</string>
-    <string name="camera_test_info">📷 মাপার সময় ক্যামেরা খুলবে, সামনে যা আছে তা দেখা যাবে। একটা সত্যিকারের ছবিও তোলা হবে।</string>
-    <string name="camera_test_accuracy">📊 ঠিক হিসাব পেতে আমরা কয়েকবার মাপি, তারপর গড় করি। প্রতিবার একটু কম-বেশি হওয়া স্বাভাবিক। ফোন গরম থাকলে বা চার্জ কম থাকলে ফল বদলাতে পারে।</string>
+    <string name="camera_test_info">মাপার সময় ক্যামেরা খুলবে, সামনে যা আছে তা দেখা যাবে। একটা সত্যিকারের ছবিও তোলা হবে।</string>
+    <string name="camera_test_accuracy">ঠিক হিসাব পেতে আমরা কয়েকবার মাপি, তারপর গড় করি। প্রতিবার একটু কম-বেশি হওয়া স্বাভাবিক। ফোন গরম থাকলে বা চার্জ কম থাকলে ফল বদলাতে পারে।</string>
     <string name="camera_preview">ক্যামেরার ছবি\n(পরীক্ষার সময় এখানে দেখা যাবে)</string>
     <string name="preview_live_feed">প্রতিটা পরীক্ষার সময় এখানে ক্যামেরার ছবি দেখা যাবে</string>
     <string name="testing">পরীক্ষা চলছে…</string>
@@ -132,8 +132,8 @@
     <string name="total_tests">মোট %1$sটি পরীক্ষা</string>
     <string name="view_csv">ফাইল দেখুন</string>
     <string name="camera_power_test_data">ছবি তোলায় চার্জ খরচের তথ্য</string>
-    <string name="single_photo_power_test">📸 একটা ছবিতে কত চার্জ যায়</string>
-    <string name="multiple_photo_power_tests">📊 কয়েকটা ছবিতে কত চার্জ যায়</string>
+    <string name="single_photo_power_test">একটা ছবিতে কত চার্জ যায়</string>
+    <string name="multiple_photo_power_tests">কয়েকটা ছবিতে কত চার্জ যায়</string>
     <string name="test_results">পরীক্ষার ফল:</string>
 
     <!-- Display Power Sweep -->
@@ -165,15 +165,15 @@
     <string name="scan_device_health">ফোনের অবস্থা দেখে নিন</string>
     <string name="scanning_device">ফোন দেখছি…</string>
     <string name="scanning">দেখছি</string>
-    <string name="amazing_streak">🔥 দারুণ! টানা অনেক দিন ফোন দেখে নিচ্ছেন!</string>
-    <string name="great_consistency">💪 খুব ভালো! রোজ এভাবে দেখে নিন!</string>
-    <string name="good_start">✅ ভালো শুরু! রোজ একবার দেখে নিন!</string>
-    <string name="ready_to_start">🚀 ফোনের অবস্থা দেখা শুরু করবেন?</string>
+    <string name="amazing_streak">দারুণ! টানা অনেক দিন ফোন দেখে নিচ্ছেন!</string>
+    <string name="great_consistency">খুব ভালো! রোজ এভাবে দেখে নিন!</string>
+    <string name="good_start">ভালো শুরু! রোজ একবার দেখে নিন!</string>
+    <string name="ready_to_start">ফোনের অবস্থা দেখা শুরু করবেন?</string>
 
     <!-- Permissions -->
-    <string name="location_access">📍 জায়গা জানার অনুমতি</string>
-    <string name="phone_info_access">📱 ফোনের তথ্য জানার অনুমতি</string>
-    <string name="network_usage_stats">📊 নেট কত খরচ হলো</string>
+    <string name="location_access">জায়গা জানার অনুমতি</string>
+    <string name="phone_info_access">ফোনের তথ্য জানার অনুমতি</string>
+    <string name="network_usage_stats">নেট কত খরচ হলো</string>
     <string name="notification_permission_denied">নোটিসের অনুমতি দেননি</string>
 
     <!-- File Names -->
@@ -231,7 +231,7 @@
     <string name="toast_error_opening_setting">সেটিংস খোলা গেল না: %1$s</string>
 
     <!-- Notification -->
-    <string name="notification_watching_over">ব্যাটারি, গতি আর বাকি সব দিকে নজর রাখছি ⚙</string>
+    <string name="notification_watching_over">ব্যাটারি, গতি আর বাকি সব দিকে নজর রাখছি</string>
 
     <!-- Website reachability probe (App Doctor release 1, 2026-08-18) -->
     <string name="probe_custom_title">একটা ওয়েবসাইট দেখে নিন</string>
@@ -323,7 +323,7 @@
     <string name="first_scan_continue_to_app">এগিয়ে যান</string>
 
     <!-- Card after the first finished test (task 3, 2026-10-09) -->
-    <string name="done_title">হয়ে গেছে ✓</string>
+    <string name="done_title">হয়ে গেছে</string>
     <string name="done_body">ফোনের অবস্থায় নজর রাখতে চান?</string>
     <string name="done_add_widget">প্রথম পাতায় রাখুন</string>
     <string name="done_weekly_checkup">সপ্তাহে একবার খবর</string>
@@ -489,9 +489,9 @@
     <string name="health_msg_good">ভালো! আপনার ফোন ভালো চলছে।</string>
     <string name="health_msg_fair">মোটামুটি। কিছু জিনিস ঠিক করা দরকার। কী করবেন, নিচে দেখুন।</string>
     <string name="health_msg_needs_attention">একটু সমস্যা আছে। কী করলে ভালো হবে, নিচে দেখুন।</string>
-    <string name="health_streak_one">📱 টানা %1$s দিন ফোন দেখে নিয়েছেন।</string>
-    <string name="health_streak_many">📱 টানা %1$s দিন ফোন দেখে নিয়েছেন।</string>
-    <string name="health_streak_none">🔍 আজ ফোন কেমন আছে, দেখে নিন।</string>
+    <string name="health_streak_one">টানা %1$s দিন ফোন দেখে নিয়েছেন।</string>
+    <string name="health_streak_many">টানা %1$s দিন ফোন দেখে নিয়েছেন।</string>
+    <string name="health_streak_none">আজ ফোন কেমন আছে, দেখে নিন।</string>
     <string name="share_score_text">DeviceGPT অ্যাপে আমার ফোনের অবস্থা 100-তে %1$s নম্বর পেয়েছে। আপনার ফোনও দেখে নিন: %2$s</string>
     <string name="share_score_chooser_title">ফোনের অবস্থার নম্বর পাঠান</string>
     <string name="health_report_title">ফোনের অবস্থার রিপোর্ট নিন</string>
@@ -502,28 +502,28 @@
 
     <!-- Drawer: sections, toggles, toasts, dialogs, account (task 3, 2026-10-09) -->
     <string name="got_it_plain">বুঝেছি</string>
-    <string name="drawer_notification_access">🔔 নোটিস দেওয়ার অনুমতি</string>
+    <string name="drawer_notification_access">নোটিস দেওয়ার অনুমতি</string>
     <string name="drawer_launch_app">নিজের অ্যাপ বা ওয়েবসাইট বানাতে চান?</string>
     <string name="drawer_widget">প্রথম পাতায় এক নজরে</string>
     <string name="drawer_add_to_home">প্রথম পাতায় রাখুন</string>
     <string name="drawer_add_to_lock">লক করা স্ক্রিনে রাখুন</string>
     <string name="drawer_widget_dialog_title">ফোনের অবস্থা এক নজরে দেখুন</string>
     <string name="drawer_widget_home_title">ফোনের প্রথম পাতায় রাখুন</string>
-    <string name="drawer_widget_manual_steps">📱 নিজে যেভাবে করবেন:</string>
+    <string name="drawer_widget_manual_steps">নিজে যেভাবে করবেন:</string>
     <string name="drawer_widget_home_steps">1. ফোনের প্রথম পাতার ফাঁকা জায়গায় আঙুল চেপে ধরুন\n2. \'উইজেট\' লেখায় চাপ দিন\n3. \'DeviceGPT\' খুঁজে বের করুন\n4. টেনে প্রথম পাতায় আনুন</string>
-    <string name="drawer_widget_shows_title">📊 এতে যা দেখা যাবে:</string>
+    <string name="drawer_widget_shows_title">এতে যা দেখা যাবে:</string>
     <string name="drawer_widget_shows_body">• আজ ফোনের অবস্থার নম্বর (সবচেয়ে বড় করে)\n• ব্যাটারি কত %, আর চার্জ হচ্ছে কি না\n• ব্যাটারি কত গরম (°C)\n• মেমোরি আর ফাইল রাখার জায়গা কতটা ভরা\n• সব সময় নজর রাখা চালু থাকলে: চার্জ খরচ, নেটের গতি আর ফোন কতটা খাটছে\n• শেষ কখন নতুন হয়েছে</string>
-    <string name="drawer_widget_updates_title">🔄 কত পর পর নতুন হয়:</string>
+    <string name="drawer_widget_updates_title">কত পর পর নতুন হয়:</string>
     <string name="drawer_widget_updates_body">• প্রায় 15 মিনিট পর পর নতুন হয়। আপনি ফোন দেখে নিলেও নতুন হয়\n• সব সময় নজর রাখা চালু থাকলে 30 সেকেন্ড পর পর চার্জ খরচ আর ফোনের খাটুনি দেখায়। ওয়াইফাইতে প্রায় 30 মিনিট পর পর নেটের গতি মাপে\n• কতক্ষণ আগে নতুন হয়েছে, তা দেখায়\n• সব তথ্য ফোন থেকে সরাসরি নেওয়া, আন্দাজ করা না</string>
-    <string name="drawer_widget_tip_tap">💡 এতে চাপ দিলে সরাসরি ফোনের অবস্থার পাতা খুলবে!</string>
+    <string name="drawer_widget_tip_tap">এতে চাপ দিলে সরাসরি ফোনের অবস্থার পাতা খুলবে!</string>
     <string name="drawer_widget_lock_title">লক করা স্ক্রিনে রাখুন</string>
-    <string name="drawer_widget_lock_subtitle">🔒 লক করা স্ক্রিনে রাখা (অ্যান্ড্রয়েড 14 বা তার পরের):</string>
-    <string name="drawer_widget_lock_steps">লক করা স্ক্রিনে এটা নিজে বসাতে হয়:\n\n1. ফোন লক করুন\n2. লক করা স্ক্রিনে আঙুল চেপে ধরুন\n3. \'কাস্টমাইজ\' বা \'এডিট\' লেখায় চাপ দিন\n4. \'উইজেট যোগ করুন\' বা \'উইজেট\' লেখায় চাপ দিন\n5. \'DeviceGPT\' খুঁজে বের করুন\n6. লক করা স্ক্রিনে বসান\n\n⚠️ সব ফোনে বা সব অ্যান্ড্রয়েডে এটা করা যায় না।</string>
+    <string name="drawer_widget_lock_subtitle">লক করা স্ক্রিনে রাখা (অ্যান্ড্রয়েড 14 বা তার পরের):</string>
+    <string name="drawer_widget_lock_steps">লক করা স্ক্রিনে এটা নিজে বসাতে হয়:\n\n1. ফোন লক করুন\n2. লক করা স্ক্রিনে আঙুল চেপে ধরুন\n3. \'কাস্টমাইজ\' বা \'এডিট\' লেখায় চাপ দিন\n4. \'উইজেট যোগ করুন\' বা \'উইজেট\' লেখায় চাপ দিন\n5. \'DeviceGPT\' খুঁজে বের করুন\n6. লক করা স্ক্রিনে বসান\n\nসব ফোনে বা সব অ্যান্ড্রয়েডে এটা করা যায় না।</string>
     <string name="drawer_widget_generic_intro">ফোনের অবস্থার নম্বর আর টানা কত দিন, তা প্রথম পাতায় বা লক করা স্ক্রিনে দেখুন!</string>
-    <string name="drawer_widget_for_home">📱 প্রথম পাতায় রাখতে:</string>
-    <string name="drawer_widget_for_lock">🔒 লক করা স্ক্রিনে রাখতে (অ্যান্ড্রয়েড 14 বা তার পরের):</string>
+    <string name="drawer_widget_for_home">প্রথম পাতায় রাখতে:</string>
+    <string name="drawer_widget_for_lock">লক করা স্ক্রিনে রাখতে (অ্যান্ড্রয়েড 14 বা তার পরের):</string>
     <string name="drawer_widget_lock_steps_short">1. লক করা স্ক্রিনে আঙুল চেপে ধরুন\n2. \'কাস্টমাইজ\' বা \'এডিট\' লেখায় চাপ দিন\n3. \'উইজেট যোগ করুন\' বা \'উইজেট\' লেখায় চাপ দিন\n4. \'DeviceGPT\' খুঁজে বের করুন\n5. লক করা স্ক্রিনে বসান\n\nসব ফোনে এটা করা যায় না।</string>
-    <string name="drawer_widget_tip_shows">💡 এতে ফোনের অবস্থার নম্বর, টানা কত দিন, ব্যাটারি, ফোন কত গরম আর আরও অনেক কিছু দেখা যায়!</string>
+    <string name="drawer_widget_tip_shows">এতে ফোনের অবস্থার নম্বর, টানা কত দিন, ব্যাটারি, ফোন কত গরম আর আরও অনেক কিছু দেখা যায়!</string>
     <string name="drawer_invite_title">বন্ধুকে ডাকুন, বিজ্ঞাপন ছাড়া চালান</string>
     <string name="drawer_invite_button">বন্ধুকে ডাকুন</string>
     <string name="drawer_invite_failed">পাঠানোর পাতা খোলা গেল না। আবার চেষ্টা করুন।</string>
@@ -597,12 +597,12 @@
     <string name="timeline_title">ফোনে কবে কী হলো</string>
     <string name="timeline_subtitle_premium">এই ফোনের গত 90 দিনের খবর</string>
     <string name="timeline_subtitle_free">গত 7 দিনের খবর। পুরোনো সব খবর ফোনেই জমা আছে। বাড়তি সুবিধা নিলে সব দেখা যাবে।</string>
-    <string name="timeline_last_charge">🔌 শেষবার চার্জ</string>
+    <string name="timeline_last_charge">শেষবার চার্জ</string>
     <string name="timeline_charge_recorded">চার্জ দেওয়ার হিসাব রাখা হয়েছে</string>
 
     <!-- Health tab: timeline locked line (task 3, 2026-10-09) -->
-    <string name="timeline_older_one">🔒 আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
-    <string name="timeline_older_many">🔒 আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
+    <string name="timeline_older_one">আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
+    <string name="timeline_older_many">আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
 
     <!-- Health tab: quick-action cards and their help dialogs (task 3, 2026-10-09) -->
     <string name="health_storage_help_title">ফোনের জায়গা খালি করবেন যেভাবে</string>
@@ -631,7 +631,7 @@
     <string name="health_recommendations">কী করলে ভালো হবে</string>
     <string name="health_recommendations_basis">আপনার ফোনের আসল তথ্য দেখে বলা</string>
     <string name="health_tasks_title">আজ যা করবেন</string>
-    <string name="health_tasks_all_done">🎉 আজকের সব কাজ হয়ে গেছে! খুব ভালো!</string>
+    <string name="health_tasks_all_done">আজকের সব কাজ হয়ে গেছে! খুব ভালো!</string>
     <string name="health_temperature_title">ফোন কত গরম হয়েছিল</string>
     <string name="health_temperature_empty">এখনো কোনো হিসাব নেই। ফোন কত গরম হয়, তা নিজে থেকেই লেখা থাকবে।</string>
     <string name="health_history_title">গত 7 দিনের নম্বর</string>
@@ -688,7 +688,7 @@
     <string name="health_cleaning">মুছছি…</string>
     <string name="health_clearing">মুছছি…</string>
     <string name="health_tasks_completed">%2$sটার মধ্যে %1$sটা হয়ে গেছে</string>
-    <string name="health_temperature_peak">⚠️ এই সপ্তাহে সবচেয়ে বেশি গরম: %1$s°C</string>
+    <string name="health_temperature_peak">এই সপ্তাহে সবচেয়ে বেশি গরম: %1$s°C</string>
     <string name="health_cache_in_apps">%2$sটা অ্যাপে %1$s</string>
     <string name="health_cache_apps_have">%1$sটা অ্যাপে বাড়তি ফাইল জমে আছে</string>
 </resources>

@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Teste de Energia da Câmera</string>
     <string name="camera_test_description">Mede quanta energia da bateria seu telefone usa ao tirar fotos</string>
-    <string name="camera_test_info">📷 Você verá uma visualização ao vivo da câmera enquanto medimos. A câmera realmente abre e tira uma foto real.</string>
-    <string name="camera_test_accuracy">📊 Fazemos várias medições e calculamos a média para precisão. Pequenas diferenças entre testes são normais—a temperatura e o nível da bateria do seu telefone podem afetar os resultados.</string>
+    <string name="camera_test_info">Você verá uma visualização ao vivo da câmera enquanto medimos. A câmera realmente abre e tira uma foto real.</string>
+    <string name="camera_test_accuracy">Fazemos várias medições e calculamos a média para precisão. Pequenas diferenças entre testes são normais—a temperatura e o nível da bateria do seu telefone podem afetar os resultados.</string>
     <string name="camera_preview">Visualização da Câmera\n(Mostrará transmissão ao vivo durante o teste)</string>
     <string name="preview_live_feed">A visualização mostra a transmissão ao vivo da câmera durante cada teste</string>
     <string name="testing">Testando…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s teste%2$s no total</string>
     <string name="view_csv">Ver CSV</string>
     <string name="camera_power_test_data">Dados do Teste de Energia da Câmera</string>
-    <string name="single_photo_power_test">📸 Teste de Energia de Foto Única</string>
-    <string name="multiple_photo_power_tests">📊 Testes de Energia de Múltiplas Fotos</string>
+    <string name="single_photo_power_test">Teste de Energia de Foto Única</string>
+    <string name="multiple_photo_power_tests">Testes de Energia de Múltiplas Fotos</string>
     <string name="test_results">Resultados dos Testes:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Escanear Saúde do Dispositivo</string>
     <string name="scanning_device">Escaneando dispositivo…</string>
     <string name="scanning">Escaneando</string>
-    <string name="amazing_streak">🔥 Sequência incrível! Você é um campeão da saúde!</string>
-    <string name="great_consistency">💪 Ótima consistência! Mantenha o ritmo!</string>
-    <string name="good_start">✅ Bom começo! Construa seu hábito diário!</string>
-    <string name="ready_to_start">🚀 Pronto para começar sua jornada de saúde?</string>
+    <string name="amazing_streak">Sequência incrível! Você é um campeão da saúde!</string>
+    <string name="great_consistency">Ótima consistência! Mantenha o ritmo!</string>
+    <string name="good_start">Bom começo! Construa seu hábito diário!</string>
+    <string name="ready_to_start">Pronto para começar sua jornada de saúde?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Acesso à Localização</string>
-    <string name="phone_info_access">📱 Acesso às Informações do Telefone</string>
-    <string name="network_usage_stats">📊 Estatísticas de Uso de Rede</string>
+    <string name="location_access">Acesso à Localização</string>
+    <string name="phone_info_access">Acesso às Informações do Telefone</string>
+    <string name="network_usage_stats">Estatísticas de Uso de Rede</string>
     <string name="notification_permission_denied">Permissão de notificação negada</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Erro ao abrir configuração: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Monitorando bateria, velocidade e mais ⚙</string>
+    <string name="notification_watching_over">Monitorando bateria, velocidade e mais</string>
 </resources>
 

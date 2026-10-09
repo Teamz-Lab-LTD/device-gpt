@@ -43,9 +43,9 @@
     <string name="lb_insights_title">এই ফোনের খুঁটিনাটি</string>
     <string name="lb_best_devices">সেরা ফোনগুলো</string>
     <string name="lb_cat_what_is">“%1$s” মানে কী?</string>
-    <string name="lb_cat_simple_title">📱 সহজ কথায়</string>
-    <string name="lb_cat_tech_title">⚙️ একটু খুলে বলি</string>
-    <string name="lb_cat_how_measured">📊 কীভাবে মাপি:</string>
+    <string name="lb_cat_simple_title">সহজ কথায়</string>
+    <string name="lb_cat_tech_title">একটু খুলে বলি</string>
+    <string name="lb_cat_how_measured">কীভাবে মাপি:</string>
 
     <!-- Category names (chips). The ids in LeaderboardCategory are Firestore keys and stay English. -->
     <string name="lb_cat_name_power_efficiency">চার্জ কম খায়</string>
@@ -161,10 +161,10 @@
     <string name="lb_empty_title">এখনো কোনো তথ্য নেই</string>
     <string name="lb_empty_body">“%1$s” তালিকায় এখনো কেউ নেই। আপনিই প্রথম নম্বর পাঠান!</string>
     <string name="lb_empty_upload">এখনই পাঠান</string>
-    <string name="lb_empty_auto">💡 আপনার ফোনের তথ্য নিজে থেকেই চলে যাবে</string>
+    <string name="lb_empty_auto">আপনার ফোনের তথ্য নিজে থেকেই চলে যাবে</string>
     <string name="lb_app_empty_title">অ্যাপের সময়ের তথ্য এখনো নেই</string>
     <string name="lb_app_empty_body">“চার্জ খরচ” পাতায় গিয়ে অ্যাপের খরচ দেখা চালু করুন। তখন এখানে তালিকা দেখা যাবে।</string>
-    <string name="lb_app_empty_tip">💡 তথ্য দিতে “কোন অ্যাপ বেশি চলে” চালু করুন</string>
+    <string name="lb_app_empty_tip">তথ্য দিতে “কোন অ্যাপ বেশি চলে” চালু করুন</string>
 
     <!-- Small leaderboard card (device_leaderboard_card.kt) -->
     <string name="lb_dlc_cd">সেরাদের তালিকা</string>
@@ -172,11 +172,11 @@
     <string name="lb_dlc_your_score">আপনার নম্বর</string>
     <string name="lb_dlc_model_avg">এই মডেলের গড়</string>
     <string name="lb_dlc_top_score">সবচেয়ে বেশি</string>
-    <string name="lb_dlc_first">🚀 %1$s ফোনে আপনিই প্রথম! অন্যরা আপনার নম্বরের সাথে মেলাবে।</string>
-    <string name="lb_dlc_top_gold">🏆 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
-    <string name="lb_dlc_top_bronze">🥉 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
-    <string name="lb_dlc_above_avg">📊 %1$s ফোনগুলোর গড়ের চেয়ে ভালো!</string>
-    <string name="lb_dlc_top_plain">📈 %2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ</string>
+    <string name="lb_dlc_first">%1$s ফোনে আপনিই প্রথম! অন্যরা আপনার নম্বরের সাথে মেলাবে।</string>
+    <string name="lb_dlc_top_gold">%2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
+    <string name="lb_dlc_top_bronze">%2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ!</string>
+    <string name="lb_dlc_above_avg">%1$s ফোনগুলোর গড়ের চেয়ে ভালো!</string>
+    <string name="lb_dlc_top_plain">%2$s ফোনগুলোর মধ্যে প্রথম %1$s%%-এ</string>
     <string name="lb_dlc_based_on">%1$s টা %2$s ফোন দেখে বলা</string>
 
     <!-- Best devices screen -->
@@ -190,12 +190,12 @@
     <string name="lb_ins_scores">কোন তালিকায় কত নম্বর</string>
     <string name="lb_ins_none_title">এখনো দেখানোর মতো তথ্য নেই</string>
     <string name="lb_ins_none_body">এই ফোনের তথ্য জমা হচ্ছে। কিছুদিন পরে আবার দেখুন।</string>
-    <string name="lb_ins_aggregated_one">📊 এই মডেলের %1$s জনের ফোনের তথ্য</string>
-    <string name="lb_ins_aggregated_many">📊 এই মডেলের %1$s জনের ফোনের তথ্য মিলিয়ে</string>
+    <string name="lb_ins_aggregated_one">এই মডেলের %1$s জনের ফোনের তথ্য</string>
+    <string name="lb_ins_aggregated_many">এই মডেলের %1$s জনের ফোনের তথ্য মিলিয়ে</string>
     <string name="lb_ins_quality">তথ্য কতটা ভরসার:</string>
 
     <!-- Reminder to link Gmail -->
-    <string name="lb_dr_title">🔔 আপনার তথ্য নিরাপদ রাখুন</string>
+    <string name="lb_dr_title">আপনার তথ্য নিরাপদ রাখুন</string>
     <string name="lb_dr_remove_in_days">জিমেইল যুক্ত না করলে %1$s দিন পর সেরাদের তালিকা থেকে আপনার তথ্য মুছে যাবে।</string>
     <string name="lb_dr_kept">সেরাদের তালিকায় আপনার তথ্য এখন রাখা আছে। জিমেইল যুক্ত করলে তা সব সময় নিরাপদ থাকবে।</string>
     <string name="lb_dr_dont_worry">চিন্তা নেই! এখন জিমেইল যুক্ত করলে আপনার সব তথ্য সব সময় রাখা থাকবে।</string>

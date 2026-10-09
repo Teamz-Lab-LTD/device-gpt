@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Kamera-Energietest</string>
     <string name="camera_test_description">Misst, wie viel Batterieenergie Ihr Telefon beim Fotografieren verbraucht</string>
-    <string name="camera_test_info">📷 Sie sehen eine Live-Kameravorschau, während wir messen. Die Kamera öffnet sich tatsächlich und macht ein echtes Foto.</string>
-    <string name="camera_test_accuracy">📊 Wir nehmen mehrere Messungen vor und mitteln sie für Genauigkeit. Kleine Unterschiede zwischen Tests sind normal—die Temperatur und der Batteriestand Ihres Telefons können die Ergebnisse beeinflussen.</string>
+    <string name="camera_test_info">Sie sehen eine Live-Kameravorschau, während wir messen. Die Kamera öffnet sich tatsächlich und macht ein echtes Foto.</string>
+    <string name="camera_test_accuracy">Wir nehmen mehrere Messungen vor und mitteln sie für Genauigkeit. Kleine Unterschiede zwischen Tests sind normal—die Temperatur und der Batteriestand Ihres Telefons können die Ergebnisse beeinflussen.</string>
     <string name="camera_preview">Kameravorschau\n(Zeigt Live-Feed während des Tests)</string>
     <string name="preview_live_feed">Die Vorschau zeigt den Live-Kamerafeed während jedes Tests</string>
     <string name="testing">Teste…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s Test%2$s insgesamt</string>
     <string name="view_csv">CSV anzeigen</string>
     <string name="camera_power_test_data">Kamera-Energietestdaten</string>
-    <string name="single_photo_power_test">📸 Einzelfoto-Energietest</string>
-    <string name="multiple_photo_power_tests">📊 Mehrfachfoto-Energietests</string>
+    <string name="single_photo_power_test">Einzelfoto-Energietest</string>
+    <string name="multiple_photo_power_tests">Mehrfachfoto-Energietests</string>
     <string name="test_results">Testergebnisse:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Gerätegesundheit Scannen</string>
     <string name="scanning_device">Gerät wird gescannt…</string>
     <string name="scanning">Scannen</string>
-    <string name="amazing_streak">🔥 Unglaubliche Serie! Sie sind ein Gesundheitschampion!</string>
-    <string name="great_consistency">💪 Große Beständigkeit! Halten Sie den Schwung aufrecht!</string>
-    <string name="good_start">✅ Guter Start! Bauen Sie Ihre tägliche Gewohnheit auf!</string>
-    <string name="ready_to_start">🚀 Bereit, Ihre Gesundheitsreise zu beginnen?</string>
+    <string name="amazing_streak">Unglaubliche Serie! Sie sind ein Gesundheitschampion!</string>
+    <string name="great_consistency">Große Beständigkeit! Halten Sie den Schwung aufrecht!</string>
+    <string name="good_start">Guter Start! Bauen Sie Ihre tägliche Gewohnheit auf!</string>
+    <string name="ready_to_start">Bereit, Ihre Gesundheitsreise zu beginnen?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Standortzugriff</string>
-    <string name="phone_info_access">📱 Telefoninformationszugriff</string>
-    <string name="network_usage_stats">📊 Netzwerknutzungsstatistiken</string>
+    <string name="location_access">Standortzugriff</string>
+    <string name="phone_info_access">Telefoninformationszugriff</string>
+    <string name="network_usage_stats">Netzwerknutzungsstatistiken</string>
     <string name="notification_permission_denied">Benachrichtigungsberechtigung verweigert</string>
     
     <!-- File Names -->
@@ -177,5 +177,5 @@
     <string name="toast_error_opening_setting">Fehler beim Öffnen der Einstellung: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Überwacht Batterie, Geschwindigkeit und mehr ⚙</string>
+    <string name="notification_watching_over">Überwacht Batterie, Geschwindigkeit und mehr</string>
 </resources>

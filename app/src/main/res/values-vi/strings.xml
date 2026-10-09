@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Kiểm tra Năng lượng Camera</string>
     <string name="camera_test_description">Đo lượng năng lượng pin mà điện thoại của bạn sử dụng khi chụp ảnh</string>
-    <string name="camera_test_info">📷 Bạn sẽ thấy bản xem trước camera trực tiếp trong khi chúng tôi đo. Camera thực sự mở và chụp một bức ảnh thật.</string>
-    <string name="camera_test_accuracy">📊 Chúng tôi thực hiện nhiều phép đo và tính trung bình để đảm bảo độ chính xác. Sự khác biệt nhỏ giữa các lần kiểm tra là bình thường—nhiệt độ và mức pin của điện thoại có thể ảnh hưởng đến kết quả.</string>
+    <string name="camera_test_info">Bạn sẽ thấy bản xem trước camera trực tiếp trong khi chúng tôi đo. Camera thực sự mở và chụp một bức ảnh thật.</string>
+    <string name="camera_test_accuracy">Chúng tôi thực hiện nhiều phép đo và tính trung bình để đảm bảo độ chính xác. Sự khác biệt nhỏ giữa các lần kiểm tra là bình thường—nhiệt độ và mức pin của điện thoại có thể ảnh hưởng đến kết quả.</string>
     <string name="camera_preview">Bản xem trước Camera\n(Sẽ hiển thị luồng trực tiếp trong quá trình kiểm tra)</string>
     <string name="preview_live_feed">Bản xem trước hiển thị luồng camera trực tiếp trong mỗi lần kiểm tra</string>
     <string name="testing">Đang kiểm tra…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s lần kiểm tra%2$s tổng</string>
     <string name="view_csv">Xem CSV</string>
     <string name="camera_power_test_data">Dữ liệu Kiểm tra Năng lượng Camera</string>
-    <string name="single_photo_power_test">📸 Kiểm tra Năng lượng Ảnh Đơn</string>
-    <string name="multiple_photo_power_tests">📊 Kiểm tra Năng lượng Nhiều Ảnh</string>
+    <string name="single_photo_power_test">Kiểm tra Năng lượng Ảnh Đơn</string>
+    <string name="multiple_photo_power_tests">Kiểm tra Năng lượng Nhiều Ảnh</string>
     <string name="test_results">Kết quả Kiểm tra:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Quét Sức khỏe Thiết bị</string>
     <string name="scanning_device">Đang quét thiết bị…</string>
     <string name="scanning">Đang quét</string>
-    <string name="amazing_streak">🔥 Chuỗi tuyệt vời! Bạn là nhà vô địch sức khỏe!</string>
-    <string name="great_consistency">💪 Nhất quán tuyệt vời! Duy trì đà!</string>
-    <string name="good_start">✅ Khởi đầu tốt! Xây dựng thói quen hàng ngày của bạn!</string>
-    <string name="ready_to_start">🚀 Sẵn sàng bắt đầu hành trình sức khỏe của bạn?</string>
+    <string name="amazing_streak">Chuỗi tuyệt vời! Bạn là nhà vô địch sức khỏe!</string>
+    <string name="great_consistency">Nhất quán tuyệt vời! Duy trì đà!</string>
+    <string name="good_start">Khởi đầu tốt! Xây dựng thói quen hàng ngày của bạn!</string>
+    <string name="ready_to_start">Sẵn sàng bắt đầu hành trình sức khỏe của bạn?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Truy cập Vị trí</string>
-    <string name="phone_info_access">📱 Truy cập Thông tin Điện thoại</string>
-    <string name="network_usage_stats">📊 Thống kê Sử dụng Mạng</string>
+    <string name="location_access">Truy cập Vị trí</string>
+    <string name="phone_info_access">Truy cập Thông tin Điện thoại</string>
+    <string name="network_usage_stats">Thống kê Sử dụng Mạng</string>
     <string name="notification_permission_denied">Quyền thông báo bị từ chối</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Lỗi khi mở cài đặt: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Đang giám sát pin, tốc độ và hơn thế nữa ⚙</string>
+    <string name="notification_watching_over">Đang giám sát pin, tốc độ và hơn thế nữa</string>
 </resources>
 

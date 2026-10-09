@@ -75,8 +75,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">اختبار طاقة الكاميرا</string>
     <string name="camera_test_description">يقيس مقدار طاقة البطارية التي يستخدمها هاتفك عند التقاط الصور</string>
-    <string name="camera_test_info">📷 سترى معاينة مباشرة للكاميرا أثناء القياس. تفتح الكاميرا فعليًا وتلتقط صورة حقيقية.</string>
-    <string name="camera_test_accuracy">📊 نأخذ قياسات متعددة ونحسب متوسطها للدقة. الاختلافات الصغيرة بين الاختبارات طبيعية—يمكن أن تؤثر درجة حرارة هاتفك ومستوى البطارية على النتائج.</string>
+    <string name="camera_test_info">سترى معاينة مباشرة للكاميرا أثناء القياس. تفتح الكاميرا فعليًا وتلتقط صورة حقيقية.</string>
+    <string name="camera_test_accuracy">نأخذ قياسات متعددة ونحسب متوسطها للدقة. الاختلافات الصغيرة بين الاختبارات طبيعية—يمكن أن تؤثر درجة حرارة هاتفك ومستوى البطارية على النتائج.</string>
     <string name="camera_preview">معاينة الكاميرا\n(ستعرض البث المباشر أثناء الاختبار)</string>
     <string name="preview_live_feed">تعرض المعاينة البث المباشر للكاميرا أثناء كل اختبار</string>
     <string name="testing">جاري الاختبار…</string>
@@ -88,8 +88,8 @@
     <string name="total_tests">%1$s اختبار%2$s إجمالي</string>
     <string name="view_csv">عرض CSV</string>
     <string name="camera_power_test_data">بيانات اختبار طاقة الكاميرا</string>
-    <string name="single_photo_power_test">📸 اختبار طاقة صورة واحدة</string>
-    <string name="multiple_photo_power_tests">📊 اختبارات طاقة صور متعددة</string>
+    <string name="single_photo_power_test">اختبار طاقة صورة واحدة</string>
+    <string name="multiple_photo_power_tests">اختبارات طاقة صور متعددة</string>
     <string name="test_results">نتائج الاختبارات:</string>
     
     <!-- Display Power Sweep -->
@@ -112,15 +112,15 @@
     <string name="scan_device_health">فحص صحة الجهاز</string>
     <string name="scanning_device">جاري فحص الجهاز…</string>
     <string name="scanning">جاري الفحص</string>
-    <string name="amazing_streak">🔥 سلسلة مذهلة! أنت بطل الصحة!</string>
-    <string name="great_consistency">💪 اتساق رائع! حافظ على الزخم!</string>
-    <string name="good_start">✅ بداية جيدة! ابني عادتك اليومية!</string>
-    <string name="ready_to_start">🚀 مستعد لبدء رحلتك الصحية؟</string>
+    <string name="amazing_streak">سلسلة مذهلة! أنت بطل الصحة!</string>
+    <string name="great_consistency">اتساق رائع! حافظ على الزخم!</string>
+    <string name="good_start">بداية جيدة! ابني عادتك اليومية!</string>
+    <string name="ready_to_start">مستعد لبدء رحلتك الصحية؟</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 الوصول إلى الموقع</string>
-    <string name="phone_info_access">📱 الوصول إلى معلومات الهاتف</string>
-    <string name="network_usage_stats">📊 إحصائيات استخدام الشبكة</string>
+    <string name="location_access">الوصول إلى الموقع</string>
+    <string name="phone_info_access">الوصول إلى معلومات الهاتف</string>
+    <string name="network_usage_stats">إحصائيات استخدام الشبكة</string>
     <string name="notification_permission_denied">تم رفض إذن الإشعارات</string>
     
     <!-- File Names -->
@@ -178,5 +178,5 @@
     <string name="toast_error_opening_setting">خطأ في فتح الإعداد: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">يراقب البطارية والسرعة والمزيد ⚙</string>
+    <string name="notification_watching_over">يراقب البطارية والسرعة والمزيد</string>
 </resources>

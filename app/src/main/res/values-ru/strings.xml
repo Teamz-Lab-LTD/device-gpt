@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Тест Потребления Камеры</string>
     <string name="camera_test_description">Измеряет, сколько энергии батареи использует ваш телефон при съемке фотографий</string>
-    <string name="camera_test_info">📷 Вы увидите живой предпросмотр камеры, пока мы измеряем. Камера фактически открывается и делает реальное фото.</string>
-    <string name="camera_test_accuracy">📊 Мы делаем несколько измерений и усредняем их для точности. Небольшие различия между тестами нормальны—температура и уровень батареи вашего телефона могут влиять на результаты.</string>
+    <string name="camera_test_info">Вы увидите живой предпросмотр камеры, пока мы измеряем. Камера фактически открывается и делает реальное фото.</string>
+    <string name="camera_test_accuracy">Мы делаем несколько измерений и усредняем их для точности. Небольшие различия между тестами нормальны—температура и уровень батареи вашего телефона могут влиять на результаты.</string>
     <string name="camera_preview">Предпросмотр Камеры\n(Покажет живой поток во время теста)</string>
     <string name="preview_live_feed">Предпросмотр показывает живой поток камеры во время каждого теста</string>
     <string name="testing">Тестирование…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s тест%2$s всего</string>
     <string name="view_csv">Просмотр CSV</string>
     <string name="camera_power_test_data">Данные Теста Потребления Камеры</string>
-    <string name="single_photo_power_test">📸 Тест Потребления Одной Фотографии</string>
-    <string name="multiple_photo_power_tests">📊 Тесты Потребления Нескольких Фотографий</string>
+    <string name="single_photo_power_test">Тест Потребления Одной Фотографии</string>
+    <string name="multiple_photo_power_tests">Тесты Потребления Нескольких Фотографий</string>
     <string name="test_results">Результаты Тестов:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Сканировать Здоровье Устройства</string>
     <string name="scanning_device">Сканирование устройства…</string>
     <string name="scanning">Сканирование</string>
-    <string name="amazing_streak">🔥 Потрясающая серия! Вы чемпион здоровья!</string>
-    <string name="great_consistency">💪 Отличная последовательность! Поддерживайте импульс!</string>
-    <string name="good_start">✅ Хорошее начало! Создайте свою ежедневную привычку!</string>
-    <string name="ready_to_start">🚀 Готовы начать ваше путешествие к здоровью?</string>
+    <string name="amazing_streak">Потрясающая серия! Вы чемпион здоровья!</string>
+    <string name="great_consistency">Отличная последовательность! Поддерживайте импульс!</string>
+    <string name="good_start">Хорошее начало! Создайте свою ежедневную привычку!</string>
+    <string name="ready_to_start">Готовы начать ваше путешествие к здоровью?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Доступ к Местоположению</string>
-    <string name="phone_info_access">📱 Доступ к Информации о Телефоне</string>
-    <string name="network_usage_stats">📊 Статистика Использования Сети</string>
+    <string name="location_access">Доступ к Местоположению</string>
+    <string name="phone_info_access">Доступ к Информации о Телефоне</string>
+    <string name="network_usage_stats">Статистика Использования Сети</string>
     <string name="notification_permission_denied">Разрешение на уведомления отклонено</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Ошибка при открытии настройки: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Мониторинг батареи, скорости и многого другого ⚙</string>
+    <string name="notification_watching_over">Мониторинг батареи, скорости и многого другого</string>
 </resources>
 

@@ -325,13 +325,13 @@
     <string name="mx_widget_alert_score_details">📉 ফোনের নম্বর %1$s/10। খুঁটিনাটি দেখুন</string>
     <string name="mx_widget_alert_all_normal">✅ সব ঠিক আছে। ফোনের নম্বর %1$s/10</string>
     <string name="mx_widget_alert_score">📱 ফোনের নম্বর %1$s/10</string>
-    <string name="mx_widget_cta_open">ফোনের অবস্থা দেখুন →</string>
-    <string name="mx_widget_cta_hot">কেন গরম, দেখুন →</string>
-    <string name="mx_widget_cta_memory">মেমোরির খবর দেখুন →</string>
-    <string name="mx_widget_cta_changed">কী বদলেছে, দেখুন →</string>
-    <string name="mx_widget_cta_temperature">কত গরম, দেখুন →</string>
-    <string name="mx_widget_cta_details">খুঁটিনাটি দেখুন →</string>
-    <string name="mx_widget_cta_all_normal">সব ঠিক আছে। খুঁটিনাটি →</string>
+    <string name="mx_widget_cta_open">ফোনের অবস্থা দেখুন</string>
+    <string name="mx_widget_cta_hot">কেন গরম, দেখুন</string>
+    <string name="mx_widget_cta_memory">মেমোরির খবর দেখুন</string>
+    <string name="mx_widget_cta_changed">কী বদলেছে, দেখুন</string>
+    <string name="mx_widget_cta_temperature">কত গরম, দেখুন</string>
+    <string name="mx_widget_cta_details">খুঁটিনাটি দেখুন</string>
+    <string name="mx_widget_cta_all_normal">সব ঠিক আছে। খুঁটিনাটি</string>
 
     <!-- Home-screen and lock-screen widget (widgets/LockScreenMonitorWidget.kt and res/layout/widget_lock_screen_monitor.xml). Cells are narrow: keep these short. -->
     <string name="mx_widget_health">ফোনের অবস্থা: %1$s/10%2$s</string>
@@ -339,7 +339,7 @@
     <string name="mx_widget_delta_up">গতকালের চেয়ে নম্বর বেড়েছে (+%1$s)</string>
     <string name="mx_widget_delta_down">গতকালের চেয়ে নম্বর কমেছে (%1$s)। কী বদলেছে, দেখুন</string>
     <string name="mx_widget_delta_same">কিছু বদলায়নি। সব আগের মতোই আছে</string>
-    <string name="mx_widget_streak_placeholder">🔥 -- দিন</string>
+    <string name="mx_widget_streak_placeholder">-- দিন</string>
     <string name="mx_widget_battery">ব্যাটারি: %1$s%%</string>
     <string name="mx_widget_battery_charging">ব্যাটারি: %1$s%% (চার্জ হচ্ছে)</string>
     <string name="mx_widget_battery_charging_via">ব্যাটারি: %1$s%% (%2$s দিয়ে চার্জ হচ্ছে)</string>
@@ -402,12 +402,12 @@
     <string name="mx_premium_name">DeviceGPT-এর বাড়তি সুবিধা</string>
     <string name="mx_premium_lifetime">একবার কিনলে সারা জীবন</string>
     <string name="mx_premium_price_lifetime">%1$s • একবার কিনলে সারা জীবন</string>
-    <string name="mx_premium_benefits_short">✓ বিজ্ঞাপন থাকবে না • অ্যাপ তাড়াতাড়ি চলবে • অ্যাপ বানাতে সাহায্য হবে</string>
+    <string name="mx_premium_benefits_short">বিজ্ঞাপন থাকবে না • অ্যাপ তাড়াতাড়ি চলবে • অ্যাপ বানাতে সাহায্য হবে</string>
     <string name="mx_premium_activated">বাড়তি সুবিধা চালু হয়েছে! আর বিজ্ঞাপন আসবে না।</string>
     <string name="mx_premium_get">বাড়তি সুবিধা নিন</string>
     <string name="mx_premium_active">বাড়তি সুবিধা চালু আছে</string>
     <string name="mx_premium_active_headline">আপনি বিজ্ঞাপন ছাড়াই অ্যাপ চালাচ্ছেন!</string>
-    <string name="mx_premium_active_list">✓ সব বিজ্ঞাপন বন্ধ\n✓ সারা জীবনের জন্য\n✓ অ্যাপের সব সুবিধা\n✓ অ্যাপ বানাতে সাহায্য</string>
+    <string name="mx_premium_active_list">সব বিজ্ঞাপন বন্ধ\nসারা জীবনের জন্য\nঅ্যাপের সব সুবিধা\nঅ্যাপ বানাতে সাহায্য</string>
     <string name="mx_premium_thanks">DeviceGPT-এর পাশে থাকার জন্য ধন্যবাদ!</string>
 
     <!-- Ad labels (AdBadge in ui/drawer.kt, res/layout/native_ad_view.xml) -->
@@ -415,8 +415,8 @@
     <string name="mx_ad_sponsored">অন্য কোম্পানির বিজ্ঞাপন</string>
 
     <!-- Premium button at the bottom and the verified-report gate (ui/adaptive/DeviceGptNavExperience.kt) -->
-    <string name="mx_premium_fab_tooltip_price">⭐ বিজ্ঞাপন সরান - %1$s, সারা জীবনের জন্য</string>
-    <string name="mx_premium_fab_tooltip">⭐ বিজ্ঞাপন সরান - সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_tooltip_price">বিজ্ঞাপন সরান - %1$s, সারা জীবনের জন্য</string>
+    <string name="mx_premium_fab_tooltip">বিজ্ঞাপন সরান - সারা জীবনের জন্য</string>
     <string name="mx_premium_fab_cd_price">বিজ্ঞাপন সরান - বাড়তি সুবিধা %1$s, সারা জীবনের জন্য</string>
     <string name="mx_premium_fab_cd">বিজ্ঞাপন সরান - বাড়তি সুবিধা, সারা জীবনের জন্য</string>
     <string name="mx_premium_fab_label">বাড়তি</string>
@@ -450,16 +450,16 @@
     <string name="mx_referral_later">পরে</string>
 
     <!-- Premium purchase dialog (ui/PremiumPurchaseDialog.kt) -->
-    <string name="mx_purchase_benefit_no_ads">✅ কখনো বিজ্ঞাপন আসবে না</string>
-    <string name="mx_purchase_benefit_faster">✅ অ্যাপ আরও তাড়াতাড়ি চলবে</string>
-    <string name="mx_purchase_benefit_support">✅ অ্যাপ বানাতে সাহায্য হবে</string>
-    <string name="mx_purchase_benefit_one_time">✅ একবারই টাকা দেবেন, মাসে মাসে নয়</string>
+    <string name="mx_purchase_benefit_no_ads">কখনো বিজ্ঞাপন আসবে না</string>
+    <string name="mx_purchase_benefit_faster">অ্যাপ আরও তাড়াতাড়ি চলবে</string>
+    <string name="mx_purchase_benefit_support">অ্যাপ বানাতে সাহায্য হবে</string>
+    <string name="mx_purchase_benefit_one_time">একবারই টাকা দেবেন, মাসে মাসে নয়</string>
     <string name="mx_purchase_subtitle_price">সব সময়ের জন্য বিজ্ঞাপন সরান - %1$s • একবার কিনলে সারা জীবন</string>
     <string name="mx_purchase_subtitle">সব সময়ের জন্য বিজ্ঞাপন সরান • একবার কিনলে সারা জীবন</string>
     <string name="mx_purchase_welcome">বাড়তি সুবিধা চালু হলো!</string>
     <string name="mx_purchase_welcome_body">সব বিজ্ঞাপন বন্ধ হয়ে গেছে। এখন বিজ্ঞাপন ছাড়াই DeviceGPT চালান!</string>
     <string name="mx_purchase_got_it">বুঝেছি!</string>
-    <string name="mx_purchase_title_star">⭐ DeviceGPT-এর বাড়তি সুবিধা</string>
+    <string name="mx_purchase_title_star">DeviceGPT-এর বাড়তি সুবিধা</string>
     <string name="mx_purchase_later">পরে</string>
     <string name="mx_purchase_get_price">বাড়তি সুবিধা নিন - %1$s</string>
     <string name="mx_purchase_get">বাড়তি সুবিধা নিন</string>

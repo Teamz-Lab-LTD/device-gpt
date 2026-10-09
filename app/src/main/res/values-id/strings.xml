@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Tes Daya Kamera</string>
     <string name="camera_test_description">Mengukur berapa banyak daya baterai yang digunakan ponsel Anda saat mengambil foto</string>
-    <string name="camera_test_info">📷 Anda akan melihat pratinjau kamera langsung saat kami mengukur. Kamera benar-benar terbuka dan mengambil foto asli.</string>
-    <string name="camera_test_accuracy">📊 Kami melakukan beberapa pengukuran dan merata-ratakannya untuk akurasi. Perbedaan kecil antar tes adalah normal—suhu dan tingkat baterai ponsel Anda dapat mempengaruhi hasil.</string>
+    <string name="camera_test_info">Anda akan melihat pratinjau kamera langsung saat kami mengukur. Kamera benar-benar terbuka dan mengambil foto asli.</string>
+    <string name="camera_test_accuracy">Kami melakukan beberapa pengukuran dan merata-ratakannya untuk akurasi. Perbedaan kecil antar tes adalah normal—suhu dan tingkat baterai ponsel Anda dapat mempengaruhi hasil.</string>
     <string name="camera_preview">Pratinjau Kamera\n(Akan menampilkan feed langsung selama tes)</string>
     <string name="preview_live_feed">Pratinjau menampilkan feed kamera langsung selama setiap tes</string>
     <string name="testing">Menguji…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s tes%2$s total</string>
     <string name="view_csv">Lihat CSV</string>
     <string name="camera_power_test_data">Data Tes Daya Kamera</string>
-    <string name="single_photo_power_test">📸 Tes Daya Foto Tunggal</string>
-    <string name="multiple_photo_power_tests">📊 Tes Daya Beberapa Foto</string>
+    <string name="single_photo_power_test">Tes Daya Foto Tunggal</string>
+    <string name="multiple_photo_power_tests">Tes Daya Beberapa Foto</string>
     <string name="test_results">Hasil Tes:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Pindai Kesehatan Perangkat</string>
     <string name="scanning_device">Memindai perangkat…</string>
     <string name="scanning">Memindai</string>
-    <string name="amazing_streak">🔥 Rangkaian luar biasa! Anda adalah juara kesehatan!</string>
-    <string name="great_consistency">💪 Konsistensi hebat! Pertahankan momentum!</string>
-    <string name="good_start">✅ Mulai yang baik! Bangun kebiasaan harian Anda!</string>
-    <string name="ready_to_start">🚀 Siap memulai perjalanan kesehatan Anda?</string>
+    <string name="amazing_streak">Rangkaian luar biasa! Anda adalah juara kesehatan!</string>
+    <string name="great_consistency">Konsistensi hebat! Pertahankan momentum!</string>
+    <string name="good_start">Mulai yang baik! Bangun kebiasaan harian Anda!</string>
+    <string name="ready_to_start">Siap memulai perjalanan kesehatan Anda?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Akses Lokasi</string>
-    <string name="phone_info_access">📱 Akses Informasi Telepon</string>
-    <string name="network_usage_stats">📊 Statistik Penggunaan Jaringan</string>
+    <string name="location_access">Akses Lokasi</string>
+    <string name="phone_info_access">Akses Informasi Telepon</string>
+    <string name="network_usage_stats">Statistik Penggunaan Jaringan</string>
     <string name="notification_permission_denied">Izin notifikasi ditolak</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Kesalahan membuka pengaturan: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Memantau baterai, kecepatan, dan lainnya ⚙</string>
+    <string name="notification_watching_over">Memantau baterai, kecepatan, dan lainnya</string>
 </resources>
 

@@ -325,13 +325,13 @@
     <string name="mx_widget_alert_score_details">📉 Health score %1$s/10 — see details</string>
     <string name="mx_widget_alert_all_normal">✅ All normal — health %1$s/10</string>
     <string name="mx_widget_alert_score">📱 Health score %1$s/10</string>
-    <string name="mx_widget_cta_open">Open health check →</string>
-    <string name="mx_widget_cta_hot">See what\'s hot →</string>
-    <string name="mx_widget_cta_memory">See memory details →</string>
-    <string name="mx_widget_cta_changed">See what changed →</string>
-    <string name="mx_widget_cta_temperature">Check temperature →</string>
-    <string name="mx_widget_cta_details">See details →</string>
-    <string name="mx_widget_cta_all_normal">All normal — details →</string>
+    <string name="mx_widget_cta_open">Open health check</string>
+    <string name="mx_widget_cta_hot">See what\'s hot</string>
+    <string name="mx_widget_cta_memory">See memory details</string>
+    <string name="mx_widget_cta_changed">See what changed</string>
+    <string name="mx_widget_cta_temperature">Check temperature</string>
+    <string name="mx_widget_cta_details">See details</string>
+    <string name="mx_widget_cta_all_normal">All normal — details</string>
 
     <!-- Home-screen and lock-screen widget (widgets/LockScreenMonitorWidget.kt and res/layout/widget_lock_screen_monitor.xml). Cells are narrow: keep these short. -->
     <string name="mx_widget_health">Health: %1$s/10%2$s</string>
@@ -339,7 +339,7 @@
     <string name="mx_widget_delta_up">Health +%1$s vs yesterday</string>
     <string name="mx_widget_delta_down">Health %1$s vs yesterday — see what changed</string>
     <string name="mx_widget_delta_same">Nothing changed — all steady</string>
-    <string name="mx_widget_streak_placeholder">🔥 -- days</string>
+    <string name="mx_widget_streak_placeholder">-- days</string>
     <string name="mx_widget_battery">Battery: %1$s%%</string>
     <string name="mx_widget_battery_charging">Battery: %1$s%% (Charging)</string>
     <string name="mx_widget_battery_charging_via">Battery: %1$s%% (Charging via %2$s)</string>
@@ -402,12 +402,12 @@
     <string name="mx_premium_name">DeviceGPT Premium</string>
     <string name="mx_premium_lifetime">Lifetime Access</string>
     <string name="mx_premium_price_lifetime">%1$s • Lifetime Access</string>
-    <string name="mx_premium_benefits_short">✓ No ads • Faster DeviceGPT • Support development</string>
+    <string name="mx_premium_benefits_short">No ads • Faster DeviceGPT • Support development</string>
     <string name="mx_premium_activated">Premium activated! Ads removed.</string>
     <string name="mx_premium_get">Get DeviceGPT Premium</string>
     <string name="mx_premium_active">Premium Active</string>
     <string name="mx_premium_active_headline">You\'re enjoying an ad-free experience!</string>
-    <string name="mx_premium_active_list">✓ All ads removed\n✓ Lifetime access\n✓ Full app features\n✓ Support development</string>
+    <string name="mx_premium_active_list">All ads removed\nLifetime access\nFull app features\nSupport development</string>
     <string name="mx_premium_thanks">Thank you for supporting DeviceGPT!</string>
 
     <!-- Ad labels (AdBadge in ui/drawer.kt, res/layout/native_ad_view.xml) -->
@@ -415,8 +415,8 @@
     <string name="mx_ad_sponsored">Sponsored</string>
 
     <!-- Premium button at the bottom and the verified-report gate (ui/adaptive/DeviceGptNavExperience.kt) -->
-    <string name="mx_premium_fab_tooltip_price">⭐ Remove Ads - %1$s Lifetime</string>
-    <string name="mx_premium_fab_tooltip">⭐ Remove Ads - Lifetime</string>
+    <string name="mx_premium_fab_tooltip_price">Remove Ads - %1$s Lifetime</string>
+    <string name="mx_premium_fab_tooltip">Remove Ads - Lifetime</string>
     <string name="mx_premium_fab_cd_price">Remove Ads - Premium %1$s Lifetime</string>
     <string name="mx_premium_fab_cd">Remove Ads - Premium Lifetime</string>
     <string name="mx_premium_fab_label">PRO</string>
@@ -450,16 +450,16 @@
     <string name="mx_referral_later">Maybe later</string>
 
     <!-- Premium purchase dialog (ui/PremiumPurchaseDialog.kt) -->
-    <string name="mx_purchase_benefit_no_ads">✅ No ads - ever</string>
-    <string name="mx_purchase_benefit_faster">✅ Faster app performance</string>
-    <string name="mx_purchase_benefit_support">✅ Support development</string>
-    <string name="mx_purchase_benefit_one_time">✅ One-time payment - no subscriptions</string>
+    <string name="mx_purchase_benefit_no_ads">No ads - ever</string>
+    <string name="mx_purchase_benefit_faster">Faster app performance</string>
+    <string name="mx_purchase_benefit_support">Support development</string>
+    <string name="mx_purchase_benefit_one_time">One-time payment - no subscriptions</string>
     <string name="mx_purchase_subtitle_price">Remove Ads Forever - %1$s • Lifetime Access</string>
     <string name="mx_purchase_subtitle">Remove Ads Forever • Lifetime Access</string>
     <string name="mx_purchase_welcome">Welcome to DeviceGPT Premium!</string>
     <string name="mx_purchase_welcome_body">All ads have been removed. Enjoy your ad-free DeviceGPT experience!</string>
     <string name="mx_purchase_got_it">Got it!</string>
-    <string name="mx_purchase_title_star">⭐ DeviceGPT Premium</string>
+    <string name="mx_purchase_title_star">DeviceGPT Premium</string>
     <string name="mx_purchase_later">Maybe Later</string>
     <string name="mx_purchase_get_price">Get Premium - %1$s</string>
     <string name="mx_purchase_get">Get Premium</string>

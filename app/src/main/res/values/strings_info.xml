@@ -532,10 +532,10 @@
     <string name="info_reach_level_minor">Minor Restrictions</string>
     <string name="info_reach_level_moderate">Moderate Restrictions</string>
     <string name="info_reach_level_heavy">Heavy Restrictions</string>
-    <string name="info_reach_dns">📡 DNS</string>
-    <string name="info_reach_private_dns">🔒 Private DNS</string>
-    <string name="info_reach_vpn">🛡️ VPN</string>
-    <string name="info_reach_quic">🔗 QUIC</string>
+    <string name="info_reach_dns">DNS</string>
+    <string name="info_reach_private_dns">Private DNS</string>
+    <string name="info_reach_vpn">VPN</string>
+    <string name="info_reach_quic">QUIC</string>
     <string name="info_state_enabled">Enabled</string>
     <string name="info_state_disabled">Disabled</string>
     <string name="info_state_active">Active</string>

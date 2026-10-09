@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Prueba de Energía de la Cámara</string>
     <string name="camera_test_description">Mide cuánta energía de batería usa tu teléfono al tomar fotos</string>
-    <string name="camera_test_info">📷 Verás una vista previa en vivo de la cámara mientras medimos. La cámara realmente se abre y toma una foto real.</string>
-    <string name="camera_test_accuracy">📊 Tomamos múltiples mediciones y las promediamos para mayor precisión. Las pequeñas diferencias entre pruebas son normales: la temperatura y el nivel de batería de tu teléfono pueden afectar los resultados.</string>
+    <string name="camera_test_info">Verás una vista previa en vivo de la cámara mientras medimos. La cámara realmente se abre y toma una foto real.</string>
+    <string name="camera_test_accuracy">Tomamos múltiples mediciones y las promediamos para mayor precisión. Las pequeñas diferencias entre pruebas son normales: la temperatura y el nivel de batería de tu teléfono pueden afectar los resultados.</string>
     <string name="camera_preview">Vista Previa de la Cámara\n(Mostrará transmisión en vivo durante la prueba)</string>
     <string name="preview_live_feed">La vista previa muestra la transmisión en vivo de la cámara durante cada prueba</string>
     <string name="testing">Probando…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s prueba%2$s en total</string>
     <string name="view_csv">Ver CSV</string>
     <string name="camera_power_test_data">Datos de Prueba de Energía de la Cámara</string>
-    <string name="single_photo_power_test">📸 Prueba de Energía de Foto Única</string>
-    <string name="multiple_photo_power_tests">📊 Pruebas de Energía de Múltiples Fotos</string>
+    <string name="single_photo_power_test">Prueba de Energía de Foto Única</string>
+    <string name="multiple_photo_power_tests">Pruebas de Energía de Múltiples Fotos</string>
     <string name="test_results">Resultados de Pruebas:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Escanear Salud del Dispositivo</string>
     <string name="scanning_device">Escaneando dispositivo…</string>
     <string name="scanning">Escaneando</string>
-    <string name="amazing_streak">🔥 ¡Racha increíble! ¡Eres un campeón de la salud!</string>
-    <string name="great_consistency">💪 ¡Gran consistencia! ¡Mantén el impulso!</string>
-    <string name="good_start">✅ ¡Buen comienzo! ¡Construye tu hábito diario!</string>
-    <string name="ready_to_start">🚀 ¿Listo para comenzar tu viaje de salud?</string>
+    <string name="amazing_streak">¡Racha increíble! ¡Eres un campeón de la salud!</string>
+    <string name="great_consistency">¡Gran consistencia! ¡Mantén el impulso!</string>
+    <string name="good_start">¡Buen comienzo! ¡Construye tu hábito diario!</string>
+    <string name="ready_to_start">¿Listo para comenzar tu viaje de salud?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Acceso a Ubicación</string>
-    <string name="phone_info_access">📱 Acceso a Información del Teléfono</string>
-    <string name="network_usage_stats">📊 Estadísticas de Uso de Red</string>
+    <string name="location_access">Acceso a Ubicación</string>
+    <string name="phone_info_access">Acceso a Información del Teléfono</string>
+    <string name="network_usage_stats">Estadísticas de Uso de Red</string>
     <string name="notification_permission_denied">Permiso de notificación denegado</string>
     
     <!-- File Names -->
@@ -177,5 +177,5 @@
     <string name="toast_error_opening_setting">Error al abrir configuración: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Vigilando batería, velocidad y más ⚙</string>
+    <string name="notification_watching_over">Vigilando batería, velocidad y más</string>
 </resources>

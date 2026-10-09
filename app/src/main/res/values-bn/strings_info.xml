@@ -532,10 +532,10 @@
     <string name="info_reach_level_minor">অল্প কিছু আটকানো</string>
     <string name="info_reach_level_moderate">বেশ কিছু আটকানো</string>
     <string name="info_reach_level_heavy">অনেক কিছু আটকানো</string>
-    <string name="info_reach_dns">📡 ঠিকানা খোঁজে (DNS)</string>
-    <string name="info_reach_private_dns">🔒 গোপনে খোঁজা (Private DNS)</string>
-    <string name="info_reach_vpn">🛡️ ভিপিএন (VPN)</string>
-    <string name="info_reach_quic">🔗 দ্রুত পথ</string>
+    <string name="info_reach_dns">ঠিকানা খোঁজে (DNS)</string>
+    <string name="info_reach_private_dns">গোপনে খোঁজা (Private DNS)</string>
+    <string name="info_reach_vpn">ভিপিএন (VPN)</string>
+    <string name="info_reach_quic">দ্রুত পথ</string>
     <string name="info_state_enabled">চালু</string>
     <string name="info_state_disabled">বন্ধ</string>
     <string name="info_state_active">চালু</string>

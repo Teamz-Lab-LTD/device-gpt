@@ -42,9 +42,9 @@
     <string name="lb_insights_title">Device Insights</string>
     <string name="lb_best_devices">Best Devices</string>
     <string name="lb_cat_what_is">What is %1$s?</string>
-    <string name="lb_cat_simple_title">📱 Simple Explanation</string>
-    <string name="lb_cat_tech_title">⚙️ Technical Details</string>
-    <string name="lb_cat_how_measured">📊 How It\'s Measured:</string>
+    <string name="lb_cat_simple_title">Simple Explanation</string>
+    <string name="lb_cat_tech_title">Technical Details</string>
+    <string name="lb_cat_how_measured">How It\'s Measured:</string>
 
     <!-- Category names (chips). The ids in LeaderboardCategory are Firestore keys and stay English. -->
     <string name="lb_cat_name_power_efficiency">Battery Saver</string>
@@ -160,10 +160,10 @@
     <string name="lb_empty_title">No data yet</string>
     <string name="lb_empty_body">Be the first to share your %1$s score!</string>
     <string name="lb_empty_upload">Upload My Data Now</string>
-    <string name="lb_empty_auto">💡 Your data will be uploaded automatically in the background</string>
+    <string name="lb_empty_auto">Your data will be uploaded automatically in the background</string>
     <string name="lb_app_empty_title">No app screen time data yet</string>
     <string name="lb_app_empty_body">Start monitoring app power consumption in the Power Consumption tab to see which apps rank highest!</string>
-    <string name="lb_app_empty_tip">💡 Enable App Screen Time to contribute data</string>
+    <string name="lb_app_empty_tip">Enable App Screen Time to contribute data</string>
 
     <!-- Small leaderboard card (device_leaderboard_card.kt) -->
     <string name="lb_dlc_cd">Leaderboard</string>
@@ -171,11 +171,11 @@
     <string name="lb_dlc_your_score">Your Score</string>
     <string name="lb_dlc_model_avg">Model Avg.</string>
     <string name="lb_dlc_top_score">Top Score</string>
-    <string name="lb_dlc_first">🚀 First %1$s user! Set the benchmark!</string>
-    <string name="lb_dlc_top_gold">🏆 Top %1$s%% of %2$ss!</string>
-    <string name="lb_dlc_top_bronze">🥉 Top %1$s%% of %2$ss!</string>
-    <string name="lb_dlc_above_avg">📊 Above average %1$s user!</string>
-    <string name="lb_dlc_top_plain">📈 Top %1$s%% of %2$ss</string>
+    <string name="lb_dlc_first">First %1$s user! Set the benchmark!</string>
+    <string name="lb_dlc_top_gold">Top %1$s%% of %2$ss!</string>
+    <string name="lb_dlc_top_bronze">Top %1$s%% of %2$ss!</string>
+    <string name="lb_dlc_above_avg">Above average %1$s user!</string>
+    <string name="lb_dlc_top_plain">Top %1$s%% of %2$ss</string>
     <string name="lb_dlc_based_on">Based on %1$s %2$s devices</string>
 
     <!-- Best devices screen -->
@@ -189,12 +189,12 @@
     <string name="lb_ins_scores">Performance Scores</string>
     <string name="lb_ins_none_title">No insights available</string>
     <string name="lb_ins_none_body">Device data is being collected. Check back soon!</string>
-    <string name="lb_ins_aggregated_one">📊 Aggregated data from %1$s user with this device model</string>
-    <string name="lb_ins_aggregated_many">📊 Aggregated data from %1$s users with this device model</string>
+    <string name="lb_ins_aggregated_one">Aggregated data from %1$s user with this device model</string>
+    <string name="lb_ins_aggregated_many">Aggregated data from %1$s users with this device model</string>
     <string name="lb_ins_quality">Data Quality:</string>
 
     <!-- Reminder to link Gmail -->
-    <string name="lb_dr_title">🔔 Keep Your Data Safe</string>
+    <string name="lb_dr_title">Keep Your Data Safe</string>
     <string name="lb_dr_remove_in_days">Your leaderboard data will be removed in %1$s days if you don\'t link your Gmail account.</string>
     <string name="lb_dr_kept">Your leaderboard data is currently kept indefinitely, but linking your Gmail account ensures it\'s always safe.</string>
     <string name="lb_dr_dont_worry">Don\'t worry! If you link your Gmail account now, we\'ll keep all your data safe forever.</string>

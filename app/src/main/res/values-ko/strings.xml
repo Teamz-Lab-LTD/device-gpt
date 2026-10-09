@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">카메라 전력 테스트</string>
     <string name="camera_test_description">사진을 찍을 때 전화기가 사용하는 배터리 전력량을 측정합니다</string>
-    <string name="camera_test_info">📷 측정하는 동안 라이브 카메라 미리보기가 표시됩니다. 카메라가 실제로 열리고 실제 사진을 촬영합니다.</string>
-    <string name="camera_test_accuracy">📊 정확도를 위해 여러 측정을 수행하고 평균을 냅니다. 테스트 간의 작은 차이는 정상입니다—전화기의 온도와 배터리 수준이 결과에 영향을 줄 수 있습니다.</string>
+    <string name="camera_test_info">측정하는 동안 라이브 카메라 미리보기가 표시됩니다. 카메라가 실제로 열리고 실제 사진을 촬영합니다.</string>
+    <string name="camera_test_accuracy">정확도를 위해 여러 측정을 수행하고 평균을 냅니다. 테스트 간의 작은 차이는 정상입니다—전화기의 온도와 배터리 수준이 결과에 영향을 줄 수 있습니다.</string>
     <string name="camera_preview">카메라 미리보기\n(테스트 중 라이브 피드를 표시)</string>
     <string name="preview_live_feed">미리보기는 각 테스트 중 라이브 카메라 피드를 표시합니다</string>
     <string name="testing">테스트 중…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">총 %1$s개 테스트%2$s</string>
     <string name="view_csv">CSV 보기</string>
     <string name="camera_power_test_data">카메라 전력 테스트 데이터</string>
-    <string name="single_photo_power_test">📸 단일 사진 전력 테스트</string>
-    <string name="multiple_photo_power_tests">📊 여러 사진 전력 테스트</string>
+    <string name="single_photo_power_test">단일 사진 전력 테스트</string>
+    <string name="multiple_photo_power_tests">여러 사진 전력 테스트</string>
     <string name="test_results">테스트 결과:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">기기 건강 스캔</string>
     <string name="scanning_device">기기 스캔 중…</string>
     <string name="scanning">스캔 중</string>
-    <string name="amazing_streak">🔥 놀라운 연속 기록! 당신은 건강 챔피언입니다!</string>
-    <string name="great_consistency">💪 훌륭한 일관성! 추진력을 유지하세요!</string>
-    <string name="good_start">✅ 좋은 시작! 일일 습관을 만드세요!</string>
-    <string name="ready_to_start">🚀 건강 여정을 시작할 준비가 되셨나요?</string>
+    <string name="amazing_streak">놀라운 연속 기록! 당신은 건강 챔피언입니다!</string>
+    <string name="great_consistency">훌륭한 일관성! 추진력을 유지하세요!</string>
+    <string name="good_start">좋은 시작! 일일 습관을 만드세요!</string>
+    <string name="ready_to_start">건강 여정을 시작할 준비가 되셨나요?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 위치 액세스</string>
-    <string name="phone_info_access">📱 전화 정보 액세스</string>
-    <string name="network_usage_stats">📊 네트워크 사용 통계</string>
+    <string name="location_access">위치 액세스</string>
+    <string name="phone_info_access">전화 정보 액세스</string>
+    <string name="network_usage_stats">네트워크 사용 통계</string>
     <string name="notification_permission_denied">알림 권한이 거부되었습니다</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">설정 열기 오류: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">배터리, 속도 등을 모니터링 중 ⚙</string>
+    <string name="notification_watching_over">배터리, 속도 등을 모니터링 중</string>
 </resources>
 

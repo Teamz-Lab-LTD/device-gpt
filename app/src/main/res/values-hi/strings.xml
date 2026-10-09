@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">कैमरा पावर टेस्ट</string>
     <string name="camera_test_description">मापता है कि फोटो लेते समय आपका फोन कितनी बैटरी पावर का उपयोग करता है</string>
-    <string name="camera_test_info">📷 हम मापते समय आप एक लाइव कैमरा पूर्वावलोकन देखेंगे। कैमरा वास्तव में खुलता है और एक वास्तविक फोटो लेता है।</string>
-    <string name="camera_test_accuracy">📊 हम सटीकता के लिए कई माप लेते हैं और उनका औसत निकालते हैं। परीक्षणों के बीच छोटे अंतर सामान्य हैं—आपके फोन का तापमान और बैटरी स्तर परिणामों को प्रभावित कर सकता है।</string>
+    <string name="camera_test_info">हम मापते समय आप एक लाइव कैमरा पूर्वावलोकन देखेंगे। कैमरा वास्तव में खुलता है और एक वास्तविक फोटो लेता है।</string>
+    <string name="camera_test_accuracy">हम सटीकता के लिए कई माप लेते हैं और उनका औसत निकालते हैं। परीक्षणों के बीच छोटे अंतर सामान्य हैं—आपके फोन का तापमान और बैटरी स्तर परिणामों को प्रभावित कर सकता है।</string>
     <string name="camera_preview">कैमरा पूर्वावलोकन\n(परीक्षण के दौरान लाइव फीड दिखाएगा)</string>
     <string name="preview_live_feed">पूर्वावलोकन प्रत्येक परीक्षण के दौरान लाइव कैमरा फीड दिखाता है</string>
     <string name="testing">परीक्षण कर रहे हैं…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s परीक्षण%2$s कुल</string>
     <string name="view_csv">CSV देखें</string>
     <string name="camera_power_test_data">कैमरा पावर टेस्ट डेटा</string>
-    <string name="single_photo_power_test">📸 एकल फोटो पावर टेस्ट</string>
-    <string name="multiple_photo_power_tests">📊 कई फोटो पावर टेस्ट</string>
+    <string name="single_photo_power_test">एकल फोटो पावर टेस्ट</string>
+    <string name="multiple_photo_power_tests">कई फोटो पावर टेस्ट</string>
     <string name="test_results">परीक्षण परिणाम:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">डिवाइस स्वास्थ्य स्कैन करें</string>
     <string name="scanning_device">डिवाइस स्कैन हो रहा है…</string>
     <string name="scanning">स्कैन कर रहे हैं</string>
-    <string name="amazing_streak">🔥 अद्भुत स्ट्रीक! आप एक स्वास्थ्य चैंपियन हैं!</string>
-    <string name="great_consistency">💪 महान निरंतरता! गति बनाए रखें!</string>
-    <string name="good_start">✅ अच्छी शुरुआत! अपनी दैनिक आदत बनाएं!</string>
-    <string name="ready_to_start">🚀 अपनी स्वास्थ्य यात्रा शुरू करने के लिए तैयार?</string>
+    <string name="amazing_streak">अद्भुत स्ट्रीक! आप एक स्वास्थ्य चैंपियन हैं!</string>
+    <string name="great_consistency">महान निरंतरता! गति बनाए रखें!</string>
+    <string name="good_start">अच्छी शुरुआत! अपनी दैनिक आदत बनाएं!</string>
+    <string name="ready_to_start">अपनी स्वास्थ्य यात्रा शुरू करने के लिए तैयार?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 स्थान पहुंच</string>
-    <string name="phone_info_access">📱 फोन जानकारी पहुंच</string>
-    <string name="network_usage_stats">📊 नेटवर्क उपयोग आंकड़े</string>
+    <string name="location_access">स्थान पहुंच</string>
+    <string name="phone_info_access">फोन जानकारी पहुंच</string>
+    <string name="network_usage_stats">नेटवर्क उपयोग आंकड़े</string>
     <string name="notification_permission_denied">सूचना अनुमति अस्वीकृत</string>
     
     <!-- File Names -->
@@ -177,5 +177,5 @@
     <string name="toast_error_opening_setting">सेटिंग खोलने में त्रुटि: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">बैटरी, गति और अधिक की निगरानी कर रहा है ⚙</string>
+    <string name="notification_watching_over">बैटरी, गति और अधिक की निगरानी कर रहा है</string>
 </resources>

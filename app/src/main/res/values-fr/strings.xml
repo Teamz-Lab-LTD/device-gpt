@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Test de Consommation de la Caméra</string>
     <string name="camera_test_description">Mesure la quantité d\'énergie de batterie que votre téléphone utilise lors de la prise de photos</string>
-    <string name="camera_test_info">📷 Vous verrez un aperçu en direct de la caméra pendant que nous mesurons. La caméra s\'ouvre réellement et prend une vraie photo.</string>
-    <string name="camera_test_accuracy">📊 Nous prenons plusieurs mesures et les moyennons pour la précision. De petites différences entre les tests sont normales—la température et le niveau de batterie de votre téléphone peuvent affecter les résultats.</string>
+    <string name="camera_test_info">Vous verrez un aperçu en direct de la caméra pendant que nous mesurons. La caméra s\'ouvre réellement et prend une vraie photo.</string>
+    <string name="camera_test_accuracy">Nous prenons plusieurs mesures et les moyennons pour la précision. De petites différences entre les tests sont normales—la température et le niveau de batterie de votre téléphone peuvent affecter les résultats.</string>
     <string name="camera_preview">Aperçu de la Caméra\n(Affichera le flux en direct pendant le test)</string>
     <string name="preview_live_feed">L\'aperçu affiche le flux en direct de la caméra pendant chaque test</string>
     <string name="testing">Test en cours…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">%1$s test%2$s au total</string>
     <string name="view_csv">Voir CSV</string>
     <string name="camera_power_test_data">Données de Test de Consommation de la Caméra</string>
-    <string name="single_photo_power_test">📸 Test de Consommation d\'une Photo Unique</string>
-    <string name="multiple_photo_power_tests">📊 Tests de Consommation de Plusieurs Photos</string>
+    <string name="single_photo_power_test">Test de Consommation d\'une Photo Unique</string>
+    <string name="multiple_photo_power_tests">Tests de Consommation de Plusieurs Photos</string>
     <string name="test_results">Résultats des Tests :</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Scanner la Santé de l\'Appareil</string>
     <string name="scanning_device">Analyse de l\'appareil…</string>
     <string name="scanning">Analyse</string>
-    <string name="amazing_streak">🔥 Série incroyable ! Vous êtes un champion de la santé !</string>
-    <string name="great_consistency">💪 Excellente régularité ! Maintenez l\'élan !</string>
-    <string name="good_start">✅ Bon début ! Créez votre habitude quotidienne !</string>
-    <string name="ready_to_start">🚀 Prêt à commencer votre parcours de santé ?</string>
+    <string name="amazing_streak">Série incroyable ! Vous êtes un champion de la santé !</string>
+    <string name="great_consistency">Excellente régularité ! Maintenez l\'élan !</string>
+    <string name="good_start">Bon début ! Créez votre habitude quotidienne !</string>
+    <string name="ready_to_start">Prêt à commencer votre parcours de santé ?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Accès à la Localisation</string>
-    <string name="phone_info_access">📱 Accès aux Informations du Téléphone</string>
-    <string name="network_usage_stats">📊 Statistiques d\'Utilisation du Réseau</string>
+    <string name="location_access">Accès à la Localisation</string>
+    <string name="phone_info_access">Accès aux Informations du Téléphone</string>
+    <string name="network_usage_stats">Statistiques d\'Utilisation du Réseau</string>
     <string name="notification_permission_denied">Autorisation de notification refusée</string>
     
     <!-- File Names -->
@@ -177,5 +177,5 @@
     <string name="toast_error_opening_setting">Erreur lors de l\'ouverture du paramètre: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Surveillance de la batterie, vitesse et plus ⚙</string>
+    <string name="notification_watching_over">Surveillance de la batterie, vitesse et plus</string>
 </resources>

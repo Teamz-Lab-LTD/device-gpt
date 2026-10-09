@@ -20,7 +20,7 @@ class TestDoneSheetWiringTest {
         // these keys, and their English values are still the approved copy.
         val strings = File(f.path.substringBefore("/java/com/teamz/"), "res/values/strings.xml").readText()
         val approved = mapOf(
-            "done_title" to "Done ✓",
+            "done_title" to "Done",
             "done_body" to "Want to keep an eye on your phone\\'s health?",
             "done_add_widget" to "Add widget",
             "done_weekly_checkup" to "Weekly check-up",

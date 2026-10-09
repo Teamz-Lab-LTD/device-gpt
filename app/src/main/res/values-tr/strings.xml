@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">Kamera Güç Testi</string>
     <string name="camera_test_description">Telefonunuzun fotoğraf çekerken ne kadar pil gücü kullandığını ölçer</string>
-    <string name="camera_test_info">📷 Ölçerken canlı kamera önizlemesi göreceksiniz. Kamera gerçekten açılır ve gerçek bir fotoğraf çeker.</string>
-    <string name="camera_test_accuracy">📊 Doğruluk için birden fazla ölçüm yapıyoruz ve bunları ortalamasını alıyoruz. Testler arasındaki küçük farklar normaldir—telefonunuzun sıcaklığı ve pil seviyesi sonuçları etkileyebilir.</string>
+    <string name="camera_test_info">Ölçerken canlı kamera önizlemesi göreceksiniz. Kamera gerçekten açılır ve gerçek bir fotoğraf çeker.</string>
+    <string name="camera_test_accuracy">Doğruluk için birden fazla ölçüm yapıyoruz ve bunları ortalamasını alıyoruz. Testler arasındaki küçük farklar normaldir—telefonunuzun sıcaklığı ve pil seviyesi sonuçları etkileyebilir.</string>
     <string name="camera_preview">Kamera Önizlemesi\n(Test sırasında canlı akış gösterecek)</string>
     <string name="preview_live_feed">Önizleme her test sırasında canlı kamera akışını gösterir</string>
     <string name="testing">Test ediliyor…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">Toplam %1$s test%2$s</string>
     <string name="view_csv">CSV\'yi Görüntüle</string>
     <string name="camera_power_test_data">Kamera Güç Testi Verileri</string>
-    <string name="single_photo_power_test">📸 Tek Fotoğraf Güç Testi</string>
-    <string name="multiple_photo_power_tests">📊 Çoklu Fotoğraf Güç Testleri</string>
+    <string name="single_photo_power_test">Tek Fotoğraf Güç Testi</string>
+    <string name="multiple_photo_power_tests">Çoklu Fotoğraf Güç Testleri</string>
     <string name="test_results">Test Sonuçları:</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">Cihaz Sağlığını Tara</string>
     <string name="scanning_device">Cihaz taranıyor…</string>
     <string name="scanning">Taranıyor</string>
-    <string name="amazing_streak">🔥 İnanılmaz seri! Sen bir sağlık şampiyonusun!</string>
-    <string name="great_consistency">💪 Harika tutarlılık! Momentumu sürdür!</string>
-    <string name="good_start">✅ İyi başlangıç! Günlük alışkanlığını oluştur!</string>
-    <string name="ready_to_start">🚀 Sağlık yolculuğuna başlamaya hazır mısın?</string>
+    <string name="amazing_streak">İnanılmaz seri! Sen bir sağlık şampiyonusun!</string>
+    <string name="great_consistency">Harika tutarlılık! Momentumu sürdür!</string>
+    <string name="good_start">İyi başlangıç! Günlük alışkanlığını oluştur!</string>
+    <string name="ready_to_start">Sağlık yolculuğuna başlamaya hazır mısın?</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 Konum Erişimi</string>
-    <string name="phone_info_access">📱 Telefon Bilgisi Erişimi</string>
-    <string name="network_usage_stats">📊 Ağ Kullanım İstatistikleri</string>
+    <string name="location_access">Konum Erişimi</string>
+    <string name="phone_info_access">Telefon Bilgisi Erişimi</string>
+    <string name="network_usage_stats">Ağ Kullanım İstatistikleri</string>
     <string name="notification_permission_denied">Bildirim izni reddedildi</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">Ayar açılırken hata: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">Pil, hız ve daha fazlasını izliyor ⚙</string>
+    <string name="notification_watching_over">Pil, hız ve daha fazlasını izliyor</string>
 </resources>
 

@@ -74,8 +74,8 @@
     <!-- Camera Power Test -->
     <string name="camera_power_test">カメラ電力テスト</string>
     <string name="camera_test_description">写真を撮る際に電話が使用するバッテリー電力量を測定します</string>
-    <string name="camera_test_info">📷 測定中にライブカメラプレビューが表示されます。カメラが実際に開いて本物の写真を撮影します。</string>
-    <string name="camera_test_accuracy">📊 精度のために複数の測定を行い、平均を取ります。テスト間の小さな違いは正常です—電話の温度とバッテリーレベルが結果に影響を与える可能性があります。</string>
+    <string name="camera_test_info">測定中にライブカメラプレビューが表示されます。カメラが実際に開いて本物の写真を撮影します。</string>
+    <string name="camera_test_accuracy">精度のために複数の測定を行い、平均を取ります。テスト間の小さな違いは正常です—電話の温度とバッテリーレベルが結果に影響を与える可能性があります。</string>
     <string name="camera_preview">カメラプレビュー\n(テスト中にライブフィードを表示)</string>
     <string name="preview_live_feed">プレビューは各テスト中にライブカメラフィードを表示します</string>
     <string name="testing">テスト中…</string>
@@ -87,8 +87,8 @@
     <string name="total_tests">合計 %1$s 回のテスト%2$s</string>
     <string name="view_csv">CSVを表示</string>
     <string name="camera_power_test_data">カメラ電力テストデータ</string>
-    <string name="single_photo_power_test">📸 単一写真電力テスト</string>
-    <string name="multiple_photo_power_tests">📊 複数写真電力テスト</string>
+    <string name="single_photo_power_test">単一写真電力テスト</string>
+    <string name="multiple_photo_power_tests">複数写真電力テスト</string>
     <string name="test_results">テスト結果：</string>
     
     <!-- Display Power Sweep -->
@@ -111,15 +111,15 @@
     <string name="scan_device_health">デバイスヘルスをスキャン</string>
     <string name="scanning_device">デバイスをスキャン中…</string>
     <string name="scanning">スキャン中</string>
-    <string name="amazing_streak">🔥 素晴らしい連続記録！あなたはヘルスチャンピオンです！</string>
-    <string name="great_consistency">💪 素晴らしい一貫性！勢いを保ちましょう！</string>
-    <string name="good_start">✅ 良いスタート！毎日の習慣を築きましょう！</string>
-    <string name="ready_to_start">🚀 ヘルスジャーニーを始める準備はできましたか？</string>
+    <string name="amazing_streak">素晴らしい連続記録！あなたはヘルスチャンピオンです！</string>
+    <string name="great_consistency">素晴らしい一貫性！勢いを保ちましょう！</string>
+    <string name="good_start">良いスタート！毎日の習慣を築きましょう！</string>
+    <string name="ready_to_start">ヘルスジャーニーを始める準備はできましたか？</string>
     
     <!-- Permissions -->
-    <string name="location_access">📍 位置情報アクセス</string>
-    <string name="phone_info_access">📱 電話情報アクセス</string>
-    <string name="network_usage_stats">📊 ネットワーク使用統計</string>
+    <string name="location_access">位置情報アクセス</string>
+    <string name="phone_info_access">電話情報アクセス</string>
+    <string name="network_usage_stats">ネットワーク使用統計</string>
     <string name="notification_permission_denied">通知権限が拒否されました</string>
     
     <!-- File Names -->
@@ -177,6 +177,6 @@
     <string name="toast_error_opening_setting">設定を開く際にエラーが発生しました: %1$s</string>
     
     <!-- Notification -->
-    <string name="notification_watching_over">バッテリー、速度などを監視中 ⚙</string>
+    <string name="notification_watching_over">バッテリー、速度などを監視中</string>
 </resources>
 
