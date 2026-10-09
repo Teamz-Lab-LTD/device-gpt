@@ -68,10 +68,10 @@ object AIClickHandler {
 
         // Soft gate: show paywall ONCE per session after free limit
         // Then ALWAYS proceed to open AI — never block
-        if (!isPremium &&
-            useCount > FREE_AI_USES_LIMIT &&
-            !paywallShownThisSession &&
-            onPaywallRequest != null
+        if (onPaywallRequest != null && shouldSoftGate(
+                isPremium, useCount, paywallShownThisSession,
+                paywallAllowed = QuietPeriod.unsolicitedPaywallAllowed()
+            )
         ) {
             paywallShownThisSession = true
             Log.d(TAG, "handleAIClick() - SOFT GATE TRIGGERED: showing paywall (use #$useCount)")
@@ -99,6 +99,13 @@ object AIClickHandler {
             onAIClick()
         }
     }
+
+    /**
+     * Soft-gate rule. [paywallAllowed] is QuietPeriod.unsolicitedPaywallAllowed(): no paywall the
+     * user did not ask for in the first 72 h or where Play billing cannot charge (review M6).
+     */
+    fun shouldSoftGate(isPremium: Boolean, useCount: Int, shownThisSession: Boolean, paywallAllowed: Boolean): Boolean =
+        !isPremium && useCount > FREE_AI_USES_LIMIT && !shownThisSession && paywallAllowed
 
     /** Get current AI usage count */
     fun getUsageCount(context: Context): Int {
