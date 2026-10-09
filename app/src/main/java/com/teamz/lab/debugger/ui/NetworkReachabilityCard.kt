@@ -26,11 +26,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.NetworkReachabilityTester
 import com.teamz.lab.debugger.utils.ReachabilityReport
 import com.teamz.lab.debugger.utils.ReachabilityStatus
@@ -123,7 +126,7 @@ fun NetworkReachabilityCard(
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Public,
-                            contentDescription = "Reachability",
+                            contentDescription = stringResource(R.string.info_reach_title),
                             modifier = Modifier.size(24.dp),
                             tint = when {
                                 !hasRun -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -140,15 +143,16 @@ fun NetworkReachabilityCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Network Reachability",
+                        text = stringResource(R.string.info_reach_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = when {
-                            isLoading -> "Testing connectivity..."
-                            hasRun && report != null -> "${report!!.opennessScore}/100 \u2022 ${report!!.restrictionLevel}"
-                            else -> "Tap to test service connectivity"
+                            isLoading -> stringResource(R.string.info_reach_testing)
+                            hasRun && report != null ->
+                                "${report!!.opennessScore}/100 \u2022 ${restrictionLevelLabel(report!!.restrictionLevel)}"
+                            else -> stringResource(R.string.info_reach_tap)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -219,13 +223,28 @@ fun NetworkReachabilityCard(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                ContextLine("\uD83D\uDCE1 DNS", r.dnsServers.take(30))
-                                ContextLine("\uD83D\uDD12 Private DNS", if (r.privateDnsEnabled) "Enabled" else "Disabled")
+                                ContextLine(stringResource(R.string.info_reach_dns), r.dnsServers.take(30))
+                                ContextLine(
+                                    stringResource(R.string.info_reach_private_dns),
+                                    stringResource(
+                                        if (r.privateDnsEnabled) R.string.info_state_enabled
+                                        else R.string.info_state_disabled
+                                    )
+                                )
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                ContextLine("\uD83D\uDEE1\uFE0F VPN", if (r.vpnActive) "Active" else "Off")
+                                ContextLine(
+                                    stringResource(R.string.info_reach_vpn),
+                                    stringResource(if (r.vpnActive) R.string.info_state_active else R.string.info_state_off)
+                                )
                                 r.quicHint?.let {
-                                    ContextLine("\uD83D\uDD17 QUIC", if (it.udpOpen) "UDP open" else "UDP blocked")
+                                    ContextLine(
+                                        stringResource(R.string.info_reach_quic),
+                                        stringResource(
+                                            if (it.udpOpen) R.string.info_reach_udp_open
+                                            else R.string.info_reach_udp_blocked
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -240,7 +259,7 @@ fun NetworkReachabilityCard(
                                 Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Warning, null, tint = Color(0xFFFF9800), modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Captive portal detected -- login may be required", style = MaterialTheme.typography.bodySmall, color = Color(0xFFFF9800))
+                                    Text(stringResource(R.string.info_reach_captive), style = MaterialTheme.typography.bodySmall, color = Color(0xFFFF9800))
                                 }
                             }
                         }
@@ -276,7 +295,7 @@ fun NetworkReachabilityCard(
                             ) {
                                 Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Share", style = MaterialTheme.typography.labelMedium)
+                                Text(stringResource(R.string.share), style = MaterialTheme.typography.labelMedium)
                             }
 
                             if (onAIClick != null) {
@@ -297,7 +316,7 @@ fun NetworkReachabilityCard(
                                         tint = com.teamz.lab.debugger.utils.AIIcon.color()
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Ask AI", style = MaterialTheme.typography.labelMedium)
+                                    Text(stringResource(R.string.info_ask_ai), style = MaterialTheme.typography.labelMedium)
                                 }
                             }
 
@@ -308,7 +327,7 @@ fun NetworkReachabilityCard(
                             ) {
                                 Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Retest", style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                                Text(stringResource(R.string.info_retest), style = MaterialTheme.typography.labelMedium, maxLines = 1)
                             }
                         }
                     }
@@ -316,6 +335,19 @@ fun NetworkReachabilityCard(
             }
         }
     }
+}
+
+/**
+ * The restriction level as shown. [level] itself stays English: it is sent to analytics and written
+ * into the share text and the AI prompt.
+ */
+@Composable
+private fun restrictionLevelLabel(level: String): String = when (level) {
+    "Open Network" -> stringResource(R.string.info_reach_level_open)
+    "Minor Restrictions" -> stringResource(R.string.info_reach_level_minor)
+    "Moderate Restrictions" -> stringResource(R.string.info_reach_level_moderate)
+    "Heavy Restrictions" -> stringResource(R.string.info_reach_level_heavy)
+    else -> level
 }
 
 @Composable
@@ -359,10 +391,12 @@ private fun DomainResultRow(probe: com.teamz.lab.debugger.utils.DomainProbeResul
         Text(
             text = when (probe.overallStatus) {
                 ReachabilityStatus.REACHABLE -> "${probe.httpsLatencyMs}ms"
-                ReachabilityStatus.DNS_BLOCKED -> "DNS blocked"
-                ReachabilityStatus.TLS_BLOCKED -> "TLS blocked"
-                ReachabilityStatus.TCP_BLOCKED -> "TCP blocked"
-                else -> probe.errorDetail ?: "Error"
+                ReachabilityStatus.DNS_BLOCKED -> stringResource(R.string.info_reach_dns_blocked)
+                ReachabilityStatus.TLS_BLOCKED -> stringResource(R.string.info_reach_tls_blocked)
+                ReachabilityStatus.TCP_BLOCKED -> stringResource(R.string.info_reach_tcp_blocked)
+                // errorDetail is English data (it also goes into the share text); shown in the app language.
+                else -> probe.errorDetail?.let { InfoTextLocalizer.localize(LocalContext.current, it) }
+                    ?: stringResource(R.string.info_reach_error)
             },
             style = MaterialTheme.typography.labelSmall,
             color = statusColor,

@@ -29,13 +29,16 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.NetworkPrivacyScorer
 import com.teamz.lab.debugger.utils.PrivacyCheckResult
 import com.teamz.lab.debugger.utils.PrivacyCheckStatus
@@ -132,7 +135,7 @@ fun NetworkPrivacyReportCard(
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Shield,
-                            contentDescription = "Privacy",
+                            contentDescription = stringResource(R.string.info_npr_cd),
                             modifier = Modifier.size(24.dp),
                             tint = when {
                                 isLoading -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,19 +152,25 @@ fun NetworkPrivacyReportCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Network Privacy Report",
+                        text = stringResource(R.string.info_npr_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     if (isLoading) {
                         Text(
-                            text = "Scanning your network...",
+                            text = stringResource(R.string.info_npr_scanning),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else if (report != null) {
                         Text(
-                            text = "Grade: ${report!!.grade} (${report!!.score}/100) \u2022 Threat: ${report!!.threatLevel}",
+                            // threatLevel is English data ("Low" …), also used in the AI prompt.
+                            text = stringResource(
+                                R.string.info_npr_summary,
+                                report!!.grade,
+                                report!!.score.toString(),
+                                InfoTextLocalizer.localize(context, report!!.threatLevel),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -182,7 +191,9 @@ fun NetworkPrivacyReportCard(
 
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    contentDescription = stringResource(
+                        if (isExpanded) R.string.info_cd_collapse else R.string.info_cd_expand
+                    ),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -275,7 +286,7 @@ fun NetworkPrivacyReportCard(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "Share",
+                                    stringResource(R.string.share),
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -303,7 +314,7 @@ fun NetworkPrivacyReportCard(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "Ask AI",
+                                        stringResource(R.string.info_ask_ai),
                                         style = MaterialTheme.typography.labelLarge
                                     )
                                 }
@@ -444,6 +455,13 @@ private fun PrivacyScoreArc(score: Int, isDark: Boolean = false) {
 @Composable
 private fun PrivacyCheckRow(check: PrivacyCheckResult) {
     var showDetail by remember { mutableStateOf(false) }
+    // The check's own text is English data: the share text and the AI prompt are built from it.
+    val context = LocalContext.current
+    val shownName = remember(check.displayName) { InfoTextLocalizer.localize(context, check.displayName) }
+    val shownDetail = remember(check.detail) { InfoTextLocalizer.localize(context, check.detail) }
+    val shownRecommendation = remember(check.recommendation) {
+        check.recommendation?.let { InfoTextLocalizer.localize(context, it) }
+    }
 
     val statusIcon: ImageVector
     val statusColor: Color
@@ -453,22 +471,22 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
         PrivacyCheckStatus.PASS -> {
             statusIcon = Icons.Default.CheckCircle
             statusColor = Color(0xFF4CAF50)
-            statusLabel = "Pass"
+            statusLabel = stringResource(R.string.info_status_pass)
         }
         PrivacyCheckStatus.WARNING -> {
             statusIcon = Icons.Default.Warning
             statusColor = Color(0xFFFF9800)
-            statusLabel = "Warning"
+            statusLabel = stringResource(R.string.info_status_warning)
         }
         PrivacyCheckStatus.FAIL -> {
             statusIcon = Icons.Default.Cancel
             statusColor = Color(0xFFF44336)
-            statusLabel = "Fail"
+            statusLabel = stringResource(R.string.info_status_fail)
         }
         PrivacyCheckStatus.ERROR -> {
             statusIcon = Icons.Default.Help
             statusColor = MaterialTheme.colorScheme.onSurfaceVariant
-            statusLabel = "Unknown"
+            statusLabel = stringResource(R.string.info_status_unknown)
         }
     }
 
@@ -492,7 +510,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = check.displayName,
+                text = shownName,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
@@ -515,11 +533,11 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
         AnimatedVisibility(visible = showDetail) {
             Column(modifier = Modifier.padding(top = 8.dp, start = 30.dp)) {
                 Text(
-                    text = check.detail,
+                    text = shownDetail,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (check.recommendation != null) {
+                if (shownRecommendation != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(
@@ -530,7 +548,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = check.recommendation,
+                            text = shownRecommendation,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFFF9800),
                             fontWeight = FontWeight.Medium
