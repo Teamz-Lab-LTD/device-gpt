@@ -1,4 +1,17 @@
-🔍 WiFi speed test, camera test, mic test, battery health, AI phone diagnostics — Android এ এক ট্যাপে। DeviceGPT আপনার ফোন scan করে আর ফলাফলটা সহজ ভাষায় বুঝিয়ে দেয়। Root লাগে না।
+🔍 Mic test, display test, dead pixel test, camera test, touch screen test — Android এ এক ট্যাপে। DeviceGPT আপনার ফোন scan করে আর ফলাফলটা সহজ ভাষায় বুঝিয়ে দেয়। Root লাগে না।
+
+🤝 ফোন কেনা বা বেচার আগে একবার চেক
+পুরাতন বা নতুন, ফোন হাতে নিয়ে কয়েকটা চেক করে নিন:
+• Display check — display test দিয়ে দাগ, dead pixel আর touch ঠিক আছে কিনা দেখুন
+• Mic test আর camera test — কথা ঠিকমতো যায় কিনা, ছবি পরিষ্কার আসে কিনা
+• Battery health আর ফোনের অবস্থার নম্বর
+• বেচার সময় ক্রেতাকে ফোনের অবস্থার report দেখান, যেটা সে code দিয়ে মিলিয়ে নিতে পারে
+
+🎤 Mic test, camera test, display test
+• Mic test / microphone test — ঘরের noise floor আর আপনার গলার level মাপে, তারপর record টা সাথে সাথে বাজিয়ে শোনায়, যাতে বোঝেন ওপাশের মানুষ আপনাকে কেমন শোনে। Record ফোনের বাইরে যায় না
+• Camera test — camera কাজ করছে না? সামনের ও পিছনের camera, focus, রঙের গোলমাল
+• Screen test / display test — dead pixel test আর stuck pixel test, ৯টা full-screen রঙ আর আঁচড় দেখার grid। ফোন নিজের dead pixel নিজে ধরতে পারে না, তাই আপনি দেখেন আর DeviceGPT আপনার উত্তর লিখে রাখে — অনুমান করে score দেয় না
+• Phone hardware test: touch screen test, সাথে GPS status আর পুরা sensor list
 
 প্রতিটা scan এর পরে Ask AI চাপলেই ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot, Grok, You.com বা Replika দিয়ে সমাধান পাবেন। নয়টা AI platform। আপনি নিজে share না করলে scan এর ফলাফল আপনার ফোনেই থাকে; score আর ফোনের model global leaderboard এ যায়।
 
@@ -21,13 +34,6 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 • Charging এর ধরন আর cycle tracking
 • Battery data CSV তে export করুন বা Ask AI দিয়ে বুঝে নিন
 
-🎤 Mic test, camera test, screen test
-• Mic test / microphone test — ঘরের noise floor আর আপনার গলার level মাপে, তারপর record টা সাথে সাথে বাজিয়ে শোনায়, যাতে বোঝেন ওপাশের মানুষ আপনাকে কেমন শোনে। Record ফোনের বাইরে যায় না
-• Camera test — camera কাজ করছে না? সামনের ও পিছনের camera, focus, রঙের গোলমাল
-• Screen test — dead pixel test আর stuck pixel test, ৯টা full-screen রঙ আর আঁচড় দেখার grid। ফোন নিজের dead pixel নিজে ধরতে পারে না, তাই আপনি দেখেন আর DeviceGPT আপনার উত্তর লিখে রাখে — অনুমান করে score দেয় না
-• Phone hardware test: touch screen test, সাথে GPS status আর পুরা sensor list (accelerometer সহ)
-• FPS monitoring আর frame drop detection (Choreographer API)
-
 🛡️ Zero Trust Dashboard — ফোনের security audit
 তিন ভাগের audit, ০–১০০ স্কোর:
 • App Privacy Risk (৩৫%): screen-recording app, লুকানো app, ad tracker
@@ -37,10 +43,6 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 🔌 AI Bridge — Claude বা Cursor কে ফোন পড়তে দিন
 নিজের local network এ PIN বা QR code দিয়ে desktop এর AI client জোড়া লাগান। MCP দিয়ে ওইটা live device data পড়ে — cloud লাগে না, account লাগে না।
 
-🤖 AI সহজ ভাষায় বুঝিয়ে দেয়
-"Battery গরম হয়ে যাচ্ছে — background app বন্ধ করুন।"
-"Wi-Fi jitter gaming এ সমস্যা করতে পারে — router restart দিন।"
-
 📱 Phone health check — এক scan এ
 • Battery, storage, RAM, temperature, security মিলিয়ে health score, সাথে পুরা device info
 
@@ -48,7 +50,7 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 বিক্রির জন্য, support ticket এর জন্য বা অবস্থার প্রমাণ হিসাবে certified report বানান। Cryptographically signed (ECDSA P-256, Android KeyStore), সাথে tamper detection আর share করার verification code।
 
 🏆 Leaderboard ও achievements
-• ১০টা global category: Battery Saver, Speed, Thermal, Power, Health, Consistency, Display, Camera, CPU, App Power
+• ১০টা global category, যেমন Battery Saver, Speed, Display, Camera
 
 🚀 আরও আছে
 • Home screen widget: health score, battery, temperature
