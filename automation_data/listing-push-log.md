@@ -65,3 +65,11 @@ The 79 local folders and the 79 live locales were not the same 79. **Verify clai
   the STORE (`play-listing-AFTER-20261009.json`): exactly 1 of 79 locales changed (`bn-BD`), full description
   only; title and short description unchanged in all 79; `en-US` byte-identical to the backup.
   `.last_refresh.android_rewrite` NOT stamped.
+
+## 2026-10-09 — vc53 (3.1.34) to PRODUCTION, Bangladesh only (edit `00878315821429965327`)
+- inProgress, userFraction 0.99, countryTargeting BD, includeRestOfWorld false. vc52 remains the completed
+  release for every other country. Built from `main` @ 1a29e22 (pushed to origin first).
+- Release build walked on emulator-5554 in Bangla and English: 22 min, one pid, 0 crashes, 0 missing
+  resources. Not checked: paywall and verified report (emulator has no Play account).
+- Script: `automation_data/release-prod-vc53-bd.py`. To widen to all countries: set the release to
+  status completed with no countryTargeting.
