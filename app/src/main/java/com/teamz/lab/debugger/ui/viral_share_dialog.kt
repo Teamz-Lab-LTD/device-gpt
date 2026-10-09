@@ -71,6 +71,9 @@ import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.ReferralManager
 import com.teamz.lab.debugger.utils.string
+import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
+import com.teamz.lab.debugger.utils.LocaleManager
 
 /**
  * Viral Share Dialog - Makes sharing easy, shows reward progress, and tracks viral growth
@@ -126,7 +129,7 @@ fun ViralShareDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = androidx.compose.material.icons.Icons.Filled.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.close),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -159,7 +162,7 @@ fun ViralShareDialog(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     Icons.Default.Share,
-                                    contentDescription = "Share",
+                                    contentDescription = stringResource(R.string.share),
                                     modifier = Modifier.size(32.dp),
                                     tint = headerIconTint
                                 )
@@ -167,7 +170,7 @@ fun ViralShareDialog(
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                         Text(
-                            "Share & Earn Rewards!",
+                            stringResource(R.string.lb_vs_title),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -175,7 +178,7 @@ fun ViralShareDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Every friend you invite earns you ad-free time",
+                            stringResource(R.string.lb_vs_subtitle),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -205,7 +208,7 @@ fun ViralShareDialog(
                         .padding(horizontal = 20.dp)
                 ) {
                     Text(
-                        "Share via",
+                        stringResource(R.string.lb_vs_share_via),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -225,7 +228,7 @@ fun ViralShareDialog(
                     // WhatsApp
                     ShareButton(
                         icon = Icons.Default.Chat,
-                        text = "WhatsApp",
+                        text = stringResource(R.string.lb_vs_whatsapp),
                         containerColor = Color(0xFF25D366),
                         contentColor = Color.White,
                         onClick = {
@@ -244,7 +247,7 @@ fun ViralShareDialog(
                     // Telegram
                     ShareButton(
                         icon = Icons.Default.Send,
-                        text = "Telegram",
+                        text = stringResource(R.string.lb_vs_telegram),
                         containerColor = Color(0xFF0088CC),
                         contentColor = Color.White,
                         onClick = {
@@ -263,7 +266,7 @@ fun ViralShareDialog(
                     // SMS
                     ShareButton(
                         icon = Icons.Default.Message,
-                        text = "SMS",
+                        text = stringResource(R.string.lb_vs_sms),
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary,
                         onClick = {
@@ -282,7 +285,7 @@ fun ViralShareDialog(
                     // Email
                     ShareButton(
                         icon = Icons.Default.Email,
-                        text = "Email",
+                        text = stringResource(R.string.lb_vs_email),
                         containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onTertiary,
                         onClick = {
@@ -301,7 +304,7 @@ fun ViralShareDialog(
                     // Generic share
                     ShareButton(
                         icon = Icons.Default.Share,
-                        text = "More Options",
+                        text = stringResource(R.string.lb_vs_more),
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = {
@@ -396,7 +399,7 @@ private fun RewardProgressCard(
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         Text(
-                            currentTier.title,
+                            stringResource(currentTier.titleRes()),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -404,7 +407,10 @@ private fun RewardProgressCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "$referralCount friend${if (referralCount != 1) "s" else ""} referred",
+                        stringResource(
+                            if (referralCount != 1) R.string.lb_vs_friends_many else R.string.lb_vs_friends_one,
+                            referralCount.toString()
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -429,17 +435,20 @@ private fun RewardProgressCard(
             if (isAdFree && adFreeRemainingMs > 0) {
                 Spacer(modifier = Modifier.height(12.dp))
                 val hours = adFreeRemainingMs / (3600 * 1000)
-                val timeText = when {
-                    hours >= 48 -> "${hours / 24} days"
-                    hours >= 1 -> "${hours}h"
-                    else -> "${adFreeRemainingMs / (60 * 1000)}m"
+                val adFreeText = when {
+                    hours >= 48 -> stringResource(R.string.lb_vs_adfree_days, (hours / 24).toString())
+                    hours >= 1 -> stringResource(R.string.lb_vs_adfree_hours, hours.toString())
+                    else -> stringResource(
+                        R.string.lb_vs_adfree_minutes,
+                        (adFreeRemainingMs / (60 * 1000)).toString()
+                    )
                 }
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = accentColor.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        "Ad-free: $timeText remaining",
+                        adFreeText,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = accentColor,
@@ -453,7 +462,7 @@ private fun RewardProgressCard(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "Next: ${nextTier.badge} ${nextTier.title} — ${nextTier.description}",
+                    stringResource(R.string.lb_vs_next, nextTier.badge, stringResource(nextTier.titleRes()), stringResource(nextTier.descriptionRes())),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -484,7 +493,14 @@ private fun RewardProgressCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    "$referralsToNext more invite${if (referralsToNext != 1) "s" else ""} to unlock!",
+                    stringResource(
+                        if (referralsToNext != 1) {
+                            R.string.lb_vs_more_invites_many
+                        } else {
+                            R.string.lb_vs_more_invites_one
+                        },
+                        referralsToNext.toString()
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = accentColor
@@ -493,7 +509,7 @@ private fun RewardProgressCard(
                 // Max tier reached
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "You've reached the highest tier! Thank you for spreading the word!",
+                    stringResource(R.string.lb_vs_max_tier),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = accentColor,
@@ -516,7 +532,7 @@ private fun RewardTiersList(referralCount: Int, isDark: Boolean) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            "Reward Milestones",
+            stringResource(R.string.lb_vs_milestones),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -537,15 +553,23 @@ private fun RewardTiersList(referralCount: Int, isDark: Boolean) {
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "${tier.requiredReferrals} invite${if (tier.requiredReferrals != 1) "s" else ""} — ${tier.title}",
+                        stringResource(
+                            if (tier.requiredReferrals != 1) {
+                                R.string.lb_vs_tier_row_many
+                            } else {
+                                R.string.lb_vs_tier_row_one
+                            },
+                            tier.requiredReferrals.toString(),
+                            stringResource(tier.titleRes())
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = if (unlocked) FontWeight.Bold else FontWeight.Normal,
                         color = if (unlocked) accentColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         when {
-                            tier.adFreeHours >= 48 -> "${tier.adFreeHours / 24} days ad-free"
-                            else -> "${tier.adFreeHours}h ad-free"
+                            tier.adFreeHours >= 48 -> stringResource(R.string.lb_vs_days_adfree, (tier.adFreeHours / 24).toString())
+                            else -> stringResource(R.string.lb_vs_hours_adfree, tier.adFreeHours.toString())
                         },
                         style = MaterialTheme.typography.labelSmall,
                         color = if (unlocked) accentColor.copy(alpha = 0.8f)
@@ -554,7 +578,7 @@ private fun RewardTiersList(referralCount: Int, isDark: Boolean) {
                 }
                 if (unlocked) {
                     Text(
-                        "Unlocked",
+                        stringResource(R.string.lb_vs_unlocked),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = accentColor
@@ -577,6 +601,7 @@ private fun ReferralCodeSection(
 ) {
     val codeBoxBg = if (isDark) DesignSystemColors.NeonGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primaryContainer
     val codeBoxText = if (isDark) DesignSystemColors.White else MaterialTheme.colorScheme.onPrimaryContainer
+    val copiedText = stringResource(R.string.lb_code_copied)
 
     Column(
         modifier = Modifier
@@ -597,7 +622,7 @@ private fun ReferralCodeSection(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Your Referral Code",
+                    stringResource(R.string.lb_vs_code_title),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -626,7 +651,7 @@ private fun ReferralCodeSection(
                         onClick = {
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             clipboard.setPrimaryClip(ClipData.newPlainText("Referral Code", referralCode))
-                            Toast.makeText(context, "Code copied!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
                             AnalyticsUtils.logEvent(AnalyticsEvent.ReferralShared, mapOf("method" to "copy"))
                         },
                         modifier = Modifier.height(48.dp),
@@ -638,14 +663,24 @@ private fun ReferralCodeSection(
                     ) {
                         Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Copy", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.ai_bridge_copy), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 val motivationText = if (nextTier != null) {
-                    "Share with $referralsToNext more friend${if (referralsToNext != 1) "s" else ""} to unlock ${nextTier.badge} ${nextTier.title} — ${nextTier.description}"
+                    stringResource(
+                        if (referralsToNext != 1) {
+                            R.string.lb_vs_motivation_many
+                        } else {
+                            R.string.lb_vs_motivation_one
+                        },
+                        referralsToNext.toString(),
+                        nextTier.badge,
+                        stringResource(nextTier.titleRes()),
+                        stringResource(nextTier.descriptionRes())
+                    )
                 } else {
-                    "You're a Legend! Keep sharing to help friends discover their device health."
+                    stringResource(R.string.lb_vs_legend)
                 }
                 Text(
                     motivationText,
@@ -709,17 +744,8 @@ private fun ShareButton(
 // ── Platform Share Functions ────────────────────────────────────────
 
 private fun shareToWhatsApp(context: Context, shareText: String, referralLink: String, referralCode: String) {
-    val defaultText = """
-        🔍 Check out this amazing device health checker app!
-
-        📱 Get detailed insights about your phone's performance, battery, storage, and security.
-
-        Use my referral code: $referralCode
-
-        Download now: $referralLink
-
-        #PhoneHealth #DeviceChecker
-    """.trimIndent()
+    val defaultText = LocaleManager.localizedContext(context)
+        .getString(R.string.lb_vs_msg_whatsapp, referralCode, referralLink)
 
     val finalText = if (shareText.isNotEmpty()) "$shareText\n\n$defaultText" else defaultText
 
@@ -737,15 +763,8 @@ private fun shareToWhatsApp(context: Context, shareText: String, referralLink: S
 }
 
 private fun shareToTelegram(context: Context, shareText: String, referralLink: String, referralCode: String) {
-    val defaultText = """
-        🔍 Check out this amazing device health checker app!
-
-        📱 Get detailed insights about your phone's performance, battery, storage, and security.
-
-        Use my referral code: $referralCode
-
-        Download now: $referralLink
-    """.trimIndent()
+    val defaultText = LocaleManager.localizedContext(context)
+        .getString(R.string.lb_vs_msg_telegram, referralCode, referralLink)
 
     val finalText = if (shareText.isNotEmpty()) "$shareText\n\n$defaultText" else defaultText
 
@@ -763,10 +782,8 @@ private fun shareToTelegram(context: Context, shareText: String, referralLink: S
 }
 
 private fun shareToSMS(context: Context, shareText: String, referralLink: String, referralCode: String) {
-    val defaultText = """
-        Check out this device health app! Use my code: $referralCode
-        $referralLink
-    """.trimIndent()
+    val defaultText = LocaleManager.localizedContext(context)
+        .getString(R.string.lb_vs_msg_sms, referralCode, referralLink)
 
     val finalText = if (shareText.isNotEmpty()) "$shareText\n\n$defaultText" else defaultText
 
@@ -784,26 +801,27 @@ private fun shareToSMS(context: Context, shareText: String, referralLink: String
 }
 
 private fun shareToEmail(context: Context, shareText: String, referralLink: String, referralCode: String) {
-    val defaultText = """
-        Check out this amazing device health checker app!
-
-        Get detailed insights about your phone's performance, battery, storage, and security.
-
-        Use my referral code: $referralCode
-
-        Download now: $referralLink
-    """.trimIndent()
+    val defaultText = LocaleManager.localizedContext(context)
+        .getString(R.string.lb_vs_msg_email, referralCode, referralLink)
 
     val finalText = if (shareText.isNotEmpty()) "$shareText\n\n$defaultText" else defaultText
 
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Check out this amazing device health app!")
+        putExtra(
+            Intent.EXTRA_SUBJECT,
+            LocaleManager.localizedContext(context).getString(R.string.lb_vs_email_subject)
+        )
         putExtra(Intent.EXTRA_TEXT, finalText)
     }
 
     try {
-        context.startActivity(Intent.createChooser(intent, "Share via Email"))
+        context.startActivity(
+            Intent.createChooser(
+                intent,
+                LocaleManager.localizedContext(context).getString(R.string.lb_vs_email_chooser)
+            )
+        )
         AnalyticsUtils.logEvent(AnalyticsEvent.ShareToEmail, mapOf("referral_code" to referralCode))
     } catch (e: Exception) {
         ReferralManager.shareReferralLink(context, finalText)
@@ -826,24 +844,55 @@ private fun generatePowerShareText(
         .sortedByDescending { it.powerConsumption }
         .take(3)
 
+    val res = LocaleManager.localizedContext(context)
+    // The trend word comes from PowerConsumptionAggregator's enum name and stays English for now.
+    val trend = aggregatedStats.powerTrend.name.lowercase().replaceFirstChar { it.uppercase() }
+
     return buildString {
-        appendLine("⚡ Power Consumption Insights")
+        appendLine(res.getString(R.string.lb_vs_power_title))
         appendLine()
-        appendLine("📊 Total Power: ${String.format("%.1f", powerData.totalPower / 1000)}W")
-        appendLine("📈 Trend: ${aggregatedStats.powerTrend.name.lowercase().replaceFirstChar { it.uppercase() }}")
-        appendLine("📉 Average: ${String.format("%.1f", aggregatedStats.averagePower / 1000)}W")
-        appendLine("🔝 Peak: ${String.format("%.1f", aggregatedStats.peakPower / 1000)}W")
+        appendLine(res.getString(R.string.lb_vs_power_total, String.format("%.1f", powerData.totalPower / 1000)))
+        appendLine(res.getString(R.string.lb_vs_power_trend, trend))
+        appendLine(res.getString(R.string.lb_vs_power_avg, String.format("%.1f", aggregatedStats.averagePower / 1000)))
+        appendLine(res.getString(R.string.lb_vs_power_peak, String.format("%.1f", aggregatedStats.peakPower / 1000)))
         appendLine()
 
         if (topConsumers.isNotEmpty()) {
-            appendLine("🔝 Top Power Consumers:")
+            appendLine(res.getString(R.string.lb_vs_power_top))
             topConsumers.forEachIndexed { index, component ->
                 appendLine("${index + 1}. ${component.component}: ${String.format("%.1f", component.powerConsumption / 1000)}W")
             }
             appendLine()
         }
 
-        appendLine("📱 Generated by $appName")
-        appendLine("🔗 Download: https://play.google.com/store/apps/details?id=${context.packageName}")
+        appendLine(res.getString(R.string.lb_vs_power_generated, appName))
+        appendLine(
+            res.getString(
+                R.string.lb_vs_power_download,
+                "https://play.google.com/store/apps/details?id=${context.packageName}"
+            )
+        )
     }
+}
+
+// ── Reward step wording ─────────────────────────────────────────────
+// ReferralManager.RewardTier keeps its English title and description (the tier name is also
+// what gets saved); the dialog shows these resources so the text follows the chosen language.
+
+@StringRes
+private fun ReferralManager.RewardTier.titleRes(): Int = when (this) {
+    ReferralManager.RewardTier.NONE -> R.string.lb_tier_none_title
+    ReferralManager.RewardTier.BRONZE -> R.string.lb_tier_bronze_title
+    ReferralManager.RewardTier.SILVER -> R.string.lb_tier_silver_title
+    ReferralManager.RewardTier.GOLD -> R.string.lb_tier_gold_title
+    ReferralManager.RewardTier.LEGEND -> R.string.lb_tier_legend_title
+}
+
+@StringRes
+private fun ReferralManager.RewardTier.descriptionRes(): Int = when (this) {
+    ReferralManager.RewardTier.NONE -> R.string.lb_tier_none_desc
+    ReferralManager.RewardTier.BRONZE -> R.string.lb_tier_bronze_desc
+    ReferralManager.RewardTier.SILVER -> R.string.lb_tier_silver_desc
+    ReferralManager.RewardTier.GOLD -> R.string.lb_tier_gold_desc
+    ReferralManager.RewardTier.LEGEND -> R.string.lb_tier_legend_desc
 }

@@ -14,6 +14,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.teamz.lab.debugger.R
 
 /**
  * v3.2.0 — Device Score share card v2 (2026-07-10 growth synthesis, Phase 2).
@@ -38,7 +39,10 @@ object ShareCardRenderer {
     /** Render + fire ACTION_SEND. Returns true when the share sheet launched. */
     fun shareScoreCard(context: Context, score: Int): Boolean {
         return try {
-            val file = renderToFile(context, score)
+            // The card and the message must be in the language the person chose, also when the
+            // caller's context was created before a language switch.
+            val res = LocaleManager.localizedContext(context)
+            val file = renderToFile(context, res, score)
             val uri = FileProvider.getUriForFile(
                 context, "${context.packageName}.fileprovider", file
             )
@@ -47,11 +51,11 @@ object ShareCardRenderer {
                 putExtra(Intent.EXTRA_STREAM, uri)
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "My phone scored $score/100 on DeviceGPT. Run yours: $PLAY_LINK"
+                    res.getString(R.string.share_score_text, score.toString(), PLAY_LINK)
                 )
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            val chooser = Intent.createChooser(intent, "Share your Device Score")
+            val chooser = Intent.createChooser(intent, res.getString(R.string.share_score_chooser_title))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(chooser)
             try {
@@ -67,7 +71,7 @@ object ShareCardRenderer {
         }
     }
 
-    private fun renderToFile(context: Context, score: Int): File {
+    private fun renderToFile(context: Context, res: Context, score: Int): File {
         val bitmap = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -75,11 +79,11 @@ object ShareCardRenderer {
         canvas.drawColor(Color.parseColor("#101418"))
 
         val (gradeLabel, gradeColor) = when {
-            score >= 90 -> "Excellent" to Color.parseColor("#4CAF50")
-            score >= 75 -> "Great" to Color.parseColor("#8BC34A")
-            score >= 60 -> "Good" to Color.parseColor("#FFC107")
-            score >= 40 -> "Fair" to Color.parseColor("#FF9800")
-            else -> "Needs attention" to Color.parseColor("#F44336")
+            score >= 90 -> res.getString(R.string.first_scan_grade_excellent) to Color.parseColor("#4CAF50")
+            score >= 75 -> res.getString(R.string.first_scan_grade_great) to Color.parseColor("#8BC34A")
+            score >= 60 -> res.getString(R.string.first_scan_grade_good) to Color.parseColor("#FFC107")
+            score >= 40 -> res.getString(R.string.first_scan_grade_fair) to Color.parseColor("#FF9800")
+            else -> res.getString(R.string.first_scan_grade_needs_attention) to Color.parseColor("#F44336")
         }
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -94,7 +98,7 @@ object ShareCardRenderer {
         paint.color = Color.parseColor("#8A9199")
         paint.textSize = 40f
         paint.isFakeBoldText = false
-        canvas.drawText("Device Score", W / 2f, 300f, paint)
+        canvas.drawText(res.getString(R.string.lb_sc_device_score), W / 2f, 300f, paint)
 
         // Score ring
         val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -123,14 +127,17 @@ object ShareCardRenderer {
         paint.textSize = 44f
         paint.isFakeBoldText = false
         val dateStr = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date())
-        canvas.drawText("${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}", W / 2f, 1090f, paint)
-        canvas.drawText("Scanned $dateStr", W / 2f, 1150f, paint)
+        canvas.drawText(
+            res.getString(R.string.lb_sc_device_line, Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE),
+            W / 2f, 1090f, paint
+        )
+        canvas.drawText(res.getString(R.string.lb_sc_scanned, dateStr), W / 2f, 1150f, paint)
 
         // Self-describing microcopy — the artifact explains its own claim.
         paint.color = Color.parseColor("#6A7178")
         paint.textSize = 32f
-        canvas.drawText("Measured: battery condition · memory · storage · network", W / 2f, 1240f, paint)
-        canvas.drawText("Weights 40/25/20/15 · This device, at scan time", W / 2f, 1290f, paint)
+        canvas.drawText(res.getString(R.string.lb_sc_measured), W / 2f, 1240f, paint)
+        canvas.drawText(res.getString(R.string.lb_sc_weights), W / 2f, 1290f, paint)
 
         val dir = File(context.cacheDir, "share").apply { mkdirs() }
         val file = File(dir, "device_score_card.png")
