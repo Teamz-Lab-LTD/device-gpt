@@ -427,4 +427,35 @@
     <string name="camera_lens_physical_row">lens %1$s: %2$smm, f/%3$s</string>
     <string name="camera_lens_physical_row_active">lens %1$s: %2$smm, f/%3$s  ← used at last check\'s zoom</string>
     <string name="camera_lens_active_unknown">Which exact lens is active at each zoom level: not reported by this device.</string>
+
+    <!-- Screen tests: dead pixels, scratches, touch (task 3, 2026-10-09) -->
+    <string name="screen_test_title">Test Your Screen for Problems</string>
+    <string name="screen_test_intro">Your phone can\'t see its own screen — only you can. These three checks show a test pattern and ask what you see.</string>
+    <string name="screen_test_dead_pixels_button">Check for Dead Pixels (Colours)</string>
+    <string name="screen_test_scratches_button">Check for Scratches (Grid)</string>
+    <string name="screen_test_touch_button">Check My Touch Screen</string>
+    <string name="screen_test_summary_spot_on_colour">You reported a spot on %1$s</string>
+    <string name="screen_test_summary_spot">You reported a spot on the screen</string>
+    <string name="screen_test_summary_ok">No screen colour issues found last time you checked</string>
+    <string name="screen_test_summary_touch">Touch check: your screen detected %1$d finger(s) at once</string>
+    <string name="screen_color_red">red</string>
+    <string name="screen_color_green">green</string>
+    <string name="screen_color_blue">blue</string>
+    <string name="screen_color_cyan">cyan</string>
+    <string name="screen_color_magenta">magenta</string>
+    <string name="screen_color_yellow">yellow</string>
+    <string name="screen_color_white">white</string>
+    <string name="screen_color_black">black</string>
+    <string name="screen_color_grey">grey</string>
+    <string name="screen_pixel_question">Look at the whole screen. Do you see any spot that looks wrong?</string>
+    <string name="screen_pixel_showing">Showing: %1$s (%2$d of %3$d) · tap anywhere to hide these controls</string>
+    <string name="screen_pixel_bad_spot">I see a bad spot</string>
+    <string name="screen_pixel_next">Looks fine, next colour</string>
+    <string name="screen_pixel_done">Looks fine, done</string>
+    <string name="screen_grid_instruction">Tilt your phone under a light and look along the lines. Do you see scratches or marks? Tap anywhere to hide this.</string>
+    <string name="screen_grid_switch_dark">Switch to dark</string>
+    <string name="screen_grid_switch_bright">Switch to bright</string>
+    <string name="screen_touch_instruction">Put all your fingers on the screen at the same time.</string>
+    <string name="screen_touch_count">Touching now: %1$d · Most at once: %2$d</string>
+    <string name="screen_touch_done">Done</string>
 </resources>

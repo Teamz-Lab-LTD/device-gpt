@@ -424,4 +424,35 @@
     <string name="camera_lens_physical_row">লেন্স %1$s: %2$s মিমি, f/%3$s</string>
     <string name="camera_lens_physical_row_active">লেন্স %1$s: %2$s মিমি, f/%3$s ← শেষবার দেখার সময় এটা চলেছে</string>
     <string name="camera_lens_active_unknown">বড় করার সময় ঠিক কোন লেন্স চলে, তা এই ফোন জানায় না।</string>
+
+    <!-- Screen tests: dead pixels, scratches, touch (task 3, 2026-10-09) -->
+    <string name="screen_test_title">স্ক্রিনে সমস্যা আছে কি না, দেখে নিন</string>
+    <string name="screen_test_intro">ফোন নিজের স্ক্রিন নিজে দেখতে পায় না। দেখতে পান শুধু আপনি। এই তিনটা পরীক্ষায় স্ক্রিনে রং বা দাগ দেখানো হবে। আপনি কী দেখছেন, তা জানাবেন।</string>
+    <string name="screen_test_dead_pixels_button">স্ক্রিনে নষ্ট দাগ খুঁজুন (রং)</string>
+    <string name="screen_test_scratches_button">স্ক্রিনে আঁচড় খুঁজুন (ছক)</string>
+    <string name="screen_test_touch_button">স্ক্রিনে ছোঁয়া পরীক্ষা করুন</string>
+    <string name="screen_test_summary_spot_on_colour">%1$s রং দেখানোর সময় আপনি একটা দাগ দেখেছেন</string>
+    <string name="screen_test_summary_spot">আপনি স্ক্রিনে একটা দাগ দেখেছেন</string>
+    <string name="screen_test_summary_ok">শেষবার দেখার সময় স্ক্রিনের রঙে কোনো সমস্যা পাননি</string>
+    <string name="screen_test_summary_touch">ছোঁয়া পরীক্ষা: স্ক্রিন একসাথে %1$dটা আঙুল ধরতে পেরেছে</string>
+    <string name="screen_color_red">লাল</string>
+    <string name="screen_color_green">সবুজ</string>
+    <string name="screen_color_blue">নীল</string>
+    <string name="screen_color_cyan">আকাশি</string>
+    <string name="screen_color_magenta">গোলাপি</string>
+    <string name="screen_color_yellow">হলুদ</string>
+    <string name="screen_color_white">সাদা</string>
+    <string name="screen_color_black">কালো</string>
+    <string name="screen_color_grey">ছাই</string>
+    <string name="screen_pixel_question">পুরো স্ক্রিন ভালো করে দেখুন। কোথাও নষ্ট দাগ দেখছেন?</string>
+    <string name="screen_pixel_showing">এখন দেখাচ্ছে: %1$s (%3$dটার মধ্যে %2$d নম্বর) · লেখা সরাতে যেকোনো জায়গায় চাপ দিন</string>
+    <string name="screen_pixel_bad_spot">দাগ দেখছি</string>
+    <string name="screen_pixel_next">ঠিক আছে, পরের রং</string>
+    <string name="screen_pixel_done">ঠিক আছে, শেষ</string>
+    <string name="screen_grid_instruction">ফোনটা আলোর নিচে কাত করে ধরুন। দাগগুলো বরাবর তাকান। কোনো আঁচড় বা দাগ দেখছেন? লেখা সরাতে যেকোনো জায়গায় চাপ দিন।</string>
+    <string name="screen_grid_switch_dark">কালো করুন</string>
+    <string name="screen_grid_switch_bright">সাদা করুন</string>
+    <string name="screen_touch_instruction">সব আঙুল একসাথে স্ক্রিনে রাখুন।</string>
+    <string name="screen_touch_count">এখন ছুঁয়ে আছে: %1$d · একসাথে সবচেয়ে বেশি: %2$d</string>
+    <string name="screen_touch_done">শেষ করুন</string>
 </resources>

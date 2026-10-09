@@ -55,6 +55,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.ui.res.stringResource
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AIIcon
 import com.teamz.lab.debugger.utils.AnalyticsEvent
@@ -213,7 +215,7 @@ fun ScreenTestSection(
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
-                    "Test Your Screen for Problems",
+                    stringResource(R.string.screen_test_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -230,15 +232,18 @@ fun ScreenTestSection(
                             onItemAIClick("Screen Test", content)
                         },
                     ) {
-                        Icon(AIIcon.icon, contentDescription = "Ask AI", tint = AIIcon.color())
+                        Icon(
+                            AIIcon.icon,
+                            contentDescription = stringResource(R.string.ask_ai),
+                            tint = AIIcon.color(),
+                        )
                     }
                 }
             }
 
             Spacer(Modifier.size(8.dp))
             Text(
-                "Your phone can't see its own screen — only you can. These three checks show a " +
-                    "test pattern and ask what you see.",
+                stringResource(R.string.screen_test_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -256,7 +261,7 @@ fun ScreenTestSection(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Check for Dead Pixels (Colours)")
+                Text(stringResource(R.string.screen_test_dead_pixels_button))
             }
 
             Spacer(Modifier.size(8.dp))
@@ -269,7 +274,7 @@ fun ScreenTestSection(
             ) {
                 Icon(Icons.Default.GridOn, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
-                Text("Check for Scratches (Grid)")
+                Text(stringResource(R.string.screen_test_scratches_button))
             }
 
             Spacer(Modifier.size(8.dp))
@@ -279,7 +284,7 @@ fun ScreenTestSection(
             ) {
                 Icon(Icons.Default.TouchApp, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
-                Text("Check My Touch Screen")
+                Text(stringResource(R.string.screen_test_touch_button))
             }
 
             // Same FAB-overlay clearance as the Camera tab — see camera_health_card.kt.
@@ -336,9 +341,14 @@ private fun ScreenTestSummaryCard(
                     Spacer(Modifier.size(8.dp))
                     Text(
                         if (hasProblem) {
-                            "You reported a spot on ${lastPixelResult.colorShownWhenReported ?: "the screen"}"
+                            val colour = lastPixelResult.colorShownWhenReported
+                            if (colour != null) {
+                                stringResource(R.string.screen_test_summary_spot_on_colour, screenColorLabel(colour))
+                            } else {
+                                stringResource(R.string.screen_test_summary_spot)
+                            }
                         } else {
-                            "No screen colour issues found last time you checked"
+                            stringResource(R.string.screen_test_summary_ok)
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = contentColor,
@@ -348,7 +358,7 @@ private fun ScreenTestSummaryCard(
             if (lastTouchPointCount != null) {
                 if (lastPixelResult != null) Spacer(Modifier.size(4.dp))
                 Text(
-                    "Touch check: your screen detected $lastTouchPointCount finger(s) at once",
+                    stringResource(R.string.screen_test_summary_touch, lastTouchPointCount),
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor,
                 )
@@ -370,6 +380,24 @@ private val SCREEN_TEST_COLORS = listOf(
     "black" to Color.Black,
     "grey" to Color.Gray,
 )
+
+/**
+ * The colour name a person reads. [name] is the English word stored with a saved result and
+ * sent to the AI report ("red", "grey", …), so it stays English everywhere but on screen.
+ */
+@Composable
+private fun screenColorLabel(name: String): String = when (name) {
+    "red" -> stringResource(R.string.screen_color_red)
+    "green" -> stringResource(R.string.screen_color_green)
+    "blue" -> stringResource(R.string.screen_color_blue)
+    "cyan" -> stringResource(R.string.screen_color_cyan)
+    "magenta" -> stringResource(R.string.screen_color_magenta)
+    "yellow" -> stringResource(R.string.screen_color_yellow)
+    "white" -> stringResource(R.string.screen_color_white)
+    "black" -> stringResource(R.string.screen_color_black)
+    "grey" -> stringResource(R.string.screen_color_grey)
+    else -> name
+}
 
 @Composable
 private fun ScreenPixelTestDialog(
@@ -411,14 +439,18 @@ private fun ScreenPixelTestDialog(
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
                         Text(
-                            "Look at the whole screen. Do you see any spot that looks wrong?",
+                            stringResource(R.string.screen_pixel_question),
                             style = MaterialTheme.typography.titleMedium,
                             color = textColor,
                         )
                         Spacer(Modifier.size(4.dp))
                         Text(
-                            "Showing: $colorName (${index + 1} of ${SCREEN_TEST_COLORS.size}) · " +
-                                "tap anywhere to hide these controls",
+                            stringResource(
+                                R.string.screen_pixel_showing,
+                                screenColorLabel(colorName),
+                                index + 1,
+                                SCREEN_TEST_COLORS.size,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = textColor,
                         )
@@ -433,7 +465,7 @@ private fun ScreenPixelTestDialog(
                                     onResult(true, colorName)
                                     onDismiss()
                                 },
-                            ) { Text("I see a bad spot") }
+                            ) { Text(stringResource(R.string.screen_pixel_bad_spot)) }
                             OutlinedButton(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor),
@@ -446,11 +478,18 @@ private fun ScreenPixelTestDialog(
                                         onDismiss()
                                     }
                                 },
-                            ) { Text(if (index < SCREEN_TEST_COLORS.lastIndex) "Looks fine, next colour" else "Looks fine, done") }
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (index < SCREEN_TEST_COLORS.lastIndex) R.string.screen_pixel_next
+                                        else R.string.screen_pixel_done
+                                    )
+                                )
+                            }
                         }
                         Spacer(Modifier.size(8.dp))
                         TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                            Text("Close", color = textColor)
+                            Text(stringResource(R.string.close), color = textColor)
                         }
                     }
                 }
@@ -508,8 +547,7 @@ private fun GridTestDialog(onDismiss: () -> Unit) {
                     modifier = Modifier.align(Alignment.TopStart).padding(20.dp),
                 ) {
                     Text(
-                        "Tilt your phone under a light and look along the lines. Do you see " +
-                            "scratches or marks? Tap anywhere to hide this.",
+                        stringResource(R.string.screen_grid_instruction),
                         style = MaterialTheme.typography.titleSmall,
                         color = textColor,
                     )
@@ -525,9 +563,14 @@ private fun GridTestDialog(onDismiss: () -> Unit) {
                             isWhiteBackground = !isWhiteBackground
                             controlsVisible = true
                         }) {
-                            Text(if (isWhiteBackground) "Switch to dark" else "Switch to bright")
+                            Text(
+                                stringResource(
+                                    if (isWhiteBackground) R.string.screen_grid_switch_dark
+                                    else R.string.screen_grid_switch_bright
+                                )
+                            )
                         }
-                        Button(onClick = onDismiss) { Text("Close") }
+                        Button(onClick = onDismiss) { Text(stringResource(R.string.close)) }
                     }
                 }
             }
@@ -576,13 +619,13 @@ private fun TouchTestDialog(
                 }
                 Column(modifier = Modifier.align(Alignment.TopCenter).padding(24.dp)) {
                     Text(
-                        "Put all your fingers on the screen at the same time.",
+                        stringResource(R.string.screen_touch_instruction),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                     )
                     Spacer(Modifier.size(4.dp))
                     Text(
-                        "Touching now: ${pointerPositions.size} · Most at once: $maxTouches",
+                        stringResource(R.string.screen_touch_count, pointerPositions.size, maxTouches),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                     )
@@ -591,7 +634,7 @@ private fun TouchTestDialog(
                     onClick = finish,
                     modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),
                 ) {
-                    Text("Done", color = Color.White)
+                    Text(stringResource(R.string.screen_touch_done), color = Color.White)
                 }
             }
         }
