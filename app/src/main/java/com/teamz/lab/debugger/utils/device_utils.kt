@@ -340,7 +340,7 @@ This is the CPU architecture — tells how your processor is designed.
 ⚡ Max Speed: $maxClockSpeedGHz GHz (Best Performance)
 The highest speed your CPU can run when under heavy load.
 
-💤 Min Speed: $minClockSpeed GHz (Power Saving Mode)
+💤 Min Speed: $minClockSpeed (Power Saving Mode)
 The lowest speed when your phone is idle to save battery.
 
 ⚙️ Performance Mode: $governor
