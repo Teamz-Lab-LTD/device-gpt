@@ -7,7 +7,6 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +37,8 @@ import com.teamz.lab.debugger.utils.PermissionManager
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * Microphone test — the feature the store listing has been promising.
@@ -482,7 +483,7 @@ private fun MicPhaseBody(
 private fun LevelMeter(db: Double) {
     val fraction = ((db - MicTestUtils.MIN_DBFS) / (0.0 - MicTestUtils.MIN_DBFS))
         .coerceIn(0.0, 1.0).toFloat()
-    val animated by animateFloatAsState(fraction, tween(90), label = "mic-level")
+    val animated by animateFloatAsState(fraction, motionTween(DgMotion.quick), label = "mic-level")
     Column {
         Box(
             Modifier

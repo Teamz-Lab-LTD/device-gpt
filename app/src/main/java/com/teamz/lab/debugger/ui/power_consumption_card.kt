@@ -92,6 +92,8 @@ import com.teamz.lab.debugger.ui.icons.DgGlyph
 import com.teamz.lab.debugger.ui.icons.DgStock
 import com.teamz.lab.debugger.ui.icons.IconTone
 import com.teamz.lab.debugger.ui.icons.displayText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 @Composable
 fun PowerConsumptionCard(
@@ -541,7 +543,7 @@ private fun TotalPowerSummary(
 ) {
     val animatedPower by animateFloatAsState(
         targetValue = totalPower.toFloat(),
-        animationSpec = tween(1000, easing = EaseOutCubic),
+        animationSpec = motionTween(DgMotion.slow, easing = DgMotion.Enter),
         label = "power_animation"
     )
     
@@ -712,7 +714,7 @@ private fun ComponentPowerItem(
     
     val animatedPower by animateFloatAsState(
         targetValue = component.powerConsumption.toFloat(),
-        animationSpec = tween(800, easing = EaseOutCubic),
+        animationSpec = motionTween(DgMotion.slow, easing = DgMotion.Enter),
         label = "component_power_animation"
     )
     

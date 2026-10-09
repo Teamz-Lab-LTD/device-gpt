@@ -17,13 +17,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -177,6 +171,8 @@ import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.DgIcons
 import com.teamz.lab.debugger.ui.icons.displayText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
 
 /**
  * GA4 screen name per tab. Kept next to the analytics call so a new TabType cannot be
@@ -630,24 +626,17 @@ fun DeviceGptNavExperience(
                 
                 // Premium FAB - More noticeable animation for better focus
                 // Create infinite transition with more pronounced pulse
-                val infiniteTransition = rememberInfiniteTransition(label = "premium_fab_animation")
-                val pulseScale by infiniteTransition.animateFloat(
+                // Both loops stop, at rest, when the user has turned animations off.
+                val pulseScale by rememberMotionLoop(
                     initialValue = 1f,
                     targetValue = 1.12f, // More noticeable scale for better focus
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(1500, easing = FastOutSlowInEasing), // Faster, more noticeable
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "pulse_scale"
+                    label = "pulse_scale",
                 )
-                val glowAlpha by infiniteTransition.animateFloat(
+                val glowAlpha by rememberMotionLoop(
                     initialValue = 0.85f,
                     targetValue = 1f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(1200, easing = FastOutSlowInEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "glow_alpha"
+                    restingValue = 1f,
+                    label = "glow_alpha",
                 )
                 
                 // Star rotation animation - rotate, pause, then repeat
@@ -659,22 +648,12 @@ fun DeviceGptNavExperience(
                 }
                 
                 // Separate infinite transition for star rotation with pause
-                val starRotationTransition = rememberInfiniteTransition(
-                    label = "star_rotation_transition"
-                )
-                val starRotation by starRotationTransition.animateFloat(
+                val starRotation by rememberMotionLoop(
                     initialValue = 0f,
                     targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = keyframes {
-                            durationMillis = 5500 // Total: 1.5s rotation + 4s pause
-                            0f at 0
-                            360f at 1500 // Rotate in 1.5 seconds
-                            360f at 5500 // Stay at 360 for 4 seconds (pause)
-                        },
-                        repeatMode = RepeatMode.Restart
-                    ),
-                    label = "star_rotation"
+                    repeatMode = RepeatMode.Restart,
+                    holdMillis = DgMotion.pulse * 3, // one turn, then a long pause
+                    label = "star_rotation",
                 )
                 
                 AnimatedVisibility(

@@ -67,6 +67,7 @@ class PhotoCaptureConsentActivity : ComponentActivity() {
         }
         val requestedCameraId = intent?.getStringExtra("camera_id")
         setContent {
+            com.teamz.lab.debugger.ui.theme.ProvideReduceMotion {
             MaterialTheme {
                 ConsentDialog(
                     onAllow = {
@@ -94,6 +95,7 @@ class PhotoCaptureConsentActivity : ComponentActivity() {
                         finish()
                     },
                 )
+            }
             }
         }
     }

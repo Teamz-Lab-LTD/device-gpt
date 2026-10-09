@@ -59,6 +59,8 @@ import com.teamz.lab.debugger.ui.icons.DgGlyph
 import com.teamz.lab.debugger.ui.icons.DgStock
 import com.teamz.lab.debugger.ui.icons.IconTone
 import com.teamz.lab.debugger.ui.icons.splitDisplayLine
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
 
 
 @Composable
@@ -227,15 +229,13 @@ fun HealthSection(
     }
 
     // Animation for loading spinner
-    val infiniteTransition = rememberInfiniteTransition(label = "scan_loading")
-    val rotation by infiniteTransition.animateFloat(
+    val rotation by rememberMotionLoop(
         initialValue = 0f,
         targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
+        durationMillis = DgMotion.spin,
+        easing = LinearEasing,
+        repeatMode = RepeatMode.Restart,
+        label = "rotation",
     )
 
     // Function to perform the actual scan

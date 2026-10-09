@@ -1,7 +1,6 @@
 package com.teamz.lab.debugger.ui.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +45,7 @@ import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.LocalReduceMotion
 import com.teamz.lab.debugger.ui.theme.dgSemanticColors
 import kotlin.math.roundToInt
+import com.teamz.lab.debugger.ui.theme.motionTweenSpec
 
 /** The score a ring shows part-way through its reveal: [score] clamped to 0..[maxScore], times [progress]. */
 internal fun shownScore(score: Int, maxScore: Int, progress: Float): Int =
@@ -103,7 +103,7 @@ fun ScoreRing(
     LaunchedEffect(score, maxScore, moves) {
         if (moves) {
             progress.snapTo(0f)
-            progress.animateTo(1f, tween(durationMillis = DgMotion.reveal, easing = DgMotion.Enter))
+            progress.animateTo(1f, motionTweenSpec(false, DgMotion.reveal, easing = DgMotion.Enter))
         } else {
             progress.snapTo(1f)
         }

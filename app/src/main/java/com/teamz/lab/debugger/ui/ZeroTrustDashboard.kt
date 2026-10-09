@@ -3,7 +3,6 @@ package com.teamz.lab.debugger.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,6 +45,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * Zero Trust Dashboard -- a prominent card showing an aggregated trust
@@ -291,7 +292,7 @@ fun ZeroTrustDashboard(
 private fun TrustScoreArc(score: Int, isDark: Boolean) {
     val animatedProgress by animateFloatAsState(
         targetValue = score / 100f,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = motionTween(DgMotion.slow, easing = DgMotion.Enter),
         label = "trust_score"
     )
     val arcColor = when {

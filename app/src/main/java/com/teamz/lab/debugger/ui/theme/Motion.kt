@@ -8,6 +8,11 @@ import android.provider.Settings
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -15,7 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +49,15 @@ object DgMotion {
 
     /** Delay between neighbours that enter one after another. Milliseconds. */
     const val stagger = 40
+
+    /** One way of a decorative loop (a pulse, a glow, a shimmer pass). Loops stop under reduce-motion. */
+    const val pulse = 1200
+
+    /** One turn of a loading spinner. Milliseconds. */
+    const val spin = 1000
+
+    /** One short "something is wrong" shake, start to rest. Milliseconds. */
+    const val shake = 300
 
     /** For things that move on screen from one place to another. */
     val Standard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
@@ -166,3 +182,46 @@ fun <T> motionSpring(
     visibilityThreshold: T? = null,
 ): FiniteAnimationSpec<T> =
     motionSpringSpec(LocalReduceMotion.current, dampingRatio, stiffness, visibilityThreshold)
+
+/**
+ * A value that loops for ever between [initialValue] and [targetValue]: the one way to write a decorative
+ * loop (pulse, glow, shimmer, spinner). When the user has turned animations off the loop does not run and
+ * the value stays at [restingValue].
+ *
+ * @param durationMillis one way of the loop, from the motion tokens.
+ * @param repeatMode [RepeatMode.Reverse] goes there and back; [RepeatMode.Restart] jumps back to the start.
+ * @param holdMillis time to wait at [targetValue] before the next round (only with [RepeatMode.Restart]).
+ * @param restingValue the value shown when nothing may move.
+ */
+@Composable
+fun rememberMotionLoop(
+    initialValue: Float,
+    targetValue: Float,
+    durationMillis: Int = DgMotion.pulse,
+    easing: Easing = DgMotion.Standard,
+    repeatMode: RepeatMode = RepeatMode.Reverse,
+    holdMillis: Int = 0,
+    restingValue: Float = initialValue,
+    label: String = "motion-loop",
+): State<Float> {
+    if (LocalReduceMotion.current) {
+        return remember(restingValue) { mutableFloatStateOf(restingValue) }
+    }
+    val transition = rememberInfiniteTransition(label = label)
+    val animation = if (holdMillis > 0) {
+        keyframes {
+            this.durationMillis = durationMillis + holdMillis
+            initialValue at 0 using easing
+            targetValue at durationMillis
+            targetValue at durationMillis + holdMillis
+        }
+    } else {
+        tween(durationMillis = durationMillis, easing = easing)
+    }
+    return transition.animateFloat(
+        initialValue = initialValue,
+        targetValue = targetValue,
+        animationSpec = infiniteRepeatable(animation = animation, repeatMode = repeatMode),
+        label = label,
+    )
+}

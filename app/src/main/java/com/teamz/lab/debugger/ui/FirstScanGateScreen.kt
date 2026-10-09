@@ -3,7 +3,6 @@ package com.teamz.lab.debugger.ui
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +45,8 @@ import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.R
 import kotlinx.coroutines.async
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * v3.2.0 honest FirstScanGate UI.
@@ -79,7 +80,7 @@ fun FirstScanGateScreen(
 
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = tween(durationMillis = 350, easing = LinearEasing),
+        animationSpec = motionTween(DgMotion.slow, easing = LinearEasing),
         label = "first-scan-progress",
     )
 
@@ -240,7 +241,7 @@ private fun ScoredUi(
     var target by remember { mutableIntStateOf(0) }
     val animatedScore by animateIntAsState(
         targetValue = target,
-        animationSpec = tween(durationMillis = 800),
+        animationSpec = motionTween(DgMotion.reveal, easing = DgMotion.Enter),
         label = "score-count-up",
         finishedListener = {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)

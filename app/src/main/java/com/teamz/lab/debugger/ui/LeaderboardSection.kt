@@ -5,10 +5,6 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -107,6 +103,8 @@ import com.teamz.lab.debugger.ui.icons.DgStock
 import com.teamz.lab.debugger.ui.icons.IconTone
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.teamz.lab.debugger.ui.icons.DgIconText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
 
 /**
  * Leaderboard Section - Child-friendly UI
@@ -2469,18 +2467,14 @@ fun Modifier.shimmerEffect(): Modifier {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
     )
     
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val translateAnimation = transition.animateFloat(
+    // Stops, at its starting position, when the user has turned animations off.
+    val translateAnimation = rememberMotionLoop(
         initialValue = 0f,
         targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 1200,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer_translate"
+        durationMillis = DgMotion.pulse,
+        easing = LinearEasing,
+        repeatMode = RepeatMode.Restart,
+        label = "shimmer_translate",
     )
     
     var size by remember { mutableStateOf(Size.Zero) }

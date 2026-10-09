@@ -84,6 +84,8 @@ class MainActivity : ComponentActivity() {
             }
 
             setContent {
+                // One switch for all motion: the phone's "remove animations" setting.
+                com.teamz.lab.debugger.ui.theme.ProvideReduceMotion {
                 CompositionLocalProvider(LocalThemeManager provides ThemeManager) {
                     ThemeAwareContent {
                         // v3.1.11 W1 — FirstScanGate: render the 10s scan + Device Score
@@ -209,6 +211,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+                }
                 }
             }
 

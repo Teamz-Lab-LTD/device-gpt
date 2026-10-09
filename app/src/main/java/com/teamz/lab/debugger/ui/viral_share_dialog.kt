@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -76,6 +75,8 @@ import androidx.annotation.StringRes
 import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.icons.displayText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 
 /**
  * Viral Share Dialog - Makes sharing easy, shows reward progress, and tracks viral growth
@@ -478,7 +479,7 @@ private fun RewardProgressCard(
                 } else 0f
                 val animatedProgress by animateFloatAsState(
                     targetValue = progress.coerceIn(0f, 1f),
-                    animationSpec = tween(800),
+                    animationSpec = motionTween(DgMotion.slow),
                     label = "progress"
                 )
 

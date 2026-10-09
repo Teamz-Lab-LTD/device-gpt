@@ -71,7 +71,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.animation.core.*
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -138,6 +137,8 @@ import com.teamz.lab.debugger.ui.icons.DgStock
 import com.teamz.lab.debugger.ui.icons.IconTone
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.displayText
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
 
 @Composable
 fun DrawerContent(
@@ -364,44 +365,25 @@ fun DrawerContent(
         
         if (!isPremium) {
             // Enhanced animated premium card with multiple effects
-            val infiniteTransition = rememberInfiniteTransition(label = "premium_widget_animation")
-            
-            // Enhanced glow animation - more pronounced
-            val glowAlpha by infiniteTransition.animateFloat(
+            // All three loops stop, at rest, when the user has turned animations off.
+            // Glow: rests fully lit.
+            val glowAlpha by rememberMotionLoop(
                 initialValue = 0.5f,
                 targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1500, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "widget_glow"
+                restingValue = 1f,
+                label = "widget_glow",
             )
-            
-            // Enhanced scale pulse animation - more noticeable
-            val pulseScale by infiniteTransition.animateFloat(
-                initialValue = 1f,
-                targetValue = 1.04f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1200, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "widget_pulse"
-            )
-            
-            // Star icon rotation - continuous with pause
-            val starRotation by infiniteTransition.animateFloat(
+
+            // Scale pulse
+            val pulseScale by rememberMotionLoop(initialValue = 1f, targetValue = 1.04f, label = "widget_pulse")
+
+            // Star icon: one turn, a pause, and again
+            val starRotation by rememberMotionLoop(
                 initialValue = 0f,
                 targetValue = 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = keyframes {
-                        durationMillis = 3000
-                        0f at 0
-                        360f at 1500 // Rotate in 1.5 seconds
-                        360f at 3000 // Stay at 360 for 1.5 seconds (pause)
-                    },
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "star_rotation"
+                repeatMode = RepeatMode.Restart,
+                holdMillis = DgMotion.pulse,
+                label = "star_rotation",
             )
             
             // Additional shimmer/glow effect for the entire card
@@ -1551,28 +1533,16 @@ fun AnimatedPromotionalButton(
     onClick: () -> Unit
 ) {
     // Create pulsing animation for the bulb icon
-    val infiniteTransition = rememberInfiniteTransition(label = "promotional_bulb_animation")
-    
+    // Both loops stop, at rest, when the user has turned animations off.
     // Pulsing scale animation - makes the bulb "glow" and pulse
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 2.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "bulb_pulse"
-    )
-    
+    val pulseScale by rememberMotionLoop(initialValue = 1f, targetValue = 2.15f, label = "bulb_pulse")
+
     // Glow alpha animation - makes the bulb appear to glow
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha by rememberMotionLoop(
         initialValue = 0.8f,
         targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "bulb_glow"
+        restingValue = 1f,
+        label = "bulb_glow",
     )
     
     Button(
