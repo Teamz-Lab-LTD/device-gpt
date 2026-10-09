@@ -338,13 +338,14 @@ fun MicTestCard(
                             )
                             // The test is finished only once this is answered; earlier, the
                             // "Done" card covered the question (emulator, 2026-10-09).
-                            com.teamz.lab.debugger.utils.TestDoneCard.onTestCompleted(context)
+                            val cardShown = com.teamz.lab.debugger.utils.TestDoneCard.onTestCompleted(context)
                             // AFTER the test, never before: an interstitial plays audio,
                             // and this test opens by asking the user to stay silent while
                             // the room's noise floor is measured. An ad first would bleed
                             // into that measurement and contradict the on-screen
                             // instruction. Completion is the honest break point.
-                            activity?.let { act ->
+                            // Not when the Done card just opened: the ad would cover it.
+                            if (!cardShown) activity?.let { act ->
                                 com.teamz.lab.debugger.utils.InterstitialAdManager
                                     .showAdBeforeAction(act, "mic_test_complete") { }
                             }

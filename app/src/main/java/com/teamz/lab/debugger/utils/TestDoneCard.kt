@@ -14,12 +14,17 @@ object TestDoneCard {
 
     fun shouldShow(isB: Boolean, alreadyShown: Boolean): Boolean = isB && !alreadyShown
 
-    fun onTestCompleted(context: Context) {
+    /**
+     * Returns true when this call opened the card, so a caller about to show an interstitial can
+     * skip it instead of covering the card. fs_done_card_shown is logged by TestDoneSheet when the
+     * dialog is actually on screen, not here.
+     */
+    fun onTestCompleted(context: Context): Boolean {
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        if (!shouldShow(FirstScreenExperiment.isB(context), p.getBoolean(KEY_SHOWN, false))) return
+        if (!shouldShow(FirstScreenExperiment.isB(context), p.getBoolean(KEY_SHOWN, false))) return false
         p.edit().putBoolean(KEY_SHOWN, true).apply()
         _visible.value = true
-        try { AnalyticsUtils.logEvent(AnalyticsEvent.FsDoneCardShown) } catch (_: Throwable) { }
+        return true
     }
 
     fun dismiss() { _visible.value = false }

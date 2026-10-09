@@ -50,6 +50,24 @@ class TestDoneCardTest {
             .getString(FirstScreenExperiment.KEY_ARM, null))
     }
 
+    // Review 2026-10-09 M1: the mic test fires an interstitial right after completion; it must
+    // know whether the card just opened so the ad does not land on top of it.
+    @Test fun `onTestCompleted reports whether it opened the card`() {
+        context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
+            .edit().putString(FirstScreenExperiment.KEY_ARM, "B").commit()
+        assertTrue(TestDoneCard.onTestCompleted(context))
+        TestDoneCard.dismiss()
+        assertFalse(TestDoneCard.onTestCompleted(context))
+    }
+
+    @Test fun `the mic interstitial is skipped when the card just opened`() {
+        var dir = File(System.getProperty("user.dir") ?: ".")
+        while (!File(dir, "settings.gradle.kts").exists() && dir.parentFile != null) dir = dir.parentFile
+        val s = File(dir, "app/src/main/java/com/teamz/lab/debugger/ui/MicTestCard.kt").readText()
+        assertTrue(Regex("""val cardShown = com\.teamz\.lab\.debugger\.utils\.TestDoneCard\.onTestCompleted\(context\)""").containsMatchIn(s))
+        assertTrue(Regex("""if \(!cardShown\) activity\?\.let""").containsMatchIn(s))
+    }
+
     @Test fun `arm A never sees it`() {
         context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
             .edit().putString(FirstScreenExperiment.KEY_ARM, "A").commit()
