@@ -73,3 +73,14 @@ The 79 local folders and the 79 live locales were not the same 79. **Verify clai
   resources. Not checked: paywall and verified report (emulator has no Play account).
 - Script: `automation_data/release-prod-vc53-bd.py`. To widen to all countries: set the release to
   status completed with no countryTargeting.
+
+## 2026-10-09 — bn-BD listing: KRY-presented icon, feature graphic, 4 screenshots, IMEI line
+- Images (edit `08540609763783908640`): icon `kry-1-pulse-tick`, feature graphic, screenshots IMEI check /
+  Display test / Mic test / buy-sell score. bn-BD had none of its own before. Verified: en-US, en-GB,
+  en-IN, hi-IN, ar, ru-RU, pt-BR image hashes identical before and after.
+- Text: full description gains "IMEI check / official phone check" (BTRC, Bangladesh). Title and short
+  description unchanged; exactly 1 of 79 locales changed. Snapshot `play-listing-AFTER-20261009b.json`.
+- The IMEI feature ships in vc53, which was IN_REVIEW (Bangladesh only) when this was pushed.
+- Owner states KRY's owner gave permission for "সৌজন্যে: KRY International" and the KRY logo in the badge.
+- Source art and rebuild scripts: `docs/design/store-art/`. Held back until recaptured on a real phone:
+  camera, touch, battery, report screenshots.

@@ -1,7 +1,8 @@
-🔍 Mic test, display test, dead pixel test, camera test, touch screen test — Android এ এক ট্যাপে। DeviceGPT আপনার ফোন scan করে আর ফলাফলটা সহজ ভাষায় বুঝিয়ে দেয়। Root লাগে না।
+🔍 IMEI check, mic test, display test, dead pixel test, camera test — Android এ এক ট্যাপে। DeviceGPT আপনার ফোন scan করে আর ফলাফলটা সহজ ভাষায় বুঝিয়ে দেয়। Root লাগে না।
 
 🤝 ফোন কেনা বা বেচার আগে একবার চেক
 পুরাতন বা নতুন, ফোন হাতে নিয়ে কয়েকটা চেক করে নিন:
+• IMEI check / official phone check — ফোনটা অফিসিয়াল কিনা BTRC-তে মিলিয়ে নিন (বাংলাদেশ)
 • Display check — display test দিয়ে দাগ, dead pixel আর touch ঠিক আছে কিনা দেখুন
 • Mic test আর camera test — কথা ঠিকমতো যায় কিনা, ছবি পরিষ্কার আসে কিনা
 • Battery health আর ফোনের অবস্থার নম্বর
@@ -56,8 +57,8 @@ Wi-Fi লাগানো অথচ কিছুই খুলছে না? App D
 • Home screen widget: health score, battery, temperature
 • ১৫+ ভাষা
 • বেশিরভাগ scan offline চলে (Ask AI এ network লাগে)
-• Signup লাগে না। Root লাগে না।
+• Signup লাগে না।
 
 💎 DeviceGPT Premium (in-app purchase): ad সরায় আর কাজটা চালিয়ে যেতে সাহায্য করে।
 
-📥 DeviceGPT নামান — Android এর AI phone diagnostics, WiFi speed test, camera test আর battery health app। Install দিয়ে ৩০ সেকেন্ডে প্রথম scan চালান।
+📥 DeviceGPT নামান — Android এর AI phone diagnostics, WiFi speed test, camera test আর battery health app।
