@@ -64,6 +64,10 @@ import com.teamz.lab.debugger.utils.AnalyticsUtils
 import com.teamz.lab.debugger.utils.CameraHealthUtils
 import kotlinx.coroutines.delay
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.components.pressScale
+import com.teamz.lab.debugger.ui.components.rememberResultFeedback
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.heightIn
 
 /**
  * Screen Test tab: colour/dead-pixel check, grid/scratch check, touch check. Split out of the
@@ -255,23 +259,28 @@ fun ScreenTestSection(
             }
 
             Spacer(Modifier.size(12.dp))
+            val pixelPress = remember { MutableInteractionSource() }
+            val gridPress = remember { MutableInteractionSource() }
+            val touchPress = remember { MutableInteractionSource() }
             Button(
+                interactionSource = pixelPress,
                 onClick = {
                     AnalyticsUtils.logEvent(AnalyticsEvent.ScreenPixelTestStarted)
                     showColorTest = true
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(pixelPress),
             ) {
                 Text(stringResource(R.string.screen_test_dead_pixels_button))
             }
 
             Spacer(Modifier.size(8.dp))
             OutlinedButton(
+                interactionSource = gridPress,
                 onClick = {
                     AnalyticsUtils.logEvent(AnalyticsEvent.ScreenGridTestViewed)
                     showGridTest = true
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(gridPress),
             ) {
                 Icon(Icons.Default.GridOn, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
@@ -280,8 +289,9 @@ fun ScreenTestSection(
 
             Spacer(Modifier.size(8.dp))
             OutlinedButton(
+                interactionSource = touchPress,
                 onClick = { showTouchTest = true },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(touchPress),
             ) {
                 Icon(Icons.Default.TouchApp, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
@@ -316,6 +326,10 @@ private fun ScreenTestSummaryCard(
     lastTouchPointCount: Int?,
 ) {
     val hasProblem = lastPixelResult?.userReportedIssue == true
+    val feedback = rememberResultFeedback(
+        resultKey = "screen:${lastPixelResult.hashCode()}:$lastTouchPointCount",
+        good = !hasProblem,
+    )
     val (containerColor, contentColor, icon) = if (hasProblem) {
         Triple(
             MaterialTheme.colorScheme.errorContainer,
@@ -331,14 +345,14 @@ private fun ScreenTestSummaryCard(
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(feedback.card),
         color = containerColor,
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             if (lastPixelResult != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(icon, contentDescription = null, tint = contentColor)
+                    Icon(icon, contentDescription = null, tint = contentColor, modifier = feedback.statusIcon)
                     Spacer(Modifier.size(8.dp))
                     DgText(
                         if (hasProblem) {

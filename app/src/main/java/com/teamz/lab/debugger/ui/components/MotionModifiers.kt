@@ -30,6 +30,22 @@ import kotlin.math.sin
  * blocks touches, and does nothing when the user has turned animations off.
  */
 
+/**
+ * Remembers, for as long as the app process lives, which one-time moves have already played, so a result
+ * that is scrolled away and back (or a tab that is reopened) is shown at rest instead of replaying.
+ */
+object MotionOnce {
+    private val played = HashSet<String>()
+
+    /** True the first time it is asked about [key] in this session, false after that. */
+    @Synchronized
+    fun firstTime(key: String): Boolean = played.add(key)
+
+    /** Forget everything. For tests. */
+    @Synchronized
+    fun reset() = played.clear()
+}
+
 /** Scale a pressed control shrinks to. */
 const val PRESSED_SCALE = 0.97f
 
@@ -63,11 +79,11 @@ fun Modifier.riseIn(visible: Boolean, delayMillis: Int = 0, rise: Dp = 8.dp): Mo
     }
 }
 
-/** [riseIn] that plays once, when the content is first composed. */
+/** [riseIn] that plays once, when the content is first composed. With [active] false it is simply shown. */
 @Composable
-fun Modifier.riseInOnAppear(delayMillis: Int = 0, rise: Dp = 8.dp): Modifier {
+fun Modifier.riseInOnAppear(active: Boolean = true, delayMillis: Int = 0, rise: Dp = 8.dp): Modifier {
     val reduceMotion = LocalReduceMotion.current
-    var visible by remember { mutableStateOf(reduceMotion) }
+    var visible by remember { mutableStateOf(reduceMotion || !active) }
     LaunchedEffect(Unit) { visible = true }
     return riseIn(visible, delayMillis, rise)
 }
@@ -146,4 +162,25 @@ fun Modifier.pressScale(interactionSource: InteractionSource): Modifier {
         scaleX = scale
         scaleY = scale
     }
+}
+
+/**
+ * How a test result arrives: the card rises and fades in; its status icon pops once for a good result and
+ * shakes once for a problem. Build one per result with [rememberResultFeedback] and hand [card] to the result
+ * card and [statusIcon] to its icon.
+ */
+class ResultFeedback internal constructor(val card: Modifier, val statusIcon: Modifier)
+
+/**
+ * The [ResultFeedback] for one result. [resultKey] names the result (a new check gives a new key); the moves
+ * play the first time that result is shown in a session and never again.
+ *
+ * @param good true for a pass (pop), false for a problem (shake).
+ */
+@Composable
+fun rememberResultFeedback(resultKey: Any, good: Boolean): ResultFeedback {
+    val fresh = remember(resultKey) { MotionOnce.firstTime("result:$resultKey") }
+    val card = Modifier.riseInOnAppear(active = fresh)
+    val icon = if (good) Modifier.popOnce(active = fresh) else Modifier.shakeOnce(active = fresh)
+    return ResultFeedback(card, icon)
 }

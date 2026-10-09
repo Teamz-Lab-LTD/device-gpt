@@ -39,6 +39,11 @@ import kotlin.math.roundToInt
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.theme.DgMotion
 import com.teamz.lab.debugger.ui.theme.motionTween
+import com.teamz.lab.debugger.ui.components.pressScale
+import com.teamz.lab.debugger.ui.components.popOnce
+import com.teamz.lab.debugger.ui.components.shakeOnce
+import com.teamz.lab.debugger.ui.components.riseInOnAppear
+import androidx.compose.foundation.interaction.MutableInteractionSource
 
 /**
  * Microphone test — the feature the store listing has been promising.
@@ -431,13 +436,16 @@ private fun MicPhaseBody(
         }
         MicPhase.IDLE -> {
             heard?.let { yes ->
-                Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(bottom = 8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.padding(bottom = 8.dp).riseInOnAppear(),
+                ) {
                     Icon(
                         if (yes) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
                         contentDescription = null,
                         tint = if (yes) MaterialTheme.colorScheme.primary
                                else MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp).then(if (yes) Modifier.popOnce() else Modifier.shakeOnce())
                     )
                     Spacer(Modifier.width(8.dp))
                     DgText(
@@ -451,9 +459,11 @@ private fun MicPhaseBody(
                     )
                 }
             }
+            val startPress = remember { MutableInteractionSource() }
             Button(
+                interactionSource = startPress,
                 onClick = onStart,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(startPress)
             ) {
                 DgText(
                     stringResource(

@@ -61,6 +61,9 @@ import com.teamz.lab.debugger.utils.CameraHealthUtils
 import com.teamz.lab.debugger.utils.InterstitialAdManager
 import com.teamz.lab.debugger.utils.PermissionManager
 import com.teamz.lab.debugger.ui.icons.DgText
+import com.teamz.lab.debugger.ui.components.pressScale
+import com.teamz.lab.debugger.ui.components.rememberResultFeedback
+import androidx.compose.foundation.interaction.MutableInteractionSource
 
 /**
  * Camera tab: fact sheet + per-lens liveness check. Screen tests moved to their own tab
@@ -217,7 +220,9 @@ fun CameraHealthSection(
             }
 
             // Action button
+            val checkPress = remember { MutableInteractionSource() }
             Button(
+                interactionSource = checkPress,
                 onClick = {
                     AnalyticsUtils.logEvent(AnalyticsEvent.FabAIClicked, mapOf("source" to "camera_health"))
                     if (!permissionGranted) {
@@ -227,7 +232,7 @@ fun CameraHealthSection(
                     }
                 },
                 enabled = !isRunning,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(checkPress),
             ) {
                 if (isRunning) {
                     CircularProgressIndicator(
@@ -506,7 +511,9 @@ private fun ColorCastCheckCard(
 
     if (result != null) Spacer(Modifier.size(12.dp))
 
+    val checkPress = remember { MutableInteractionSource() }
     Button(
+        interactionSource = checkPress,
         onClick = {
             AnalyticsUtils.logEvent(
                 AnalyticsEvent.CameraColorCastCheckStarted,
@@ -524,7 +531,7 @@ private fun ColorCastCheckCard(
             }
         },
         enabled = !isRunning,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(checkPress),
     ) {
         if (isRunning) {
             CircularProgressIndicator(
@@ -585,9 +592,13 @@ private fun ColorCastResultCard(
         )
         else -> return
     }
+    val feedback = rememberResultFeedback(
+        resultKey = "colour-cast:${result.hashCode()}",
+        good = icon == Icons.Default.CheckCircle,
+    )
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(feedback.card),
         color = containerColor,
         shape = RoundedCornerShape(10.dp),
     ) {
@@ -608,7 +619,7 @@ private fun ColorCastResultCard(
                 Spacer(Modifier.size(10.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, tint = contentColor)
+                Icon(icon, contentDescription = null, tint = contentColor, modifier = feedback.statusIcon)
                 Spacer(Modifier.size(8.dp))
                 DgText(
                     headline,
@@ -643,8 +654,13 @@ private data class ColorCastVerdict(
 
 @Composable
 private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
-    val allOk = result.allLensesResponded
+    // The title follows the worst line under it. A camera that opened and sent a picture but could not get
+    // the picture sharp is a warning, not "looks OK". This choice is display only: the report, analytics
+    // (`all_responded`) and the AI text read `result` themselves.
+    val focusProblem = result.liveness.any { it.opened && it.frameReceived && it.autofocusConverged == false }
+    val allOk = result.allLensesResponded && !focusProblem
     val someOpened = result.liveness.any { it.opened && it.frameReceived }
+    val feedback = rememberResultFeedback(resultKey = "camera:${result.hashCode()}", good = allOk)
 
     // Never colour-only: every state pairs a semantic colour with an icon AND a text line.
     val (containerColor, contentColor, icon, headline) = when {
@@ -669,13 +685,13 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(feedback.card),
         color = containerColor,
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, tint = contentColor)
+                Icon(icon, contentDescription = null, tint = contentColor, modifier = feedback.statusIcon)
                 Spacer(Modifier.size(8.dp))
                 DgText(
                     headline,

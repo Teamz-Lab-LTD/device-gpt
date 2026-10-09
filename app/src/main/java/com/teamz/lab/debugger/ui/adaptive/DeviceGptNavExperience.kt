@@ -172,6 +172,7 @@ import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.DgIcons
 import com.teamz.lab.debugger.ui.icons.displayText
 import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 import com.teamz.lab.debugger.ui.theme.rememberMotionLoop
 
 /**
@@ -658,8 +659,10 @@ fun DeviceGptNavExperience(
                 
                 AnimatedVisibility(
                     visible = fabsVisible,
-                    enter = slideInVertically { it } + fadeIn(),
-                    exit = slideOutVertically { it } + fadeOut(),
+                    enter = slideInVertically(motionTween(DgMotion.standard, easing = DgMotion.Enter)) { it } +
+                        fadeIn(motionTween(DgMotion.standard, easing = DgMotion.Enter)),
+                    exit = slideOutVertically(motionTween(DgMotion.quick, easing = DgMotion.Exit)) { it } +
+                        fadeOut(motionTween(DgMotion.quick, easing = DgMotion.Exit)),
                 ) {
                 Row(
                     modifier = Modifier
@@ -1118,7 +1121,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                     Box(
                         modifier = modifier,
                     ) {
-                        Crossfade(targetState = selectedTab, label = "tab") { tab ->
+                        Crossfade(
+                            targetState = selectedTab,
+                            animationSpec = motionTween(DgMotion.quick),
+                            label = "tab",
+                        ) { tab ->
                         val tabType = TabOrderManager.getTabTypeAt(tab)
                         when (tabType) {
                             TabType.LEADERBOARD -> {

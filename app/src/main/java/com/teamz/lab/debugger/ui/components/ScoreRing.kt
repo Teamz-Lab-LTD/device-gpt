@@ -94,15 +94,11 @@ fun scoreToneColor(tone: ScoreTone): Color = when (tone) {
  * card that is scrolled away and back (or a tab that is reopened) shows its score at rest.
  */
 object ScoreRingSession {
-    private val played = HashSet<String>()
-
     /** True the first time it is asked about [key] in this session, false after that. */
-    @Synchronized
-    fun firstTime(key: String): Boolean = played.add(key)
+    fun firstTime(key: String): Boolean = MotionOnce.firstTime("ring:$key")
 
     /** Forget everything. For tests. */
-    @Synchronized
-    fun reset() = played.clear()
+    fun reset() = MotionOnce.reset()
 }
 
 /**

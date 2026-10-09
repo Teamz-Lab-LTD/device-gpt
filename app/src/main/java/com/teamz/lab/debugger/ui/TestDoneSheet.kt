@@ -7,7 +7,42 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.AlertDialog
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import com.teamz.lab.debugger.ui.theme.DgMotion
+import com.teamz.lab.debugger.ui.theme.motionTween
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,7 +71,11 @@ import com.teamz.lab.debugger.ui.icons.IconTone
 @Composable
 fun TestDoneSheet() {
     val visible by TestDoneCard.visible.collectAsState()
-    if (!visible) return
+    // The card rises from the bottom with its scrim and leaves faster than it came. It stays composed until
+    // the leaving move has finished, then goes away.
+    val presence = remember { MutableTransitionState(false) }
+    presence.targetState = visible
+    if (!visible && presence.isIdle && !presence.currentState) return
     val context = LocalContext.current
     // Logged when the dialog is really on screen (review 2026-10-09 M2), once per showing.
     LaunchedEffect(Unit) {
@@ -74,37 +113,111 @@ fun TestDoneSheet() {
         ).show()
         TestDoneCard.dismiss()
     }
-    AlertDialog(
-        onDismissRequest = { action("dismiss"); TestDoneCard.dismiss() },
-        title = {
-            DgIconText(icon = DgStock.CheckCircle, tone = IconTone.Good, text = stringResource(R.string.done_title))
-        },
-        text = { Text(stringResource(R.string.done_body)) },
-        confirmButton = {
-            TextButton(onClick = {
-                // Some launchers cannot pin from inside an app; say how instead of doing nothing (M3).
-                val asked = WidgetPinPrompt.requestNow(context)
-                action("widget", mapOf("pin_supported" to asked))
-                if (!asked) Toast.makeText(
-                    context, context.string(R.string.done_widget_how_to),
-                    Toast.LENGTH_LONG
-                ).show()
-                TestDoneCard.dismiss()
-            }) { Text(stringResource(R.string.done_add_widget)) }
-        },
-        dismissButton = {
-            TextButton(onClick = {
-                action("weekly")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    permission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    confirmWeekly()
-                    TestDoneCard.dismiss()
-                }
-            }) { Text(stringResource(R.string.done_weekly_checkup)) }
-            TextButton(onClick = { action("dismiss"); TestDoneCard.dismiss() }) {
-                Text(stringResource(R.string.not_now))
+    val dismiss = { action("dismiss"); TestDoneCard.dismiss() }
+    Dialog(
+        onDismissRequest = dismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        // The scrim and the card are drawn and moved here, so the window brings no dim or animation of its own.
+        val window = (LocalView.current.parent as? DialogWindowProvider)?.window
+        SideEffect {
+            window?.setDimAmount(0f)
+            window?.setWindowAnimations(0)
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            AnimatedVisibility(
+                visibleState = presence,
+                enter = fadeIn(motionTween(DgMotion.slow, easing = DgMotion.Enter)),
+                exit = fadeOut(motionTween(DgMotion.quick, easing = DgMotion.Exit)),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = dismiss,
+                        ),
+                )
             }
-        },
-    )
+            AnimatedVisibility(
+                visibleState = presence,
+                enter = slideInVertically(motionTween(DgMotion.slow, easing = DgMotion.Enter)) { it } +
+                    fadeIn(motionTween(DgMotion.standard, easing = DgMotion.Enter)),
+                exit = slideOutVertically(motionTween(DgMotion.quick, easing = DgMotion.Exit)) { it } +
+                    fadeOut(motionTween(DgMotion.quick, easing = DgMotion.Exit)),
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 560.dp)
+                        // Taps on the card must not fall through to the scrim.
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {},
+                        ),
+                    color = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                    tonalElevation = 6.dp,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp),
+                    ) {
+                        DgIconText(
+                            icon = DgStock.CheckCircle,
+                            tone = IconTone.Good,
+                            text = stringResource(R.string.done_title),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            stringResource(R.string.done_body),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.height(20.dp))
+                        Button(
+                            onClick = {
+                                // Some launchers cannot pin from inside an app; say how instead of doing nothing (M3).
+                                val asked = WidgetPinPrompt.requestNow(context)
+                                action("widget", mapOf("pin_supported" to asked))
+                                if (!asked) Toast.makeText(
+                                    context, context.string(R.string.done_widget_how_to),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                TestDoneCard.dismiss()
+                            },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                            ),
+                        ) { Text(stringResource(R.string.done_add_widget)) }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                action("weekly")
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    permission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    confirmWeekly()
+                                    TestDoneCard.dismiss()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        ) { Text(stringResource(R.string.done_weekly_checkup)) }
+                        TextButton(
+                            onClick = dismiss,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        ) { Text(stringResource(R.string.not_now)) }
+                    }
+                }
+            }
+        }
+    }
 }
