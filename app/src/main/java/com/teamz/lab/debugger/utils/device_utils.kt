@@ -54,7 +54,7 @@ fun openSettings(context: Context, action: String) {
             context.startActivity(intent)
         } else {
             Toast.makeText(
-                context, "This setting is not available on your device.", Toast.LENGTH_SHORT
+                context, context.string(R.string.info_setting_not_available), Toast.LENGTH_SHORT
             ).show()
         }
     } catch (e: Exception) {
@@ -104,15 +104,17 @@ fun clearRam(context: Context): Pair<Boolean, String> {
         val usedPercent = if (totalMb > 0) (usedMb * 100 / totalMb).toInt() else 0
         val lowMemory = memoryInfo.lowMemory
 
-        val msg = if (lowMemory) {
-            "Memory pressure detected: ${usedMb} MB used of ${totalMb} MB (${usedPercent}%). Android will auto-close background apps as needed."
-        } else {
-            "Current memory: ${usedMb} MB used of ${totalMb} MB (${usedPercent}%). Android manages RAM automatically."
-        }
+        // Shown as a toast or a result line, never parsed, so it is written in the app language.
+        val text = LocaleManager.localizedContext(context)
+        val msg = text.string(
+            if (lowMemory) R.string.info_mem_pressure else R.string.info_mem_current,
+            "$usedMb MB", "$totalMb MB", usedPercent.toString(),
+        )
         Pair(true, msg)
     } catch (e: Exception) {
         handleError(e)
-        Pair(false, "Unable to read memory info: ${e.message ?: "Unknown error"}")
+        val text = LocaleManager.localizedContext(context)
+        Pair(false, text.string(R.string.info_mem_read_failed, e.message ?: text.string(R.string.info_unknown_error)))
     }
 }
 
@@ -2529,21 +2531,29 @@ fun clearStorageCache(context: Context): Triple<Boolean, String, Boolean> {
         
         val freedMB = totalFreed / (1024 * 1024)
         
-        // If we freed some space, return success
+        // If we freed some space, return success. The message is only shown, so it is in the app language.
+        val text = LocaleManager.localizedContext(context)
         if (freedMB > 0) {
-            val message = if (appsCleared > 0) {
-                "Freed ${freedMB} MB storage. Cleared cache from ${appsCleared} app${if (appsCleared != 1) "s" else ""}. Open storage settings to clear more."
-            } else {
-                "Freed ${freedMB} MB storage. Open storage settings to clear more app caches."
+            val message = when {
+                appsCleared == 1 ->
+                    text.string(R.string.info_storage_freed_one, "$freedMB MB", appsCleared.toString())
+                appsCleared > 1 ->
+                    text.string(R.string.info_storage_freed_many, "$freedMB MB", appsCleared.toString())
+                else -> text.string(R.string.info_storage_freed, "$freedMB MB")
             }
             Triple(true, message, false)
         } else {
             // No cache cleared - open storage settings for user to clear manually
-            Triple(false, "Open storage settings to clear app caches manually.", true)
+            Triple(false, text.string(R.string.info_storage_open_settings), true)
         }
     } catch (e: Exception) {
         handleError(e)
-        Triple(false, "Unable to clear storage: ${e.message ?: "Unknown error"}. Opening settings...", true)
+        val text = LocaleManager.localizedContext(context)
+        Triple(
+            false,
+            text.string(R.string.info_storage_failed, e.message ?: text.string(R.string.info_unknown_error)),
+            true,
+        )
     }
 }
 
@@ -2657,14 +2667,21 @@ fun optimizeBattery(context: Context): Triple<Boolean, String, Boolean> {
         
         // Play policy 2026-07-08: no in-app "optimization" action — surface
         // diagnostic tips and open Android's battery settings so the user acts.
+        val text = LocaleManager.localizedContext(context)
         if (optimizations > 0) {
-            Triple(false, "Found $optimizations tip${if (optimizations > 1) "s" else ""}. Opening battery settings…", true)
+            val tips = if (optimizations > 1) R.string.info_battery_tips_many else R.string.info_battery_tips_one
+            Triple(false, text.string(tips, optimizations.toString()), true)
         } else {
-            Triple(true, "No battery tips right now. Android manages battery automatically.", false)
+            Triple(true, text.string(R.string.info_battery_no_tips), false)
         }
     } catch (e: Exception) {
         handleError(e)
-        Triple(false, "Unable to read battery info: ${e.message ?: "Unknown error"}. Opening settings…", true)
+        val text = LocaleManager.localizedContext(context)
+        Triple(
+            false,
+            text.string(R.string.info_battery_read_failed, e.message ?: text.string(R.string.info_unknown_error)),
+            true,
+        )
     }
 }
 
