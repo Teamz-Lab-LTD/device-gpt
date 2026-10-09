@@ -61,13 +61,15 @@ fun HealthScoreCard(
             ) {
                 Icon(
                     imageVector = if (hasScannedToday) Icons.Default.CheckCircle else Icons.Default.Schedule,
-                    contentDescription = "Health Status",
+                    contentDescription = context.string(R.string.health_status_cd),
                     tint = if (hasScannedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (hasScannedToday) "Today's Health Score" else "Daily Health Check",
+                    text = context.string(
+                        if (hasScannedToday) R.string.health_today_score else R.string.health_daily_check
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -79,7 +81,7 @@ fun HealthScoreCard(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about health score",
+                            contentDescription = context.string(R.string.health_ai_score_cd),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -88,7 +90,7 @@ fun HealthScoreCard(
                 if (hasScannedToday && !isScanning && !scanCompleted) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Scanned today",
+                        contentDescription = context.string(R.string.health_scanned_today_cd),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -96,7 +98,7 @@ fun HealthScoreCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Scanning",
+                            contentDescription = context.string(R.string.cd_scanning),
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(rotation),
@@ -104,7 +106,7 @@ fun HealthScoreCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Scanning...",
+                            text = context.string(R.string.health_scanning),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -113,13 +115,13 @@ fun HealthScoreCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Scan Complete",
+                            contentDescription = context.string(R.string.health_scan_complete_cd),
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Complete!",
+                            text = context.string(R.string.health_complete),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -151,7 +153,7 @@ fun HealthScoreCard(
                         color = DesignSystemColors.Dark
                     )
                     Text(
-                        text = HealthScoreUtils.getHealthScoreMessage(healthScore),
+                        text = context.string(healthScoreMessageRes(healthScore)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = DesignSystemColors.Dark,
                         fontWeight = FontWeight.Light,
@@ -169,13 +171,13 @@ fun HealthScoreCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = "Scroll to improvements",
+                                contentDescription = context.string(R.string.health_scroll_improvements_cd),
                                 tint = DesignSystemColors.Dark.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "See improvements below",
+                                text = context.string(R.string.health_see_improvements),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = DesignSystemColors.Dark.copy(alpha = 0.7f),
                                 fontSize = 11.sp,
@@ -197,20 +199,27 @@ fun HealthScoreCard(
                 // (streak gamification killed per research insight #7).
                 StatItem(
                     icon = Icons.Default.LocalFireDepartment,
-                    label = "Scanned",
-                    value = if (dailyStreak > 0) "$dailyStreak day${if (dailyStreak > 1) "s" else ""}" else "not yet",
+                    label = context.string(R.string.health_stat_scanned),
+                    value = when {
+                        dailyStreak > 1 -> context.string(R.string.health_days_many, dailyStreak)
+                        dailyStreak == 1 -> context.string(R.string.health_days_one, dailyStreak)
+                        else -> context.string(R.string.health_not_yet)
+                    },
                     color = if (dailyStreak > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 StatItem(
                     icon = Icons.Default.EmojiEvents,
-                    label = "Best",
+                    label = context.string(R.string.health_stat_best),
                     value = "$bestScore/10",
                     color = if (bestScore >= 8) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 StatItem(
                     icon = Icons.Default.Analytics,
-                    label = "Total",
-                    value = "$totalScans scan${if (totalScans == 1) "" else "s"}",
+                    label = context.string(R.string.health_stat_total),
+                    value = context.string(
+                        if (totalScans == 1) R.string.health_scans_one else R.string.health_scans_many,
+                        totalScans,
+                    ),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -220,7 +229,11 @@ fun HealthScoreCard(
             // Streak Message (always shown)
             if (!hasScannedToday) {
                 Text(
-                    text = HealthScoreUtils.getStreakMessage(dailyStreak),
+                    text = when {
+                        dailyStreak > 1 -> context.string(R.string.health_streak_many, dailyStreak)
+                        dailyStreak == 1 -> context.string(R.string.health_streak_one, dailyStreak)
+                        else -> context.string(R.string.health_streak_none)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.primary,
@@ -231,10 +244,10 @@ fun HealthScoreCard(
                 // Motivational message for users who already scanned today
                 Text(
                     text = when {
-                        dailyStreak >= 7 -> "🔥 Amazing streak! You're a health champion!"
-                        dailyStreak >= 3 -> "💪 Great consistency! Keep the momentum going!"
-                        dailyStreak >= 1 -> "✅ Good start! Build your daily habit!"
-                        else -> "🚀 Ready to start your health journey?"
+                        dailyStreak >= 7 -> context.string(R.string.amazing_streak)
+                        dailyStreak >= 3 -> context.string(R.string.great_consistency)
+                        dailyStreak >= 1 -> context.string(R.string.good_start)
+                        else -> context.string(R.string.ready_to_start)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
@@ -256,7 +269,7 @@ fun HealthScoreCard(
                 if (isScanning) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Scanning",
+                        contentDescription = context.string(R.string.cd_scanning),
                         modifier = Modifier
                             .size(18.dp)
                             .rotate(rotation)
@@ -266,7 +279,7 @@ fun HealthScoreCard(
                 } else {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Scan",
+                        contentDescription = context.string(R.string.cd_scan),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -275,6 +288,19 @@ fun HealthScoreCard(
             }
         }
     }
+}
+
+/**
+ * The line under the score, as a string resource. Same thresholds as
+ * [HealthScoreUtils.getHealthScoreMessage], which stays English because the AI-facing
+ * app functions read it; change both together.
+ */
+@androidx.annotation.StringRes
+private fun healthScoreMessageRes(score: Int): Int = when {
+    score >= 9 -> R.string.health_msg_excellent
+    score >= 7 -> R.string.health_msg_good
+    score >= 5 -> R.string.health_msg_fair
+    else -> R.string.health_msg_needs_attention
 }
 
 @Composable

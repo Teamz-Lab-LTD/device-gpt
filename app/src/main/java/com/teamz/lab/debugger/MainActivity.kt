@@ -143,11 +143,18 @@ class MainActivity : ComponentActivity() {
                                                 type = "text/plain"
                                                 putExtra(
                                                     android.content.Intent.EXTRA_TEXT,
-                                                    "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
+                                                    getString(
+                                                        R.string.share_score_text,
+                                                        score,
+                                                        "https://play.google.com/store/apps/details?id=com.teamz.lab.debugger",
+                                                    )
                                                 )
                                             }
                                             startActivity(
-                                                android.content.Intent.createChooser(sendIntent, "Share your Device Score")
+                                                android.content.Intent.createChooser(
+                                                    sendIntent,
+                                                    getString(R.string.share_score_chooser_title),
+                                                )
                                             )
                                         }
                                         // Completion, not intent. first_scan_share_tapped alone

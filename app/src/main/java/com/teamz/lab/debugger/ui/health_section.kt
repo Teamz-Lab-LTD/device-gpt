@@ -355,7 +355,11 @@ fun HealthSection(
                         com.teamz.lab.debugger.utils.ShareCardRenderer.shareScoreCard(context, score)
                     } else false
                     if (!usedCard) {
-                        val shareText = "My phone scored $score/100 on DeviceGPT. Run yours: https://play.google.com/store/apps/details?id=com.teamz.lab.debugger"
+                        val shareText = context.string(
+                            R.string.share_score_text,
+                            score,
+                            "https://play.google.com/store/apps/details?id=com.teamz.lab.debugger",
+                        )
                         onShareClick(shareText)
                     }
                 })
@@ -491,13 +495,13 @@ fun HealthSection(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Get Device Health Report",
+                                text = context.string(R.string.health_report_title),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Shareable proof that your phone is working properly — great for resale or warranty",
+                                text = context.string(R.string.health_report_body),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -535,13 +539,13 @@ fun HealthSection(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Verify Someone's Report",
+                                text = context.string(R.string.health_verify_title),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Got a report code? Check if the phone's health report is real",
+                                text = context.string(R.string.health_verify_body),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -610,7 +614,7 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Quick Actions",
+                    text = context.string(R.string.health_quick_actions),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface

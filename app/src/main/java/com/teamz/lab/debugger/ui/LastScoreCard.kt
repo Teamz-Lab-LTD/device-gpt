@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,9 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.ui.theme.DesignSystemColors
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
@@ -86,9 +89,10 @@ fun LastScoreCard(
         } catch (_: Throwable) { /* insight optional */ }
     }
 
-    val verdict = verdictFor(score)
+    val verdict = stringResource(verdictRes(score))
     val verdictColor = verdictColor(score)
-    val agoLabel = timeAgoLabel(timestamp)
+    val (agoRes, agoCount) = timeAgoParts(timestamp)
+    val agoLabel = stringResource(agoRes, agoCount)
 
     Card(
         modifier = Modifier
@@ -107,7 +111,7 @@ fun LastScoreCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Your Device Score",
+                text = stringResource(R.string.first_scan_title),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -160,7 +164,7 @@ fun LastScoreCard(
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
-                    Text("Run again", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.last_score_run_again), fontWeight = FontWeight.SemiBold)
                 }
                 OutlinedButton(
                     onClick = {
@@ -175,18 +179,29 @@ fun LastScoreCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp)
                 ) {
-                    Text("Share")
+                    Text(stringResource(R.string.share))
                 }
             }
         }
     }
 }
 
-internal fun verdictFor(score: Int): String = when {
-    score >= 90 -> "Excellent"
-    score >= 75 -> "Good"
-    score >= 60 -> "Fair"
-    score >= 40 -> "Poor"
+/** The verdict word as a string resource, so the card shows it in the app language. */
+@StringRes
+internal fun verdictRes(score: Int): Int = when {
+    score >= 90 -> R.string.last_score_excellent
+    score >= 75 -> R.string.last_score_good
+    score >= 60 -> R.string.last_score_fair
+    score >= 40 -> R.string.last_score_poor
+    else -> R.string.last_score_critical
+}
+
+/** The verdict word in English, whatever the app language. Thresholds live in [verdictRes]. */
+internal fun verdictFor(score: Int): String = when (verdictRes(score)) {
+    R.string.last_score_excellent -> "Excellent"
+    R.string.last_score_good -> "Good"
+    R.string.last_score_fair -> "Fair"
+    R.string.last_score_poor -> "Poor"
     else -> "Critical"
 }
 
@@ -198,17 +213,34 @@ internal fun verdictColor(score: Int): Color = when {
     else -> Color(0xFFC62828)
 }
 
-internal fun timeAgoLabel(timestampMs: Long, nowMs: Long = System.currentTimeMillis()): String {
+/**
+ * How long ago [timestampMs] was, as a string resource and the number that goes into it
+ * (0 for "just now", whose string takes no number).
+ */
+internal fun timeAgoParts(timestampMs: Long, nowMs: Long = System.currentTimeMillis()): Pair<Int, Int> {
     val diffMs = (nowMs - timestampMs).coerceAtLeast(0L)
     val mins = diffMs / 60_000L
     val hours = mins / 60L
     val days = hours / 24L
     return when {
-        mins < 1L -> "just now"
-        mins < 60L -> "${mins}m ago"
-        hours < 24L -> "${hours}h ago"
-        days < 7L -> "${days}d ago"
-        days < 30L -> "${days / 7L}w ago"
-        else -> "${days / 30L}mo ago"
+        mins < 1L -> R.string.time_ago_just_now to 0
+        mins < 60L -> R.string.time_ago_minutes to mins.toInt()
+        hours < 24L -> R.string.time_ago_hours to hours.toInt()
+        days < 7L -> R.string.time_ago_days to days.toInt()
+        days < 30L -> R.string.time_ago_weeks to (days / 7L).toInt()
+        else -> R.string.time_ago_months to (days / 30L).toInt()
+    }
+}
+
+/** The same label in English, whatever the app language. Thresholds live in [timeAgoParts]. */
+internal fun timeAgoLabel(timestampMs: Long, nowMs: Long = System.currentTimeMillis()): String {
+    val (res, count) = timeAgoParts(timestampMs, nowMs)
+    return when (res) {
+        R.string.time_ago_just_now -> "just now"
+        R.string.time_ago_minutes -> "${count}m ago"
+        R.string.time_ago_hours -> "${count}h ago"
+        R.string.time_ago_days -> "${count}d ago"
+        R.string.time_ago_weeks -> "${count}w ago"
+        else -> "${count}mo ago"
     }
 }
