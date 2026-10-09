@@ -25,11 +25,15 @@ class BanglaStringsGuardTest {
     private data class Entry(val value: String, val translatable: Boolean)
 
     private fun parse(locale: String): Map<String, Entry> {
-        val file = locate("src/main/res/$locale/strings.xml")
-        assertTrue("$locale/strings.xml missing", file.exists())
+        val main = locate("src/main/res/$locale/strings.xml")
+        assertTrue("$locale/strings.xml missing", main.exists())
+        // Every strings*.xml in the folder counts: later batches keep their keys in
+        // strings_<area>.xml so the files stay small enough to review.
+        val files = main.parentFile!!.listFiles { f -> f.name.startsWith("strings") && f.name.endsWith(".xml") }!!
+            .sortedBy { it.name }
         val out = LinkedHashMap<String, Entry>()
         Regex("<string\\s+name=\"([^\"]+)\"([^>]*)>(.*?)</string>", RegexOption.DOT_MATCHES_ALL)
-            .findAll(file.readText())
+            .findAll(files.joinToString("\n") { it.readText() })
             .forEach { m ->
                 val name = m.groupValues[1]
                 assertTrue("$locale/strings.xml declares $name twice", name !in out)
