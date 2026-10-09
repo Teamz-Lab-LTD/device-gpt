@@ -68,6 +68,21 @@ class TestDoneCardTest {
         assertTrue(Regex("""if \(!cardShown\) activity\?\.let""").containsMatchIn(s))
     }
 
+    // Re-review minor 5: the sheet's LaunchedEffect re-runs on rotation; one showing = one event.
+    @Test fun `the shown event is counted once per showing`() {
+        context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
+            .edit().putString(FirstScreenExperiment.KEY_ARM, "B").commit()
+        TestDoneCard.onTestCompleted(context)
+        assertTrue(TestDoneCard.claimShownLog())
+        assertFalse("rotation must not count again", TestDoneCard.claimShownLog())
+    }
+
+    @Test fun `excluded users never see the card`() {
+        context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
+            .edit().putString(FirstScreenExperiment.KEY_ARM, "X").commit()
+        assertFalse(TestDoneCard.onTestCompleted(context))
+    }
+
     @Test fun `arm A never sees it`() {
         context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
             .edit().putString(FirstScreenExperiment.KEY_ARM, "A").commit()

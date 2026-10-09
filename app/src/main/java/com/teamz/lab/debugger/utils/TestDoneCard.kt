@@ -23,7 +23,17 @@ object TestDoneCard {
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (!shouldShow(FirstScreenExperiment.isB(context), p.getBoolean(KEY_SHOWN, false))) return false
         p.edit().putBoolean(KEY_SHOWN, true).apply()
+        shownLogPending = true
         _visible.value = true
+        return true
+    }
+
+    @Volatile private var shownLogPending = false
+
+    /** True once per showing: the sheet's LaunchedEffect re-runs on rotation (re-review minor 5). */
+    fun claimShownLog(): Boolean {
+        if (!shownLogPending) return false
+        shownLogPending = false
         return true
     }
 

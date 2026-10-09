@@ -8,27 +8,28 @@ import android.content.Context
  *
  * Only the score screen assigns an arm ([arm]), and only from an RC value that came from the
  * server. Before the first fetch lands, RC answers with the bundled `false`; storing that put every
- * slow or offline first launch in A (review 2026-10-09, C1). Such users stay unassigned: they see
- * today's flow and are left out of both arms. Everything else reads with [peekArm] / [isB], which
+ * slow or offline first launch in A (review 2026-10-09, C1). Such users are stored as "X": they see
+ * today's flow and stay out of both arms for good, so a later fetch cannot move someone who has
+ * already seen the A screen into B. fs_arm=X also measures how many are excluded. Everything else reads with [peekArm] / [isB], which
  * never assign, so vc51 upgraders and failed scans never enter the experiment (review I1).
  */
 object FirstScreenExperiment {
     internal const val PREFS = "first_screen_experiment"
     internal const val KEY_ARM = "fs_arm"
 
-    /** [rcFromServer] is null when RC has not delivered a server value yet. */
-    fun chooseArm(rcFromServer: Boolean?, stored: String?): String? = when {
+    /** [rcFromServer] is null when RC has not delivered a server value yet -> excluded ("X"). */
+    fun chooseArm(rcFromServer: Boolean?, stored: String?): String = when {
         stored != null -> stored
-        rcFromServer == null -> null
+        rcFromServer == null -> "X"
         rcFromServer -> "B"
         else -> "A"
     }
 
-    /** Score screen only. Returns the arm, assigning it once if the server value is known. */
-    fun arm(context: Context, rcFromServer: Boolean? = serverFlag()): String? {
+    /** Score screen only. Assigns once: A/B from the server value, X when there is none yet. */
+    fun arm(context: Context, rcFromServer: Boolean? = serverFlag()): String {
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         p.getString(KEY_ARM, null)?.let { return it }
-        val chosen = chooseArm(rcFromServer, null) ?: return null
+        val chosen = chooseArm(rcFromServer, null)
         p.edit().putString(KEY_ARM, chosen).apply()
         stamp(chosen)
         return chosen

@@ -37,11 +37,13 @@ class FirstScreenExperimentTest {
     }
 
     // Review 2026-10-09 C1: before the RC fetch lands, getBoolean returns the bundled false. Storing
-    // that put every slow/offline first launch in A, so B lacked exactly those users.
-    @Test fun `no arm is assigned while the RC value is not from the server`() {
-        assertNull(FirstScreenExperiment.chooseArm(rcFromServer = null, stored = null))
-        assertNull(FirstScreenExperiment.arm(context, rcFromServer = null))
-        assertNull("nothing persisted", stored())
+    // that put every slow/offline first launch in A. Such users are now excluded, and the exclusion
+    // is sticky (re-review minor 1): having seen today's flow, a later fetch must not put them in B.
+    @Test fun `a score screen without a server value excludes the user for good`() {
+        assertEquals("X", FirstScreenExperiment.chooseArm(rcFromServer = null, stored = null))
+        assertEquals("X", FirstScreenExperiment.arm(context, rcFromServer = null))
+        assertEquals("X", stored())
+        assertEquals("X", FirstScreenExperiment.arm(context, rcFromServer = true))
         assertFalse(FirstScreenExperiment.isB(context))
     }
 

@@ -34,7 +34,8 @@ fun TestDoneSheet() {
     val context = LocalContext.current
     // Logged when the dialog is really on screen (review 2026-10-09 M2), once per showing.
     LaunchedEffect(Unit) {
-        try { AnalyticsUtils.logEvent(AnalyticsEvent.FsDoneCardShown) } catch (_: Throwable) { }
+        if (TestDoneCard.claimShownLog())
+            try { AnalyticsUtils.logEvent(AnalyticsEvent.FsDoneCardShown) } catch (_: Throwable) { }
     }
     fun action(a: String, extra: Map<String, Any> = emptyMap()) = try {
         AnalyticsUtils.logEvent(AnalyticsEvent.FsDoneCardAction, mapOf("action" to a) + extra)
@@ -57,7 +58,10 @@ fun TestDoneSheet() {
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         try { AnalyticsUtils.logEvent(AnalyticsEvent.FsNotifPermissionResult, mapOf("granted" to granted)) } catch (_: Throwable) { }
+        // Denied (or blocked after two denials, when Android answers at once): say why nothing
+        // happened instead of closing silently (re-review minor 4).
         if (granted) confirmWeekly()
+        else Toast.makeText(context, "The weekly check-up needs notifications. You can turn them on in Settings.", Toast.LENGTH_LONG).show()
         TestDoneCard.dismiss()
     }
     AlertDialog(
