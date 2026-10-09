@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.teamz.lab.debugger.R
+import com.teamz.lab.debugger.utils.string
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,15 +81,15 @@ fun DeviceTimelineSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Device Timeline",
+                text = context.string(R.string.timeline_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = if (isPremium) "Last 90 days of this device's history"
-                else "Last 7 days. Your full history is saved on your phone — Premium unlocks the full view.",
+                text = if (isPremium) context.string(R.string.timeline_subtitle_premium)
+                else context.string(R.string.timeline_subtitle_free),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             )
@@ -144,7 +146,11 @@ fun DeviceTimelineSection(
                         .padding(vertical = 6.dp),
                 ) {
                     Text(
-                        text = "🔒 ${totalCount - events.size} older event${if (totalCount - events.size == 1) "" else "s"} — Premium shows 90 days",
+                        text = context.string(
+                            if (totalCount - events.size == 1) R.string.timeline_older_one
+                            else R.string.timeline_older_many,
+                            totalCount - events.size,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
@@ -197,14 +203,14 @@ fun ChargeSummaryCard() {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "🔌 Last charge",
+                text = context.string(R.string.timeline_last_charge),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = s.label ?: "Charge session recorded",
+                text = s.label ?: context.string(R.string.timeline_charge_recorded),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

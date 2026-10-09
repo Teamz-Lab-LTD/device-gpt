@@ -600,4 +600,103 @@
     <!-- Top bar theme button (task 3, 2026-10-09) -->
     <string name="theme_button_cd">Theme</string>
     <string name="theme_selected_cd">Selected</string>
+
+    <!-- Health tab: timeline and last-charge cards (task 3, 2026-10-09) -->
+    <string name="timeline_title">Device Timeline</string>
+    <string name="timeline_subtitle_premium">Last 90 days of this device\'s history</string>
+    <string name="timeline_subtitle_free">Last 7 days. Your full history is saved on your phone — Premium unlocks the full view.</string>
+    <string name="timeline_last_charge">🔌 Last charge</string>
+    <string name="timeline_charge_recorded">Charge session recorded</string>
+
+    <!-- Health tab: timeline locked line (task 3, 2026-10-09) -->
+    <string name="timeline_older_one">🔒 %1$s older event — Premium shows 90 days</string>
+    <string name="timeline_older_many">🔒 %1$s older events — Premium shows 90 days</string>
+
+    <!-- Health tab: quick-action cards and their help dialogs (task 3, 2026-10-09) -->
+    <string name="health_storage_help_title">How to Clear Storage</string>
+    <string name="health_storage_help_intro">To clear app caches and free up storage:</string>
+    <string name="health_storage_help_option1">Option 1: Grant \'All files access\' permission</string>
+    <string name="health_storage_help_option1_a">• Enable \'Allow access to manage all files\' in the settings screen</string>
+    <string name="health_storage_help_option1_b">• This allows the app to clear more cache automatically</string>
+    <string name="health_storage_help_option2">Option 2: Clear cache manually</string>
+    <string name="health_storage_help_step1">1. Go to Settings > Apps</string>
+    <string name="health_storage_help_step2">2. Select an app</string>
+    <string name="health_storage_help_step3">3. Tap \'Storage\' > \'Clear Cache\'</string>
+    <string name="health_storage_help_or">Or use Settings > Storage to see overall storage usage and recommendations.</string>
+    <string name="health_battery_tips">Battery Tips</string>
+    <string name="health_battery_tips_intro">To optimize battery life and health:</string>
+    <string name="health_battery_tips_1">1. Enable Battery Saver Mode</string>
+    <string name="health_battery_tips_1a">• Go to Settings > Battery > Battery Saver</string>
+    <string name="health_battery_tips_1b">• Enable \'Turn on automatically\' at 15% or 5%</string>
+    <string name="health_battery_tips_2">2. Optimize App Battery Usage</string>
+    <string name="health_battery_tips_2a">• Go to Settings > Battery > Battery optimization</string>
+    <string name="health_battery_tips_2b">• Set apps to \'Optimized\' or \'Restricted\'</string>
+    <string name="health_battery_tips_3">3. General Tips</string>
+    <string name="health_battery_tips_3a">• Lower screen brightness</string>
+    <string name="health_battery_tips_3b">• Close unused apps</string>
+    <string name="health_battery_tips_3c">• Don\'t keep phone at 100% charge</string>
+    <string name="health_your_performance">Your Performance</string>
+    <string name="health_recommendations">Smart Recommendations</string>
+    <string name="health_recommendations_basis">Based on your device\'s actual health data</string>
+    <string name="health_tasks_title">Today\'s Tasks</string>
+    <string name="health_tasks_all_done">🎉 All tasks completed! Great job!</string>
+    <string name="health_temperature_title">Temperature History</string>
+    <string name="health_temperature_empty">No temperature history yet. Temperature will be tracked automatically.</string>
+    <string name="health_history_title">7-Day History</string>
+    <string name="health_history_empty">No health history yet. Start scanning to build your history!</string>
+    <string name="health_privacy_title">Privacy Dashboard</string>
+    <string name="health_privacy_score">Privacy Score</string>
+    <string name="health_privacy_loading">Loading threats...</string>
+    <string name="health_privacy_threats_today">Threats Today:</string>
+    <string name="health_privacy_no_threats">No threats detected today</string>
+    <string name="health_privacy_recent_access">Recent mic/camera access detected</string>
+    <string name="health_privacy_footer">Monitors device security and privacy threats</string>
+    <string name="health_memory_title">Memory Usage</string>
+    <string name="health_memory_footer">Shows current memory usage. Android manages RAM automatically.</string>
+    <string name="health_storage_title">Storage Cleanup</string>
+    <string name="health_storage_usage">Storage Usage</string>
+    <string name="health_storage_clean">Clean Storage</string>
+    <string name="health_storage_footer">Clears app caches and temporary files to free up storage space</string>
+    <string name="health_battery_title">Battery Health</string>
+    <string name="health_battery_footer">Shows battery diagnostics + opens Android\'s battery settings. Android manages battery automatically.</string>
+    <string name="health_cache_title">App Cache Cleaner</string>
+    <string name="health_cache_total">Total Cache</string>
+    <string name="health_cache_clear">Clear App Cache</string>
+    <string name="health_cache_footer">Clears temporary files from apps to free up storage space</string>
+
+    <!-- Health tab: icon descriptions for screen readers (task 3, 2026-10-09) -->
+    <string name="health_cd_insights">Insights</string>
+    <string name="health_cd_suggestions">Suggestions</string>
+    <string name="health_cd_ai_recommendations">Get AI insights about recommendations</string>
+    <string name="health_cd_tip">Tip</string>
+    <string name="health_cd_tasks">Tasks</string>
+    <string name="health_cd_ai_tasks">Get AI insights about tasks</string>
+    <string name="health_cd_temperature">Temperature</string>
+    <string name="health_cd_ai_temperature">Get AI insights about temperature</string>
+    <string name="health_cd_history">History</string>
+    <string name="health_cd_ai_history">Get AI insights about health history</string>
+    <string name="health_cd_privacy">Privacy</string>
+    <string name="health_cd_ai_privacy">Get AI insights about privacy</string>
+    <string name="health_cd_threat">Threat</string>
+    <string name="health_cd_safe">Safe</string>
+    <string name="health_cd_recent_usage">Recent usage</string>
+    <string name="health_cd_ram">RAM</string>
+    <string name="health_cd_ai_ram">Get AI insights about RAM</string>
+    <string name="health_cd_storage">Storage</string>
+    <string name="health_cd_ai_storage">Get AI insights about storage</string>
+    <string name="health_cd_battery">Battery</string>
+    <string name="health_cd_ai_battery">Get AI insights about battery</string>
+    <string name="health_cd_cache">Cache</string>
+    <string name="health_cd_ai_cache">Get AI insights about cache</string>
+
+    <!-- Health tab: toasts, button states and counted lines (task 3, 2026-10-09) -->
+    <string name="health_go_to_storage_settings">Please go to Settings > Storage manually</string>
+    <string name="health_go_to_battery_settings">Please go to Settings > Battery manually</string>
+    <string name="health_refreshing">Refreshing…</string>
+    <string name="health_cleaning">Cleaning...</string>
+    <string name="health_clearing">Clearing...</string>
+    <string name="health_tasks_completed">%1$s/%2$s completed</string>
+    <string name="health_temperature_peak">⚠️ Peak: %1$s°C this week</string>
+    <string name="health_cache_in_apps">%1$s in %2$s apps</string>
+    <string name="health_cache_apps_have">%1$s apps have cache data</string>
 </resources>

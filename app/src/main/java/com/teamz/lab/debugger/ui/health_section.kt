@@ -884,7 +884,7 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                     onDismissRequest = { showStorageGuideDialog = false },
                     title = {
                         Text(
-                            text = "How to Clear Storage",
+                            text = context.string(R.string.health_storage_help_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -892,55 +892,55 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                     text = {
                         Column {
                             Text(
-                                text = "To clear app caches and free up storage:",
+                                text = context.string(R.string.health_storage_help_intro),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                                 Text(
-                                    text = "Option 1: Grant 'All files access' permission",
+                                    text = context.string(R.string.health_storage_help_option1),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(vertical = 4.dp)
                                 )
                                 Text(
-                                    text = "• Enable 'Allow access to manage all files' in the settings screen",
+                                    text = context.string(R.string.health_storage_help_option1_a),
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                                 )
                                 Text(
-                                    text = "• This allows the app to clear more cache automatically",
+                                    text = context.string(R.string.health_storage_help_option1_b),
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                             Text(
-                                text = "Option 2: Clear cache manually",
+                                text = context.string(R.string.health_storage_help_option2),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
                             Text(
-                                text = "1. Go to Settings > Apps",
+                                text = context.string(R.string.health_storage_help_step1),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "2. Select an app",
+                                text = context.string(R.string.health_storage_help_step2),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "3. Tap 'Storage' > 'Clear Cache'",
+                                text = context.string(R.string.health_storage_help_step3),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Or use Settings > Storage to see overall storage usage and recommendations.",
+                                text = context.string(R.string.health_storage_help_or),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
@@ -957,18 +957,18 @@ Android manages RAM automatically. This card shows current memory usage; refresh
                                     // If still can't open, show toast
                                     android.widget.Toast.makeText(
                                         context,
-                                        "Please go to Settings > Storage manually",
+                                        context.string(R.string.health_go_to_storage_settings),
                                         android.widget.Toast.LENGTH_LONG
                                     ).show()
                                 }
                             }
                         ) {
-                            Text("Open Settings")
+                            Text(context.string(R.string.open_settings))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showStorageGuideDialog = false }) {
-                            Text("Close")
+                            Text(context.string(R.string.close))
                         }
                     }
                 )
@@ -1204,7 +1204,7 @@ Storage cleanup clears app caches and temporary files to free up space.
                     onDismissRequest = { showBatteryGuideDialog = false },
                     title = {
                         Text(
-                            text = "Battery Tips",
+                            text = context.string(R.string.health_battery_tips),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -1212,65 +1212,65 @@ Storage cleanup clears app caches and temporary files to free up space.
                     text = {
                         Column {
                             Text(
-                                text = "To optimize battery life and health:",
+                                text = context.string(R.string.health_battery_tips_intro),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             Text(
-                                text = "1. Enable Battery Saver Mode",
+                                text = context.string(R.string.health_battery_tips_1),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Go to Settings > Battery > Battery Saver",
+                                text = context.string(R.string.health_battery_tips_1a),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Enable 'Turn on automatically' at 15% or 5%",
+                                text = context.string(R.string.health_battery_tips_1b),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "2. Optimize App Battery Usage",
+                                text = context.string(R.string.health_battery_tips_2),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Go to Settings > Battery > Battery optimization",
+                                text = context.string(R.string.health_battery_tips_2a),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Set apps to 'Optimized' or 'Restricted'",
+                                text = context.string(R.string.health_battery_tips_2b),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "3. General Tips",
+                                text = context.string(R.string.health_battery_tips_3),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Lower screen brightness",
+                                text = context.string(R.string.health_battery_tips_3a),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Close unused apps",
+                                text = context.string(R.string.health_battery_tips_3b),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
                             Text(
-                                text = "• Don't keep phone at 100% charge",
+                                text = context.string(R.string.health_battery_tips_3c),
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                             )
@@ -1284,18 +1284,18 @@ Storage cleanup clears app caches and temporary files to free up space.
                                 if (!opened) {
                                     android.widget.Toast.makeText(
                                         context,
-                                        "Please go to Settings > Battery manually",
+                                        context.string(R.string.health_go_to_battery_settings),
                                         android.widget.Toast.LENGTH_LONG
                                     ).show()
                                 }
                             }
                         ) {
-                            Text("Open Settings")
+                            Text(context.string(R.string.open_settings))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showBatteryGuideDialog = false }) {
-                            Text("Close")
+                            Text(context.string(R.string.close))
                         }
                     }
                 )
@@ -1780,6 +1780,7 @@ private fun PerformanceInsightsCard(
     insights: String,
     motivationalMessage: String
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -1797,13 +1798,13 @@ private fun PerformanceInsightsCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Psychology,
-                    contentDescription = "Insights",
+                    contentDescription = context.string(R.string.health_cd_insights),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Your Performance",
+                    text = context.string(R.string.health_your_performance),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1835,6 +1836,7 @@ private fun ImprovementSuggestionsCard(
     currentScore: Int,
     onAIClick: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -1853,14 +1855,14 @@ private fun ImprovementSuggestionsCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Lightbulb,
-                    contentDescription = "Suggestions",
+                    contentDescription = context.string(R.string.health_cd_suggestions),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Smart Recommendations",
+                    text = context.string(R.string.health_recommendations),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1868,7 +1870,7 @@ private fun ImprovementSuggestionsCard(
                     if (currentScore < 8) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Based on your device's actual health data",
+                            text = context.string(R.string.health_recommendations_basis),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             fontSize = 11.sp
@@ -1882,7 +1884,7 @@ private fun ImprovementSuggestionsCard(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about recommendations",
+                            contentDescription = context.string(R.string.health_cd_ai_recommendations),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -1899,7 +1901,7 @@ private fun ImprovementSuggestionsCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Tip",
+                        contentDescription = context.string(R.string.health_cd_tip),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -1945,21 +1947,21 @@ private fun DailyTasksCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Tasks",
+                    contentDescription = context.string(R.string.health_cd_tasks),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Today's Tasks",
+                        text = context.string(R.string.health_tasks_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "$completedCount/${tasks.size} completed",
+                        text = context.string(R.string.health_tasks_completed, completedCount, tasks.size),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         fontSize = 11.sp
@@ -1972,7 +1974,7 @@ private fun DailyTasksCard(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about tasks",
+                            contentDescription = context.string(R.string.health_cd_ai_tasks),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2054,7 +2056,7 @@ private fun DailyTasksCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "🎉 All tasks completed! Great job!",
+                        text = context.string(R.string.health_tasks_all_done),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -2111,13 +2113,13 @@ private fun TemperatureHistoryCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Thermostat,
-                    contentDescription = "Temperature",
+                    contentDescription = context.string(R.string.health_cd_temperature),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Temperature History",
+                    text = context.string(R.string.health_temperature_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -2130,7 +2132,7 @@ private fun TemperatureHistoryCard(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about temperature",
+                            contentDescription = context.string(R.string.health_cd_ai_temperature),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2162,7 +2164,7 @@ private fun TemperatureHistoryCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "⚠️ Peak: ${peak.toInt()}°C this week",
+                                text = context.string(R.string.health_temperature_peak, peak.toInt()),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
@@ -2231,7 +2233,7 @@ private fun TemperatureHistoryCard(
                 }
             } else {
                 Text(
-                    text = "No temperature history yet. Temperature will be tracked automatically.",
+                    text = context.string(R.string.health_temperature_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
@@ -2268,13 +2270,13 @@ private fun HealthHistoryCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.History,
-                    contentDescription = "History",
+                    contentDescription = context.string(R.string.health_cd_history),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "7-Day History",
+                    text = context.string(R.string.health_history_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -2287,7 +2289,7 @@ private fun HealthHistoryCard(
                     ) {
                         Icon(
                             imageVector = com.teamz.lab.debugger.utils.AIIcon.icon,
-                            contentDescription = "Get AI insights about health history",
+                            contentDescription = context.string(R.string.health_cd_ai_history),
                             tint = com.teamz.lab.debugger.utils.AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2326,7 +2328,7 @@ private fun HealthHistoryCard(
                 }
             } else {
                 Text(
-                    text = "No health history yet. Start scanning to build your history!",
+                    text = context.string(R.string.health_history_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
@@ -2433,7 +2435,7 @@ private fun PrivacyDashboardCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Security,
-                    contentDescription = "Privacy",
+                    contentDescription = context.string(R.string.health_cd_privacy),
                     tint = when {
                         privacyScore < 50 -> MaterialTheme.colorScheme.error
                         privacyScore < 70 -> MaterialTheme.colorScheme.tertiary
@@ -2444,7 +2446,7 @@ private fun PrivacyDashboardCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Privacy Dashboard",
+                        text = context.string(R.string.health_privacy_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2459,7 +2461,7 @@ private fun PrivacyDashboardCard(
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
-                            contentDescription = "Get AI insights about privacy",
+                            contentDescription = context.string(R.string.health_cd_ai_privacy),
                             tint = AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2477,7 +2479,7 @@ private fun PrivacyDashboardCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Privacy Score",
+                        text = context.string(R.string.health_privacy_score),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -2563,14 +2565,14 @@ private fun PrivacyDashboardCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Loading threats...",
+                        text = context.string(R.string.health_privacy_loading),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
             } else if (threats.isNotEmpty()) {
                 Text(
-                    text = "Threats Today:",
+                    text = context.string(R.string.health_privacy_threats_today),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -2583,7 +2585,7 @@ private fun PrivacyDashboardCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Warning,
-                            contentDescription = "Threat",
+                            contentDescription = context.string(R.string.health_cd_threat),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
                         )
@@ -2604,13 +2606,13 @@ private fun PrivacyDashboardCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Safe",
+                        contentDescription = context.string(R.string.health_cd_safe),
                         tint = DesignSystemColors.NeonGreen,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "No threats detected today",
+                        text = context.string(R.string.health_privacy_no_threats),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         fontSize = 12.sp
@@ -2626,13 +2628,13 @@ private fun PrivacyDashboardCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,
-                        contentDescription = "Recent usage",
+                        contentDescription = context.string(R.string.health_cd_recent_usage),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Recent mic/camera access detected",
+                        text = context.string(R.string.health_privacy_recent_access),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
@@ -2644,7 +2646,7 @@ private fun PrivacyDashboardCard(
             // Info text
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Monitors device security and privacy threats",
+                text = context.string(R.string.health_privacy_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -2661,6 +2663,7 @@ private fun RamOptimizationCard(
     onClearRam: () -> Unit,
     onAIClick: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -2683,7 +2686,7 @@ private fun RamOptimizationCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Speed,
-                    contentDescription = "RAM",
+                    contentDescription = context.string(R.string.health_cd_ram),
                     tint = when {
                         ramPercent > 85 -> MaterialTheme.colorScheme.error
                         ramPercent > 70 -> MaterialTheme.colorScheme.tertiary
@@ -2694,7 +2697,7 @@ private fun RamOptimizationCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Memory Usage",
+                        text = context.string(R.string.health_memory_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2715,7 +2718,7 @@ private fun RamOptimizationCard(
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
-                            contentDescription = "Get AI insights about RAM",
+                            contentDescription = context.string(R.string.health_cd_ai_ram),
                             tint = AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2733,7 +2736,7 @@ private fun RamOptimizationCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Memory Usage",
+                        text = context.string(R.string.health_memory_title),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -2796,7 +2799,7 @@ private fun RamOptimizationCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Refreshing…")
+                    Text(context.string(R.string.health_refreshing))
                 } else {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -2805,7 +2808,7 @@ private fun RamOptimizationCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Refresh",
+                        text = context.string(R.string.refresh),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -2829,7 +2832,7 @@ private fun RamOptimizationCard(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Shows current memory usage. Android manages RAM automatically.",
+                text = context.string(R.string.health_memory_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -2846,6 +2849,7 @@ private fun StorageCleanupCard(
     onCleanStorage: () -> Unit,
     onAIClick: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -2868,7 +2872,7 @@ private fun StorageCleanupCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Folder,
-                    contentDescription = "Storage",
+                    contentDescription = context.string(R.string.health_cd_storage),
                     tint = when {
                         storagePercent > 90 -> MaterialTheme.colorScheme.error
                         storagePercent > 80 -> MaterialTheme.colorScheme.tertiary
@@ -2879,7 +2883,7 @@ private fun StorageCleanupCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Storage Cleanup",
+                        text = context.string(R.string.health_storage_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2900,7 +2904,7 @@ private fun StorageCleanupCard(
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
-                            contentDescription = "Get AI insights about storage",
+                            contentDescription = context.string(R.string.health_cd_ai_storage),
                             tint = AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2918,7 +2922,7 @@ private fun StorageCleanupCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Storage Usage",
+                        text = context.string(R.string.health_storage_usage),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -2980,7 +2984,7 @@ private fun StorageCleanupCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cleaning...")
+                    Text(context.string(R.string.health_cleaning))
                 } else {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -2989,7 +2993,7 @@ private fun StorageCleanupCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Clean Storage",
+                        text = context.string(R.string.health_storage_clean),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -3015,7 +3019,7 @@ private fun StorageCleanupCard(
             // Info text
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Clears app caches and temporary files to free up storage space",
+                text = context.string(R.string.health_storage_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -3033,6 +3037,7 @@ private fun BatteryOptimizationCard(
     onOptimizeBattery: () -> Unit,
     onAIClick: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -3055,7 +3060,7 @@ private fun BatteryOptimizationCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.BatteryStd,
-                    contentDescription = "Battery",
+                    contentDescription = context.string(R.string.health_cd_battery),
                     tint = when {
                         batteryHealth < 50 -> MaterialTheme.colorScheme.error
                         batteryHealth < 70 -> MaterialTheme.colorScheme.tertiary
@@ -3066,7 +3071,7 @@ private fun BatteryOptimizationCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Battery Health",
+                        text = context.string(R.string.health_battery_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -3108,7 +3113,7 @@ private fun BatteryOptimizationCard(
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
-                            contentDescription = "Get AI insights about battery",
+                            contentDescription = context.string(R.string.health_cd_ai_battery),
                             tint = AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -3126,7 +3131,7 @@ private fun BatteryOptimizationCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Battery Health",
+                        text = context.string(R.string.health_battery_title),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -3188,7 +3193,7 @@ private fun BatteryOptimizationCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Checking…")
+                    Text(context.string(R.string.checking))
                 } else {
                     Icon(
                         imageVector = Icons.Default.PowerSettingsNew,
@@ -3197,7 +3202,7 @@ private fun BatteryOptimizationCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Battery Tips",
+                        text = context.string(R.string.health_battery_tips),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -3221,7 +3226,7 @@ private fun BatteryOptimizationCard(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Shows battery diagnostics + opens Android's battery settings. Android manages battery automatically.",
+                text = context.string(R.string.health_battery_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -3238,6 +3243,7 @@ private fun AppCacheCleanerCard(
     onClearCache: () -> Unit,
     onAIClick: (() -> Unit)? = null
 ) {
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -3256,14 +3262,14 @@ private fun AppCacheCleanerCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Build,
-                    contentDescription = "Cache",
+                    contentDescription = context.string(R.string.health_cd_cache),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "App Cache Cleaner",
+                        text = context.string(R.string.health_cache_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -3272,7 +3278,7 @@ private fun AppCacheCleanerCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$cacheSize in $appCount apps",
+                        text = context.string(R.string.health_cache_in_apps, cacheSize, appCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -3284,7 +3290,7 @@ private fun AppCacheCleanerCard(
                     ) {
                         Icon(
                             imageVector = AIIcon.icon,
-                            contentDescription = "Get AI insights about cache",
+                            contentDescription = context.string(R.string.health_cd_ai_cache),
                             tint = AIIcon.color(),
                             modifier = Modifier.size(18.dp)
                         )
@@ -3302,7 +3308,7 @@ private fun AppCacheCleanerCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total Cache",
+                        text = context.string(R.string.health_cache_total),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -3321,7 +3327,7 @@ private fun AppCacheCleanerCard(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$appCount apps have cache data",
+                    text = context.string(R.string.health_cache_apps_have, appCount),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
@@ -3345,7 +3351,7 @@ private fun AppCacheCleanerCard(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Clearing...")
+                    Text(context.string(R.string.health_clearing))
                 } else {
                     Icon(
                         imageVector = Icons.Default.Clear,
@@ -3354,7 +3360,7 @@ private fun AppCacheCleanerCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Clear App Cache",
+                        text = context.string(R.string.health_cache_clear),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -3380,7 +3386,7 @@ private fun AppCacheCleanerCard(
             // Info text
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Clears temporary files from apps to free up storage space",
+                text = context.string(R.string.health_cache_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )

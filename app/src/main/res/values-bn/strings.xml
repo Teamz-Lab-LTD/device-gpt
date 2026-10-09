@@ -594,4 +594,103 @@
     <!-- Top bar theme button (task 3, 2026-10-09) -->
     <string name="theme_button_cd">সাদা বা কালো রং বদলান</string>
     <string name="theme_selected_cd">বেছে নেওয়া আছে</string>
+
+    <!-- Health tab: timeline and last-charge cards (task 3, 2026-10-09) -->
+    <string name="timeline_title">ফোনে কবে কী হলো</string>
+    <string name="timeline_subtitle_premium">এই ফোনের গত 90 দিনের খবর</string>
+    <string name="timeline_subtitle_free">গত 7 দিনের খবর। পুরোনো সব খবর ফোনেই জমা আছে। বাড়তি সুবিধা নিলে সব দেখা যাবে।</string>
+    <string name="timeline_last_charge">🔌 শেষবার চার্জ</string>
+    <string name="timeline_charge_recorded">চার্জ দেওয়ার হিসাব রাখা হয়েছে</string>
+
+    <!-- Health tab: timeline locked line (task 3, 2026-10-09) -->
+    <string name="timeline_older_one">🔒 আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
+    <string name="timeline_older_many">🔒 আরও %1$sটা পুরোনো খবর আছে। বাড়তি সুবিধা নিলে 90 দিনের খবর দেখা যায়।</string>
+
+    <!-- Health tab: quick-action cards and their help dialogs (task 3, 2026-10-09) -->
+    <string name="health_storage_help_title">ফোনের জায়গা খালি করবেন যেভাবে</string>
+    <string name="health_storage_help_intro">অ্যাপের জমা বাড়তি ফাইল মুছে জায়গা খালি করতে:</string>
+    <string name="health_storage_help_option1">উপায় 1: সব ফাইল দেখার অনুমতি দিন</string>
+    <string name="health_storage_help_option1_a">• সেটিংসের পাতায় সব ফাইল দেখার অনুমতি চালু করুন</string>
+    <string name="health_storage_help_option1_b">• তাহলে অ্যাপ নিজে থেকে আরও বেশি বাড়তি ফাইল মুছতে পারবে</string>
+    <string name="health_storage_help_option2">উপায় 2: নিজে মুছুন</string>
+    <string name="health_storage_help_step1">1. সেটিংস থেকে \'অ্যাপ\' লেখায় যান</string>
+    <string name="health_storage_help_step2">2. একটা অ্যাপ বেছে নিন</string>
+    <string name="health_storage_help_step3">3. \'স্টোরেজ\' লেখায় গিয়ে \'ক্যাশ মুছুন\' চাপুন</string>
+    <string name="health_storage_help_or">অথবা সেটিংস থেকে \'স্টোরেজ\' লেখায় যান। কোথায় কত জায়গা গেছে, সেখানে দেখা যায়।</string>
+    <string name="health_battery_tips">ব্যাটারি ভালো রাখার উপায়</string>
+    <string name="health_battery_tips_intro">ব্যাটারি বেশি দিন ভালো রাখতে:</string>
+    <string name="health_battery_tips_1">1. চার্জ বাঁচানো চালু করুন</string>
+    <string name="health_battery_tips_1a">• সেটিংস থেকে \'ব্যাটারি\', তারপর \'ব্যাটারি সেভার\' লেখায় যান</string>
+    <string name="health_battery_tips_1b">• চার্জ 15% বা 5% হলে নিজে থেকে চালু হবে, এমন করে রাখুন</string>
+    <string name="health_battery_tips_2">2. অ্যাপ যেন কম চার্জ খায়</string>
+    <string name="health_battery_tips_2a">• সেটিংস থেকে \'ব্যাটারি\' লেখায় গিয়ে অ্যাপের চার্জ খরচের সেটিংস খুলুন</string>
+    <string name="health_battery_tips_2b">• অ্যাপগুলো কম চার্জ খাওয়ার সেটিংসে রাখুন</string>
+    <string name="health_battery_tips_3">3. আরও কিছু কথা</string>
+    <string name="health_battery_tips_3a">• স্ক্রিনের আলো কমিয়ে রাখুন</string>
+    <string name="health_battery_tips_3b">• যে অ্যাপ লাগছে না, বন্ধ করুন</string>
+    <string name="health_battery_tips_3c">• ফোন সব সময় 100% চার্জে রাখবেন না</string>
+    <string name="health_your_performance">আপনার ফোন কেমন চলছে</string>
+    <string name="health_recommendations">কী করলে ভালো হবে</string>
+    <string name="health_recommendations_basis">আপনার ফোনের আসল তথ্য দেখে বলা</string>
+    <string name="health_tasks_title">আজ যা করবেন</string>
+    <string name="health_tasks_all_done">🎉 আজকের সব কাজ হয়ে গেছে! খুব ভালো!</string>
+    <string name="health_temperature_title">ফোন কত গরম হয়েছিল</string>
+    <string name="health_temperature_empty">এখনো কোনো হিসাব নেই। ফোন কত গরম হয়, তা নিজে থেকেই লেখা থাকবে।</string>
+    <string name="health_history_title">গত 7 দিনের নম্বর</string>
+    <string name="health_history_empty">এখনো কিছু জমা হয়নি। ফোন দেখে নিলে এখানে নম্বর জমা হবে!</string>
+    <string name="health_privacy_title">গোপন তথ্যের নিরাপত্তা</string>
+    <string name="health_privacy_score">নিরাপত্তার নম্বর</string>
+    <string name="health_privacy_loading">ঝুঁকি খুঁজছি…</string>
+    <string name="health_privacy_threats_today">আজকের ঝুঁকি:</string>
+    <string name="health_privacy_no_threats">আজ কোনো ঝুঁকি পাওয়া যায়নি</string>
+    <string name="health_privacy_recent_access">কিছুক্ষণ আগে কোনো অ্যাপ মাইক বা ক্যামেরা চালিয়েছে</string>
+    <string name="health_privacy_footer">ফোনের নিরাপত্তায় ঝুঁকি আছে কি না, নজর রাখে</string>
+    <string name="health_memory_title">মেমোরি কতটা ভরা</string>
+    <string name="health_memory_footer">মেমোরি এখন কতটা ভরা, তা দেখায়। মেমোরি ফোন নিজেই সামলায়।</string>
+    <string name="health_storage_title">জায়গা খালি করুন</string>
+    <string name="health_storage_usage">জায়গা কতটা ভরা</string>
+    <string name="health_storage_clean">বাড়তি ফাইল মুছে জায়গা খালি করুন</string>
+    <string name="health_storage_footer">অ্যাপের জমা বাড়তি ফাইল মুছে জায়গা খালি করে</string>
+    <string name="health_battery_title">ব্যাটারির অবস্থা</string>
+    <string name="health_battery_footer">ব্যাটারির তথ্য দেখায় আর ফোনের ব্যাটারি সেটিংস খোলে। ব্যাটারি ফোন নিজেই সামলায়।</string>
+    <string name="health_cache_title">অ্যাপের বাড়তি ফাইল মুছুন</string>
+    <string name="health_cache_total">মোট বাড়তি ফাইল</string>
+    <string name="health_cache_clear">বাড়তি ফাইল মুছুন</string>
+    <string name="health_cache_footer">অ্যাপের বাড়তি ফাইল মুছে জায়গা খালি করে</string>
+
+    <!-- Health tab: icon descriptions for screen readers (task 3, 2026-10-09) -->
+    <string name="health_cd_insights">ফোন কেমন চলছে</string>
+    <string name="health_cd_suggestions">কী করলে ভালো হবে</string>
+    <string name="health_cd_ai_recommendations">এই কথাগুলো নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_tip">একটা উপায়</string>
+    <string name="health_cd_tasks">আজ যা করবেন</string>
+    <string name="health_cd_ai_tasks">আজকের কাজ নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_temperature">ফোন কত গরম</string>
+    <string name="health_cd_ai_temperature">ফোন গরম হওয়া নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_history">আগের নম্বর</string>
+    <string name="health_cd_ai_history">আগের নম্বর নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_privacy">গোপন তথ্যের নিরাপত্তা</string>
+    <string name="health_cd_ai_privacy">নিরাপত্তা নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_threat">ঝুঁকি</string>
+    <string name="health_cd_safe">নিরাপদ</string>
+    <string name="health_cd_recent_usage">কিছুক্ষণ আগে চলেছে</string>
+    <string name="health_cd_ram">মেমোরি</string>
+    <string name="health_cd_ai_ram">মেমোরি নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_storage">ফাইল রাখার জায়গা</string>
+    <string name="health_cd_ai_storage">ফাইল রাখার জায়গা নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_battery">ব্যাটারি</string>
+    <string name="health_cd_ai_battery">ব্যাটারি নিয়ে এআইকে জিজ্ঞেস করুন</string>
+    <string name="health_cd_cache">বাড়তি ফাইল</string>
+    <string name="health_cd_ai_cache">বাড়তি ফাইল নিয়ে এআইকে জিজ্ঞেস করুন</string>
+
+    <!-- Health tab: toasts, button states and counted lines (task 3, 2026-10-09) -->
+    <string name="health_go_to_storage_settings">সেটিংস থেকে নিজে \'স্টোরেজ\' লেখায় যান</string>
+    <string name="health_go_to_battery_settings">সেটিংস থেকে নিজে \'ব্যাটারি\' লেখায় যান</string>
+    <string name="health_refreshing">আবার দেখছি…</string>
+    <string name="health_cleaning">মুছছি…</string>
+    <string name="health_clearing">মুছছি…</string>
+    <string name="health_tasks_completed">%2$sটার মধ্যে %1$sটা হয়ে গেছে</string>
+    <string name="health_temperature_peak">⚠️ এই সপ্তাহে সবচেয়ে বেশি গরম: %1$s°C</string>
+    <string name="health_cache_in_apps">%2$sটা অ্যাপে %1$s</string>
+    <string name="health_cache_apps_have">%1$sটা অ্যাপে বাড়তি ফাইল জমে আছে</string>
 </resources>
