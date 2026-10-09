@@ -85,6 +85,7 @@ import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -206,7 +207,9 @@ object EmojiIcons {
         put(Icons.Rounded.Circle, Good, "🟢")
         put(Icons.Rounded.Circle, Warn, "🟡")
         put(Icons.Rounded.Circle, Bad, "🔴")
-        put(Icons.Rounded.Circle, Neutral, "🔵", "⚪")
+        put(Icons.Rounded.Circle, Neutral, "⚪")
+        // The only blue circle in the app is the Bluetooth row of the power tab.
+        put(Icons.Rounded.Bluetooth, Neutral, "🔵")
         put(Icons.Rounded.Favorite, Good, "💚")
         put(Icons.Rounded.Favorite, Warn, "💛", "🧡")
         put(Icons.Rounded.Favorite, Bad, "❤️")
@@ -466,7 +469,7 @@ fun DgLabelRow(
     overflow: TextOverflow = TextOverflow.Clip,
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val (icon, label) = remember(text) { splitLeadingEmoji(text) }
+    val (icon, label) = remember(text) { splitDisplayLine(text) }
     val lineHeight = with(LocalDensity.current) {
         if (style.lineHeight.isSpecified && style.lineHeight.isSp) style.lineHeight.toDp() else DgIconSlot
     }
