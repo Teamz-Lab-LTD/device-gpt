@@ -14,7 +14,8 @@ class FirstScreenChooserWiringTest {
     @Test fun `score screen shows the chooser only in arm B, with the approved copy`() {
         val s = src("ui/FirstScanGateScreen.kt")
         assertTrue(s.contains("onChooseTest: ((String) -> Unit)? = null"))
-        assertTrue(s.contains("FirstScreenExperiment.isB(context)"))
+        // The score screen is the one place that assigns the arm (remembered once per screen).
+        assertTrue(s.contains("remember { com.teamz.lab.debugger.utils.FirstScreenExperiment.arm(context) } == \"B\""))
         for (copy in listOf("What do you want to test?", "\"Camera\"", "\"Mic\"", "\"Screen\"", "See full health report"))
             assertTrue(copy, s.contains(copy))
     }

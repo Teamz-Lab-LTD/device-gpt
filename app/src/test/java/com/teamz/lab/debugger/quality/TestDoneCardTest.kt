@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.teamz.lab.debugger.utils.FirstScreenExperiment
 import com.teamz.lab.debugger.utils.TestDoneCard
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -38,6 +39,15 @@ class TestDoneCardTest {
         TestDoneCard.dismiss()
         TestDoneCard.onTestCompleted(context)
         assertFalse("second test must not show it again", TestDoneCard.visible.value)
+    }
+
+    // Review 2026-10-09 I1: vc51 upgraders and failed scans never saw the score screen. A finished
+    // test must not put them in the experiment or show them the card.
+    @Test fun `a user with no arm gets no card and no arm`() {
+        TestDoneCard.onTestCompleted(context)
+        assertFalse(TestDoneCard.visible.value)
+        assertNull(context.getSharedPreferences(FirstScreenExperiment.PREFS, Context.MODE_PRIVATE)
+            .getString(FirstScreenExperiment.KEY_ARM, null))
     }
 
     @Test fun `arm A never sees it`() {

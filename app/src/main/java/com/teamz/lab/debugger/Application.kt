@@ -36,7 +36,10 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
     override fun onCreate() {
         super<Application>.onCreate()
         AppLog.d("MyApplication", "onCreate() - Initializing app...")
-        
+        // Outside the try below: if any later init throws, the 72 h quiet period must still hold.
+        // QuietPeriod.init catches its own errors (review 2026-10-09, M5).
+        com.teamz.lab.debugger.utils.QuietPeriod.init(applicationContext)
+
         try {
             // Set up global uncaught exception handler - CRITICAL: Must be first
             setupGlobalExceptionHandler()
@@ -68,12 +71,12 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks,
             AppOpenAdManager.resetSessionCounters()
             com.teamz.lab.debugger.ui.NativeAdManager.resetStats()
             com.teamz.lab.debugger.utils.AdDailyCap.init(applicationContext)
-            com.teamz.lab.debugger.utils.QuietPeriod.init(applicationContext)
             // v3.1.11 W1 user-behavior insight — A/B cohort labeler.
             // Stamps the GA4 user property ab_cohort_v3111 exactly once per install
             // so post-v3.1.11 retention dashboards can slice control vs treatment.
             // Idempotent — second call re-stamps the prior assignment.
             CohortLabeler.labelOnce(applicationContext)
+            com.teamz.lab.debugger.utils.FirstScreenExperiment.restamp(applicationContext)
             MobileAds.initialize(this) {
                 AppLog.d("MyApplication", "onCreate() - ✅ MobileAds SDK initialized")
                 // 2026-07-13 revenue/policy fix — do NOT request an app-open ad here.

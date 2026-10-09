@@ -141,7 +141,10 @@ fun FirstScanGateScreen(
                 },
                 // A/B (spec 2026-10-09): arm B gets Camera / Mic / Screen here — what the store
                 // listing sells — instead of landing everyone on the health report.
-                showChooser = onChooseTest != null && com.teamz.lab.debugger.utils.FirstScreenExperiment.isB(context),
+                // arm() assigns once, from the server RC value only; remember{} so a fetch landing
+                // mid-screen cannot swap the UI under the user.
+                showChooser = onChooseTest != null &&
+                    remember { com.teamz.lab.debugger.utils.FirstScreenExperiment.arm(context) } == "B",
                 onChoose = { choice ->
                     FirstScanGate.markCompleted(context, finalScore, scanResult)
                     onChooseTest?.invoke(choice)

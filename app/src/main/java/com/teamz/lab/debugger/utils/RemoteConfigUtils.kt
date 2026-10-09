@@ -595,6 +595,15 @@ object RemoteConfigUtils {
     fun isWidgetPinPromptEnabled(): Boolean = remoteConfig.getBoolean("widget_pin_prompt_enabled")
     fun isFirstScreenTestChooserEnabled(): Boolean = remoteConfig.getBoolean("first_screen_test_chooser")
 
+    /**
+     * The A/B flag only when it came from the server; null while RC still answers with the bundled
+     * default (first launch before fetchAndActivate lands). See FirstScreenExperiment.
+     */
+    fun firstScreenTestChooserFromServer(): Boolean? =
+        remoteConfig.getValue("first_screen_test_chooser").let {
+            if (it.source == FirebaseRemoteConfig.VALUE_SOURCE_REMOTE) it.asBoolean() else null
+        }
+
     // === Native ad loading configuration (tunable without app update) ===
 
     /** How many native ads to load per session. Default: 3 */

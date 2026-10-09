@@ -5,27 +5,54 @@ import android.content.Context
 /**
  * A/B test: Camera / Mic / Screen chooser on the score screen (arm B) vs today's flow (arm A).
  * Spec: docs/superpowers/specs/2026-10-09-first-screen-test-chooser-design.md
- * The arm is read from RC once, at the first score reveal, then fixed for this install.
+ *
+ * Only the score screen assigns an arm ([arm]), and only from an RC value that came from the
+ * server. Before the first fetch lands, RC answers with the bundled `false`; storing that put every
+ * slow or offline first launch in A (review 2026-10-09, C1). Such users stay unassigned: they see
+ * today's flow and are left out of both arms. Everything else reads with [peekArm] / [isB], which
+ * never assign, so vc51 upgraders and failed scans never enter the experiment (review I1).
  */
 object FirstScreenExperiment {
     internal const val PREFS = "first_screen_experiment"
     internal const val KEY_ARM = "fs_arm"
 
-    fun chooseArm(rcFlag: Boolean, stored: String?): String =
-        stored ?: if (rcFlag) "B" else "A"
+    /** [rcFromServer] is null when RC has not delivered a server value yet. */
+    fun chooseArm(rcFromServer: Boolean?, stored: String?): String? = when {
+        stored != null -> stored
+        rcFromServer == null -> null
+        rcFromServer -> "B"
+        else -> "A"
+    }
 
-    fun arm(context: Context): String {
+    /** Score screen only. Returns the arm, assigning it once if the server value is known. */
+    fun arm(context: Context, rcFromServer: Boolean? = serverFlag()): String? {
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         p.getString(KEY_ARM, null)?.let { return it }
-        // RC unreadable (Firebase not initialised yet) -> control arm, never a crash on the score screen.
-        val flag = try { RemoteConfigUtils.isFirstScreenTestChooserEnabled() } catch (_: Throwable) { false }
-        val chosen = chooseArm(flag, null)
+        val chosen = chooseArm(rcFromServer, null) ?: return null
         p.edit().putString(KEY_ARM, chosen).apply()
-        try { AnalyticsUtils.setUserProperty("fs_arm", chosen) } catch (_: Throwable) { }
+        stamp(chosen)
         return chosen
     }
 
-    fun isB(context: Context): Boolean = arm(context) == "B"
+    fun peekArm(context: Context): String? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_ARM, null)
+
+    fun isB(context: Context): Boolean = peekArm(context) == "B"
+
+    /**
+     * Re-sends the stored arm as the GA4 user property on every app start. A single stamp is lost
+     * silently when analytics drops it (battery saver, doze, no context yet), and every per-arm
+     * metric then misses that user (review I2).
+     */
+    fun restamp(context: Context) { peekArm(context)?.let(::stamp) }
+
+    private fun stamp(arm: String) {
+        try { AnalyticsUtils.setUserProperty("fs_arm", arm) } catch (_: Throwable) { }
+    }
+
+    // RC unreadable (Firebase not initialised) -> unknown, never a crash on the score screen.
+    private fun serverFlag(): Boolean? =
+        try { RemoteConfigUtils.firstScreenTestChooserFromServer() } catch (_: Throwable) { null }
 
     fun tabFor(choice: String): String = when (choice) {
         "camera" -> "camera"
