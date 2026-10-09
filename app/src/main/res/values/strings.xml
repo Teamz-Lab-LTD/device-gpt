@@ -302,9 +302,12 @@
     <string name="mic_test_retry">Try again</string>
 
     <!-- First screen: scan, score, chooser (task 3, 2026-10-09) -->
+    <!-- Numbers in the strings added on 2026-10-09 use %s, not %d, on purpose: under the Bangla
+         locale %d prints Bangla digits, while every computed number on screen is in Latin digits
+         (style guide rule 8). %s prints the number as the app computed it. -->
     <string name="first_scan_checking">Checking your device…</string>
     <string name="first_scan_starting">Starting…</string>
-    <string name="first_scan_checks_done">%1$d of %2$d checks done</string>
+    <string name="first_scan_checks_done">%1$s of %2$s checks done</string>
     <string name="first_scan_title">Your Device Score</string>
     <string name="first_scan_grade_excellent">Excellent</string>
     <string name="first_scan_grade_great">Great</string>
@@ -316,7 +319,7 @@
     <string name="first_scan_storage">Storage</string>
     <string name="first_scan_network">Network</string>
     <string name="first_scan_not_readable">not readable</string>
-    <string name="first_scan_weights">Score = battery %1$d · memory %2$d · storage %3$d · network %4$d</string>
+    <string name="first_scan_weights">Score = battery %1$s · memory %2$s · storage %3$s · network %4$s</string>
     <string name="first_scan_chooser_title">What do you want to test?</string>
     <string name="first_scan_choice_mic">Mic</string>
     <string name="first_scan_choice_screen">Screen</string>
@@ -419,11 +422,11 @@
     <string name="camera_lens_line_stabilization">Stabilization (photo): %1$s · Stabilization (video): %2$s · Autofocus: %3$s</string>
     <string name="camera_lens_line_raw">RAW available to this app: %1$s</string>
     <string name="camera_lens_line_shutter">Shutter speed range: %1$s · Auto-exposure modes: %2$s</string>
-    <string name="camera_lens_line_resolutions">Photo resolutions (%1$d): %2$s down to %3$s</string>
+    <string name="camera_lens_line_resolutions">Photo resolutions (%1$s): %2$s down to %3$s</string>
     <string name="camera_lens_video_supported">Video recording: supported</string>
     <string name="camera_lens_video_supported_up_to">Video recording: supported, up to %1$s</string>
     <string name="camera_lens_video_none">Video recording: not reported</string>
-    <string name="camera_lens_physical_count">This camera has %1$d lenses behind it:</string>
+    <string name="camera_lens_physical_count">This camera has %1$s lenses behind it:</string>
     <string name="camera_lens_physical_row">lens %1$s: %2$smm, f/%3$s</string>
     <string name="camera_lens_physical_row_active">lens %1$s: %2$smm, f/%3$s  ← used at last check\'s zoom</string>
     <string name="camera_lens_active_unknown">Which exact lens is active at each zoom level: not reported by this device.</string>
@@ -437,7 +440,7 @@
     <string name="screen_test_summary_spot_on_colour">You reported a spot on %1$s</string>
     <string name="screen_test_summary_spot">You reported a spot on the screen</string>
     <string name="screen_test_summary_ok">No screen colour issues found last time you checked</string>
-    <string name="screen_test_summary_touch">Touch check: your screen detected %1$d finger(s) at once</string>
+    <string name="screen_test_summary_touch">Touch check: your screen detected %1$s finger(s) at once</string>
     <string name="screen_color_red">red</string>
     <string name="screen_color_green">green</string>
     <string name="screen_color_blue">blue</string>
@@ -448,7 +451,7 @@
     <string name="screen_color_black">black</string>
     <string name="screen_color_grey">grey</string>
     <string name="screen_pixel_question">Look at the whole screen. Do you see any spot that looks wrong?</string>
-    <string name="screen_pixel_showing">Showing: %1$s (%2$d of %3$d) · tap anywhere to hide these controls</string>
+    <string name="screen_pixel_showing">Showing: %1$s (%2$s of %3$s) · tap anywhere to hide these controls</string>
     <string name="screen_pixel_bad_spot">I see a bad spot</string>
     <string name="screen_pixel_next">Looks fine, next colour</string>
     <string name="screen_pixel_done">Looks fine, done</string>
@@ -456,7 +459,7 @@
     <string name="screen_grid_switch_dark">Switch to dark</string>
     <string name="screen_grid_switch_bright">Switch to bright</string>
     <string name="screen_touch_instruction">Put all your fingers on the screen at the same time.</string>
-    <string name="screen_touch_count">Touching now: %1$d · Most at once: %2$d</string>
+    <string name="screen_touch_count">Touching now: %1$s · Most at once: %2$s</string>
     <string name="screen_touch_done">Done</string>
 
     <!-- Health tab top: score cards, report block, share text (task 3, 2026-10-09) -->
@@ -467,11 +470,11 @@
     <string name="last_score_poor">Poor</string>
     <string name="last_score_critical">Critical</string>
     <string name="time_ago_just_now">just now</string>
-    <string name="time_ago_minutes">%1$dm ago</string>
-    <string name="time_ago_hours">%1$dh ago</string>
-    <string name="time_ago_days">%1$dd ago</string>
-    <string name="time_ago_weeks">%1$dw ago</string>
-    <string name="time_ago_months">%1$dmo ago</string>
+    <string name="time_ago_minutes">%1$sm ago</string>
+    <string name="time_ago_hours">%1$sh ago</string>
+    <string name="time_ago_days">%1$sd ago</string>
+    <string name="time_ago_weeks">%1$sw ago</string>
+    <string name="time_ago_months">%1$smo ago</string>
     <string name="health_status_cd">Health Status</string>
     <string name="health_today_score">Today\'s Health Score</string>
     <string name="health_daily_check">Daily Health Check</string>
@@ -485,19 +488,19 @@
     <string name="health_stat_scanned">Scanned</string>
     <string name="health_stat_best">Best</string>
     <string name="health_stat_total">Total</string>
-    <string name="health_days_one">%1$d day</string>
-    <string name="health_days_many">%1$d days</string>
+    <string name="health_days_one">%1$s day</string>
+    <string name="health_days_many">%1$s days</string>
     <string name="health_not_yet">not yet</string>
-    <string name="health_scans_one">%1$d scan</string>
-    <string name="health_scans_many">%1$d scans</string>
+    <string name="health_scans_one">%1$s scan</string>
+    <string name="health_scans_many">%1$s scans</string>
     <string name="health_msg_excellent">Excellent! Your device is in top condition!</string>
     <string name="health_msg_good">Good! Your device is performing well.</string>
     <string name="health_msg_fair">Fair. Some improvements needed - see recommendations below.</string>
     <string name="health_msg_needs_attention">Needs attention. Check recommendations below to improve your device.</string>
-    <string name="health_streak_one">📱 Scanned %1$d day in a row.</string>
-    <string name="health_streak_many">📱 Scanned %1$d days in a row.</string>
+    <string name="health_streak_one">📱 Scanned %1$s day in a row.</string>
+    <string name="health_streak_many">📱 Scanned %1$s days in a row.</string>
     <string name="health_streak_none">🔍 Run a scan to see today\'s device state.</string>
-    <string name="share_score_text">My phone scored %1$d/100 on DeviceGPT. Run yours: %2$s</string>
+    <string name="share_score_text">My phone scored %1$s/100 on DeviceGPT. Run yours: %2$s</string>
     <string name="share_score_chooser_title">Share your Device Score</string>
     <string name="health_report_title">Get Device Health Report</string>
     <string name="health_report_body">Shareable proof that your phone is working properly — great for resale or warranty</string>
@@ -592,5 +595,5 @@
 
     <!-- Drawer: sentences with a number or two parts (task 3, 2026-10-09) -->
     <string name="drawer_usage_body">To show your network usage statistics, we need access to usage data. This helps us display accurate network usage information in the app.</string>
-    <string name="account_link_to_keep_days">Link Gmail to keep data safe forever (%1$d days remaining)</string>
+    <string name="account_link_to_keep_days">Link Gmail to keep data safe forever (%1$s days remaining)</string>
 </resources>
