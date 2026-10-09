@@ -100,3 +100,11 @@ outside the repo (session scratchpad, `devicegpt/final/`).
    closest existing wording; a line for "more than one" needs the owner.
 6. Light theme: secondary text at 50–60 % alpha is under 4.5:1 on white in places. Dark is the default and passes.
 7. Paywall surfaces were not touched: the 32dp close button, and two lines at 10–11sp on the drawer premium card.
+
+### 2026-10-09 — icon family unified
+
+Check 1 re-run after converting every stock icon to `Icons.Rounded` (and `Icons.AutoMirrored.Rounded`),
+which sits closest to the 2dp round-cap `DgIcons`: `Default` 0, `Filled` 0, `Outlined` 0, `Rounded` 370,
+`AutoMirrored` 10 (all Rounded). 29 files; no icon name was used in two families in one file, so no
+on/off pair collapsed. 885 tests pass. Open item 1 above is closed; the design axis stays at 1 until the raw
+hex colours (86) and the Bangla fallback font are addressed.

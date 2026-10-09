@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -137,7 +137,7 @@ fun NetworkPrivacyReportCard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Shield,
+                            imageVector = Icons.Rounded.Shield,
                             contentDescription = stringResource(R.string.info_npr_cd),
                             modifier = Modifier.size(24.dp),
                             tint = when {
@@ -193,7 +193,7 @@ fun NetworkPrivacyReportCard(
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Icon(
-                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                     contentDescription = stringResource(
                         if (isExpanded) R.string.info_cd_collapse else R.string.info_cd_expand
                     ),
@@ -233,7 +233,7 @@ fun NetworkPrivacyReportCard(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Language,
+                                    imageVector = Icons.Rounded.Language,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -283,7 +283,7 @@ fun NetworkPrivacyReportCard(
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Share,
+                                    Icons.Rounded.Share,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -473,22 +473,22 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
 
     when (check.status) {
         PrivacyCheckStatus.PASS -> {
-            statusIcon = Icons.Default.CheckCircle
+            statusIcon = Icons.Rounded.CheckCircle
             statusColor = Color(0xFF4CAF50)
             statusLabel = stringResource(R.string.info_status_pass)
         }
         PrivacyCheckStatus.WARNING -> {
-            statusIcon = Icons.Default.Warning
+            statusIcon = Icons.Rounded.Warning
             statusColor = Color(0xFFFF9800)
             statusLabel = stringResource(R.string.info_status_warning)
         }
         PrivacyCheckStatus.FAIL -> {
-            statusIcon = Icons.Default.Cancel
+            statusIcon = Icons.Rounded.Cancel
             statusColor = Color(0xFFF44336)
             statusLabel = stringResource(R.string.info_status_fail)
         }
         PrivacyCheckStatus.ERROR -> {
-            statusIcon = Icons.Default.Help
+            statusIcon = Icons.Rounded.Help
             statusColor = MaterialTheme.colorScheme.onSurfaceVariant
             statusLabel = stringResource(R.string.info_status_unknown)
         }
@@ -527,7 +527,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = if (showDetail) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                imageVector = if (showDetail) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -545,7 +545,7 @@ private fun PrivacyCheckRow(check: PrivacyCheckResult) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(
-                            imageVector = Icons.Default.Lightbulb,
+                            imageVector = Icons.Rounded.Lightbulb,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = Color(0xFFFF9800)

@@ -38,19 +38,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.BatteryChargingFull
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.rounded.Android
+import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.MonitorHeart
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Smartphone
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Verified
+import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -525,7 +525,7 @@ fun DeviceGptNavExperience(
                             AnalyticsUtils.logEvent(AnalyticsEvent.TopBarMenuOpened)
                             scope.launch { drawerState.open() } 
                         }) {
-                            Icon(Icons.Default.Menu, contentDescription = context.string(R.string.menu))
+                            Icon(Icons.Rounded.Menu, contentDescription = context.string(R.string.menu))
                         }
                         // Subtle indicator dot when monitor is off
                         if (!context.isSystemMonitorRunning()) {
@@ -551,7 +551,7 @@ fun DeviceGptNavExperience(
                         refreshTrigger++
                     }) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            imageVector = Icons.Rounded.Refresh,
                             contentDescription = context.string(R.string.refresh),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -568,7 +568,7 @@ fun DeviceGptNavExperience(
                         openSettings(context, Settings.ACTION_SETTINGS)
                     }) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
+                            imageVector = Icons.Rounded.Settings,
                             contentDescription = context.string(R.string.settings),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -584,7 +584,7 @@ fun DeviceGptNavExperience(
                         openSettings(context, ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
                     }) {
                         Icon(
-                            imageVector = Icons.Default.Android,
+                            imageVector = Icons.Rounded.Android,
                             contentDescription = context.string(R.string.developer_options),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -735,7 +735,7 @@ fun DeviceGptNavExperience(
                                 modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Star,
+                                    imageVector = Icons.Rounded.Star,
                                     contentDescription = null,
                                     tint = DesignSystemColors.Dark.copy(alpha = glowAlpha), // Subtle glow effect
                                     modifier = Modifier
@@ -781,7 +781,7 @@ fun DeviceGptNavExperience(
                         } else {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(
-                                    imageVector = Icons.Default.Verified,
+                                    imageVector = Icons.Rounded.Verified,
                                     contentDescription = context.string(R.string.certificate),
                                     tint = DesignSystemColors.Dark
                                 )
@@ -905,7 +905,7 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                 ) {
                     if (!shareText.contains(context.string(R.string.loading)) && shareText.isNotEmpty()) Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            imageVector = Icons.AutoMirrored.Rounded.Send,
                             contentDescription = context.string(R.string.cd_send_info),
                             tint = DesignSystemColors.Dark
                         )
@@ -1065,11 +1065,11 @@ https://play.google.com/store/apps/details?id=${context.packageName}
                                     icon = {
                                         Icon(
                                             imageVector = when (category) {
-                                                ScanCategory.BATTERY -> Icons.Filled.BatteryChargingFull
-                                                ScanCategory.NETWORK -> Icons.Filled.Wifi
-                                                ScanCategory.HARDWARE -> Icons.Filled.Smartphone
-                                                ScanCategory.PRIVACY -> Icons.Filled.MonitorHeart
-                                                ScanCategory.AI -> Icons.Filled.Psychology
+                                                ScanCategory.BATTERY -> Icons.Rounded.BatteryChargingFull
+                                                ScanCategory.NETWORK -> Icons.Rounded.Wifi
+                                                ScanCategory.HARDWARE -> Icons.Rounded.Smartphone
+                                                ScanCategory.PRIVACY -> Icons.Rounded.MonitorHeart
+                                                ScanCategory.AI -> Icons.Rounded.Psychology
                                             },
                                             contentDescription = null,
                                         )

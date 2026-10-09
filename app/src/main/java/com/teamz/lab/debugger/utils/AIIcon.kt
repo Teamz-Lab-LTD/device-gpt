@@ -1,7 +1,7 @@
 package com.teamz.lab.debugger.utils
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -27,7 +27,7 @@ object AIIcon {
     /**
      * The AI icon (SmartToy)
      */
-    val icon = Icons.Default.SmartToy
+    val icon = Icons.Rounded.SmartToy
     
     /**
      * Get the theme-aware color for the AI icon

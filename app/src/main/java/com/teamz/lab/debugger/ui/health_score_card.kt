@@ -2,7 +2,7 @@ package com.teamz.lab.debugger.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +23,6 @@ import com.teamz.lab.debugger.R
 import com.teamz.lab.debugger.utils.string
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.ui.unit.sp
 import com.teamz.lab.debugger.ui.icons.DgText
 import com.teamz.lab.debugger.ui.icons.DgIconText
 import com.teamz.lab.debugger.ui.icons.DgIcons
@@ -65,7 +64,7 @@ fun HealthScoreCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = if (hasScannedToday) Icons.Default.CheckCircle else Icons.Default.Schedule,
+                    imageVector = if (hasScannedToday) Icons.Rounded.CheckCircle else Icons.Rounded.Schedule,
                     contentDescription = context.string(R.string.health_status_cd),
                     tint = if (hasScannedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -94,7 +93,7 @@ fun HealthScoreCard(
                 }
                 if (hasScannedToday && !isScanning && !scanCompleted) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
+                        imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = context.string(R.string.health_scanned_today_cd),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
@@ -102,7 +101,7 @@ fun HealthScoreCard(
                 } else if (isScanning) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            imageVector = Icons.Rounded.Refresh,
                             contentDescription = context.string(R.string.cd_scanning),
                             modifier = Modifier
                                 .size(16.dp)
@@ -119,7 +118,7 @@ fun HealthScoreCard(
                 } else if (scanCompleted) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = context.string(R.string.health_scan_complete_cd),
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -200,7 +199,7 @@ fun HealthScoreCard(
                                 .clickable(onClick = onScoreClick)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ArrowDownward,
+                                imageVector = Icons.Rounded.ArrowDownward,
                                 contentDescription = context.string(R.string.health_scroll_improvements_cd),
                                 tint = DesignSystemColors.Dark.copy(alpha = 0.7f),
                                 modifier = Modifier.size(16.dp)
@@ -228,7 +227,7 @@ fun HealthScoreCard(
                 // Play policy 2026-07-10: streak stat -> factual recency stat
                 // (streak gamification killed per research insight #7).
                 StatItem(
-                    icon = Icons.Default.LocalFireDepartment,
+                    icon = Icons.Rounded.LocalFireDepartment,
                     label = context.string(R.string.health_stat_scanned),
                     value = when {
                         dailyStreak > 1 -> context.string(R.string.health_days_many, dailyStreak)
@@ -238,13 +237,13 @@ fun HealthScoreCard(
                     color = if (dailyStreak > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 StatItem(
-                    icon = Icons.Default.EmojiEvents,
+                    icon = Icons.Rounded.EmojiEvents,
                     label = context.string(R.string.health_stat_best),
                     value = "$bestScore/10",
                     color = if (bestScore >= 8) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 StatItem(
-                    icon = Icons.Default.Analytics,
+                    icon = Icons.Rounded.Analytics,
                     label = context.string(R.string.health_stat_total),
                     value = context.string(
                         if (totalScans == 1) R.string.health_scans_one else R.string.health_scans_many,
@@ -304,7 +303,7 @@ fun HealthScoreCard(
             ) {
                 if (isScanning) {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = Icons.Rounded.Refresh,
                         contentDescription = context.string(R.string.cd_scanning),
                         modifier = Modifier
                             .size(18.dp)
@@ -314,7 +313,7 @@ fun HealthScoreCard(
                     Text(context.string(R.string.scanning_device))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = Icons.Rounded.Refresh,
                         contentDescription = context.string(R.string.cd_scan),
                         modifier = Modifier.size(18.dp)
                     )

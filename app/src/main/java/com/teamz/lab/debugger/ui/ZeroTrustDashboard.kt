@@ -13,7 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -133,7 +133,7 @@ fun ZeroTrustDashboard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Security,
+                            imageVector = Icons.Rounded.Security,
                             contentDescription = stringResource(R.string.info_zt_cd),
                             modifier = Modifier.size(24.dp),
                             tint = when {
@@ -201,7 +201,7 @@ fun ZeroTrustDashboard(
 
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -256,7 +256,7 @@ fun ZeroTrustDashboard(
                                     contentColor = DesignSystemColors.Dark
                                 ) else ButtonDefaults.buttonColors()
                             ) {
-                                Icon(Icons.Default.Share, null, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Rounded.Share, null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(stringResource(R.string.share), style = MaterialTheme.typography.labelLarge)
                             }
@@ -392,7 +392,7 @@ private fun TrustSectionCard(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -428,10 +428,10 @@ private fun TrustCheckRow(check: TrustCheckResult) {
         TrustCheckStatus.ERROR -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val statusIcon = when (check.status) {
-        TrustCheckStatus.PASS -> Icons.Default.CheckCircle
-        TrustCheckStatus.WARNING -> Icons.Default.Warning
-        TrustCheckStatus.FAIL -> Icons.Default.Cancel
-        TrustCheckStatus.ERROR -> Icons.Default.Help
+        TrustCheckStatus.PASS -> Icons.Rounded.CheckCircle
+        TrustCheckStatus.WARNING -> Icons.Rounded.Warning
+        TrustCheckStatus.FAIL -> Icons.Rounded.Cancel
+        TrustCheckStatus.ERROR -> Icons.Rounded.Help
     }
     val statusLabel = when (check.status) {
         TrustCheckStatus.PASS -> stringResource(R.string.info_zt_ok)
@@ -468,7 +468,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = if (showDetail) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                imageVector = if (showDetail) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -486,7 +486,7 @@ private fun TrustCheckRow(check: TrustCheckResult) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(
-                            imageVector = Icons.Default.Lightbulb,
+                            imageVector = Icons.Rounded.Lightbulb,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = Color(0xFFFF9800)

@@ -9,79 +9,79 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.automirrored.outlined.VolumeOff
-import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.automirrored.rounded.HelpOutline
+import androidx.compose.material.icons.automirrored.rounded.Label
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.outlined.AcUnit
-import androidx.compose.material.icons.outlined.Air
-import androidx.compose.material.icons.outlined.Alarm
-import androidx.compose.material.icons.outlined.Assignment
-import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.outlined.Badge
-import androidx.compose.material.icons.outlined.Balance
-import androidx.compose.material.icons.outlined.Bedtime
-import androidx.compose.material.icons.outlined.Bookmark
-import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.CameraFront
-import androidx.compose.material.icons.outlined.Campaign
-import androidx.compose.material.icons.outlined.CardGiftcard
-import androidx.compose.material.icons.outlined.CleaningServices
-import androidx.compose.material.icons.outlined.Contrast
-import androidx.compose.material.icons.outlined.CropSquare
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Diamond
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.outlined.Factory
-import androidx.compose.material.icons.outlined.FlashlightOn
-import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.Headphones
-import androidx.compose.material.icons.outlined.HourglassEmpty
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.InstallMobile
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.Keyboard
-import androidx.compose.material.icons.outlined.Landscape
-import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.LocalPolice
-import androidx.compose.material.icons.outlined.LocationCity
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.LockOpen
-import androidx.compose.material.icons.outlined.Map
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.NewReleases
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.PanTool
-import androidx.compose.material.icons.outlined.Payments
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Pin
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.outlined.Recycling
-import androidx.compose.material.icons.outlined.Route
-import androidx.compose.material.icons.outlined.SatelliteAlt
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Science
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.SportsEsports
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.Straighten
-import androidx.compose.material.icons.outlined.TextFields
-import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material.icons.outlined.TouchApp
-import androidx.compose.material.icons.outlined.Videocam
-import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.outlined.WorkspacePremium
+import androidx.compose.material.icons.rounded.AcUnit
+import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.Assignment
+import androidx.compose.material.icons.rounded.AttachFile
+import androidx.compose.material.icons.rounded.Badge
+import androidx.compose.material.icons.rounded.Balance
+import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Business
+import androidx.compose.material.icons.rounded.Call
+import androidx.compose.material.icons.rounded.CameraFront
+import androidx.compose.material.icons.rounded.Campaign
+import androidx.compose.material.icons.rounded.CardGiftcard
+import androidx.compose.material.icons.rounded.CleaningServices
+import androidx.compose.material.icons.rounded.Contrast
+import androidx.compose.material.icons.rounded.CropSquare
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Diamond
+import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.Factory
+import androidx.compose.material.icons.rounded.FlashlightOn
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.HourglassEmpty
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.InstallMobile
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.Keyboard
+import androidx.compose.material.icons.rounded.Landscape
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.LocalPolice
+import androidx.compose.material.icons.rounded.LocationCity
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.NewReleases
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.PanTool
+import androidx.compose.material.icons.rounded.Payments
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Pin
+import androidx.compose.material.icons.rounded.PushPin
+import androidx.compose.material.icons.rounded.Recycling
+import androidx.compose.material.icons.rounded.Route
+import androidx.compose.material.icons.rounded.SatelliteAlt
+import androidx.compose.material.icons.rounded.School
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.SportsEsports
+import androidx.compose.material.icons.rounded.StarBorder
+import androidx.compose.material.icons.rounded.Straighten
+import androidx.compose.material.icons.rounded.TextFields
+import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Block
@@ -202,8 +202,8 @@ object EmojiIcons {
         put(Icons.Rounded.PriorityHigh, Warn, "❗")
         put(Icons.Rounded.Block, Bad, "🚫", "⛔")
         put(Icons.Rounded.Dangerous, Bad, "☠️", "💀")
-        put(Icons.AutoMirrored.Outlined.HelpOutline, Neutral, "❓")
-        put(Icons.Outlined.ThumbUp, Good, "👍")
+        put(Icons.AutoMirrored.Rounded.HelpOutline, Neutral, "❓")
+        put(Icons.Rounded.ThumbUp, Good, "👍")
         put(Icons.Rounded.Circle, Good, "🟢")
         put(Icons.Rounded.Circle, Warn, "🟡")
         put(Icons.Rounded.Circle, Bad, "🔴")
@@ -265,73 +265,73 @@ object EmojiIcons {
         put(Icons.Rounded.Pause, Neutral, "⏸️")
         put(Icons.Rounded.SkipNext, Neutral, "⏭️")
         put(Icons.Rounded.Wifi, Neutral, "🛜")
-        put(Icons.Outlined.Settings, Neutral, "⚙️")
-        put(Icons.Outlined.Build, Neutral, "🔧", "🛠️", "🔩")
-        put(Icons.Outlined.HourglassEmpty, Neutral, "⏳")
-        put(Icons.Outlined.Alarm, Neutral, "⏰")
-        put(Icons.Outlined.Timer, Neutral, "⌛")
-        put(Icons.Outlined.LocationOn, Neutral, "📍")
-        put(Icons.Outlined.PushPin, Neutral, "📌")
-        put(Icons.Outlined.Map, Neutral, "🗺️")
-        put(Icons.Outlined.Route, Neutral, "🛣️")
-        put(Icons.Outlined.Explore, Neutral, "🧭")
-        put(Icons.Outlined.LocationCity, Neutral, "🏙️")
-        put(Icons.Outlined.SatelliteAlt, Neutral, "🛰️")
-        put(Icons.Outlined.Assignment, Neutral, "📋")
-        put(Icons.Outlined.Description, Neutral, "📑")
-        put(Icons.Outlined.Folder, Neutral, "📂")
-        put(Icons.Outlined.Inventory2, Neutral, "📦")
-        put(Icons.Outlined.AttachFile, Neutral, "📎")
-        put(Icons.Outlined.Bookmark, Neutral, "🔖")
-        put(Icons.AutoMirrored.Outlined.Label, Neutral, "🏷️")
-        put(Icons.AutoMirrored.Outlined.MenuBook, Neutral, "📚")
-        put(Icons.Outlined.School, Neutral, "🎓")
-        put(Icons.Outlined.Science, Neutral, "🧪")
-        put(Icons.Outlined.Straighten, Neutral, "📏")
-        put(Icons.Outlined.Pin, Neutral, "🔢")
-        put(Icons.Outlined.TextFields, Neutral, "🔠", "🔤")
-        put(Icons.Outlined.Badge, Neutral, "🆔")
-        put(Icons.Outlined.NewReleases, Accent, "🆕")
-        put(Icons.Outlined.Keyboard, Neutral, "⌨️")
-        put(Icons.Outlined.SportsEsports, Neutral, "🎮")
-        put(Icons.Outlined.Videocam, Neutral, "🎬", "🎥", "🎞️")
-        put(Icons.Outlined.CameraFront, Neutral, "🤳")
-        put(Icons.Outlined.Image, Neutral, "🖼️")
-        put(Icons.Outlined.Landscape, Neutral, "🌄")
-        put(Icons.AutoMirrored.Outlined.VolumeUp, Neutral, "🔊")
-        put(Icons.AutoMirrored.Outlined.VolumeOff, Neutral, "🔇")
-        put(Icons.Outlined.MusicNote, Neutral, "🎵", "🎶")
-        put(Icons.Outlined.Headphones, Neutral, "🎧")
-        put(Icons.Outlined.Call, Neutral, "📞")
-        put(Icons.Outlined.InstallMobile, Neutral, "📲")
-        put(Icons.Outlined.Notifications, Neutral, "🔔")
-        put(Icons.Outlined.Campaign, Neutral, "📣")
-        put(Icons.Outlined.LightMode, Neutral, "🔆", "☀️")
-        put(Icons.Outlined.DarkMode, Neutral, "🌙")
-        put(Icons.Outlined.Contrast, Neutral, "🌗")
-        put(Icons.Outlined.Bedtime, Neutral, "💤", "😴")
-        put(Icons.Outlined.FlashlightOn, Neutral, "🔦")
-        put(Icons.Outlined.AcUnit, Neutral, "❄️")
-        put(Icons.Outlined.Air, Neutral, "🌬️")
-        put(Icons.Outlined.Recycling, Neutral, "♻️")
-        put(Icons.Outlined.CleaningServices, Neutral, "🧹")
-        put(Icons.Outlined.Delete, Neutral, "🗑️")
-        put(Icons.Outlined.Factory, Neutral, "🏭")
-        put(Icons.Outlined.Business, Neutral, "🏢")
-        put(Icons.Outlined.Balance, Neutral, "⚖️")
-        put(Icons.Outlined.LocalPolice, Neutral, "👮")
-        put(Icons.Outlined.VisibilityOff, Neutral, "🕵️")
-        put(Icons.Outlined.LockOpen, Warn, "🔓")
-        put(Icons.Outlined.Person, Neutral, "👤")
-        put(Icons.Outlined.Group, Neutral, "👥")
-        put(Icons.Outlined.TouchApp, Neutral, "👆")
-        put(Icons.Outlined.PanTool, Neutral, "🖐️")
-        put(Icons.Outlined.Layers, Neutral, "🧱", "🗂️")
-        put(Icons.Outlined.CropSquare, Neutral, "⬜")
-        put(Icons.Outlined.StarBorder, Neutral, "☆")
-        put(Icons.Outlined.Diamond, Accent, "💎")
-        put(Icons.Outlined.WorkspacePremium, Accent, "👑")
-        put(Icons.Outlined.CardGiftcard, Accent, "🎁")
+        put(Icons.Rounded.Settings, Neutral, "⚙️")
+        put(Icons.Rounded.Build, Neutral, "🔧", "🛠️", "🔩")
+        put(Icons.Rounded.HourglassEmpty, Neutral, "⏳")
+        put(Icons.Rounded.Alarm, Neutral, "⏰")
+        put(Icons.Rounded.Timer, Neutral, "⌛")
+        put(Icons.Rounded.LocationOn, Neutral, "📍")
+        put(Icons.Rounded.PushPin, Neutral, "📌")
+        put(Icons.Rounded.Map, Neutral, "🗺️")
+        put(Icons.Rounded.Route, Neutral, "🛣️")
+        put(Icons.Rounded.Explore, Neutral, "🧭")
+        put(Icons.Rounded.LocationCity, Neutral, "🏙️")
+        put(Icons.Rounded.SatelliteAlt, Neutral, "🛰️")
+        put(Icons.Rounded.Assignment, Neutral, "📋")
+        put(Icons.Rounded.Description, Neutral, "📑")
+        put(Icons.Rounded.Folder, Neutral, "📂")
+        put(Icons.Rounded.Inventory2, Neutral, "📦")
+        put(Icons.Rounded.AttachFile, Neutral, "📎")
+        put(Icons.Rounded.Bookmark, Neutral, "🔖")
+        put(Icons.AutoMirrored.Rounded.Label, Neutral, "🏷️")
+        put(Icons.AutoMirrored.Rounded.MenuBook, Neutral, "📚")
+        put(Icons.Rounded.School, Neutral, "🎓")
+        put(Icons.Rounded.Science, Neutral, "🧪")
+        put(Icons.Rounded.Straighten, Neutral, "📏")
+        put(Icons.Rounded.Pin, Neutral, "🔢")
+        put(Icons.Rounded.TextFields, Neutral, "🔠", "🔤")
+        put(Icons.Rounded.Badge, Neutral, "🆔")
+        put(Icons.Rounded.NewReleases, Accent, "🆕")
+        put(Icons.Rounded.Keyboard, Neutral, "⌨️")
+        put(Icons.Rounded.SportsEsports, Neutral, "🎮")
+        put(Icons.Rounded.Videocam, Neutral, "🎬", "🎥", "🎞️")
+        put(Icons.Rounded.CameraFront, Neutral, "🤳")
+        put(Icons.Rounded.Image, Neutral, "🖼️")
+        put(Icons.Rounded.Landscape, Neutral, "🌄")
+        put(Icons.AutoMirrored.Rounded.VolumeUp, Neutral, "🔊")
+        put(Icons.AutoMirrored.Rounded.VolumeOff, Neutral, "🔇")
+        put(Icons.Rounded.MusicNote, Neutral, "🎵", "🎶")
+        put(Icons.Rounded.Headphones, Neutral, "🎧")
+        put(Icons.Rounded.Call, Neutral, "📞")
+        put(Icons.Rounded.InstallMobile, Neutral, "📲")
+        put(Icons.Rounded.Notifications, Neutral, "🔔")
+        put(Icons.Rounded.Campaign, Neutral, "📣")
+        put(Icons.Rounded.LightMode, Neutral, "🔆", "☀️")
+        put(Icons.Rounded.DarkMode, Neutral, "🌙")
+        put(Icons.Rounded.Contrast, Neutral, "🌗")
+        put(Icons.Rounded.Bedtime, Neutral, "💤", "😴")
+        put(Icons.Rounded.FlashlightOn, Neutral, "🔦")
+        put(Icons.Rounded.AcUnit, Neutral, "❄️")
+        put(Icons.Rounded.Air, Neutral, "🌬️")
+        put(Icons.Rounded.Recycling, Neutral, "♻️")
+        put(Icons.Rounded.CleaningServices, Neutral, "🧹")
+        put(Icons.Rounded.Delete, Neutral, "🗑️")
+        put(Icons.Rounded.Factory, Neutral, "🏭")
+        put(Icons.Rounded.Business, Neutral, "🏢")
+        put(Icons.Rounded.Balance, Neutral, "⚖️")
+        put(Icons.Rounded.LocalPolice, Neutral, "👮")
+        put(Icons.Rounded.VisibilityOff, Neutral, "🕵️")
+        put(Icons.Rounded.LockOpen, Warn, "🔓")
+        put(Icons.Rounded.Person, Neutral, "👤")
+        put(Icons.Rounded.Group, Neutral, "👥")
+        put(Icons.Rounded.TouchApp, Neutral, "👆")
+        put(Icons.Rounded.PanTool, Neutral, "🖐️")
+        put(Icons.Rounded.Layers, Neutral, "🧱", "🗂️")
+        put(Icons.Rounded.CropSquare, Neutral, "⬜")
+        put(Icons.Rounded.StarBorder, Neutral, "☆")
+        put(Icons.Rounded.Diamond, Accent, "💎")
+        put(Icons.Rounded.WorkspacePremium, Accent, "👑")
+        put(Icons.Rounded.CardGiftcard, Accent, "🎁")
 
         // Decoration with no meaning of its own: dropped.
         drop("✨", "🎉", "🚀", "💪", "😊", "🔹", "🌀", "👣")

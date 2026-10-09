@@ -16,11 +16,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.GridOn
+import androidx.compose.material.icons.rounded.Smartphone
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -222,7 +222,7 @@ fun ScreenTestSection(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Icon(
-                    Icons.Default.Smartphone,
+                    Icons.Rounded.Smartphone,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
@@ -290,7 +290,7 @@ fun ScreenTestSection(
                 },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(gridPress),
             ) {
-                Icon(Icons.Default.GridOn, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.GridOn, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
                 Text(stringResource(R.string.screen_test_scratches_button))
             }
@@ -301,7 +301,7 @@ fun ScreenTestSection(
                 onClick = { showTouchTest = true },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).pressScale(touchPress),
             ) {
-                Icon(Icons.Default.TouchApp, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.TouchApp, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(6.dp))
                 Text(stringResource(R.string.screen_test_touch_button))
             }
@@ -342,13 +342,13 @@ private fun ScreenTestSummaryCard(
         Triple(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
         )
     } else {
         Triple(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.CheckCircle,
+            Icons.Rounded.CheckCircle,
         )
     }
 

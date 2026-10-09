@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
@@ -517,7 +517,7 @@ fun HealthSection(
                             )
                         }
                         Icon(
-                            imageVector = Icons.Default.ChevronRight,
+                            imageVector = Icons.Rounded.ChevronRight,
                             contentDescription = null,
                             tint = com.teamz.lab.debugger.ui.theme.DesignSystemColors.NeonGreen
                         )
@@ -561,7 +561,7 @@ fun HealthSection(
                             )
                         }
                         Icon(
-                            imageVector = Icons.Default.ChevronRight,
+                            imageVector = Icons.Rounded.ChevronRight,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -617,7 +617,7 @@ Total Scans: ${HealthScoreUtils.getTotalScans(context)}
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Bolt,
+                    imageVector = Icons.Rounded.Bolt,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -1807,7 +1807,7 @@ private fun PerformanceInsightsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Psychology,
+                    imageVector = Icons.Rounded.Psychology,
                     contentDescription = context.string(R.string.health_cd_insights),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -1864,7 +1864,7 @@ private fun ImprovementSuggestionsCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = Icons.Rounded.Lightbulb,
                     contentDescription = context.string(R.string.health_cd_suggestions),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -1913,7 +1913,7 @@ private fun ImprovementSuggestionsCard(
                     val ownIcon = remember(suggestion) { splitDisplayLine(suggestion).icon != null }
                     if (!ownIcon) {
                         Icon(
-                            imageVector = Icons.Default.Check,
+                            imageVector = Icons.Rounded.Check,
                             contentDescription = context.string(R.string.health_cd_tip),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
@@ -1960,7 +1960,7 @@ private fun DailyTasksCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = Icons.Rounded.CheckCircle,
                     contentDescription = context.string(R.string.health_cd_tasks),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -2126,7 +2126,7 @@ private fun TemperatureHistoryCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Thermostat,
+                    imageVector = Icons.Rounded.Thermostat,
                     contentDescription = context.string(R.string.health_cd_temperature),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -2284,7 +2284,7 @@ private fun HealthHistoryCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.History,
+                    imageVector = Icons.Rounded.History,
                     contentDescription = context.string(R.string.health_cd_history),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -2452,7 +2452,7 @@ private fun PrivacyDashboardCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Security,
+                    imageVector = Icons.Rounded.Security,
                     contentDescription = context.string(R.string.health_cd_privacy),
                     tint = when {
                         privacyScore < 50 -> MaterialTheme.colorScheme.error
@@ -2602,7 +2602,7 @@ private fun PrivacyDashboardCard(
                         verticalAlignment = Alignment.Top
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Warning,
+                            imageVector = Icons.Rounded.Warning,
                             contentDescription = context.string(R.string.health_cd_threat),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
@@ -2623,7 +2623,7 @@ private fun PrivacyDashboardCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
+                        imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = context.string(R.string.health_cd_safe),
                         tint = DesignSystemColors.NeonGreen,
                         modifier = Modifier.size(16.dp)
@@ -2645,7 +2645,7 @@ private fun PrivacyDashboardCard(
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Mic,
+                        imageVector = Icons.Rounded.Mic,
                         contentDescription = context.string(R.string.health_cd_recent_usage),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(16.dp)
@@ -2703,7 +2703,7 @@ private fun RamOptimizationCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Speed,
+                    imageVector = Icons.Rounded.Speed,
                     contentDescription = context.string(R.string.health_cd_ram),
                     tint = when {
                         ramPercent > 85 -> MaterialTheme.colorScheme.error
@@ -2820,7 +2820,7 @@ private fun RamOptimizationCard(
                     Text(context.string(R.string.health_refreshing))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = Icons.Rounded.Refresh,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -2889,7 +2889,7 @@ private fun StorageCleanupCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Folder,
+                    imageVector = Icons.Rounded.Folder,
                     contentDescription = context.string(R.string.health_cd_storage),
                     tint = when {
                         storagePercent > 90 -> MaterialTheme.colorScheme.error
@@ -3005,7 +3005,7 @@ private fun StorageCleanupCard(
                     Text(context.string(R.string.health_cleaning))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector = Icons.Rounded.Delete,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -3077,7 +3077,7 @@ private fun BatteryOptimizationCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.BatteryStd,
+                    imageVector = Icons.Rounded.BatteryStd,
                     contentDescription = context.string(R.string.health_cd_battery),
                     tint = when {
                         batteryHealth < 50 -> MaterialTheme.colorScheme.error
@@ -3214,7 +3214,7 @@ private fun BatteryOptimizationCard(
                     Text(context.string(R.string.checking))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.PowerSettingsNew,
+                        imageVector = Icons.Rounded.PowerSettingsNew,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -3279,7 +3279,7 @@ private fun AppCacheCleanerCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Build,
+                    imageVector = Icons.Rounded.Build,
                     contentDescription = context.string(R.string.health_cd_cache),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -3372,7 +3372,7 @@ private fun AppCacheCleanerCard(
                     Text(context.string(R.string.health_clearing))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Clear,
+                        imageVector = Icons.Rounded.Clear,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )

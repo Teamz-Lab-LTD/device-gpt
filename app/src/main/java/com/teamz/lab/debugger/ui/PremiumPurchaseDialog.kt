@@ -4,7 +4,7 @@ import androidx.compose.ui.res.stringResource
 import com.teamz.lab.debugger.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -106,7 +106,7 @@ fun PremiumPurchaseDialog(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = Icons.Rounded.Star,
                             contentDescription = null,
                             modifier = Modifier.size(80.dp),
                             tint = DesignSystemColors.NeonGreen
@@ -139,7 +139,7 @@ fun PremiumPurchaseDialog(
                     // Purchase flow - DeviceGPT branded
                     // Star icon with DeviceGPT branding
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Rounded.Star,
                         contentDescription = null,
                         modifier = Modifier.size(72.dp),
                         tint = DesignSystemColors.NeonGreen
@@ -346,7 +346,7 @@ fun PremiumStatusBadge() {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Star,
+                    imageVector = Icons.Rounded.Star,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -385,7 +385,7 @@ fun RemoveAdsButton(
             modifier = modifier
         ) {
             Icon(
-                imageVector = Icons.Default.Star,
+                imageVector = Icons.Rounded.Star,
                 contentDescription = null,
                 modifier = Modifier.size(14.dp)
             )

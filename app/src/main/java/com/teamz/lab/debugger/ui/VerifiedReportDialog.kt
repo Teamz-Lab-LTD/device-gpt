@@ -11,7 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -115,7 +115,7 @@ fun GenerateReportDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.Verified,
+                    imageVector = Icons.Rounded.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -203,7 +203,7 @@ fun ReportReadyDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.Verified,
+                    imageVector = Icons.Rounded.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -280,7 +280,7 @@ fun ReportReadyDialog(
                         contentColor = DesignSystemColors.Dark
                     ) else ButtonDefaults.buttonColors()
                 ) {
-                    Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Rounded.ContentCopy, null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.lb_vr_copy_code))
                 }
@@ -426,7 +426,7 @@ fun VerifyReportDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = Icons.Rounded.Search,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -523,7 +523,7 @@ fun VerifyReportDialog(
                                     modifier = Modifier.padding(16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Icon(Icons.Default.Verified, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(32.dp))
+                                    Icon(Icons.Rounded.Verified, null, tint = Color(0xFF4CAF50), modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(stringResource(R.string.lb_vr_verified), fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
                                     Text(
@@ -590,7 +590,7 @@ fun VerifyReportDialog(
                                     modifier = Modifier.padding(16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Icon(Icons.Default.GppBad, null, tint = Color(0xFFF44336), modifier = Modifier.size(32.dp))
+                                    Icon(Icons.Rounded.GppBad, null, tint = Color(0xFFF44336), modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(stringResource(R.string.lb_vr_not_verified), fontWeight = FontWeight.Bold, color = Color(0xFFF44336))
                                     Text(
@@ -611,7 +611,7 @@ fun VerifyReportDialog(
                                     modifier = Modifier.padding(16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Icon(Icons.Default.SearchOff, null, modifier = Modifier.size(32.dp))
+                                    Icon(Icons.Rounded.SearchOff, null, modifier = Modifier.size(32.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(stringResource(R.string.lb_vr_not_found), fontWeight = FontWeight.Bold)
                                     Text(

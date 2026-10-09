@@ -11,7 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -190,7 +190,7 @@ fun CustomDomainProbeCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Filled.TravelExplore,
+                    Icons.Rounded.TravelExplore,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -359,7 +359,7 @@ fun CustomDomainProbeCard(
                         .heightIn(min = 48.dp)
                 ) {
                     Icon(
-                        Icons.Filled.ContentCopy,
+                        Icons.Rounded.ContentCopy,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -381,7 +381,7 @@ fun CustomDomainProbeCard(
 private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
     val (icon, tint, headline) = when {
         r.isIntermittent -> Triple(
-            Icons.Filled.WarningAmber,
+            Icons.Rounded.WarningAmber,
             // Amber literals match the sibling NetworkReachabilityCard's convention
             // rather than inventing a token. Light mode uses a darkened amber:
             // #FF9800 on white is ~2.1:1, under the 3:1 non-text contrast floor.
@@ -389,27 +389,27 @@ private fun ProbeVerdict(r: RepeatedProbeResult, isDark: Boolean) {
             stringResource(R.string.probe_verdict_intermittent)
         )
         r.successCount == r.attempts && r.attempts > 0 -> Triple(
-            Icons.Filled.CheckCircle,
+            Icons.Rounded.CheckCircle,
             if (isDark) DesignSystemColors.NeonGreen else Color(0xFF1B7A3D),
             stringResource(R.string.probe_verdict_all_ok)
         )
         r.overallStatus == ReachabilityStatus.DNS_BLOCKED -> Triple(
-            Icons.Filled.ErrorOutline,
+            Icons.Rounded.ErrorOutline,
             MaterialTheme.colorScheme.error,
             stringResource(R.string.probe_verdict_dns_blocked)
         )
         r.overallStatus == ReachabilityStatus.TLS_BLOCKED -> Triple(
-            Icons.Filled.ErrorOutline,
+            Icons.Rounded.ErrorOutline,
             MaterialTheme.colorScheme.error,
             stringResource(R.string.probe_verdict_tls_blocked)
         )
         r.overallStatus == ReachabilityStatus.TCP_BLOCKED -> Triple(
-            Icons.Filled.ErrorOutline,
+            Icons.Rounded.ErrorOutline,
             MaterialTheme.colorScheme.error,
             stringResource(R.string.probe_verdict_tcp_blocked)
         )
         else -> Triple(
-            Icons.Filled.ErrorOutline,
+            Icons.Rounded.ErrorOutline,
             MaterialTheme.colorScheme.error,
             stringResource(R.string.probe_verdict_unreachable)
         )
@@ -492,7 +492,7 @@ private fun StackComparisonRows(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Top) {
                 Icon(
-                    Icons.Filled.WarningAmber,
+                    Icons.Rounded.WarningAmber,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(18.dp)
@@ -518,7 +518,7 @@ private fun StackRow(label: String, value: String, ok: Boolean) {
     ) {
         // Icon + text, never colour alone — the accessibility rule this codebase follows.
         Icon(
-            if (ok) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
+            if (ok) Icons.Rounded.CheckCircle else Icons.Rounded.ErrorOutline,
             contentDescription = null,
             tint = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
             modifier = Modifier.size(16.dp)
@@ -706,7 +706,7 @@ private fun FixButton(label: String, onClick: () -> Unit) {
             .heightIn(min = 48.dp)
             .padding(top = 6.dp)
     ) {
-        Icon(Icons.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
+        Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         DgText(label)
     }

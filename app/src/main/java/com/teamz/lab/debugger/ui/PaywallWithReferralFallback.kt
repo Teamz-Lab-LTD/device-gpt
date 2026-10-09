@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PeopleAlt
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.PeopleAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -258,7 +258,7 @@ private fun PaywallDismissReasonSheet(
                         modifier = Modifier.size(32.dp),
                     ) {
                         Icon(
-                            Icons.Filled.Close,
+                            Icons.Rounded.Close,
                             contentDescription = stringResource(R.string.close),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -376,7 +376,7 @@ private fun ReferralFallbackScreen(
                         .padding(top = 8.dp, end = 8.dp)
                 ) {
                     Icon(
-                        Icons.Filled.Close,
+                        Icons.Rounded.Close,
                         contentDescription = stringResource(R.string.close),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
@@ -400,7 +400,7 @@ private fun ReferralFallbackScreen(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                Icons.Filled.PeopleAlt,
+                                Icons.Rounded.PeopleAlt,
                                 contentDescription = null,
                                 tint = DesignSystemColors.Dark,
                                 modifier = Modifier.size(44.dp)

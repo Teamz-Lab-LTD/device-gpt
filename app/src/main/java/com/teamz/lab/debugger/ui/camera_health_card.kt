@@ -23,13 +23,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.InvertColors
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.InvertColors
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -176,7 +176,7 @@ fun CameraHealthSection(
             // Header
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Icon(
-                    Icons.Default.CameraAlt,
+                    Icons.Rounded.CameraAlt,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
@@ -272,7 +272,7 @@ fun CameraHealthSection(
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Icon(
-                            if (showDetail) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            if (showDetail) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                         )
@@ -346,7 +346,7 @@ private fun CameraProblemReportCard(
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Icon(
-            Icons.Default.Info,
+            Icons.Rounded.Info,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurface,
         )
@@ -475,7 +475,7 @@ private fun ColorCastCheckCard(
     }
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Icon(Icons.Default.InvertColors, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
+        Icon(Icons.Rounded.InvertColors, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.size(8.dp))
         Text(
             stringResource(R.string.camera_bw_title),
@@ -563,7 +563,7 @@ private fun ColorCastResultCard(
         result.grayscaleAccessibilityOn -> ColorCastVerdict(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
             stringResource(R.string.camera_bw_grayscale_title),
             stringResource(R.string.camera_bw_grayscale_body),
             Settings.ACTION_ACCESSIBILITY_SETTINGS to stringResource(R.string.camera_bw_open_accessibility),
@@ -571,7 +571,7 @@ private fun ColorCastResultCard(
         result.batterySaverOn -> ColorCastVerdict(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
             stringResource(R.string.camera_bw_saver_title),
             stringResource(R.string.camera_bw_saver_body),
             Settings.ACTION_BATTERY_SAVER_SETTINGS to stringResource(R.string.camera_bw_open_battery),
@@ -579,7 +579,7 @@ private fun ColorCastResultCard(
         result.capturedLooksMonochrome == true -> ColorCastVerdict(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
             stringResource(R.string.camera_bw_mono_title),
             stringResource(R.string.camera_bw_mono_body),
             null,
@@ -587,7 +587,7 @@ private fun ColorCastResultCard(
         result.capturedLooksMonochrome == false -> ColorCastVerdict(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.CheckCircle,
+            Icons.Rounded.CheckCircle,
             stringResource(R.string.camera_bw_ok_title),
             stringResource(R.string.camera_bw_ok_body),
             null,
@@ -596,7 +596,7 @@ private fun ColorCastResultCard(
     }
     val feedback = rememberResultFeedback(
         resultKey = "colour-cast:${result.hashCode()}",
-        good = icon == Icons.Default.CheckCircle,
+        good = icon == Icons.Rounded.CheckCircle,
     )
 
     Surface(
@@ -669,19 +669,19 @@ private fun CameraVerdictCard(result: CameraHealthUtils.CameraHealthResult) {
         allOk -> Quad(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.CheckCircle,
+            Icons.Rounded.CheckCircle,
             stringResource(R.string.camera_verdict_ok),
         )
         someOpened -> Quad(
             MaterialTheme.colorScheme.tertiaryContainer,
             MaterialTheme.colorScheme.onTertiaryContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
             stringResource(R.string.camera_verdict_partial),
         )
         else -> Quad(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning,
+            Icons.Rounded.Warning,
             stringResource(R.string.camera_verdict_failed),
         )
     }

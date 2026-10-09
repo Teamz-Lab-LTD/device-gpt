@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -41,7 +41,7 @@ fun SearchBar(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Rounded.Search,
                 contentDescription = stringResource(R.string.lb_sb_cd),
                 tint = MaterialTheme.colorScheme.primary
             )

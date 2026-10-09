@@ -17,9 +17,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.Star
 import com.teamz.lab.debugger.utils.AIIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -348,7 +348,7 @@ fun ExpandableInfoList(
                                 }
                                 if (value.length > 50) {
                                     Icon(
-                                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                        imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                                         contentDescription = stringResource(
                                             if (expanded) R.string.info_cd_collapse else R.string.info_cd_expand
                                         ),
@@ -390,7 +390,7 @@ fun ExpandableInfoList(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Star,
+                                    imageVector = Icons.Rounded.Star,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp)
                                 )

@@ -31,12 +31,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -870,7 +870,7 @@ fun LeaderboardSection(activity: Activity) {
                                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Star,
+                                                        imageVector = Icons.Rounded.Star,
                                                         contentDescription = null,
                                                         tint = if (isSystemInDarkTheme()) {
                                                             DesignSystemColors.NeonGreen
@@ -1154,7 +1154,7 @@ fun LeaderboardSection(activity: Activity) {
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Star,
+                                                    imageVector = Icons.Rounded.Star,
                                                     contentDescription = null,
                                                     tint = MaterialTheme.colorScheme.onSurface,
                                                     modifier = Modifier.size(20.dp)
@@ -1526,7 +1526,7 @@ fun CategorySelector(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Info,
+                                    imageVector = Icons.Rounded.Info,
                                     contentDescription = stringResource(R.string.lb_cat_what_is, stringResource(category.nameRes())),
                                     modifier = Modifier.size(16.dp),
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -1701,7 +1701,7 @@ fun TrustExplanationHeader(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    imageVector = Icons.Rounded.Info,
                     contentDescription = stringResource(R.string.lb_trust_cd),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(end = 8.dp)
@@ -1715,7 +1715,7 @@ fun TrustExplanationHeader(
                 )
             }
             Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                imageVector = if (isExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                 contentDescription = stringResource(if (isExpanded) R.string.lb_cd_collapse else R.string.lb_cd_expand),
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -2290,7 +2290,7 @@ fun PremiumUserRankCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Rounded.Star,
                         contentDescription = null,
                         tint = premiumYellow,
                         modifier = Modifier.size(20.dp)
@@ -2373,7 +2373,7 @@ fun PremiumUserRankCard(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Rounded.Info,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                         tint = contrastOn(premiumYellow)
@@ -2634,7 +2634,7 @@ fun SearchBar(
         },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Rounded.Search,
                 contentDescription = stringResource(R.string.lb_cd_search),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
@@ -2645,7 +2645,7 @@ fun SearchBar(
                     onClick = { onQueryChange("") }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Clear,
+                        imageVector = Icons.Rounded.Clear,
                         contentDescription = stringResource(R.string.lb_cd_clear_search),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

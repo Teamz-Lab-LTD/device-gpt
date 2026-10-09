@@ -11,7 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -229,7 +229,7 @@ fun MicTestCard(
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Filled.Mic,
+                    Icons.Rounded.Mic,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -306,7 +306,7 @@ fun MicTestCard(
                     // another app, or no input device. Say which, do not dead-end.
                     Row(verticalAlignment = Alignment.Top) {
                         Icon(
-                            Icons.Filled.ErrorOutline,
+                            Icons.Rounded.ErrorOutline,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
@@ -470,7 +470,7 @@ private fun MicPhaseBody(
                     modifier = Modifier.padding(bottom = 8.dp).riseInOnAppear(),
                 ) {
                     Icon(
-                        if (yes) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
+                        if (yes) Icons.Rounded.CheckCircle else Icons.Rounded.ErrorOutline,
                         contentDescription = null,
                         tint = if (yes) MaterialTheme.colorScheme.primary
                                else MaterialTheme.colorScheme.error,

@@ -27,18 +27,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Extension
-import androidx.compose.material.icons.filled.HighlightOff
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.SettingsEthernet
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WifiTethering
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Chat
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.HighlightOff
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.PowerSettingsNew
+import androidx.compose.material.icons.rounded.SettingsEthernet
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -257,7 +257,7 @@ private fun OffCard(onTurnOn: () -> Unit, onOpenGuide: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.WifiTethering,
+                    imageVector = Icons.Rounded.WifiTethering,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp),
@@ -280,7 +280,7 @@ private fun OffCard(onTurnOn: () -> Unit, onOpenGuide: () -> Unit) {
                     .fillMaxWidth()
                     .height(52.dp),
             ) {
-                Icon(Icons.Default.PowerSettingsNew, contentDescription = null)
+                Icon(Icons.Rounded.PowerSettingsNew, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.ai_bridge_turn_on), fontSize = 16.sp)
             }
@@ -353,7 +353,7 @@ private fun OnCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = Icons.Rounded.CheckCircle,
                     contentDescription = null,
                     tint = Color(0xFF2E7D32), // deliberate: green paired with the ✓ icon, not colour alone
                     modifier = Modifier.size(28.dp),
@@ -412,7 +412,7 @@ private fun OnCard(
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 ),
             ) {
-                Icon(Icons.Default.HighlightOff, contentDescription = null)
+                Icon(Icons.Rounded.HighlightOff, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.ai_bridge_turn_off), fontSize = 16.sp)
             }
@@ -423,7 +423,7 @@ private fun OnCard(
                 onClick = onOpenMcpSetup,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Icon(Icons.Default.SettingsEthernet, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.SettingsEthernet, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.ai_bridge_advanced_setup))
             }
@@ -449,7 +449,7 @@ private fun ErrorCard(reason: String, onRetry: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    imageVector = Icons.Rounded.Warning,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.size(28.dp),
@@ -571,7 +571,7 @@ private fun LabeledValueRow(
                 onClick = onCopy,
                 modifier = Modifier.semantics { contentDescription = copyLabel },
             ) {
-                Icon(Icons.Default.ContentCopy, contentDescription = null)
+                Icon(Icons.Rounded.ContentCopy, contentDescription = null)
             }
         }
     }
@@ -615,7 +615,7 @@ private fun AskAnyAiCard(onAskAi: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.AutoAwesome,
+                    imageVector = Icons.Rounded.AutoAwesome,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(28.dp),
@@ -643,7 +643,7 @@ private fun AskAnyAiCard(onAskAi: () -> Unit) {
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
-                Icon(Icons.Default.ContentCopy, contentDescription = null)
+                Icon(Icons.Rounded.ContentCopy, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.ai_share_ask_ai_button), fontSize = 16.sp)
             }
@@ -666,10 +666,10 @@ private enum class McpClient(val tab: McpClientTab) {
     // each have separate brand-kit rules; shipping their marks in-app without
     // a per-brand review is trademark risk. Generics are always safe and
     // still give each tab a distinct visual anchor.
-    ClaudeDesktop(McpClientTab("Claude", Icons.Default.Psychology)),
-    Cursor(McpClientTab("Cursor", Icons.Default.Code)),
-    ChatGpt(McpClientTab("ChatGPT", Icons.Default.Chat)),
-    Other(McpClientTab("Other", Icons.Default.Extension)),
+    ClaudeDesktop(McpClientTab("Claude", Icons.Rounded.Psychology)),
+    Cursor(McpClientTab("Cursor", Icons.Rounded.Code)),
+    ChatGpt(McpClientTab("ChatGPT", Icons.Rounded.Chat)),
+    Other(McpClientTab("Other", Icons.Rounded.Extension)),
 }
 
 private fun McpClient.configPath(): String = when (this) {
@@ -825,7 +825,7 @@ private fun McpSetupSheet(
                     .fillMaxWidth()
                     .height(52.dp),
             ) {
-                Icon(Icons.Default.ContentCopy, contentDescription = null)
+                Icon(Icons.Rounded.ContentCopy, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.ai_bridge_setup_copy_block), fontSize = 16.sp)
             }
@@ -854,7 +854,7 @@ private fun McpSetupSheet(
                     onClick = { onCopy("setup_url", "$urlOrPlaceholder/setup") },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Rounded.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.mx_bridge_copy_setup_url))
                 }

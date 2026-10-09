@@ -26,11 +26,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.InstallMobile
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.InstallMobile
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -266,7 +266,7 @@ fun AIAssistantDialog(
                                     },
                                     leadingContent = {
                                         Icon(
-                                            Icons.Default.Lock,
+                                            Icons.Rounded.Lock,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary,
                                         )
@@ -330,7 +330,7 @@ fun AIAssistantDialog(
                                     },
                                     trailingContent = {
                                         Icon(
-                                            Icons.Default.InstallMobile,
+                                            Icons.Rounded.InstallMobile,
                                             contentDescription = stringResource(R.string.mx_ai_install_cd),
                                             tint = MaterialTheme.colorScheme.primary,
                                         )
@@ -395,7 +395,7 @@ private fun AiInstallList(apps: List<AIApp>, context: Context) {
                 leadingContent = { Icon(AIIcon.icon, contentDescription = null, tint = AIIcon.color()) },
                 trailingContent = {
                     Icon(
-                        Icons.Default.InstallMobile,
+                        Icons.Rounded.InstallMobile,
                         contentDescription = stringResource(R.string.mx_ai_install_cd),
                         tint = MaterialTheme.colorScheme.primary,
                     )
@@ -434,7 +434,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            Icons.Default.CheckCircle,
+                            Icons.Rounded.CheckCircle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp),
@@ -475,7 +475,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.WarningAmber,
+                        Icons.Rounded.WarningAmber,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp),
@@ -493,7 +493,7 @@ private fun BridgeStatusPill(state: BridgeService.BridgeState) {
             SubtlePill(
                 icon = {
                     Icon(
-                        Icons.Default.Info,
+                        Icons.Rounded.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp),

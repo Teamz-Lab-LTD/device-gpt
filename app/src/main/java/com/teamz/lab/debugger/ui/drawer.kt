@@ -34,23 +34,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.NotificationsOff
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.RateReview
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.TipsAndUpdates
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.Verified
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.NotificationsOff
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.RateReview
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.TipsAndUpdates
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -439,7 +439,7 @@ fun DrawerContent(
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Star,
+                                imageVector = Icons.Rounded.Star,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier
@@ -549,7 +549,7 @@ fun DrawerContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Verified,
+                        imageVector = Icons.Rounded.Verified,
                         contentDescription = null,
                         tint = DesignSystemColors.NeonGreen,
                         modifier = Modifier.size(20.dp)
@@ -564,7 +564,7 @@ fun DrawerContent(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Rounded.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                         modifier = Modifier.size(16.dp)
@@ -710,7 +710,7 @@ fun DrawerContent(
         
         // Add to Home Screen Button (Programmatic - Android 8.0+)
         IconTextButton(
-            icon = Icons.Default.Star,
+            icon = Icons.Rounded.Star,
             label = context.string(R.string.drawer_add_to_home)
         ) {
             AnalyticsUtils.logEvent(
@@ -767,7 +767,7 @@ fun DrawerContent(
         // Add to Lock Screen Button (Manual instructions only - Android 14+)
         if (Build.VERSION.SDK_INT >= 34) { // Android 14+ (API 34+)
             IconTextButton(
-                icon = Icons.Default.Verified,
+                icon = Icons.Rounded.Verified,
                 label = context.string(R.string.drawer_add_to_lock)
             ) {
                 AnalyticsUtils.logEvent(
@@ -800,7 +800,7 @@ fun DrawerContent(
                 onDismissRequest = { showWidgetInstructions = false },
                 icon = {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Rounded.Info,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(48.dp)
@@ -953,7 +953,7 @@ fun DrawerContent(
             fontSize = 13.sp
         )
         IconTextButton(
-            icon = Icons.Default.Share,
+            icon = Icons.Rounded.Share,
             label = context.string(R.string.drawer_invite_button)
         ) {
             try {
@@ -988,7 +988,7 @@ fun DrawerContent(
             fontSize = 13.sp
         )
         IconTextButton(
-            icon = Icons.Default.Verified,
+            icon = Icons.Rounded.Verified,
             label = context.string(R.string.drawer_verified_generate)
         ) {
             AnalyticsUtils.logEvent(
@@ -999,7 +999,7 @@ fun DrawerContent(
             onGenerateVerifiedReport?.invoke()
         }
         IconTextButton(
-            icon = Icons.Default.Info,
+            icon = Icons.Rounded.Info,
             label = context.string(R.string.drawer_verified_verify)
         ) {
             AnalyticsUtils.logEvent(
@@ -1042,7 +1042,7 @@ fun DrawerContent(
         if (anyDenied) {
             Spacer(modifier = Modifier.height(6.dp))
             IconTextButton(
-                icon = Icons.Default.Warning,
+                icon = Icons.Rounded.Warning,
                 label = context.string(R.string.drawer_grant_permissions)
             ) {
                 AnalyticsUtils.logEvent(
@@ -1171,7 +1171,7 @@ fun DrawerContent(
             AdBadge()
         }
         IconTextButton(
-            icon = Icons.Default.AutoAwesome,
+            icon = Icons.Rounded.AutoAwesome,
             label = context.string(R.string.drawer_more_apps),
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerMoreAppsClicked)
@@ -1183,7 +1183,7 @@ fun DrawerContent(
         }
 
         IconTextButton(
-            icon = Icons.Filled.RateReview,
+            icon = Icons.Rounded.RateReview,
             label = context.string(R.string.drawer_feedback),
         ) {
             AnalyticsUtils.logEvent(AnalyticsEvent.DrawerReviewClicked)
@@ -1198,7 +1198,7 @@ fun DrawerContent(
         // gives the feature a fighting chance of reach.
 
         IconTextButton(
-            icon = Icons.Default.Share,
+            icon = Icons.Rounded.Share,
             label = context.string(R.string.drawer_share_friends)
         ) {
             AnalyticsUtils.logEvent(
@@ -1232,7 +1232,7 @@ fun DrawerContent(
                 fontSize = 12.sp
             )
             IconTextButton(
-                icon = Icons.Default.Info,
+                icon = Icons.Rounded.Info,
                 label = context.string(R.string.drawer_view_source)
             ) {
                 AnalyticsUtils.logEvent(
@@ -1562,7 +1562,7 @@ fun AnimatedPromotionalButton(
             horizontalArrangement = Arrangement.Start
         ) {
             Icon(
-                imageVector = Icons.Default.TipsAndUpdates,
+                imageVector = Icons.Rounded.TipsAndUpdates,
                 contentDescription = label,
                 modifier = Modifier
                     .padding(end = 8.dp)
@@ -1686,7 +1686,7 @@ fun NotificationToggle(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
-                imageVector = if (isEnabled) Icons.Default.Notifications else Icons.Default.NotificationsOff,
+                imageVector = if (isEnabled) Icons.Rounded.Notifications else Icons.Rounded.NotificationsOff,
                 contentDescription = if (isEnabled) context.string(R.string.drawer_notifications_enabled) else context.string(R.string.drawer_notifications_disabled),
                 tint = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
@@ -1754,7 +1754,7 @@ fun LanguageSelector(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Language,
+                imageVector = Icons.Rounded.Language,
                 contentDescription = context.string(R.string.language),
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -1773,7 +1773,7 @@ fun LanguageSelector(
             }
         }
         Icon(
-            imageVector = Icons.Default.ArrowForward,
+            imageVector = Icons.Rounded.ArrowForward,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
@@ -2097,7 +2097,7 @@ fun LeaderboardAccountStatus() {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (isEmailLinked) Icons.Default.AccountCircle else Icons.Default.Info,
+                            imageVector = if (isEmailLinked) Icons.Rounded.AccountCircle else Icons.Rounded.Info,
                             contentDescription = context.string(R.string.account_status_cd),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
@@ -2163,7 +2163,7 @@ fun LeaderboardAccountStatus() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Email,
+                        imageVector = Icons.Rounded.Email,
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
                         tint = MaterialTheme.colorScheme.onSurface
@@ -2200,7 +2200,7 @@ fun LeaderboardAccountStatus() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = Icons.Rounded.Person,
                     contentDescription = null,
                     modifier = Modifier.size(12.dp),
                     tint = MaterialTheme.colorScheme.onSurface
@@ -2265,7 +2265,7 @@ fun LeaderboardAccountStatus() {
                             )
                         } else {
                             Icon(
-                                imageVector = Icons.Default.Logout,
+                                imageVector = Icons.Rounded.Logout,
                                 contentDescription = null,
                                 modifier = Modifier.size(12.dp)
                             )
@@ -2290,7 +2290,7 @@ fun LeaderboardAccountStatus() {
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            imageVector = Icons.Rounded.Delete,
                             contentDescription = null,
                             modifier = Modifier.size(12.dp)
                         )
@@ -2527,7 +2527,7 @@ fun LeaderboardAccountStatus() {
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.AccountCircle,
+                            imageVector = Icons.Rounded.AccountCircle,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )

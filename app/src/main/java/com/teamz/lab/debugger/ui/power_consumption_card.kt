@@ -17,9 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -64,14 +63,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import androidx.compose.runtime.rememberCoroutineScope
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Share
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -216,7 +214,7 @@ fun PowerConsumptionCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.BatteryStd,
+                        imageVector = Icons.Rounded.BatteryStd,
                         contentDescription = context.string(R.string.cd_power_consumption),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
@@ -240,7 +238,7 @@ fun PowerConsumptionCard(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            imageVector = Icons.Rounded.Refresh,
                             contentDescription = context.string(R.string.refresh),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -324,7 +322,7 @@ Power Statistics:
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Devices,
+                        imageVector = Icons.Rounded.Devices,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
@@ -479,7 +477,7 @@ ${practicalInfo?.let { "Practical Info: $it" } ?: ""}
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Schedule,
+                        imageVector = Icons.Rounded.Schedule,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(16.dp)
@@ -817,7 +815,7 @@ private fun ComponentPowerItem(
                 }
             }
             Icon(
-                Icons.Default.Info,
+                Icons.Rounded.Info,
                 contentDescription = stringResource(R.string.tap_for_more_info),
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
@@ -933,7 +931,7 @@ private fun TestResultsFooter(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = Icons.Rounded.CheckCircle,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(16.dp)
@@ -979,7 +977,7 @@ private fun TestResultsFooter(
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.FileDownload,
+                    imageVector = Icons.Rounded.FileDownload,
                     contentDescription = null,
                     modifier = Modifier.size(14.dp)
                 )
@@ -1390,7 +1388,7 @@ private fun ComponentInfoDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Warning,
+                                    imageVector = Icons.Rounded.Warning,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(20.dp)
@@ -1470,7 +1468,7 @@ private fun AggregatedStatsSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.BarChart,
+                    imageVector = Icons.Rounded.BarChart,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -2011,7 +2009,7 @@ private fun CameraPowerTestSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.CameraAlt,
+                    imageVector = Icons.Rounded.CameraAlt,
                     contentDescription = stringResource(R.string.camera_power_test),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -2318,7 +2316,7 @@ Total Tests: ${allResults.size}
                         Text(context.string(R.string.testing), fontSize = 12.sp)
                     } else {
                         Icon(
-                            imageVector = Icons.Default.CameraAlt,
+                            imageVector = Icons.Rounded.CameraAlt,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -2467,7 +2465,7 @@ Total Tests: ${allResults.size}
                         Text(context.string(R.string.testing), fontSize = 12.sp)
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Analytics,
+                            imageVector = Icons.Rounded.Analytics,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -2498,7 +2496,7 @@ Total Tests: ${allResults.size}
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.CameraAlt,
+                                    imageVector = Icons.Rounded.CameraAlt,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(20.dp)
@@ -2582,7 +2580,7 @@ Total Tests: ${allResults.size}
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.MoreHoriz,
+                                        imageVector = Icons.Rounded.MoreHoriz,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         modifier = Modifier.size(16.dp)
@@ -3051,7 +3049,7 @@ private fun DisplayPowerSweepSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.BrightnessHigh,
+                    imageVector = Icons.Rounded.BrightnessHigh,
                     contentDescription = stringResource(R.string.pw_disp_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -3139,7 +3137,7 @@ This shows how different brightness levels affect battery consumption.
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Rounded.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.size(20.dp)
@@ -3321,7 +3319,7 @@ This shows how different brightness levels affect battery consumption.
                         Text(context.string(R.string.testing), fontSize = 12.sp)
                     } else {
                         Icon(
-                            imageVector = Icons.Default.BrightnessHigh,
+                            imageVector = Icons.Rounded.BrightnessHigh,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -3440,7 +3438,7 @@ This shows how different brightness levels affect battery consumption.
                         Text(context.string(R.string.testing), fontSize = 12.sp)
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Analytics,
+                            imageVector = Icons.Rounded.Analytics,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -3472,7 +3470,7 @@ This shows how different brightness levels affect battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Assessment,
+                                imageVector = Icons.Rounded.Assessment,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
@@ -3503,7 +3501,7 @@ This shows how different brightness levels affect battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.BarChart,
+                                imageVector = Icons.Rounded.BarChart,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
@@ -3573,7 +3571,7 @@ This shows how different brightness levels affect battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.List,
+                                imageVector = Icons.Rounded.List,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
@@ -3991,7 +3989,7 @@ private fun CpuMicrobenchSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Speed,
+                    imageVector = Icons.Rounded.Speed,
                     contentDescription = stringResource(R.string.pw_cpu_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -4110,7 +4108,7 @@ This shows how CPU processing speed affects battery consumption.
                     Text(context.string(R.string.running_cpu_tests))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Speed,
+                        imageVector = Icons.Rounded.Speed,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -4141,7 +4139,7 @@ This shows how CPU processing speed affects battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Assessment,
+                                imageVector = Icons.Rounded.Assessment,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
@@ -4168,7 +4166,7 @@ This shows how CPU processing speed affects battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.BarChart,
+                                imageVector = Icons.Rounded.BarChart,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
@@ -4277,7 +4275,7 @@ This shows how CPU processing speed affects battery consumption.
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.List,
+                                imageVector = Icons.Rounded.List,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
@@ -4602,7 +4600,7 @@ private fun NetworkRssiSamplingSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.SignalWifi4Bar,
+                    imageVector = Icons.Rounded.SignalWifi4Bar,
                     contentDescription = stringResource(R.string.pw_net_cd),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -4773,7 +4771,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                     DgText(context.string(R.string.sampling_countdown, countdown.toString()))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.SignalWifi4Bar,
+                        imageVector = Icons.Rounded.SignalWifi4Bar,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -4804,7 +4802,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Assessment,
+                                imageVector = Icons.Rounded.Assessment,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
@@ -4832,7 +4830,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.BarChart,
+                                imageVector = Icons.Rounded.BarChart,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
@@ -4933,7 +4931,7 @@ This shows how WiFi and cellular signal strength affects battery power consumpti
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.List,
+                                imageVector = Icons.Rounded.List,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
@@ -5252,7 +5250,7 @@ private fun SimpleLineChart(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.BarChart,
+                        imageVector = Icons.Rounded.BarChart,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -5314,7 +5312,7 @@ private fun SimpleLineChart(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Rounded.Info,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -5528,7 +5526,7 @@ private fun CsvPreviewDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.TableChart,
+                    imageVector = Icons.Rounded.TableChart,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -5554,7 +5552,7 @@ private fun CsvPreviewDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Rounded.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(20.dp)
@@ -5661,7 +5659,7 @@ private fun CsvPreviewDialog(
                                                     modifier = Modifier.touchTarget(20.dp)
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Info,
+                                                        imageVector = Icons.Rounded.Info,
                                                         contentDescription = stringResource(R.string.pw_csv_cd_info, headerText),
                                                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                                         modifier = Modifier.size(16.dp)
@@ -5692,7 +5690,7 @@ private fun CsvPreviewDialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Info,
+                                                imageVector = Icons.Rounded.Info,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onSurface,
                                                 modifier = Modifier.size(24.dp)
@@ -5813,7 +5811,7 @@ private fun CsvPreviewDialog(
                         )
                     }
                     Icon(
-                        imageVector = Icons.Default.FileDownload,
+                        imageVector = Icons.Rounded.FileDownload,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(32.dp)
@@ -5839,7 +5837,7 @@ private fun CsvPreviewDialog(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Share,
+                        imageVector = Icons.Rounded.Share,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -5937,7 +5935,7 @@ private fun DeviceSleepTrackerSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Bedtime,
+                        imageVector = Icons.Rounded.Bedtime,
                         contentDescription = null,
                         tint = if (MaterialTheme.colorScheme.background == DesignSystemColors.Dark) DesignSystemColors.White else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
@@ -6310,7 +6308,7 @@ private fun AppPowerMonitorSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Apps,
+                    imageVector = Icons.Rounded.Apps,
                     contentDescription = null,
                     tint = headerTextColor,
                     modifier = Modifier.size(24.dp)
@@ -6379,7 +6377,7 @@ screen time only — not each app's battery consumption.
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Warning,
+                        imageVector = Icons.Rounded.Warning,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(32.dp)
@@ -6426,7 +6424,7 @@ screen time only — not each app's battery consumption.
                 ) {
                     if (isMonitoring) {
                         Icon(
-                            imageVector = Icons.Default.Stop,
+                            imageVector = Icons.Rounded.Stop,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.size(18.dp)
@@ -6438,7 +6436,7 @@ screen time only — not each app's battery consumption.
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
+                            imageVector = Icons.Rounded.PlayArrow,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondary,
                             modifier = Modifier.size(18.dp)
@@ -6638,7 +6636,7 @@ Please answer about usage habits, not battery attribution.
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Schedule,
+                                                imageVector = Icons.Rounded.Schedule,
                                                 contentDescription = null,
                                                 tint = usageColor,
                                                 modifier = Modifier.size(18.dp)
@@ -6689,7 +6687,7 @@ Please answer about usage habits, not battery attribution.
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Speed,
+                                                        imageVector = Icons.Rounded.Speed,
                                                         contentDescription = null,
                                                         tint = efficiencyColor,
                                                         modifier = Modifier.size(14.dp)
@@ -6721,7 +6719,7 @@ Please answer about usage habits, not battery attribution.
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Schedule,
+                                                        imageVector = Icons.Rounded.Schedule,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                                         modifier = Modifier.size(14.dp)
@@ -6757,7 +6755,7 @@ Please answer about usage habits, not battery attribution.
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.History,
+                                                        imageVector = Icons.Rounded.History,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         modifier = Modifier.size(14.dp)
@@ -6784,7 +6782,7 @@ Please answer about usage habits, not battery attribution.
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.NotificationsActive,
+                                                        imageVector = Icons.Rounded.NotificationsActive,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.tertiary,
                                                         modifier = Modifier.size(14.dp)
@@ -6826,7 +6824,7 @@ Please answer about usage habits, not battery attribution.
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.AccessTime,
+                                                        imageVector = Icons.Rounded.AccessTime,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         modifier = Modifier.size(14.dp)
@@ -6875,7 +6873,7 @@ Please answer about usage habits, not battery attribution.
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
                                                         Icon(
-                                                            imageVector = Icons.Default.TrendingUp,
+                                                            imageVector = Icons.Rounded.TrendingUp,
                                                             contentDescription = null,
                                                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                             modifier = Modifier.size(14.dp)
@@ -6911,7 +6909,7 @@ Please answer about usage habits, not battery attribution.
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.CheckCircle,
+                                    imageVector = Icons.Rounded.CheckCircle,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(16.dp)

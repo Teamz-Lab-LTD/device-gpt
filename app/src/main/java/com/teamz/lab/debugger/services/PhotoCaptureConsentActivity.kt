@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -122,7 +122,7 @@ private fun ConsentDialog(onAllow: () -> Unit, onDeny: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDeny,
-        icon = { Icon(Icons.Default.CameraAlt, contentDescription = null) },
+        icon = { Icon(Icons.Rounded.CameraAlt, contentDescription = null) },
         title = { Text(stringResource(R.string.mx_photo_consent_title)) },
         text = {
             Column {

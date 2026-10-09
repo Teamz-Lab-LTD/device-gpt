@@ -1,19 +1,19 @@
 package com.teamz.lab.debugger.ui.icons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.outlined.Assignment
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.MenuBook
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material.icons.rounded.Assignment
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.StarBorder
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
@@ -43,18 +43,18 @@ object DgStock {
     val ArrowForward: ImageVector get() = Icons.AutoMirrored.Rounded.ArrowForward
     val Circle: ImageVector get() = Icons.Rounded.Circle
     val Heart: ImageVector get() = Icons.Rounded.Favorite
-    val Settings: ImageVector get() = Icons.Outlined.Settings
-    val Group: ImageVector get() = Icons.Outlined.Group
-    val Location: ImageVector get() = Icons.Outlined.LocationOn
-    val Notifications: ImageVector get() = Icons.Outlined.Notifications
-    val Clipboard: ImageVector get() = Icons.Outlined.Assignment
-    val Box: ImageVector get() = Icons.Outlined.Inventory2
-    val Help: ImageVector get() = Icons.AutoMirrored.Outlined.HelpOutline
-    val Moon: ImageVector get() = Icons.Outlined.DarkMode
-    val Sun: ImageVector get() = Icons.Outlined.LightMode
-    val Book: ImageVector get() = Icons.Outlined.MenuBook
-    val StarOutline: ImageVector get() = Icons.Outlined.StarBorder
+    val Settings: ImageVector get() = Icons.Rounded.Settings
+    val Group: ImageVector get() = Icons.Rounded.Group
+    val Location: ImageVector get() = Icons.Rounded.LocationOn
+    val Notifications: ImageVector get() = Icons.Rounded.Notifications
+    val Clipboard: ImageVector get() = Icons.Rounded.Assignment
+    val Box: ImageVector get() = Icons.Rounded.Inventory2
+    val Help: ImageVector get() = Icons.AutoMirrored.Rounded.HelpOutline
+    val Moon: ImageVector get() = Icons.Rounded.DarkMode
+    val Sun: ImageVector get() = Icons.Rounded.LightMode
+    val Book: ImageVector get() = Icons.Rounded.MenuBook
+    val StarOutline: ImageVector get() = Icons.Rounded.StarBorder
     val StarFilled: ImageVector get() = Icons.Rounded.Star
     val Android: ImageVector get() = Icons.Rounded.Android
-    val SystemUpdate: ImageVector get() = Icons.Outlined.SystemUpdate
+    val SystemUpdate: ImageVector get() = Icons.Rounded.SystemUpdate
 }

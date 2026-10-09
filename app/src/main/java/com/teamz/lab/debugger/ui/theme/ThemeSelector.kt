@@ -3,7 +3,7 @@ package com.teamz.lab.debugger.ui.theme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -70,7 +70,7 @@ private fun ThemeOptionCard(
             
             if (isSelected) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = Icons.Rounded.Check,
                     contentDescription = androidx.compose.ui.res.stringResource(R.string.theme_selected_cd),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -96,8 +96,8 @@ fun QuickThemeSwitcher(
         ) {
             Icon(
                 imageVector = when (themeManager.currentTheme) {
-                    AppTheme.DESIGN_SYSTEM_LIGHT -> Icons.Default.LightMode
-                    AppTheme.DESIGN_SYSTEM_DARK -> Icons.Default.DarkMode
+                    AppTheme.DESIGN_SYSTEM_LIGHT -> Icons.Rounded.LightMode
+                    AppTheme.DESIGN_SYSTEM_DARK -> Icons.Rounded.DarkMode
                 },
                 contentDescription = androidx.compose.ui.res.stringResource(R.string.theme_button_cd),
                 tint = MaterialTheme.colorScheme.primary
@@ -110,7 +110,7 @@ fun QuickThemeSwitcher(
         ) {
             DropdownMenuItem(
                 text = { Text(LocalContext.current.string(R.string.light)) },
-                leadingIcon = { Icon(Icons.Default.LightMode, null) },
+                leadingIcon = { Icon(Icons.Rounded.LightMode, null) },
                 onClick = {
                     context.switchToDesignSystemLight()
                     themeManager.setDarkMode(false, context)
@@ -120,7 +120,7 @@ fun QuickThemeSwitcher(
             
             DropdownMenuItem(
                 text = { Text(LocalContext.current.string(R.string.dark)) },
-                leadingIcon = { Icon(Icons.Default.DarkMode, null) },
+                leadingIcon = { Icon(Icons.Rounded.DarkMode, null) },
                 onClick = {
                     context.switchToDesignSystemDark()
                     themeManager.setDarkMode(true, context)

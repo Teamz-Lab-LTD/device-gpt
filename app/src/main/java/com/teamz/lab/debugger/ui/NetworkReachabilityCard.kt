@@ -14,7 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -132,7 +132,7 @@ fun NetworkReachabilityCard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Public,
+                            imageVector = Icons.Rounded.Public,
                             contentDescription = stringResource(R.string.info_reach_title),
                             modifier = Modifier.size(24.dp),
                             tint = when {
@@ -202,7 +202,7 @@ fun NetworkReachabilityCard(
 
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -272,7 +272,7 @@ fun NetworkReachabilityCard(
                                 color = Color(0xFFFF9800).copy(alpha = 0.12f)
                             ) {
                                 Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Warning, null, tint = Color(0xFFFF9800), modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Rounded.Warning, null, tint = Color(0xFFFF9800), modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(stringResource(R.string.info_reach_captive), style = MaterialTheme.typography.bodySmall, color = Color(0xFFFF9800))
                                 }
@@ -308,7 +308,7 @@ fun NetworkReachabilityCard(
                                     contentColor = DesignSystemColors.Dark
                                 ) else ButtonDefaults.buttonColors()
                             ) {
-                                Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Rounded.Share, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(R.string.share), style = MaterialTheme.typography.labelMedium)
                             }
@@ -340,7 +340,7 @@ fun NetworkReachabilityCard(
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                             ) {
-                                Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Rounded.Refresh, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(stringResource(R.string.info_retest), style = MaterialTheme.typography.labelMedium, maxLines = 1)
                             }
@@ -380,7 +380,7 @@ private fun ContextLine(icon: ImageVector, label: String, value: String) {
 private fun DomainResultRow(probe: com.teamz.lab.debugger.utils.DomainProbeResult) {
     val isReachable = probe.overallStatus == ReachabilityStatus.REACHABLE
     val statusColor = if (isReachable) Color(0xFF4CAF50) else Color(0xFFF44336)
-    val statusIcon = if (isReachable) Icons.Default.CheckCircle else Icons.Default.Cancel
+    val statusIcon = if (isReachable) Icons.Rounded.CheckCircle else Icons.Rounded.Cancel
 
     Row(
         modifier = Modifier

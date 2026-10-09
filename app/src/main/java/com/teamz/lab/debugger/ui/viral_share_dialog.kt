@@ -25,17 +25,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.rounded.Chat
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Message
+import androidx.compose.material.icons.rounded.People
+import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -132,7 +132,7 @@ fun ViralShareDialog(
                 ) {
                     IconButton(onClick = onDismiss) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Filled.Close,
+                            imageVector = androidx.compose.material.icons.Icons.Rounded.Close,
                             contentDescription = stringResource(R.string.close),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -165,7 +165,7 @@ fun ViralShareDialog(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    Icons.Default.Share,
+                                    Icons.Rounded.Share,
                                     contentDescription = stringResource(R.string.share),
                                     modifier = Modifier.size(32.dp),
                                     tint = headerIconTint
@@ -231,7 +231,7 @@ fun ViralShareDialog(
 
                     // WhatsApp
                     ShareButton(
-                        icon = Icons.Default.Chat,
+                        icon = Icons.Rounded.Chat,
                         text = stringResource(R.string.lb_vs_whatsapp),
                         containerColor = WhatsAppGreen,
                         contentColor = contrastOn(WhatsAppGreen),
@@ -250,7 +250,7 @@ fun ViralShareDialog(
 
                     // Telegram
                     ShareButton(
-                        icon = Icons.Default.Send,
+                        icon = Icons.Rounded.Send,
                         text = stringResource(R.string.lb_vs_telegram),
                         containerColor = TelegramBlue,
                         contentColor = contrastOn(TelegramBlue),
@@ -269,7 +269,7 @@ fun ViralShareDialog(
 
                     // SMS
                     ShareButton(
-                        icon = Icons.Default.Message,
+                        icon = Icons.Rounded.Message,
                         text = stringResource(R.string.lb_vs_sms),
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary,
@@ -288,7 +288,7 @@ fun ViralShareDialog(
 
                     // Email
                     ShareButton(
-                        icon = Icons.Default.Email,
+                        icon = Icons.Rounded.Email,
                         text = stringResource(R.string.lb_vs_email),
                         containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onTertiary,
@@ -307,7 +307,7 @@ fun ViralShareDialog(
 
                     // Generic share
                     ShareButton(
-                        icon = Icons.Default.Share,
+                        icon = Icons.Rounded.Share,
                         text = stringResource(R.string.lb_vs_more),
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -426,7 +426,7 @@ private fun RewardProgressCard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.Default.People,
+                            Icons.Rounded.People,
                             contentDescription = null,
                             modifier = Modifier.size(26.dp),
                             tint = accentColor
@@ -665,7 +665,7 @@ private fun ReferralCodeSection(
                             contentColor = if (isDark) DesignSystemColors.Dark else MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Rounded.ContentCopy, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(stringResource(R.string.ai_bridge_copy), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                     }
