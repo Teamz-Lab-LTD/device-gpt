@@ -1,0 +1,439 @@
+{
+  "generated_at": "2026-10-09T10:55:27.246611+00:00",
+  "competitors": {
+    "com.gombosdev.displaytester": {
+      "total_pulled": 500,
+      "negative_count": 96,
+      "sample_negative": [
+        {
+          "score": 1,
+          "at": "2026-07-11T03:47:18",
+          "content": "could not find anything to test the brightness. seems a pretty basic issue"
+        },
+        {
+          "score": 1,
+          "at": "2026-03-07T00:16:31",
+          "content": "incorrect information... my phone got 12 bit display as per company claim but it shows 8bit... xiaomi 15 ultra"
+        },
+        {
+          "score": 2,
+          "at": "2025-02-04T01:56:23",
+          "content": "It does not works."
+        },
+        {
+          "score": 1,
+          "at": "2024-10-06T12:10:29",
+          "content": "Doesnt do anything useful. If you do think your screen is shagged, take it too the repair shop, or just buy a new handset"
+        },
+        {
+          "score": 1,
+          "at": "2024-08-08T18:32:42",
+          "content": "Just a another paywalled app. :lll"
+        },
+        {
+          "score": 1,
+          "at": "2024-03-02T16:22:55",
+          "content": "Unable to test the app without cookie consent, therefor the app does not work."
+        },
+        {
+          "score": 1,
+          "at": "2024-02-06T05:41:32",
+          "content": "Requires unreasonable advertising consent to be given when this was not the case before. Very disappointing."
+        },
+        {
+          "score": 1,
+          "at": "2024-01-03T20:21:54",
+          "content": "Forces GDPR consent"
+        },
+        {
+          "score": 1,
+          "at": "2023-07-10T14:33:01",
+          "content": "Very good app.... I like it... Really good"
+        },
+        {
+          "score": 2,
+          "at": "2023-03-18T02:09:27",
+          "content": "Super"
+        },
+        {
+          "score": 1,
+          "at": "2022-12-31T21:14:31",
+          "content": "Did absolutely nothing. I give it a minus 100."
+        },
+        {
+          "score": 1,
+          "at": "2022-12-20T01:40:26",
+          "content": "Confusing and cannot locate in app help. The tests mean absolutely nothing to me, the data means absolutely nothing to me. Uninstalling."
+        },
+        {
+          "score": 1,
+          "at": "2022-07-27T22:45:19",
+          "content": "Doesn't repair the part of the screen that senses touch even if you pay. Not worth it"
+        },
+        {
+          "score": 1,
+          "at": "2022-07-18T07:15:16",
+          "content": "Pointless AF soo it shows you if your touch screen is messed up but no option to fix it? I already know the touch screen isn't working properly it's why I downloaded the app. Colossal waste of time"
+        },
+        {
+          "score": 1,
+          "at": "2022-07-18T06:50:05",
+          "content": "Fake"
+        },
+        {
+          "score": 1,
+          "at": "2022-06-26T14:32:29",
+          "content": "My screen keeps crashing... I thought the app would run a test giving me feedback.. It doesn't.."
+        },
+        {
+          "score": 1,
+          "at": "2022-04-19T20:06:00",
+          "content": "Dangerous"
+        },
+        {
+          "score": 1,
+          "at": "2022-01-14T05:24:11",
+          "content": "Don't buy pro mode ... it's a scam"
+        },
+        {
+          "score": 1,
+          "at": "2022-01-05T23:06:18",
+          "content": "Not good"
+        },
+        {
+          "score": 1,
+          "at": "2022-01-02T15:03:11",
+          "content": "Guess what, if you have a samsung phone. Go to phone and type #*0#* and then you have an inbuilt menu that does the same thing"
+        },
+        {
+          "score": 1,
+          "at": "2021-08-22T10:15:13",
+          "content": "Wrong info."
+        },
+        {
+          "score": 3,
+          "at": "2021-07-20T15:01:12",
+          "content": "Good"
+        },
+        {
+          "score": 1,
+          "at": "2021-07-16T13:35:10",
+          "content": "So bad app ,it damaged my display brightness"
+        },
+        {
+          "score": 1,
+          "at": "2021-07-10T00:43:56",
+          "content": "Bad"
+        },
+        {
+          "score": 1,
+          "at": "2021-07-04T14:58:50",
+          "content": "Wrong info. It shows on my mi10i that it has a 60 Hz ref rate. But it's 120 actually (set to 120 always). Giving it q star. Also the dimensions were wrong too."
+        }
+      ]
+    },
+    "ru.andr7e.deviceinfohw": {
+      "total_pulled": 500,
+      "negative_count": 72,
+      "sample_negative": [
+        {
+          "score": 3,
+          "at": "2026-09-18T14:19:46",
+          "content": "UI \u098f\u0995\u099f\u09c1 \u0996\u09be\u09b0\u09be\u09aa \u09ab\u09cd\u09b0\u09bf\u09a4\u09c7 \u09ab\u09bf\u099a\u09be\u09b0 \u0995\u09ae \u09b8\u09a0\u09bf\u0995\u09a4\u09be \u0995\u09ae"
+        },
+        {
+          "score": 3,
+          "at": "2026-09-15T20:05:04",
+          "content": "The app is fairly robust and provides sufficient reference dataset tools."
+        },
+        {
+          "score": 1,
+          "at": "2026-09-15T19:08:43",
+          "content": "doesn't work on android 16"
+        },
+        {
+          "score": 1,
+          "at": "2026-09-02T06:14:58",
+          "content": "longtime not updated"
+        },
+        {
+          "score": 1,
+          "at": "2026-08-20T01:05:46",
+          "content": "annoying screen that can't be dismissed as soon as you start the app"
+        },
+        {
+          "score": 3,
+          "at": "2026-08-17T21:09:36",
+          "content": "very nice app but the camera info are wrong. Shows all my lenses are 12.6 MP while they are 12.6, 50, 50 and 200. I even allowed camera permission but it's still the same. am I missing something or does that need root to work properly?"
+        },
+        {
+          "score": 1,
+          "at": "2026-08-16T22:40:28",
+          "content": "total waste of an app and your tone as it's generic at hest and frisky give and specs of your phone that you couldn't find without it !"
+        },
+        {
+          "score": 1,
+          "at": "2026-07-27T00:28:33",
+          "content": "\u09ac\u09be\u0982\u09b2\u09be \u09ad\u09be\u09b7\u09be \u09b8\u09be\u09aa\u09cb\u09b0\u09cd\u099f \u0995\u09b0\u09c7\u09a8\u09be!"
+        },
+        {
+          "score": 1,
+          "at": "2026-07-18T05:19:59",
+          "content": "ads scam"
+        },
+        {
+          "score": 3,
+          "at": "2026-07-07T08:38:22",
+          "content": "I just got curious and looked for Flash storage type and it says \"emmc\" type, well done"
+        },
+        {
+          "score": 1,
+          "at": "2026-06-30T07:52:40",
+          "content": "DOESN'T WORK AT ALL! On my phone and tablet, it does nothing but post a popup message saying information is blocked. Provides no info. 5-star reviews must be fake since they claim people who use the same device. Can't be true if it doesn't work."
+        },
+        {
+          "score": 3,
+          "at": "2026-03-29T21:48:53",
+          "content": "Meaning of HW?"
+        },
+        {
+          "score": 1,
+          "at": "2026-02-09T23:00:51",
+          "content": "not useful"
+        },
+        {
+          "score": 1,
+          "at": "2025-12-30T22:44:44",
+          "content": "It's harmfull for my device"
+        },
+        {
+          "score": 1,
+          "at": "2025-12-19T21:34:20",
+          "content": "I installed this on my Pixel 10 and I get the pop up message \"In new versions of android some information is blocked. If you have root access, you can enable it in the settings for provide full information\". And you can't get rid of pop up. Even if my phone was rooted (which it isn't), it doesn't te"
+        },
+        {
+          "score": 1,
+          "at": "2025-10-11T00:04:01",
+          "content": "no gsf id"
+        },
+        {
+          "score": 3,
+          "at": "2025-09-26T16:17:06",
+          "content": "Data is useful."
+        },
+        {
+          "score": 2,
+          "at": "2025-09-17T05:11:25",
+          "content": "I have 3 another device check apps and they show the same manufacturing date. But this app shows the build date is newer for like a month!? How? It's not credible."
+        },
+        {
+          "score": 3,
+          "at": "2025-09-06T10:11:18",
+          "content": "Gets most job done for phone info Most information is there available in this app no need to go through all the steps for phones"
+        },
+        {
+          "score": 2,
+          "at": "2025-08-22T21:36:48",
+          "content": "Can't copy individual specs to the clipboard for pasting into a text message, for example"
+        },
+        {
+          "score": 3,
+          "at": "2025-08-22T18:14:33",
+          "content": "\u041f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u043a\u0440\u0430\u0448\u0438\u0442\u0441\u044f \u043d\u0430 \u0413\u043e\u043b\u043e\u0432\u043d\u043e\u043c \u0423\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435 ROCO K706, \u0432\u0435\u0440\u0441\u0438\u044f \u0430\u043d\u0434\u0440\u043e\u0438\u0434 13. Aida64 \u043d\u0435 \u043a\u0440\u0430\u0448\u0438\u0442\u0441\u044f."
+        },
+        {
+          "score": 3,
+          "at": "2025-07-20T14:40:02",
+          "content": "The app is good but there seems to be an issue in purchasing the Pro variant since none of the payment methods are supported"
+        },
+        {
+          "score": 2,
+          "at": "2025-07-12T00:58:01",
+          "content": "average"
+        },
+        {
+          "score": 1,
+          "at": "2025-07-11T00:06:17",
+          "content": "Does not show the dimensions of my device in inches (length x width), but only screen size."
+        },
+        {
+          "score": 3,
+          "at": "2025-05-22T17:05:41",
+          "content": "Plz support widgets"
+        }
+      ]
+    },
+    "com.mictest": {
+      "total_pulled": 0,
+      "negative_count": 0,
+      "sample_negative": []
+    }
+  },
+  "themes": {
+    "missing_feature": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 3,
+        "content": "Not bad needs blue filter test patterns"
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 3,
+        "content": "Couldn't get full screen in \"Touch Screen test\". Touch screen test NEEDS full screen. The nav bar remains. Can get full screen in other tests."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "very nice app but the camera info are wrong. Shows all my lenses are 12.6 MP while they are 12.6, 50, 50 and 200. I even allowed camera permission but it's still the same. am I missing something or does that need root to work properly?"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "lots of info. however it's missing CDMA or GSM and what bands the phone uses. No cellular service information at all"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "This app is very good for snapdragon chipset. It seems to be designed only for snapdragon chipset. I used this app in my previous Xiaomi snapdragon chipset and give out features beyond need but in mediatek chipset some features left and less. Mediatek dimensity 920 GPU frequency doesn't detect, ther"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "It's good but it doesn't have the battery system that the regular app has I use it and it's not on this iteration so it's a 3 star app in my opinion."
+      }
+    ],
+    "slow_performance": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "My screen keeps crashing... I thought the app would run a test giving me feedback.. It doesn't.."
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Tried running screen burn it only worked 3 times for 15 minutes now it won't open and freeze the phone tried uninstalling and install didn't work waste of \u00a31.29"
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "dont change nothing."
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Crashes constantly on pixel XL."
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 3,
+        "content": "When I cast to a TV and try to change the brightness of my test pattern it does not change on the TV. Otherwise this app is great"
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 2,
+        "content": "I loved the app, until all the \"paid\" features cause immediate crash of the app on my galaxy s4 active. Please fix this!"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "Why i can't show cpu operating time? Previously on Xiaomi Mi A2 Android 9 or 10 can show this thing, did android 13 change how to obtain the cpu data? Update: It still doesn't work, my device is Samsung M23 (sd 750)"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "Crashes when loading on my generic padpro6, android 13 from AliExpress. mt6797 cpu with 16g ram and 1t storage. Other device info reporters did not crash."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "Crashes, does not work."
+      }
+    ],
+    "broken_bug": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Didn't do what I needed my phone's digitizer might be broken I'm trying to find out if it is"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "doesn't work on android 16"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "DOESN'T WORK AT ALL! On my phone and tablet, it does nothing but post a popup message saying information is blocked. Provides no info. 5-star reviews must be fake since they claim people who use the same device. Can't be true if it doesn't work."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "Why i can't show cpu operating time? Previously on Xiaomi Mi A2 Android 9 or 10 can show this thing, did android 13 change how to obtain the cpu data? Update: It still doesn't work, my device is Samsung M23 (sd 750)"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "Charge rates doesn't work. Constantly jumps from charging to discharging."
+      }
+    ],
+    "privacy_concern": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Confusing and cannot locate in app help. The tests mean absolutely nothing to me, the data means absolutely nothing to me. Uninstalling."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "The app is fairly robust and provides sufficient reference dataset tools."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "Data is useful."
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 3,
+        "content": "Why i can't show cpu operating time? Previously on Xiaomi Mi A2 Android 9 or 10 can show this thing, did android 13 change how to obtain the cpu data? Update: It still doesn't work, my device is Samsung M23 (sd 750)"
+      }
+    ],
+    "price_complaint": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Just a another paywalled app. :lll"
+      },
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Don't buy pro mode ... it's a scam"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "ads scam"
+      },
+      {
+        "app": "ru.andr7e.deviceinfohw",
+        "score": 1,
+        "content": "Lots of useful info but it hidden behind a paywall. DISAPPOINTING. LOOKING ELSEWHERE"
+      }
+    ],
+    "ui_complaint": [
+      {
+        "app": "com.gombosdev.displaytester",
+        "score": 1,
+        "content": "Confusing and cannot locate in app help. The tests mean absolutely nothing to me, the data means absolutely nothing to me. Uninstalling."
+      }
+    ]
+  },
+  "theme_counts": {
+    "missing_feature": 6,
+    "slow_performance": 9,
+    "broken_bug": 5,
+    "privacy_concern": 4,
+    "price_complaint": 4,
+    "ui_complaint": 1
+  }
+}

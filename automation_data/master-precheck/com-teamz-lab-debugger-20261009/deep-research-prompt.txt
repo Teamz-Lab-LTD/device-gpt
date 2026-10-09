@@ -1,0 +1,74 @@
+You are a senior SEO + product researcher. Conduct a deep SERP intent
+analysis for the keywords below as they relate to the app described.
+Use live Google search (or your equivalent). Be specific, cite sources,
+and avoid generic claims.
+
+# App in scope
+- Name: DeviceGPT
+- Tagline: Battery health, WiFi speed test, mic test, camera and screen tests, phone security audit—in one scan. No root.
+- One-line value: Free phone health check: WiFi speed test, battery health, mic test, camera and screen tests, and a security audit in one scan. No root, no signup, mostly offline.
+- Primary platforms: android
+- Direct competitors (already paid / no-account messengers): signal,telegram,threema,session,whatsapp
+- Country market for this research: us
+- Date of this brief: 2026-10-09
+
+# Target keywords (analyze EACH separately)
+- display test
+- display check
+- mic test
+- dead pixel test
+- camera test
+- touch screen test
+- screen test
+- imei check
+- official phone check
+
+# For each keyword return a markdown table row with these columns
+1. **Keyword** — verbatim
+2. **Intent class** — one of: navigational | informational | transactional | commercial-investigation | comparison
+3. **Top-1 result type** — listicle | how-to | landing page | comparison | forum | video | reddit | wikipedia | other
+4. **Top-3 word count average** — integer
+5. **Top-3 common H2 themes** — comma-separated, max 5
+6. **Schema markup the winners use** — Article / HowTo / FAQPage / Product / SoftwareApplication / Review / WebPage / none
+7. **Notable SERP features** — featured snippet, PAA, video, image pack, knowledge panel, "things to know", AI Overview
+8. **Word-for-word PAA questions (top 3)** — quote exactly
+9. **Common reader complaint about top results** — one short sentence
+10. **Content gap our app could fill** — one short sentence specific to OUR app's USPs (no-account + code-based rooms + 3 privacy presets + anonymous public rooms)
+11. **Recommended angle** — one short sentence
+12. **Suggested blog title** — under 60 chars, click-worthy, includes the keyword
+
+# Then add a closing section called "## Top 3 USP angles competitors do NOT cover"
+List the 3 strongest topics our app can own based on what was missing in the SERP.
+
+# Strict rules
+- Do not invent statistics. If unsure, write "unknown" — that's fine.
+- Do not pad. Short, sharp, specific.
+- Do not recommend topics already covered well by Top-3 unless we have a clear differentiation.
+- If a keyword is dominated by official brand pages (e.g. signal.org), say so and recommend a different angle.
+
+When done, return ONE JSON code block at the very end with this shape so a script can parse it:
+
+```json
+{
+  "generated_at": "ISO-8601 timestamp",
+  "app": "devicegpt",
+  "country": "us",
+  "keywords": [
+    {
+      "keyword": "...",
+      "intent_class": "...",
+      "top1_type": "...",
+      "top3_word_count_avg": 0,
+      "top3_h2_themes": ["..."],
+      "winner_schema": ["..."],
+      "serp_features": ["..."],
+      "paa": ["..."],
+      "common_complaint": "...",
+      "content_gap": "...",
+      "recommended_angle": "...",
+      "blog_title": "..."
+    }
+  ],
+  "top_usp_angles": ["...", "...", "..."]
+}
+```
