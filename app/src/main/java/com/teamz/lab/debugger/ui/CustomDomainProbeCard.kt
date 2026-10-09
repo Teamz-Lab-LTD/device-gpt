@@ -37,6 +37,7 @@ import com.teamz.lab.debugger.utils.AppDoctorReportHolder
 import com.teamz.lab.debugger.utils.WebViewStackProbe
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.InfoTextLocalizer
 import com.teamz.lab.debugger.utils.NetworkReachabilityTester
 import com.teamz.lab.debugger.utils.ReachabilityStatus
 import com.teamz.lab.debugger.utils.RepeatedProbeResult
@@ -227,7 +228,7 @@ fun CustomDomainProbeCard(
                         ) {
                             Icon(
                                 AIIcon.icon,
-                                contentDescription = "Ask AI",
+                                contentDescription = stringResource(R.string.ask_ai),
                                 tint = AIIcon.color()
                             )
                         }
@@ -473,10 +474,16 @@ private fun StackComparisonRows(
         java.perAttempt.firstNotNullOfOrNull { it.httpsResponseCode },
     )
     Column(Modifier.fillMaxWidth()) {
-        StackRow(stringResource(R.string.probe_stack_java), java.summaryLine, java.successCount > 0)
+        // summaryLine is English data (it is also written into the copied report and the AI hand-off).
+        val context = LocalContext.current
+        StackRow(
+            stringResource(R.string.probe_stack_java),
+            InfoTextLocalizer.localize(context, java.summaryLine),
+            java.successCount > 0
+        )
         StackRow(
             stringResource(R.string.probe_stack_webview),
-            web?.summaryLine ?: "—",
+            web?.summaryLine?.let { InfoTextLocalizer.localize(context, it) } ?: "—",
             web != null && web.successCount > 0
         )
         if (verdict == AppDoctorContext.StackVerdict.WEBVIEW_ONLY_FAILS) {
@@ -555,28 +562,34 @@ private fun ProbeNetworkContext(
     ) {
         ContextRow(
             stringResource(R.string.probe_context_transport),
-            transportLabel ?: "unknown"
+            transportLabel ?: stringResource(R.string.info_probe_unknown)
         )
-        ContextRow(stringResource(R.string.probe_detail_servers), dnsServers ?: "unknown")
+        ContextRow(
+            stringResource(R.string.probe_detail_servers),
+            dnsServers ?: stringResource(R.string.info_probe_unknown)
+        )
         // The System WebView build is THE field for a web-view-shell app: a stale or
         // swapped provider explains failures that otherwise look like server problems.
         ContextRow(
             stringResource(R.string.probe_context_webview),
-            webPackage?.let { "${it.second}" } ?: "unknown"
+            webPackage?.let { "${it.second}" } ?: stringResource(R.string.info_probe_unknown)
         )
         privateDns?.let {
             ContextRow(
                 stringResource(R.string.probe_context_private_dns),
-                if (it) "on" else "off"
+                stringResource(if (it) R.string.info_probe_on else R.string.info_probe_off)
             )
         }
         vpnOn?.let {
-            ContextRow(stringResource(R.string.probe_context_vpn), if (it) "on" else "off")
+            ContextRow(
+                stringResource(R.string.probe_context_vpn),
+                stringResource(if (it) R.string.info_probe_on else R.string.info_probe_off)
+            )
         }
         // Only surfaced when true: "captive portal: no" on every normal network is noise
         // that trains the reader to skip the whole block.
         if (captivePortal == true) {
-            ContextRow(stringResource(R.string.probe_context_captive), "yes")
+            ContextRow(stringResource(R.string.probe_context_captive), stringResource(R.string.info_probe_yes))
         }
     }
 }
@@ -645,7 +658,8 @@ private fun ProbeDetails(r: RepeatedProbeResult) {
             if (!ok) {
                 a.errorDetail?.let {
                     Text(
-                        "     $it",
+                        // English data (also in the copied report); shown in the app language.
+                        "     " + InfoTextLocalizer.localize(LocalContext.current, it),
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.error,
