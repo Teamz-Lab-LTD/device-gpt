@@ -11,6 +11,7 @@ import android.os.StatFs
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.content.edit
+import com.teamz.lab.debugger.R
 
 object HealthScoreUtils {
     private const val PREFS_NAME = "health_score_prefs"
@@ -291,22 +292,22 @@ object HealthScoreUtils {
         val batteryInfo = getBatteryChargingInfo(context)
         when {
             batteryInfo.contains("Overheat") || batteryInfo.contains("Overvoltage") -> {
-                suggestions.add("🔥 Your phone is too hot! Take off the case and let it cool down for 10 minutes")
-                suggestions.add("⚡ Don't charge while it's hot - this can damage your battery permanently")
-                suggestions.add("🌬️ Close all apps and put your phone in a cool place")
+                suggestions.add(context.string(R.string.mx_tip_hot_cool_down))
+                suggestions.add(context.string(R.string.mx_tip_hot_no_charge))
+                suggestions.add(context.string(R.string.mx_tip_hot_cool_place))
             }
             batteryInfo.contains("Failure") || batteryInfo.contains("Dead") -> {
-                suggestions.add("💀 Your battery is dying! Time to replace it or get a new phone")
-                suggestions.add("🔋 Turn on battery saver mode to make it last longer")
-                suggestions.add("📱 Lower your screen brightness to save battery life")
+                suggestions.add(context.string(R.string.mx_tip_dead_replace))
+                suggestions.add(context.string(R.string.mx_tip_dead_saver))
+                suggestions.add(context.string(R.string.mx_tip_dead_brightness))
             }
             batteryInfo.contains("Battery Full") -> {
-                suggestions.add("🔌 Unplug your phone! Keeping it at 100% all the time kills the battery faster")
-                suggestions.add("💡 Try charging only between 20% and 80% for longer battery life")
+                suggestions.add(context.string(R.string.mx_tip_full_unplug))
+                suggestions.add(context.string(R.string.mx_tip_full_range))
             }
             batteryInfo.contains("Cold") -> {
-                suggestions.add("❄️ Your phone is too cold! Warm it up before charging")
-                suggestions.add("🌡️ Don't leave your phone in the car during winter")
+                suggestions.add(context.string(R.string.mx_tip_cold_warm_up))
+                suggestions.add(context.string(R.string.mx_tip_cold_car))
             }
         }
         
@@ -318,15 +319,15 @@ object HealthScoreUtils {
                 val availableGB = storageMatch?.groupValues?.get(1)?.toFloatOrNull() ?: 0f
                 when {
                     availableGB < 2f -> {
-                        suggestions.add("💾 Your phone is almost full! Delete old photos and videos you don't need")
-                        suggestions.add("📱 Move your pictures to Google Photos to free up space")
-                        suggestions.add("🗑️ Go to Settings > Apps and delete apps you never use")
-                        suggestions.add("🧹 Clear cache: Settings > Storage > Free up space")
+                        suggestions.add(context.string(R.string.mx_tip_storage_almost_full))
+                        suggestions.add(context.string(R.string.mx_tip_storage_google_photos))
+                        suggestions.add(context.string(R.string.mx_tip_storage_delete_apps))
+                        suggestions.add(context.string(R.string.mx_tip_storage_clear_cache))
                     }
                     availableGB < 5f -> {
-                        suggestions.add("⚠️ Your phone is getting full (${availableGB}GB left). Time to clean up!")
-                        suggestions.add("📸 Move your photos to the cloud to save space")
-                        suggestions.add("🎵 Delete music you don't listen to anymore")
+                        suggestions.add(context.string(R.string.mx_tip_storage_getting_full, "${availableGB}GB"))
+                        suggestions.add(context.string(R.string.mx_tip_storage_cloud))
+                        suggestions.add(context.string(R.string.mx_tip_storage_music))
                     }
                 }
             }
@@ -335,10 +336,10 @@ object HealthScoreUtils {
                 val availableMB = storageMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
                 when {
                     availableMB < 500 -> {
-                        suggestions.add("🚨 Emergency! Your phone is almost completely full (${availableMB}MB left)!")
-                        suggestions.add("📱 Delete apps immediately - start with games you don't play")
-                        suggestions.add("📸 Move ALL photos to Google Photos or your computer")
-                        suggestions.add("🧹 Clear all cache: Settings > Storage > Free up space")
+                        suggestions.add(context.string(R.string.mx_tip_storage_emergency, "${availableMB}MB"))
+                        suggestions.add(context.string(R.string.mx_tip_storage_delete_games))
+                        suggestions.add(context.string(R.string.mx_tip_storage_move_all))
+                        suggestions.add(context.string(R.string.mx_tip_storage_clear_all_cache))
                     }
                 }
             }
@@ -350,13 +351,13 @@ object HealthScoreUtils {
         val ramUsagePercent = ramMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
         when {
             ramUsagePercent > 85 -> {
-                suggestions.add("🧠 Your phone is struggling! Close all apps and restart it")
-                suggestions.add("📱 Don't keep 20 apps open - close the ones you're not using")
-                suggestions.add("🔄 Restart your phone daily to keep it running smoothly")
+                suggestions.add(context.string(R.string.mx_tip_ram_struggling))
+                suggestions.add(context.string(R.string.mx_tip_ram_too_many))
+                suggestions.add(context.string(R.string.mx_tip_ram_restart_daily))
             }
             ramUsagePercent > 70 -> {
-                suggestions.add("⚠️ Your phone is getting slow (${ramUsagePercent}% memory used). Close some apps!")
-                suggestions.add("📱 Swipe up and close apps you're not using right now")
+                suggestions.add(context.string(R.string.mx_tip_ram_getting_slow, ramUsagePercent.toString()))
+                suggestions.add(context.string(R.string.mx_tip_ram_swipe))
             }
         }
         
@@ -368,14 +369,14 @@ object HealthScoreUtils {
                 val temperature = tempMatch?.groupValues?.get(1)?.toFloatOrNull() ?: 0f
                 when {
                     temperature > 45f -> {
-                        suggestions.add("🌡️ Your phone is burning up (${temperature}°C)! Stop using it immediately")
-                        suggestions.add("❄️ Take off the case and put it in front of a fan")
-                        suggestions.add("☀️ Don't leave it in the sun or hot car")
-                        suggestions.add("📱 Close all apps and let it cool down for 15 minutes")
+                        suggestions.add(context.string(R.string.mx_tip_temp_burning, temperature.toString()))
+                        suggestions.add(context.string(R.string.mx_tip_temp_fan))
+                        suggestions.add(context.string(R.string.mx_tip_temp_sun))
+                        suggestions.add(context.string(R.string.mx_tip_temp_cool_15))
                     }
                     temperature > 40f -> {
-                        suggestions.add("🌡️ Your phone is getting warm (${temperature}°C). Close some apps")
-                        suggestions.add("🌬️ Don't use it while charging to keep it cooler")
+                        suggestions.add(context.string(R.string.mx_tip_temp_warm, temperature.toString()))
+                        suggestions.add(context.string(R.string.mx_tip_temp_no_use_charging))
                     }
                 }
             }
@@ -388,82 +389,82 @@ object HealthScoreUtils {
         val securityInfo = SecurityInfoCache.cachedOrEmpty()
         when {
             securityInfo.contains("❌ Security shield is off") -> {
-                suggestions.add("🛡️ Your phone's security system is turned off - this is unusual and risky")
-                suggestions.add("📞 Contact your phone's customer support - this should be on by default")
-                suggestions.add("⚠️ Be extra careful about which apps you install until this is fixed")
+                suggestions.add(context.string(R.string.mx_tip_sec_shield_off))
+                suggestions.add(context.string(R.string.mx_tip_sec_shield_support))
+                suggestions.add(context.string(R.string.mx_tip_sec_shield_careful))
             }
             securityInfo.contains("❌ Storage is not protected") -> {
-                suggestions.add("🔐 Your photos and messages aren't protected if someone steals your phone")
-                suggestions.add("📱 Go to Settings > Security > Encrypt phone to lock your data")
-                suggestions.add("💡 This keeps your private stuff safe even if your phone is lost")
+                suggestions.add(context.string(R.string.mx_tip_sec_unencrypted))
+                suggestions.add(context.string(R.string.mx_tip_sec_encrypt))
+                suggestions.add(context.string(R.string.mx_tip_sec_encrypt_why))
             }
             // "❌ No admin set" branch removed 2026-10-04: no device admin is the normal state,
             // and the advice sent users to grant an app device-admin access.
             securityInfo.contains("⚠️ Clipboard can be read") -> {
-                suggestions.add("📎 Your copied text can be read by other apps on Android 9 and older")
-                suggestions.add("🔒 Don't copy passwords or credit card numbers on older phones")
-                suggestions.add("📱 Android 10 and newer block background apps from reading the clipboard")
+                suggestions.add(context.string(R.string.mx_tip_sec_clipboard))
+                suggestions.add(context.string(R.string.mx_tip_sec_clipboard_passwords))
+                suggestions.add(context.string(R.string.mx_tip_sec_clipboard_newer))
             }
             securityInfo.contains("⚠️ Modified system files found") -> {
-                suggestions.add("🚨 Your phone's system has been changed - this could be dangerous")
-                suggestions.add("🛡️ Go to Settings > Security > Google Play Protect > Scan device")
-                suggestions.add("📞 If you didn't modify your phone, contact customer support")
+                suggestions.add(context.string(R.string.mx_tip_sec_modified))
+                suggestions.add(context.string(R.string.mx_tip_sec_play_protect))
+                suggestions.add(context.string(R.string.mx_tip_sec_modified_support))
             }
             // "🚨 Malware Signatures Detected" branch removed 2026-10-04: nothing produces that text
             // since the invented signature list was replaced, and the app does no malware detection.
             // The 👣 motion branch was removed 2026-10-04 with the placeholder check that fed
             // it — it told every user someone might be handling their phone.
             securityInfo.contains("📱") && securityInfo.contains("Permissions:") -> {
-                suggestions.add("🔐 Some apps have access to your camera, microphone, and location")
-                suggestions.add("📱 Go to Settings > Apps > [app name] > Permissions to review")
-                suggestions.add("❌ Turn off permissions that apps don't really need")
+                suggestions.add(context.string(R.string.mx_tip_sec_permissions))
+                suggestions.add(context.string(R.string.mx_tip_sec_permissions_review))
+                suggestions.add(context.string(R.string.mx_tip_sec_permissions_off))
             }
             securityInfo.contains("⚠️") -> {
-                suggestions.add("🛡️ Update your phone: Settings > System > System update for security fixes")
-                suggestions.add("🔒 Set a strong lock screen: Settings > Security > Screen lock")
-                suggestions.add("📱 Choose Pattern, PIN, or Password - not just swipe")
+                suggestions.add(context.string(R.string.mx_tip_sec_update))
+                suggestions.add(context.string(R.string.mx_tip_sec_lock))
+                suggestions.add(context.string(R.string.mx_tip_sec_lock_type))
             }
         }
         
         // Score-based personalized suggestions
         when {
             score <= 3 -> {
-                suggestions.add("🚨 Your phone needs serious help! Follow all the tips above")
-                suggestions.add("📱 Consider backing up your data and doing a factory reset")
-                suggestions.add("💡 Your phone might be too old - time for an upgrade?")
+                suggestions.add(context.string(R.string.mx_tip_score_serious))
+                suggestions.add(context.string(R.string.mx_tip_score_reset))
+                suggestions.add(context.string(R.string.mx_tip_score_upgrade))
             }
             score <= 5 -> {
-                suggestions.add("⚠️ Your phone has several issues. Focus on battery and storage first")
-                suggestions.add("🔄 Restart your phone every day to keep it running better")
-                suggestions.add("📱 Don't install too many apps - keep it simple")
+                suggestions.add(context.string(R.string.mx_tip_score_several))
+                suggestions.add(context.string(R.string.mx_tip_score_restart))
+                suggestions.add(context.string(R.string.mx_tip_score_few_apps))
             }
             score <= 7 -> {
-                suggestions.add("👍 Your phone is doing okay! These tips will make it even better")
-                suggestions.add("🔋 Don't charge overnight - unplug when it reaches 80%")
-                suggestions.add("📱 Keep your apps updated for better performance")
+                suggestions.add(context.string(R.string.mx_tip_score_okay))
+                suggestions.add(context.string(R.string.mx_tip_score_overnight))
+                suggestions.add(context.string(R.string.mx_tip_score_update_apps))
             }
             score <= 9 -> {
-                suggestions.add("🌟 Great job! Your phone is in excellent shape")
-                suggestions.add("💡 Keep doing what you're doing - you're taking good care of it!")
-                suggestions.add("📱 Check back daily to maintain this great health score")
+                suggestions.add(context.string(R.string.mx_tip_score_great))
+                suggestions.add(context.string(R.string.mx_tip_score_keep_going))
+                suggestions.add(context.string(R.string.mx_tip_score_check_daily))
             }
             else -> {
-                suggestions.add("🏆 Perfect! Your phone is in amazing condition")
-                suggestions.add("💎 You're a phone care expert! Keep up the great work")
-                suggestions.add("📱 Share these tips with friends who need help with their phones")
+                suggestions.add(context.string(R.string.mx_tip_score_perfect))
+                suggestions.add(context.string(R.string.mx_tip_score_expert))
+                suggestions.add(context.string(R.string.mx_tip_score_share))
             }
         }
         
         // Add fun, easy-to-understand maintenance tips
         if (suggestions.size < 6) {
-            suggestions.add("💡 Pro tip: Charge your phone like you eat - little and often, not all at once!")
-            suggestions.add("🧹 Think of cache like dust - clean it weekly to keep your phone fresh")
-            suggestions.add("🔄 Restart your phone weekly - it's like giving it a good night's sleep")
-            suggestions.add("📱 Update your apps regularly - it's like getting new features for free!")
-            suggestions.add("🔋 Don't let your phone die completely - charge it before it hits 20%")
-            suggestions.add("🌡️ Keep your phone cool - hot phones are unhappy phones!")
-            suggestions.add("📸 Back up your photos regularly - memories are priceless!")
-            suggestions.add("🎮 Don't play games while charging - it's like running while eating!")
+            suggestions.add(context.string(R.string.mx_tip_general_charge_often))
+            suggestions.add(context.string(R.string.mx_tip_general_cache))
+            suggestions.add(context.string(R.string.mx_tip_general_restart_weekly))
+            suggestions.add(context.string(R.string.mx_tip_general_update))
+            suggestions.add(context.string(R.string.mx_tip_general_no_zero))
+            suggestions.add(context.string(R.string.mx_tip_general_cool))
+            suggestions.add(context.string(R.string.mx_tip_general_backup))
+            suggestions.add(context.string(R.string.mx_tip_general_no_games_charging))
         }
         
         return suggestions.take(6) // Return top 6 most helpful suggestions
@@ -501,6 +502,20 @@ object HealthScoreUtils {
     private const val KEY_TASKS_TODAY = "tasks_today"
     private const val KEY_TASKS_COMPLETED = "tasks_completed_today"
     private const val KEY_TASKS_DATE = "tasks_date"
+
+    /**
+     * Language the saved tasks were written in. Task titles are stored as ready-made text, so
+     * tasks saved in one language are thrown away and written again after a language switch.
+     */
+    private const val KEY_TASKS_LANGUAGE = "tasks_language"
+
+    private fun textLanguage(context: Context): String = context.resources.configuration.locales[0].language
+
+    private fun savedTasksAreCurrent(context: Context, today: String): Boolean {
+        val prefs = getPrefs(context)
+        return prefs.getString(KEY_TASKS_DATE, "") == today &&
+            prefs.getString(KEY_TASKS_LANGUAGE, null) == textLanguage(context)
+    }
     
     // Temperature history tracking
     private const val KEY_TEMPERATURE_HISTORY = "temperature_history"
@@ -513,9 +528,7 @@ object HealthScoreUtils {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         
         // Check if tasks were already generated today
-        val prefs = getPrefs(context)
-        val tasksDate = prefs.getString(KEY_TASKS_DATE, "")
-        if (tasksDate == today) {
+        if (savedTasksAreCurrent(context, today)) {
             // Return saved tasks for today
             return getSavedTasks(context)
         }
@@ -536,8 +549,8 @@ object HealthScoreUtils {
             tasks.add(
                 DailyTask(
                     id = "close_apps_$today",
-                    title = "Close $appCount background apps",
-                    description = "Your phone is using ${ramUsagePercent}% RAM. Close unused apps to improve performance.",
+                    title = context.string(R.string.mx_task_close_apps_title, appCount.toString()),
+                    description = context.string(R.string.mx_task_close_apps_body, ramUsagePercent.toString()),
                     icon = "📱",
                     priority = if (ramUsagePercent > 85) TaskPriority.HIGH else TaskPriority.MEDIUM,
                     actionType = TaskActionType.CLOSE_APPS
@@ -552,11 +565,11 @@ object HealthScoreUtils {
             tasks.add(
                 DailyTask(
                     id = "check_temp_$today",
-                    title = "Check temperature (currently ${temperature.toInt()}°C)",
-                    description = if (temperature > 40f) 
-                        "Your phone is getting warm. Let it cool down." 
-                    else 
-                        "Monitor your phone's temperature to prevent overheating.",
+                    title = context.string(R.string.mx_task_temp_title, temperature.toInt().toString()),
+                    description = if (temperature > 40f)
+                        context.string(R.string.mx_task_temp_body_warm)
+                    else
+                        context.string(R.string.mx_task_temp_body_watch),
                     icon = "🌡️",
                     priority = if (temperature > 40f) TaskPriority.HIGH else TaskPriority.MEDIUM,
                     actionType = TaskActionType.CHECK_TEMPERATURE
@@ -569,8 +582,8 @@ object HealthScoreUtils {
             tasks.add(
                 DailyTask(
                     id = "review_privacy_$today",
-                    title = "Review app permissions",
-                    description = "Some apps may have unnecessary permissions. Review and revoke unused ones.",
+                    title = context.string(R.string.mx_task_privacy_title),
+                    description = context.string(R.string.mx_task_privacy_body),
                     icon = "🔐",
                     priority = TaskPriority.MEDIUM,
                     actionType = TaskActionType.REVIEW_PRIVACY
@@ -588,8 +601,8 @@ object HealthScoreUtils {
                 tasks.add(
                     DailyTask(
                         id = "clear_storage_$today",
-                        title = "Free up storage space",
-                        description = "You have ${String.format("%.1f", availableGB)}GB left. Clear cache and delete unused files.",
+                        title = context.string(R.string.mx_task_storage_title),
+                        description = context.string(R.string.mx_task_storage_body, "${String.format("%.1f", availableGB)}GB"),
                         icon = "💾",
                         priority = if (availableGB < 2f) TaskPriority.HIGH else TaskPriority.MEDIUM,
                         actionType = TaskActionType.CLEAR_CACHE
@@ -603,11 +616,11 @@ object HealthScoreUtils {
             tasks.add(
                 DailyTask(
                     id = "battery_care_$today",
-                    title = "Optimize battery charging",
+                    title = context.string(R.string.mx_task_battery_title),
                     description = if (batteryInfo.contains("Battery Full"))
-                        "Unplug your phone. Keeping it at 100% damages the battery."
+                        context.string(R.string.mx_task_battery_body_full)
                     else
-                        "Your battery is overheating. Remove case and let it cool.",
+                        context.string(R.string.mx_task_battery_body_hot),
                     icon = "🔋",
                     priority = TaskPriority.MEDIUM,
                     actionType = TaskActionType.CHARGE_BATTERY
@@ -620,8 +633,8 @@ object HealthScoreUtils {
             tasks.add(
                 DailyTask(
                     id = "restart_phone_$today",
-                    title = "Restart your phone",
-                    description = "Weekly restart helps clear memory and improve performance.",
+                    title = context.string(R.string.mx_task_restart_title),
+                    description = context.string(R.string.mx_task_restart_body),
                     icon = "🔄",
                     priority = TaskPriority.LOW,
                     actionType = TaskActionType.RESTART_PHONE
@@ -643,10 +656,7 @@ object HealthScoreUtils {
      */
     fun getDailyTasks(context: Context, healthScore: Int): List<DailyTask> {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        val prefs = getPrefs(context)
-        val tasksDate = prefs.getString(KEY_TASKS_DATE, "")
-        
-        return if (tasksDate == today) {
+        return if (savedTasksAreCurrent(context, today)) {
             getSavedTasks(context)
         } else {
             generateDailyTasks(context, healthScore)
@@ -705,6 +715,7 @@ object HealthScoreUtils {
         prefs.edit {
             putString(KEY_TASKS_TODAY, tasksJson)
             putString(KEY_TASKS_DATE, today)
+            putString(KEY_TASKS_LANGUAGE, textLanguage(context))
         }
     }
     
@@ -846,6 +857,11 @@ object HealthScoreUtils {
     
     /**
      * Get temperature trend (increasing, decreasing, stable)
+     */
+    /**
+     * Returns English on purpose: the Health tab compares the result with "Not enough data" and
+     * hands it to the AI report. `HealthDisplayText.temperatureTrend` puts it into the app
+     * language where it is shown.
      */
     fun getTemperatureTrend(context: Context): String {
         val history = getTemperatureHistory(context, 7)

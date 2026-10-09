@@ -1,5 +1,6 @@
 package com.teamz.lab.debugger.ui
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import com.teamz.lab.debugger.db.DeviceEvent
 import com.teamz.lab.debugger.db.DeviceEventsRepository
 import com.teamz.lab.debugger.utils.AnalyticsEvent
 import com.teamz.lab.debugger.utils.AnalyticsUtils
+import com.teamz.lab.debugger.utils.LocaleManager
 import com.teamz.lab.debugger.utils.RemoteConfigUtils
 import com.teamz.lab.debugger.utils.RevenueCatManager
 import java.text.SimpleDateFormat
@@ -95,7 +97,7 @@ fun DeviceTimelineSection(
             )
             Spacer(Modifier.height(12.dp))
 
-            val dayFmt = remember { SimpleDateFormat("EEE, d MMM", Locale.getDefault()) }
+            val dayFmt = remember { SimpleDateFormat("EEE, d MMM", timelineDateLocale(context)) }
             val timeFmt = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
             val grouped = remember(events) {
                 events.groupBy { dayFmt.format(Date(it.timestamp)) }
@@ -116,7 +118,7 @@ fun DeviceTimelineSection(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
-                            text = "${typeIcon(event.type)} ${event.label ?: event.type}",
+                            text = "${typeIcon(event.type)} ${timelineLabel(context, event)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -160,6 +162,71 @@ fun DeviceTimelineSection(
             }
         }
     }
+}
+
+/**
+ * Day names and month names in the app language. The digits stay Latin (`nu-latn`), like every
+ * other number in the app.
+ */
+internal fun timelineDateLocale(context: Context): Locale =
+    if (context.resources.configuration.locales[0].language == LocaleManager.LANGUAGE_BANGLA) {
+        Locale.forLanguageTag("bn-u-nu-latn")
+    } else {
+        Locale.getDefault()
+    }
+
+/**
+ * The text of one timeline row in the app language.
+ *
+ * `DeviceEvent.label` is written once, in English, when the event happens, and old rows stay in
+ * the database for 90 days. So the stored label is never shown as it is: the row is built again
+ * from the event's own fields (score, charge payload), and only an event this code does not
+ * recognise falls back to the stored label.
+ */
+internal fun timelineLabel(context: Context, event: DeviceEvent): String {
+    val stored = event.label
+    return when (event.type) {
+        DeviceEvent.TYPE_SCORE_SCAN -> event.score
+            ?.let { context.string(R.string.mx_timeline_score_scan, it.toString()) }
+        DeviceEvent.TYPE_BASELINE_SNAPSHOT -> event.score
+            ?.let { context.string(R.string.mx_timeline_daily_snapshot, (it / 10).toString()) }
+        DeviceEvent.TYPE_CHARGE_SESSION -> chargeLabel(context, event.payload)
+        DeviceEvent.TYPE_APP_INSTALLED -> stored
+            ?.takeIf { it.startsWith(APP_INSTALLED_PREFIX) }
+            ?.let { context.string(R.string.mx_timeline_app_installed, it.removePrefix(APP_INSTALLED_PREFIX)) }
+        else -> null
+    } ?: stored ?: timelineTypeName(context, event.type)
+}
+
+private const val APP_INSTALLED_PREFIX = "New app installed: "
+
+/** Rebuilds "Charged 62% → 100% in 1h 40m" from the JSON the charge tracker stores beside it. */
+private fun chargeLabel(context: Context, payload: String?): String? {
+    if (payload.isNullOrBlank()) return null
+    return try {
+        val json = org.json.JSONObject(payload)
+        val start = json.getInt("start").toString()
+        val end = json.getInt("end").toString()
+        val durationMs = json.getLong("duration_ms")
+        val hours = durationMs / (60L * 60L * 1000L)
+        val mins = (durationMs / (60L * 1000L)) % 60L
+        if (hours > 0) {
+            context.string(R.string.mx_timeline_charged_hours, start, end, hours.toString(), mins.toString())
+        } else {
+            context.string(R.string.mx_timeline_charged_minutes, start, end, mins.toString())
+        }
+    } catch (_: Exception) {
+        null
+    }
+}
+
+/** Shown only when an event has neither a label nor fields to build one from. */
+private fun timelineTypeName(context: Context, type: String): String = when (type) {
+    DeviceEvent.TYPE_SCORE_SCAN -> context.string(R.string.mx_timeline_type_score_scan)
+    DeviceEvent.TYPE_CHARGE_SESSION -> context.string(R.string.mx_timeline_type_charge)
+    DeviceEvent.TYPE_APP_INSTALLED -> context.string(R.string.mx_timeline_type_app)
+    DeviceEvent.TYPE_BASELINE_SNAPSHOT -> context.string(R.string.mx_timeline_type_snapshot)
+    else -> type
 }
 
 private fun typeIcon(type: String): String = when (type) {
@@ -210,7 +277,11 @@ fun ChargeSummaryCard() {
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = s.label ?: context.string(R.string.timeline_charge_recorded),
+                text = if (s.label == null) {
+                    context.string(R.string.timeline_charge_recorded)
+                } else {
+                    timelineLabel(context, s)
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
