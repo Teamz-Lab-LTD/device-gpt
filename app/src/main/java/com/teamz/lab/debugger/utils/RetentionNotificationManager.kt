@@ -109,13 +109,16 @@ object RetentionNotificationManager {
         val weeklyWorkRequest = PeriodicWorkRequestBuilder<WeeklyReportWorker>(
             7, TimeUnit.DAYS // Repeat every 7 days
         )
+            .setInitialDelay(7, TimeUnit.DAYS) // a weekly report, not one on first open
             .setConstraints(constraints)
             .addTag(WEEKLY_REPORT_WORK)
             .build()
         
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WEEKLY_REPORT_WORK,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            // UPDATE, not REPLACE: this runs on every process start, and REPLACE restarted the
+            // job with no delay each time (review 2026-10-09, I3).
+            ExistingPeriodicWorkPolicy.UPDATE,
             weeklyWorkRequest
         )
     }
@@ -434,7 +437,9 @@ object RetentionNotificationManager {
         
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             ACHIEVEMENT_WORK,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            // UPDATE, not REPLACE: this runs on every process start, and REPLACE restarted the
+            // job with no delay each time (review 2026-10-09, I3).
+            ExistingPeriodicWorkPolicy.UPDATE,
             achievementWorkRequest
         )
     }
@@ -458,7 +463,9 @@ object RetentionNotificationManager {
         
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             MILESTONE_WORK,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            // UPDATE, not REPLACE: this runs on every process start, and REPLACE restarted the
+            // job with no delay each time (review 2026-10-09, I3).
+            ExistingPeriodicWorkPolicy.UPDATE,
             milestoneWorkRequest
         )
     }
@@ -476,13 +483,16 @@ object RetentionNotificationManager {
         val tipWorkRequest = PeriodicWorkRequestBuilder<PersonalizedTipWorker>(
             2, TimeUnit.DAYS
         )
+            .setInitialDelay(2, TimeUnit.DAYS)
             .setConstraints(constraints)
             .addTag(PERSONALIZED_TIP_WORK)
             .build()
         
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             PERSONALIZED_TIP_WORK,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            // UPDATE, not REPLACE: this runs on every process start, and REPLACE restarted the
+            // job with no delay each time (review 2026-10-09, I3).
+            ExistingPeriodicWorkPolicy.UPDATE,
             tipWorkRequest
         )
     }
