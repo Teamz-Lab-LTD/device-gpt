@@ -81,10 +81,10 @@
     <string name="testing">测试中…</string>
     <string name="single_test">单次测试</string>
     <string name="five_tests">5 次测试</string>
-    <string name="all_test_results">所有测试结果（共 %1$d 项）：</string>
-    <string name="test_result_format">测试 %1$d：%2$s（%3$dms）</string>
-    <string name="more_tests">… 还有 %1$d 项（查看 CSV 查看全部）</string>
-    <string name="total_tests">共 %1$d 次测试%2$s</string>
+    <string name="all_test_results">所有测试结果（共 %1$s 项）：</string>
+    <string name="test_result_format">测试 %1$s：%2$s（%3$sms）</string>
+    <string name="more_tests">… 还有 %1$s 项（查看 CSV 查看全部）</string>
+    <string name="total_tests">共 %1$s 次测试%2$s</string>
     <string name="view_csv">查看 CSV</string>
     <string name="camera_power_test_data">相机功耗测试数据</string>
     <string name="single_photo_power_test">📸 单张照片功耗测试</string>
@@ -160,7 +160,7 @@
     <string name="allow">允许</string>
     <string name="export_csv">导出 CSV</string>
     <string name="running_cpu_tests">正在运行 CPU 测试…</string>
-    <string name="sampling_countdown">采样中… %1$ds</string>
+    <string name="sampling_countdown">采样中… %1$ss</string>
     <string name="light">浅色</string>
     <string name="dark">深色</string>
     <string name="simple">简单</string>

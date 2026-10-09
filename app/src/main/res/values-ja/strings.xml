@@ -81,10 +81,10 @@
     <string name="testing">テスト中…</string>
     <string name="single_test">単一テスト</string>
     <string name="five_tests">5回のテスト</string>
-    <string name="all_test_results">すべてのテスト結果（合計 %1$d 件）：</string>
-    <string name="test_result_format">テスト %1$d：%2$s（%3$dms）</string>
-    <string name="more_tests">… さらに %1$d 件（すべて表示するにはCSVを表示）</string>
-    <string name="total_tests">合計 %1$d 回のテスト%2$s</string>
+    <string name="all_test_results">すべてのテスト結果（合計 %1$s 件）：</string>
+    <string name="test_result_format">テスト %1$s：%2$s（%3$sms）</string>
+    <string name="more_tests">… さらに %1$s 件（すべて表示するにはCSVを表示）</string>
+    <string name="total_tests">合計 %1$s 回のテスト%2$s</string>
     <string name="view_csv">CSVを表示</string>
     <string name="camera_power_test_data">カメラ電力テストデータ</string>
     <string name="single_photo_power_test">📸 単一写真電力テスト</string>
@@ -160,7 +160,7 @@
     <string name="allow">許可</string>
     <string name="export_csv">CSVをエクスポート</string>
     <string name="running_cpu_tests">CPUテスト実行中…</string>
-    <string name="sampling_countdown">サンプリング中… %1$ds</string>
+    <string name="sampling_countdown">サンプリング中… %1$ss</string>
     <string name="light">ライト</string>
     <string name="dark">ダーク</string>
     <string name="simple">シンプル</string>

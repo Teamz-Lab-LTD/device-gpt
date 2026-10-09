@@ -81,10 +81,10 @@
     <string name="testing">Testowanie…</string>
     <string name="single_test">Pojedynczy Test</string>
     <string name="five_tests">5 Testów</string>
-    <string name="all_test_results">Wszystkie Wyniki Testów (łącznie %1$d):</string>
-    <string name="test_result_format">Test %1$d: %2$s (%3$dms)</string>
-    <string name="more_tests">… i %1$d więcej (zobacz CSV dla wszystkich)</string>
-    <string name="total_tests">%1$d test%2$s łącznie</string>
+    <string name="all_test_results">Wszystkie Wyniki Testów (łącznie %1$s):</string>
+    <string name="test_result_format">Test %1$s: %2$s (%3$sms)</string>
+    <string name="more_tests">… i %1$s więcej (zobacz CSV dla wszystkich)</string>
+    <string name="total_tests">%1$s test%2$s łącznie</string>
     <string name="view_csv">Zobacz CSV</string>
     <string name="camera_power_test_data">Dane Testu Zużycia Kamery</string>
     <string name="single_photo_power_test">📸 Test Zużycia Pojedynczego Zdjęcia</string>
@@ -160,7 +160,7 @@
     <string name="allow">Zezwól</string>
     <string name="export_csv">Eksportuj CSV</string>
     <string name="running_cpu_tests">Uruchamianie Testów CPU…</string>
-    <string name="sampling_countdown">Próbkowanie… %1$ds</string>
+    <string name="sampling_countdown">Próbkowanie… %1$ss</string>
     <string name="light">Jasny</string>
     <string name="dark">Ciemny</string>
     <string name="simple">Prosty</string>

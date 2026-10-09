@@ -81,10 +81,10 @@
     <string name="testing">परीक्षण कर रहे हैं…</string>
     <string name="single_test">एकल परीक्षण</string>
     <string name="five_tests">5 परीक्षण</string>
-    <string name="all_test_results">सभी परीक्षण परिणाम (%1$d कुल):</string>
-    <string name="test_result_format">परीक्षण %1$d: %2$s (%3$dms)</string>
-    <string name="more_tests">… और %1$d अधिक (सभी के लिए CSV देखें)</string>
-    <string name="total_tests">%1$d परीक्षण%2$s कुल</string>
+    <string name="all_test_results">सभी परीक्षण परिणाम (%1$s कुल):</string>
+    <string name="test_result_format">परीक्षण %1$s: %2$s (%3$sms)</string>
+    <string name="more_tests">… और %1$s अधिक (सभी के लिए CSV देखें)</string>
+    <string name="total_tests">%1$s परीक्षण%2$s कुल</string>
     <string name="view_csv">CSV देखें</string>
     <string name="camera_power_test_data">कैमरा पावर टेस्ट डेटा</string>
     <string name="single_photo_power_test">📸 एकल फोटो पावर टेस्ट</string>
@@ -160,7 +160,7 @@
     <string name="allow">अनुमति दें</string>
     <string name="export_csv">CSV निर्यात करें</string>
     <string name="running_cpu_tests">CPU परीक्षण चल रहे हैं…</string>
-    <string name="sampling_countdown">सैंपलिंग… %1$ds</string>
+    <string name="sampling_countdown">सैंपलिंग… %1$ss</string>
     <string name="light">हल्का</string>
     <string name="dark">अंधेरा</string>
     <string name="simple">सरल</string>

@@ -81,10 +81,10 @@
     <string name="testing">Đang kiểm tra…</string>
     <string name="single_test">Kiểm tra Đơn</string>
     <string name="five_tests">5 Lần Kiểm tra</string>
-    <string name="all_test_results">Tất cả Kết quả Kiểm tra (tổng %1$d):</string>
-    <string name="test_result_format">Kiểm tra %1$d: %2$s (%3$dms)</string>
-    <string name="more_tests">… và %1$d nữa (xem CSV cho tất cả)</string>
-    <string name="total_tests">%1$d lần kiểm tra%2$s tổng</string>
+    <string name="all_test_results">Tất cả Kết quả Kiểm tra (tổng %1$s):</string>
+    <string name="test_result_format">Kiểm tra %1$s: %2$s (%3$sms)</string>
+    <string name="more_tests">… và %1$s nữa (xem CSV cho tất cả)</string>
+    <string name="total_tests">%1$s lần kiểm tra%2$s tổng</string>
     <string name="view_csv">Xem CSV</string>
     <string name="camera_power_test_data">Dữ liệu Kiểm tra Năng lượng Camera</string>
     <string name="single_photo_power_test">📸 Kiểm tra Năng lượng Ảnh Đơn</string>
@@ -160,7 +160,7 @@
     <string name="allow">Cho phép</string>
     <string name="export_csv">Xuất CSV</string>
     <string name="running_cpu_tests">Đang Chạy Kiểm tra CPU…</string>
-    <string name="sampling_countdown">Đang lấy mẫu… %1$ds</string>
+    <string name="sampling_countdown">Đang lấy mẫu… %1$ss</string>
     <string name="light">Sáng</string>
     <string name="dark">Tối</string>
     <string name="simple">Đơn giản</string>
