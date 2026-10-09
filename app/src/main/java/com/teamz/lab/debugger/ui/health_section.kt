@@ -375,7 +375,8 @@ fun HealthSection(
 
         // Native Ad — first screen. Was the 7th card, two screens down: after vc51 native ads
         // loaded 61/day with 100% fill and AdMob counted 0 impressions (2026-10-08), because
-        // users do not scroll that far. Kept a card away from Run again / Share.
+        // users do not scroll that far. With timeline and charge summary off (their defaults) it
+        // sits right under LastScoreCard, about 56 dp from Run again / Share.
         // Policy: Single native ad per screen, adequate spacing, clearly labeled
         if (shouldShowNativeAds && nativeAds.isNotEmpty()) {
             item(key = "native_ad_top") {
