@@ -278,6 +278,21 @@ enum class AnalyticsEvent(val eventName: String) {
     AppFullScreenAdClicked("full_screen_ad_clicked"),
     AppFullScreenAdDismissed("full_screen_ad_dismissed"),
     AdPaid("ad_paid"),
+    // Per-format loaded -> shown, so show rate is a GA4 ratio per format (2026-10-10).
+    // ad_loaded (with ad_type) stays for the existing reports.
+    AdLoadedNative("ad_loaded_native"),
+    AdLoadedInterstitial("ad_loaded_interstitial"),
+    AdLoadedAppOpen("ad_loaded_app_open"),
+    AdShownNative("ad_shown_native"),
+    AdShownInterstitial("ad_shown_interstitial"),
+    AdShownAppOpen("ad_shown_app_open"),
+    // Why a full-screen ad was NOT shown at its moment (param ad_type, session_count).
+    AdShowSkippedGraceSession("ad_show_skipped_grace_session"),
+    AdShowSkippedCooldown("ad_show_skipped_cooldown"),
+    AdShowSkippedNotLoaded("ad_show_skipped_not_loaded"),
+    AdShowSkippedDisabled("ad_show_skipped_disabled"),
+    // A request that was NOT made because the ad could not be shown in this session.
+    AdLoadSkippedGraceSession("ad_load_skipped_grace_session"),
     // Viral growth events
     ReferralShared("referral_shared"),
     ReferralLinkClicked("referral_link_clicked"),

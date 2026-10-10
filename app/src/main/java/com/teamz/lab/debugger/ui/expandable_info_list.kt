@@ -525,6 +525,7 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                         "total_ads_loaded" to currentCount,
                         "target_count" to targetCount
                     ))
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AdLoadedNative, mapOf("pool_size" to currentCount))
 
                     // Reset retry count on successful load
                     retryCount = 0
@@ -578,6 +579,12 @@ fun rememberAdLoader(activity: Activity): AdLoader {
                     // budget allows. Without this, the pipeline lock stays held and
                     // the next refill is delayed by the 12s safety net.
                     NativeAdManager.setLoading(false)
+                }
+
+                // The SDK's own impression callback: the native ad was rendered on screen.
+                // Paired with ad_loaded_native this is the native show rate in GA4.
+                override fun onAdImpression() {
+                    AnalyticsUtils.logEvent(AnalyticsEvent.AdShownNative)
                 }
 
                 override fun onAdClicked() {

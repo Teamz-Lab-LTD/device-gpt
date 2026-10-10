@@ -69,6 +69,9 @@ object RemoteConfigUtils {
     // They had drifted: bundled 60000/7 against fallbacks of 10000/20.
     private const val DEFAULT_NATIVE_AD_REQUEST_INTERVAL_MS = 60000L
     private const val DEFAULT_NATIVE_AD_MAX_REQUESTS_PER_SESSION = 7
+    // Pool size. The fallback read 3 while the bundled default is 1 — the pool the 2026-05-27
+    // tune removed came back on every cold start that beat setDefaultsAsync().
+    private const val DEFAULT_NATIVE_AD_TARGET_COUNT = 1L
 
     /** ISO country captured at app start (SIM network first), or "" if unknown. */
     fun countryCode(): String = cachedCountryCode
@@ -607,10 +610,10 @@ object RemoteConfigUtils {
 
     // === Native ad loading configuration (tunable without app update) ===
 
-    /** How many native ads to load per session. Default: 3 */
+    /** How many native ads to keep in the pool. Bundled default and pre-defaults fallback: 1. */
     fun getNativeAdTargetCount(): Int {
         val value = remoteConfig.getLong("native_ad_target_count")
-        return if (value == 0L) 3 else value.toInt()
+        return if (value <= 0L) DEFAULT_NATIVE_AD_TARGET_COUNT.toInt() else value.toInt()
     }
 
     /** Max retry attempts when a native ad fails to load. Default: 0 (no retries). */

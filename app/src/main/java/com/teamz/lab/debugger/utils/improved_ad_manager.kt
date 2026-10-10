@@ -67,6 +67,7 @@ object ImprovedAdManager {
                             AnalyticsEvent.AdLoaded,
                             mapOf("retry_count" to retryCount, "ad_type" to "app_open")
                         )
+                        AnalyticsUtils.logEvent(AnalyticsEvent.AdLoadedAppOpen)
                         onSuccess(ad)
                     }
                     
@@ -172,6 +173,7 @@ object ImprovedAdManager {
                             AnalyticsEvent.AdLoaded,
                             mapOf("retry_count" to retryCount, "ad_type" to "interstitial")
                         )
+                        AnalyticsUtils.logEvent(AnalyticsEvent.AdLoadedInterstitial)
                         onSuccess(ad)
                     }
                     

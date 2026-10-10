@@ -278,6 +278,22 @@ object AppOpenAdManager {
         // request-side throttles (MIN_LOAD_INTERVAL_MS + per-session cap) still apply,
         // and this path is only reachable from a real Activity — never from a headless
         // background wake.
+        // Session gate BEFORE the load below (2026-10-10). It used to run only after an ad was
+        // cached, so a gated session (app_open_ad_min_session = 10 since RC v17) still bought
+        // an ad on every launch and could never show it: AdMob 30 d, 3.x builds, 70 matched /
+        // 5 shown. Same RC key and number; checked one step earlier.
+        val gateSession = EngagementTracker.getSessionCount(activity)
+        if (!RemoteConfigUtils.shouldShowAppOpenAdsForSession(gateSession)) {
+            android.util.Log.w(TAG, "showAdIfAvailable() - session $gateSession gated or ads off; not loading an ad it cannot show")
+            if (AdShowGate.appOpenBelowMinSession(gateSession, RemoteConfigUtils.getAppOpenAdMinSession())) {
+                AnalyticsUtils.logEvent(
+                    AnalyticsEvent.AdLoadSkippedGraceSession,
+                    mapOf("ad_type" to "app_open", "session_count" to gateSession)
+                )
+            }
+            return
+        }
+
         if (appOpenAd == null) {
             android.util.Log.d(TAG, "showAdIfAvailable() - No ad cached; loading with activity so it can auto-show on arrival")
             loadAd(activity, activity, isColdStart)
@@ -313,6 +329,7 @@ object AppOpenAdManager {
                 isShowingAd = true
                 lastAdShownTime = System.currentTimeMillis() // Track when ad was shown for cooldown
                 AnalyticsUtils.logEvent(AnalyticsEvent.AppOpenAdShown)
+                AnalyticsUtils.logEventWithSession(activity, AnalyticsEvent.AdShownAppOpen)
             }
 
             override fun onAdClicked() {

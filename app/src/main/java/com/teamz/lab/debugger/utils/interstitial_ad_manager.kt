@@ -107,37 +107,54 @@ object InterstitialAdManager {
      */
     fun loadAd(context: Context, onLoaded: (() -> Unit)? = null) {
         if (isLoading) return
-        isLoading = true
-        
-        if (RemoteConfigUtils.shouldShowInterstitialAds()) {
-            ImprovedAdManager.loadInterstitialAdWithRetry(
-                context,
-                adUnitId,
-                onSuccess = { ad ->
-                    interstitialAd = ad
-                    isLoading = false
-                    
-                    // Set revenue tracking listener
-                    ad.setOnPaidEventListener(
-                        AdRevenueOptimizer.createRevenueListener(
-                            context,
-                            adUnitId,
-                            "interstitial"
-                        )
-                    )
-                    
-                    onLoaded?.invoke()
-                },
-                onFailure = { error ->
-                    interstitialAd = null
-                    isLoading = false
-                    onLoaded?.invoke()
-                }
-            )
-        } else {
-            isLoading = false
+        if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
             onLoaded?.invoke()
+            return
         }
+        // Never request an ad this session cannot show. Both show paths skip sessions
+        // 1..ads_grace_sessions, but Application.onStart loaded one on every foreground
+        // regardless, so with grace = 10 almost every fill went unseen (AdMob 30 d, 3.x
+        // builds: 124 matched, 32 shown). Same RC key and number as the show paths.
+        val sessionCount = EngagementTracker.getSessionCount(context)
+        if (AdShowGate.interstitialInGrace(sessionCount, RemoteConfigUtils.getAdsGraceSessions())) {
+            AppLog.d(TAG, "loadAd() - ad-grace session $sessionCount, not requesting an ad it cannot show")
+            AnalyticsUtils.logEvent(
+                AnalyticsEvent.AdLoadSkippedGraceSession,
+                mapOf("ad_type" to "interstitial", "session_count" to sessionCount)
+            )
+            onLoaded?.invoke()
+            return
+        }
+        isLoading = true
+
+        ImprovedAdManager.loadInterstitialAdWithRetry(
+            context,
+            adUnitId,
+            onSuccess = { ad ->
+                interstitialAd = ad
+                isLoading = false
+                
+                // Set revenue tracking listener
+                ad.setOnPaidEventListener(
+                    AdRevenueOptimizer.createRevenueListener(
+                        context,
+                        adUnitId,
+                        "interstitial"
+                    )
+                )
+                
+                onLoaded?.invoke()
+            },
+            onFailure = { error ->
+                interstitialAd = null
+                isLoading = false
+                onLoaded?.invoke()
+            }
+        )
+    }
+
+    private fun logSkip(context: Context, event: AnalyticsEvent) {
+        AnalyticsUtils.logEventWithSession(context, event, mapOf("ad_type" to "interstitial"))
     }
 
     /**
@@ -170,8 +187,9 @@ object InterstitialAdManager {
         // installs bounce before any feature; a fullscreen ad in session 1-2
         // is the cheapest churn source to remove.
         val sessionCount = EngagementTracker.getSessionCount(activity)
-        if (sessionCount in 1..RemoteConfigUtils.getAdsGraceSessions()) {
+        if (AdShowGate.interstitialInGrace(sessionCount, RemoteConfigUtils.getAdsGraceSessions())) {
             AppLog.d(TAG, "Ad-grace window (session $sessionCount) — skipping interstitial, executing action: $actionName")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedGraceSession)
             Handler(Looper.getMainLooper()).post {
                 if (!activity.isFinishing && !activity.isDestroyed) {
                     try { action() } catch (e: Exception) {
@@ -194,6 +212,7 @@ object InterstitialAdManager {
             val minInterval = getMinAdIntervalMs()
             val remainingSeconds = ((minInterval - timeSinceLastAd) / 1000).toInt()
             AppLog.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown for action: $actionName")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedCooldown)
             // Silently skip ad (better UX than showing too frequently)
             // But ad is loading in background for next opportunity
             // Policy: Always proceed with action, ad is optional
@@ -220,6 +239,7 @@ object InterstitialAdManager {
         // Check if ads are enabled (RemoteConfig kill switch)
         if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
             AppLog.d(TAG, "Ads disabled via RemoteConfig")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedDisabled)
             // Policy: Always proceed with action, ad is optional
             Handler(Looper.getMainLooper()).post {
                 if (!activity.isFinishing && !activity.isDestroyed) {
@@ -304,6 +324,7 @@ object InterstitialAdManager {
                 override fun onAdShowedFullScreenContent() {
                     updateLastAdShownTime() // Update cooldown timestamp when ad is shown (AdMob policy compliance)
                     AppLog.d(TAG, "InterstitialAdManager onAdShowedFullScreenContent - Ad shown for: $actionName")
+                    AnalyticsUtils.logEventWithSession(activity, AnalyticsEvent.AdShownInterstitial, mapOf("action_name" to actionName))
                     AnalyticsUtils.logEvent(
                         AnalyticsEvent.AppFullScreenAdShown,
                         mapOf("action_name" to actionName)
@@ -349,6 +370,7 @@ object InterstitialAdManager {
         } else {
             // No ad available - proceed with action immediately
             AppLog.d(TAG, "InterstitialAdManager showAdBeforeAction - No ad available, executing action immediately: $actionName")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedNotLoaded)
             // This ensures user action is never blocked
             pendingAction = null // Clear any pending action
             Handler(Looper.getMainLooper()).post {
@@ -401,8 +423,9 @@ object InterstitialAdManager {
         val graceSessions = RemoteConfigUtils.getAdsGraceSessions()
         if (graceSessions > 0) {
             val sessionCount = EngagementTracker.getSessionCount(activity)
-            if (sessionCount in 1..graceSessions) {
+            if (AdShowGate.interstitialInGrace(sessionCount, graceSessions)) {
                 AppLog.d(TAG, "Ad-grace window (session $sessionCount) — skipping interstitial")
+                logSkip(activity, AnalyticsEvent.AdShowSkippedGraceSession)
                 onAdClosed()
                 return
             }
@@ -420,6 +443,7 @@ object InterstitialAdManager {
             val minInterval = getMinAdIntervalMs()
             val remainingSeconds = ((minInterval - timeSinceLastAd) / 1000).toInt()
             AppLog.d(TAG, "Ad throttled: ${remainingSeconds}s remaining until next ad can be shown")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedCooldown)
             // Silently skip ad (better UX than showing too frequently)
             // But ad is loading in background for next opportunity
             onAdClosed()
@@ -429,6 +453,7 @@ object InterstitialAdManager {
         // Check if ads are enabled (RemoteConfig kill switch)
         if (!RemoteConfigUtils.shouldShowInterstitialAds()) {
             AppLog.d(TAG, "Ads disabled via RemoteConfig")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedDisabled)
             onAdClosed()
             return
         }
@@ -455,6 +480,7 @@ object InterstitialAdManager {
                 override fun onAdShowedFullScreenContent() {
                     updateLastAdShownTime() // Update cooldown timestamp when ad is shown
                     AnalyticsUtils.logEvent(AnalyticsEvent.AppFullScreenAdShown)
+                    AnalyticsUtils.logEventWithSession(activity, AnalyticsEvent.AdShownInterstitial)
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
@@ -474,6 +500,7 @@ object InterstitialAdManager {
             // Proceed with callback immediately (don't block user)
             // Next call will have ad ready (revenue optimized)
             AppLog.d(TAG, "Ad not loaded yet, but loading in background for next opportunity")
+            logSkip(activity, AnalyticsEvent.AdShowSkippedNotLoaded)
             onAdClosed()
         }
     }
