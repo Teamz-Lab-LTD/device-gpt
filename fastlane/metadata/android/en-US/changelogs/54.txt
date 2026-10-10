@@ -1,0 +1,1 @@
+Fewer ad requests for new users: full-screen ads are only requested when they can be shown. Small fixes.
